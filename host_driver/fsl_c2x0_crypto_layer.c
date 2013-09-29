@@ -1182,8 +1182,13 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 #ifdef MULTIPLE_RESP_RINGS
 	if (jr_id != 0) {
 		ctx_desc = sec_desc & ~((uint64_t) 0x03);
-		h_desc = c_dev->ip_pool.fw_pool.host_map_v_addr +
-		    (ctx_desc - c_dev->ip_pool.fw_pool.dev_p_addr);
+		if (ctx_desc < c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr)
+			h_desc = c_dev->ip_pool.fw_pool.host_map_v_addr +
+				(ctx_desc - c_dev->ip_pool.fw_pool.dev_p_addr);
+		else
+			h_desc = c_dev->ip_pool.fw_pool.host_map_v_addr +
+				(ctx_desc - c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr -
+				 c_dev->ip_pool.drv_map_pool.p_addr);
 
 		if (rp->info.flags & APP_RING_PROP_ORDER_MASK >>
 		    APP_RING_PROP_ORDER_SHIFT) {
@@ -1454,10 +1459,16 @@ int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 
 void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 {
-	dma_addr_t *h_desc =
-	    dev->ip_pool.drv_map_pool.v_addr + (desc -
-						dev->ip_pool.
-						fw_pool.dev_p_addr);
+	dma_addr_t *h_desc;
+
+	if (desc < dev->mem[MEM_TYPE_DRIVER].dev_p_addr)
+		h_desc = dev->ip_pool.drv_map_pool.v_addr
+			+ (desc - dev->ip_pool.fw_pool.dev_p_addr);
+	else
+		h_desc = dev->ip_pool.drv_map_pool.v_addr
+			+ (desc - dev->mem[MEM_TYPE_DRIVER].dev_p_addr
+			- dev->ip_pool.drv_map_pool.p_addr);
+
 	crypto_op_ctx_t *ctx0 = NULL;
 #ifndef HIGH_PERF
 	crypto_job_ctx_t *ctx1 = NULL;

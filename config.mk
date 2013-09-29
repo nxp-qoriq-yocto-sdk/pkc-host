@@ -22,5 +22,8 @@ USE_HOST_DMA=y
 #Specifies whether driver/firmware is running high performance mode
 HIGH_PERF_MODE=y
 
+#Specifies if use SEC direct read
+USE_SEC_DIRECT_READ=n
+
 #Specify building host-driver to support Virtualization
 VIRTIO_C2X0=n

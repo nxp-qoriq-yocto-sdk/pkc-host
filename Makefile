@@ -126,6 +126,10 @@ ifeq ($(USE_HOST_DMA), y)
 EXTRA_CFLAGS += -DUSE_HOST_DMA
 endif
 
+ifeq ($(USE_SEC_DIRECT_READ), y)
+EXTRA_CFLAGS += -DUSE_SEC_DIRECT_READ
+endif
+
 EXTRA_CFLAGS += -I$(TOPDIR)/host_driver -I$(TOPDIR)/algs -I$(TOPDIR)/crypto_dev -I$(TOPDIR)/dcl -I$(TOPDIR)/test
 
 DRIVER_PATH = $(TOPDIR)
