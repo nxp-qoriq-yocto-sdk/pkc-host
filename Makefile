@@ -130,6 +130,10 @@ ifeq ($(USE_SEC_DIRECT_READ), y)
 EXTRA_CFLAGS += -DUSE_SEC_DIRECT_READ
 endif
 
+ifeq ($(ENHANCE_KERNEL_TEST), y)
+EXTRA_CFLAGS += -DENHANCE_KERNEL_TEST
+endif
+
 EXTRA_CFLAGS += -I$(TOPDIR)/host_driver -I$(TOPDIR)/algs -I$(TOPDIR)/crypto_dev -I$(TOPDIR)/dcl -I$(TOPDIR)/test
 
 DRIVER_PATH = $(TOPDIR)

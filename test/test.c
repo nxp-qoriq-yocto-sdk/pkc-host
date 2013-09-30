@@ -107,9 +107,11 @@ void start_test(void)
 							atomic_read(&total_err_cnt));
 					atomic_set(&hold_off, 1);
 					atomic_set(&test_done, 1);
-				}				
+				}
+#ifndef ENHANCE_KERNEL_TEST				
 				set_current_state(TASK_INTERRUPTIBLE);
 				schedule_timeout(usecs_to_jiffies(1));
+#endif
 			}
 		}
 		print_debug(KERN_ERR "\n Waitingggg......\n");
