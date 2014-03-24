@@ -192,7 +192,7 @@ static int32_t prep_dma_tx(dma_addr_t s_dma_addr, dma_addr_t d_dma_addr,
 	enum dma_ctrl_flags dma_flags = 0;
 
 	dma_flags =
-	    DMA_CTRL_ACK | DMA_PREP_INTERRUPT | DMA_COMPL_SKIP_DEST_UNMAP;
+	    DMA_CTRL_ACK | DMA_PREP_INTERRUPT;
 
 	dma_desc =
 	    dma_dev->device_prep_dma_memcpy(dma_chnl->chnl, d_dma_addr,
@@ -437,7 +437,7 @@ int32_t dma_to_dev(chnl_info_t *dma_chnl, crypto_mem_info_t *mem,
 	}
 
 	dma_flags =
-	    DMA_CTRL_ACK | DMA_PREP_INTERRUPT | DMA_COMPL_SKIP_DEST_UNMAP
+	    DMA_CTRL_ACK | DMA_PREP_INTERRUPT
 	    /* | DMA_COMPL_SKIP_SRC_UNMAP */ ;
 
     if (mem->split_ip && (mem->sg_cnt > 1)) {
