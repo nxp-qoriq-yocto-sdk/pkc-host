@@ -43,6 +43,10 @@
 #undef OP_BUFFER_IN_DEV_MEM
 /* #define RETRY_FOR_BUFFERS */
 
+#ifdef SEC_DMA
+extern fsl_pci_dev_t *g_fsl_pci_dev;
+#endif
+
 static uint8_t *alloc_mem(void *pool, uint32_t len)
 {
 	uint32_t aligned_len = ALIGN_LEN_TO_DMA(len);
@@ -383,6 +387,68 @@ int32_t host_to_dev(crypto_mem_info_t *mem_info)
 
 	return 0;
 }
+
+#ifdef SEC_DMA
+/**
+ * Map Crypto Memory.
+ *
+ * @param  crypto_mem crypto memory
+ * @return            error code
+ *                    0:  success
+ *                    -1: failure
+ */
+int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
+    int32_t i;
+
+    if (!crypto_mem) {
+        return -1;
+    }
+
+    for (i = 0; i < crypto_mem->count; i++) {
+        if (crypto_mem->buffers[i].bt != BT_IP) {
+            continue;
+        }
+
+        crypto_mem->buffers[i].dev_buffer.h_p_addr
+        = (phys_addr_t)pci_map_single(g_fsl_pci_dev->dev,
+                                      crypto_mem->buffers[i].req_ptr,
+                                      crypto_mem->buffers[i].len,
+                                      PCI_DMA_BIDIRECTIONAL);
+    }
+
+    return 0;
+}
+
+
+/**
+ * Unmap Crypto Memory.
+ *
+ * @param  crypto_mem crypto memory
+ * @return            error code
+ *                    0:  success
+ *                    -1: failure
+ */
+int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
+    int32_t i;
+
+    if (!crypto_mem) {
+        return -1;
+    }
+
+    for (i = 0; i < crypto_mem->count; i++) {
+        if (crypto_mem->buffers[i].bt != BT_IP) {
+            continue;
+        }
+
+        pci_unmap_single(g_fsl_pci_dev->dev,
+                         (dma_addr_t)crypto_mem->buffers[i].dev_buffer.h_p_addr,
+                         crypto_mem->buffers[i].len,
+                         PCI_DMA_BIDIRECTIONAL);
+    }
+
+    return 0;
+}
+#endif
 
 /******************************************************************************
 Description : Copy the data from host memory to device memory.   

@@ -16,14 +16,15 @@ CONFIG_FSL_C2X0_SYMMETRIC_OFFLOAD=n
 #Enable RNG offloading
 RNG_OFFLOAD=n
 
+#Specifies whether SEC DMA support to be enabled /disabled in the driver
+#If enabled, then Host DMA support would be always disabled.
+USE_SEC_DMA=y
+
 #Specifies whether host DMA support to be enabled /disabled in the driver
-USE_HOST_DMA=y
+USE_HOST_DMA=n
 
 #Specifies whether driver/firmware is running high performance mode
 HIGH_PERF_MODE=y
-
-#Specifies if use SEC direct read
-USE_SEC_DIRECT_READ=n
 
 #Enhance pkc kernel test performance, disable kernel test schedule and
 #restriction number of c29x_fw enqueue and dequeue crypto

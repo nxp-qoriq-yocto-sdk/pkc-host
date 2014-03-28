@@ -1491,8 +1491,14 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 	     "Ctx0 address :%0x Ctx1 address :%0x\n", desc, h_desc, ctx0, ctx1);
 #endif
 
-	if (ctx0)
+	if (ctx0) {
+#ifdef SEC_DMA
+                if (desc >= dev->mem[MEM_TYPE_DRIVER].dev_p_addr) {
+                    unmap_crypto_mem(&ctx0->crypto_mem);
+                }
+#endif
 		ctx0->op_done(ctx0, res);
+        }
 	else
 		print_debug("NULL Context !!\n");
 
@@ -2564,8 +2570,13 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dsa_sign.q_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_sign.q_len;
+#ifdef SEC_DMA
+		req->req_u.dsa_sign.q = kzalloc(req->req_u.dsa_sign.q_len,
+                                                GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dsa_sign.q =
 		    kzalloc(req->req_u.dsa_sign.q_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dsa_sign.q) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2581,8 +2592,13 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dsa_sign.r_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_sign.r_len;
+#ifdef SEC_DMA
+		req->req_u.dsa_sign.r = kzalloc(req->req_u.dsa_sign.r_len,
+                                                GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dsa_sign.r =
 		    kzalloc(req->req_u.dsa_sign.r_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dsa_sign.r) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2598,8 +2614,13 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dsa_sign.g_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_sign.g_len;
+#ifdef SEC_DMA
+		req->req_u.dsa_sign.g = kzalloc(req->req_u.dsa_sign.g_len,
+                                                GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dsa_sign.g =
 		    kzalloc(req->req_u.dsa_sign.g_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dsa_sign.g) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2615,8 +2636,14 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dsa_sign.priv_key_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_sign.priv_key_len;
+#ifdef SEC_DMA
+		req->req_u.dsa_sign.priv_key
+                = kzalloc(req->req_u.dsa_sign.priv_key_len,
+                          GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dsa_sign.priv_key =
 		    kzalloc(req->req_u.dsa_sign.priv_key_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dsa_sign.priv_key) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2632,8 +2659,13 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dsa_sign.m_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_sign.m_len;
+#ifdef SEC_DMA
+		req->req_u.dsa_sign.m = kzalloc(req->req_u.dsa_sign.m_len,
+                                                GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dsa_sign.m =
 		    kzalloc(req->req_u.dsa_sign.m_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dsa_sign.m) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2650,8 +2682,14 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		if (ECDSA_SIGN == req->type) {
 			req->req_u.dsa_sign.ab_len =
 			    qemu_cmd->u.pkc.pkc_req.req_u.dsa_sign.ab_len;
+#ifdef SEC_DMA
+			req->req_u.dsa_sign.ab
+                        = kzalloc(req->req_u.dsa_sign.ab_len,
+                                  GFP_KERNEL | GFP_DMA);
+#else
 			req->req_u.dsa_sign.ab =
 			    kzalloc(req->req_u.dsa_sign.ab_len, GFP_KERNEL);
+#endif
 			if (NULL == req->req_u.dsa_sign.ab) {
 				print_error("kzlloc failed\n");
 				goto error;
@@ -2692,8 +2730,13 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dsa_verify.q_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.q_len;
+#ifdef SEC_DMA
+		req->req_u.dsa_verify.q = kzalloc(req->req_u.dsa_verify.q_len,
+                                                  GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dsa_verify.q =
 		    kzalloc(req->req_u.dsa_verify.q_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dsa_verify.q) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2709,8 +2752,13 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dsa_verify.r_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.r_len;
+#ifdef SEC_DMA
+		req->req_u.dsa_verify.r = kzalloc(req->req_u.dsa_verify.r_len,
+                                                  GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dsa_verify.r =
 		    kzalloc(req->req_u.dsa_verify.r_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dsa_verify.r) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2726,8 +2774,13 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dsa_verify.g_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.g_len;
+#ifdef SEC_DMA
+		req->req_u.dsa_verify.g = kzalloc(req->req_u.dsa_verify.g_len,
+                                                  GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dsa_verify.g =
 		    kzalloc(req->req_u.dsa_verify.g_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dsa_verify.g) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2743,8 +2796,14 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dsa_verify.pub_key_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.pub_key_len;
+#ifdef SEC_DMA
+		req->req_u.dsa_verify.pub_key
+                = kzalloc(req->req_u.dsa_verify.pub_key_len,
+                          GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dsa_verify.pub_key =
 		    kzalloc(req->req_u.dsa_verify.pub_key_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dsa_verify.pub_key) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2760,8 +2819,13 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dsa_verify.m_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.m_len;
+#ifdef SEC_DMA
+		req->req_u.dsa_verify.m = kzalloc(req->req_u.dsa_verify.m_len,
+                                                  GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dsa_verify.m =
 		    kzalloc(req->req_u.dsa_verify.m_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dsa_verify.m) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2778,8 +2842,14 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		if (ECDSA_VERIFY == req->type) {
 			req->req_u.dsa_verify.ab_len =
 			    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.ab_len;
+#ifdef SEC_DMA
+			req->req_u.dsa_verify.ab
+                        = kzalloc(req->req_u.dsa_verify.ab_len,
+                                  GFP_KERNEL | GFP_DMA);
+#else
 			req->req_u.dsa_verify.ab =
 			    kzalloc(req->req_u.dsa_verify.ab_len, GFP_KERNEL);
+#endif
 			if (NULL == req->req_u.dsa_verify.ab) {
 				print_error("kzlloc failed\n");
 				goto error;
@@ -2796,8 +2866,13 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 			}
 		}
 
+#ifdef SEC_DMA
+		req->req_u.dsa_verify.c = kzalloc(req->req_u.dsa_verify.q_len,
+                                                  GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dsa_verify.c =
 		    kzalloc(req->req_u.dsa_verify.q_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dsa_verify.c) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2813,8 +2888,13 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dsa_verify.d_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.d_len;
+#ifdef SEC_DMA
+		req->req_u.dsa_verify.d = kzalloc(req->req_u.dsa_verify.d_len,
+                                                  GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dsa_verify.d =
 		    kzalloc(req->req_u.dsa_verify.d_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dsa_verify.d) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2893,8 +2973,13 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.rsa_pub_req.n_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_pub_req.n_len;
+#ifdef SEC_DMA
+		req->req_u.rsa_pub_req.n = kzalloc(req->req_u.rsa_pub_req.n_len,
+                                                   GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.rsa_pub_req.n =
 		    kzalloc(req->req_u.rsa_pub_req.n_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.rsa_pub_req.n) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2910,8 +2995,13 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.rsa_pub_req.e_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_pub_req.e_len;
+#ifdef SEC_DMA
+		req->req_u.rsa_pub_req.e = kzalloc(req->req_u.rsa_pub_req.e_len,
+                                                   GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.rsa_pub_req.e =
 		    kzalloc(req->req_u.rsa_pub_req.e_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.rsa_pub_req.e) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2927,8 +3017,13 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.rsa_pub_req.f_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_pub_req.f_len;
+#ifdef SEC_DMA
+		req->req_u.rsa_pub_req.f = kzalloc(req->req_u.rsa_pub_req.f_len,
+                                                   GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.rsa_pub_req.f =
 		    kzalloc(req->req_u.rsa_pub_req.f_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.rsa_pub_req.f) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -3111,8 +3206,13 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.rsa_priv_f3.p_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_priv_f3.p_len;
+#ifdef SEC_DMA
+		req->req_u.rsa_priv_f3.p = kzalloc(req->req_u.rsa_priv_f3.p_len,
+                                                   GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.rsa_priv_f3.p =
 		    kzalloc(req->req_u.rsa_priv_f3.p_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.rsa_priv_f3.p) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -3128,8 +3228,13 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.rsa_priv_f3.q_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_priv_f3.q_len;
+#ifdef SEC_DMA
+		req->req_u.rsa_priv_f3.q = kzalloc(req->req_u.rsa_priv_f3.q_len,
+                                                   GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.rsa_priv_f3.q =
 		    kzalloc(req->req_u.rsa_priv_f3.q_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.rsa_priv_f3.q) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -3145,8 +3250,13 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.rsa_priv_f3.dp_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_priv_f3.dp_len;
+#ifdef SEC_DMA
+		req->req_u.rsa_priv_f3.dp
+                = kzalloc(req->req_u.rsa_priv_f3.dp_len, GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.rsa_priv_f3.dp =
 		    kzalloc(req->req_u.rsa_priv_f3.dp_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.rsa_priv_f3.dp) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -3162,8 +3272,13 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.rsa_priv_f3.dq_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_priv_f3.dq_len;
+#ifdef SEC_DMA
+		req->req_u.rsa_priv_f3.dq
+                = kzalloc(req->req_u.rsa_priv_f3.dq_len, GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.rsa_priv_f3.dq =
 		    kzalloc(req->req_u.rsa_priv_f3.dq_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.rsa_priv_f3.dq) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -3179,8 +3294,13 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.rsa_priv_f3.c_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_priv_f3.c_len;
+#ifdef SEC_DMA
+		req->req_u.rsa_priv_f3.c = kzalloc(req->req_u.rsa_priv_f3.c_len,
+                                                   GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.rsa_priv_f3.c =
 		    kzalloc(req->req_u.rsa_priv_f3.c_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.rsa_priv_f3.c) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -3196,8 +3316,13 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.rsa_priv_f3.g_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_priv_f3.g_len;
+#ifdef SEC_DMA
+		req->req_u.rsa_priv_f3.g = kzalloc(req->req_u.rsa_priv_f3.g_len,
+                                                   GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.rsa_priv_f3.g =
 		    kzalloc(req->req_u.rsa_priv_f3.g_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.rsa_priv_f3.g) {
 			print_error("kzlloc failed\n");
 			goto error;
