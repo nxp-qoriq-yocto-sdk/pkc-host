@@ -138,7 +138,7 @@ endif
 EXTRA_CFLAGS += -I$(TOPDIR)/host_driver -I$(TOPDIR)/algs -I$(TOPDIR)/crypto_dev -I$(TOPDIR)/dcl -I$(TOPDIR)/test
 
 DRIVER_PATH = $(TOPDIR)
-DRIVER_KOBJ = "fsl_crypto_offload_drv"
+DRIVER_KOBJ = "fsl_pkc_crypto_offload_drv"
 RSA_TEST_KOBJ = "rsa_test"
 DSA_TEST_KOBJ = "dsa_test"
 ECDSA_TEST_KOBJ = "ecdsa_test"
@@ -195,7 +195,6 @@ build:
 
 modules_install:
 	make -C $(KERNEL_DIR) SUBDIRS=`pwd` modules_install
-	@install -D crypto.cfg $(PREFIX)/etc/skmm/skmm_crypto.cfg
 
 clean:
 	make -C $(KERNEL_DIR) SUBDIRS=`pwd` clean
