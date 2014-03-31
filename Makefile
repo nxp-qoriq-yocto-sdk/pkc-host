@@ -190,8 +190,10 @@ endif
 
 build:
 	make -C $(KERNEL_DIR) SUBDIRS=`pwd` modules
-	$(CC)  -Wall perf/mini_calc/mini_calc.c -o mini_calc
-	$(CC)  -Wall apps/cli/cli.c -o cli
+ifeq ($(X86_BUILD),y)
+	$(CROSS_COMPILE)gcc  -Wall perf/mini_calc/mini_calc.c -o perf/mini_calc/mini_calc -static
+	$(CROSS_COMPILE)gcc  -Wall apps/cli/cli.c -o apps/cli/cli -static
+endif
 
 modules_install:
 	make -C $(KERNEL_DIR) SUBDIRS=`pwd` modules_install
