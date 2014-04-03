@@ -2426,8 +2426,13 @@ int32_t process_virtio_dh_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dh_req.q_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dh_req.q_len;
+#ifdef SEC_DMA
+                req->req_u.dh_req.q = kzalloc(req->req_u.dh_req.q_len,
+                                              GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dh_req.q =
 		    kzalloc(req->req_u.dh_req.q_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dh_req.q) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2443,8 +2448,13 @@ int32_t process_virtio_dh_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dh_req.pub_key_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dh_req.pub_key_len;
+#ifdef SEC_DMA
+                req->req_u.dh_req.pub_key
+                = kzalloc(req->req_u.dh_req.pub_key_len, GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dh_req.pub_key =
 		    kzalloc(req->req_u.dh_req.pub_key_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dh_req.pub_key) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2460,8 +2470,13 @@ int32_t process_virtio_dh_job(struct virtio_c2x0_job_ctx *virtio_job)
 
 		req->req_u.dh_req.s_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dh_req.s_len;
+#ifdef SEC_DMA
+                req->req_u.dh_req.s = kzalloc(req->req_u.dh_req.s_len,
+                                              GFP_KERNEL | GFP_DMA);
+#else
 		req->req_u.dh_req.s =
 		    kzalloc(req->req_u.dh_req.s_len, GFP_KERNEL);
+#endif
 		if (NULL == req->req_u.dh_req.s) {
 			print_error("kzlloc failed\n");
 			goto error;
@@ -2478,8 +2493,13 @@ int32_t process_virtio_dh_job(struct virtio_c2x0_job_ctx *virtio_job)
 		if (ECDH_COMPUTE_KEY == req->type) {
 			req->req_u.dh_req.ab_len =
 			    qemu_cmd->u.pkc.pkc_req.req_u.dh_req.ab_len;
+#ifdef SEC_DMA
+                        req->req_u.dh_req.ab = kzalloc(req->req_u.dh_req.ab_len,
+                                                       GFP_KERNEL | GFP_DMA);
+#else
 			req->req_u.dh_req.ab =
 			    kzalloc(req->req_u.dh_req.ab_len, GFP_KERNEL);
+#endif
 			if (NULL == req->req_u.dh_req.ab) {
 				print_error("kzlloc failed\n");
 				goto error;
