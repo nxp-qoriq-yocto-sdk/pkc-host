@@ -33,6 +33,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <linux/version.h>
 #include "common.h"
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
@@ -191,8 +192,13 @@ static int32_t prep_dma_tx(dma_addr_t s_dma_addr, dma_addr_t d_dma_addr,
 	dma_cookie_t dma_cookie = { 0 };
 	enum dma_ctrl_flags dma_flags = 0;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)
 	dma_flags =
 	    DMA_CTRL_ACK | DMA_PREP_INTERRUPT;
+#else
+	dma_flags =
+		DMA_CTRL_ACK | DMA_PREP_INTERRUPT | DMA_COMPL_SKIP_DEST_UNMAP;
+#endif
 
 	dma_desc =
 	    dma_dev->device_prep_dma_memcpy(dma_chnl->chnl, d_dma_addr,
@@ -436,9 +442,13 @@ int32_t dma_to_dev(chnl_info_t *dma_chnl, crypto_mem_info_t *mem,
 		return -1;
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)
 	dma_flags =
-	    DMA_CTRL_ACK | DMA_PREP_INTERRUPT
-	    /* | DMA_COMPL_SKIP_SRC_UNMAP */ ;
+	    DMA_CTRL_ACK | DMA_PREP_INTERRUPT;
+#else
+	dma_flags =
+		DMA_CTRL_ACK | DMA_PREP_INTERRUPT | DMA_COMPL_SKIP_DEST_UNMAP;
+#endif
 
     if (mem->split_ip && (mem->sg_cnt > 1)) {
         if( -1 == prep_dma_tx_sg(mem))
