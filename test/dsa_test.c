@@ -53,6 +53,7 @@ static int count;
 */
 atomic_t dsa_enq_count;
 atomic_t dsa_deq_count;
+extern atomic_t total_enq_cnt;
 struct pkc_request g_dsaverifyreq_1k;
 struct pkc_request g_dsasignreq_1k;
 struct pkc_request g_dsaverifyreq_2k;
@@ -77,6 +78,13 @@ void dsa_keygen_done(struct pkc_request *req, int32_t sec_result)
 void dsa_sign_verify_sign_done(struct pkc_request *req, int32_t sec_result)
 {
 	dsa_sign_verify_verify_test(req);
+#ifdef SEC_DMA
+        kfree(req->req_u.dsa_sign.q);
+        kfree(req->req_u.dsa_sign.r);
+        kfree(req->req_u.dsa_sign.g);
+        kfree(req->req_u.dsa_sign.priv_key);
+        kfree(req->req_u.dsa_sign.m);
+#endif
 	kfree(req->req_u.dsa_sign.c);
 	kfree(req->req_u.dsa_sign.d);
 	kfree(req);
@@ -84,6 +92,13 @@ void dsa_sign_verify_sign_done(struct pkc_request *req, int32_t sec_result)
 
 void dsa_sign_verify_verify_done(struct pkc_request *req, int32_t sec_result)
 {
+#ifdef SEC_DMA
+        kfree(req->req_u.dsa_verify.q);
+        kfree(req->req_u.dsa_verify.r);
+        kfree(req->req_u.dsa_verify.g);
+        kfree(req->req_u.dsa_verify.pub_key);
+        kfree(req->req_u.dsa_verify.m);
+#endif
 	kfree(req->req_u.dsa_verify.c);
 	kfree(req->req_u.dsa_verify.d);
 	kfree(req);
@@ -780,32 +795,57 @@ int dsa_sign_verify_verify_test(struct pkc_request *ireq)
 
 	req->type = DSA_VERIFY;
 
+#ifdef SEC_DMA
+        req->req_u.dsa_verify.q = kzalloc(q_len, GFP_KERNEL | GFP_DMA);
+        memcpy(req->req_u.dsa_verify.q, Q_1024, q_len);
+
+        req->req_u.dsa_verify.r = kzalloc(r_len, GFP_KERNEL | GFP_DMA);
+        memcpy(req->req_u.dsa_verify.r, R_1024, r_len);
+
+        req->req_u.dsa_verify.g = kzalloc(g_len, GFP_KERNEL | GFP_DMA);
+        memcpy(req->req_u.dsa_verify.g, G_1024, g_len);
+
+        req->req_u.dsa_verify.pub_key = kzalloc(pub_key_len,
+                                                GFP_KERNEL | GFP_DMA);
+        memcpy(req->req_u.dsa_verify.pub_key, PUB_KEY_1024, pub_key_len);
+
+        req->req_u.dsa_verify.m = kzalloc(m_len, GFP_KERNEL | GFP_DMA);
+        memcpy(req->req_u.dsa_verify.m, M_1024, m_len);
+#else
 	req->req_u.dsa_verify.q = Q_1024;
-	req->req_u.dsa_verify.q_len = (q_len);
-
 	req->req_u.dsa_verify.r = R_1024;
-	req->req_u.dsa_verify.r_len = (r_len);
-
 	req->req_u.dsa_verify.g = G_1024;
-	req->req_u.dsa_verify.g_len = (g_len);
-
 	req->req_u.dsa_verify.pub_key = PUB_KEY_1024;
-	req->req_u.dsa_verify.pub_key_len = (pub_key_len);
-
 	req->req_u.dsa_verify.m = M_1024;
-	req->req_u.dsa_verify.m_len = (m_len);
-
+#endif
 	req->req_u.dsa_verify.c = kzalloc(d_len, GFP_KERNEL | GFP_DMA);
 	memcpy(req->req_u.dsa_verify.c, ireq->req_u.dsa_sign.c, d_len);
 
 	req->req_u.dsa_verify.d = kzalloc(d_len, GFP_KERNEL | GFP_DMA);
-	req->req_u.dsa_verify.d_len = d_len;
 	memcpy(req->req_u.dsa_verify.d, ireq->req_u.dsa_sign.d, d_len);
+
+	req->req_u.dsa_verify.q_len = (q_len);
+	req->req_u.dsa_verify.r_len = (r_len);
+	req->req_u.dsa_verify.g_len = (g_len);
+	req->req_u.dsa_verify.pub_key_len = (pub_key_len);
+	req->req_u.dsa_verify.m_len = (m_len);
+	req->req_u.dsa_verify.d_len = d_len;
 
 	ret = test_dsa_op(req, dsa_sign_verify_verify_done);
 
-	if (-1 == ret)
+	if (-1 == ret) {
+#ifdef SEC_DMA
+                kfree(req->req_u.dsa_verify.q);
+                kfree(req->req_u.dsa_verify.r);
+                kfree(req->req_u.dsa_verify.g);
+                kfree(req->req_u.dsa_verify.pub_key);
+                kfree(req->req_u.dsa_verify.m);
+#endif
+                kfree(req->req_u.dsa_verify.c);
+                kfree(req->req_u.dsa_verify.d);
 		kfree(req);
+                atomic_dec(&total_enq_cnt);
+        }
 
 	return ret;
 }
@@ -816,29 +856,49 @@ int dsa_sign_verify_sign_test(struct pkc_request *req)
 
 	req->type = DSA_SIGN;
 
+#ifdef SEC_DMA
+        req->req_u.dsa_sign.q = kzalloc(q_len, GFP_KERNEL | GFP_DMA);
+        memcpy(req->req_u.dsa_sign.q, Q_1024, q_len);
+
+        req->req_u.dsa_sign.r = kzalloc(r_len, GFP_KERNEL | GFP_DMA);
+        memcpy(req->req_u.dsa_sign.r, R_1024, r_len);
+
+        req->req_u.dsa_sign.g = kzalloc(g_len, GFP_KERNEL | GFP_DMA);
+        memcpy(req->req_u.dsa_sign.g, G_1024, g_len);
+
+        req->req_u.dsa_sign.priv_key = kzalloc(priv_key_len,
+                                               GFP_KERNEL | GFP_DMA);
+        memcpy(req->req_u.dsa_sign.priv_key, PRIV_KEY_1024, priv_key_len);
+
+        req->req_u.dsa_sign.m = kzalloc(m_len, GFP_KERNEL | GFP_DMA);
+        memcpy(req->req_u.dsa_sign.m, M_1024, m_len);
+#else
 	req->req_u.dsa_sign.q = Q_1024;
-	req->req_u.dsa_sign.q_len = (q_len);
-
 	req->req_u.dsa_sign.r = R_1024;
-	req->req_u.dsa_sign.r_len = (r_len);
-
 	req->req_u.dsa_sign.g = G_1024;
-	req->req_u.dsa_sign.g_len = (g_len);
-
 	req->req_u.dsa_sign.priv_key = PRIV_KEY_1024;
-	req->req_u.dsa_sign.priv_key_len = (priv_key_len);
-
 	req->req_u.dsa_sign.m = M_1024;
-	req->req_u.dsa_sign.m_len = (m_len);
-
+#endif
 	req->req_u.dsa_sign.c = kzalloc(d_len, GFP_KERNEL | GFP_DMA);
-
 	req->req_u.dsa_sign.d = kzalloc(d_len, GFP_KERNEL | GFP_DMA);
+
+	req->req_u.dsa_sign.q_len = (q_len);
+	req->req_u.dsa_sign.r_len = (r_len);
+	req->req_u.dsa_sign.g_len = (g_len);
+	req->req_u.dsa_sign.priv_key_len = (priv_key_len);
+	req->req_u.dsa_sign.m_len = (m_len);
 	req->req_u.dsa_sign.d_len = d_len;
 
 	ret = test_dsa_op(req, dsa_sign_verify_sign_done);
 
 	if (-1 == ret) {
+#ifdef SEC_DMA
+                kfree(req->req_u.dsa_sign.q);
+                kfree(req->req_u.dsa_sign.r);
+                kfree(req->req_u.dsa_sign.g);
+                kfree(req->req_u.dsa_sign.priv_key);
+                kfree(req->req_u.dsa_sign.m);
+#endif
 		kfree(req->req_u.dsa_sign.c);
 		kfree(req->req_u.dsa_sign.d);
 		kfree(req);
