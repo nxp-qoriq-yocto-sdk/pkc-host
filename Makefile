@@ -154,6 +154,11 @@ $(DRIVER_KOBJ)-objs += host_driver/fsl_c2x0_crypto_layer.o
 $(DRIVER_KOBJ)-objs += host_driver/memmgr.o
 $(DRIVER_KOBJ)-objs += host_driver/command.o
 $(DRIVER_KOBJ)-objs += host_driver/sysfs.o
+ifeq ($(X86_BUILD),y)
+ifeq ($(EXTRA_PKC),y)
+$(DRIVER_KOBJ)-objs += crypto/pkc.o
+endif
+endif
 ifeq ($(USE_HOST_DMA),y)
 $(DRIVER_KOBJ)-objs += host_driver/dma.o
 endif
