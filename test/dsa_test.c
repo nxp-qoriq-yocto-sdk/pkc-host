@@ -878,15 +878,15 @@ error:
                 if (signreq->req_u.dsa_sign.q) {
                     kfree(signreq->req_u.dsa_sign.q);
                 }
+
                 if (signreq->req_u.dsa_sign.r) {
                     kfree(signreq->req_u.dsa_sign.r);
                 }
+
                 if (signreq->req_u.dsa_sign.g) {
                     kfree(signreq->req_u.dsa_sign.g);
                 }
-                if (signreq->req_u.dsa_sign.priv_key) {
-                    kfree(signreq->req_u.dsa_sign.priv_key);
-                }
+
                 if (signreq->req_u.dsa_sign.m) {
                     kfree(signreq->req_u.dsa_sign.m);
                 }
@@ -914,20 +914,8 @@ error:
                     kfree(verifyreq->req_u.dsa_verify.g);
                 }
 
-                if (verifyreq->req_u.dsa_verify.pub_key) {
-                    kfree(verifyreq->req_u.dsa_verify.pub_key);
-                }
-
                 if (verifyreq->req_u.dsa_verify.m) {
                     kfree(verifyreq->req_u.dsa_verify.m);
-                }
-
-                if (verifyreq->req_u.dsa_verify.c) {
-                    kfree(verifyreq->req_u.dsa_verify.c);
-                }
-
-                if (verifyreq->req_u.dsa_verify.d) {
-                    kfree(verifyreq->req_u.dsa_verify.d);
                 }
 #endif
 		if (verifyreq->req_u.dsa_verify.c)
