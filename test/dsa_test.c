@@ -110,30 +110,22 @@ void init_dsa_verify_test_1k(void)
 	g_dsaverifyreq_1k.type = DSA_VERIFY;
 
 #ifdef SEC_DMA
-        g_dsaverifyreq_1k.req_u.dsa_verify.q = kzalloc(q_len,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_1k.req_u.dsa_verify.q = kzalloc(q_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_1k.req_u.dsa_verify.q, Q_1024, q_len);
 
-        g_dsaverifyreq_1k.req_u.dsa_verify.r = kzalloc(r_len,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_1k.req_u.dsa_verify.r = kzalloc(r_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_1k.req_u.dsa_verify.r, R_1024, r_len);
 
-        g_dsaverifyreq_1k.req_u.dsa_verify.g = kzalloc(g_len,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_1k.req_u.dsa_verify.g = kzalloc(g_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_1k.req_u.dsa_verify.g, G_1024, g_len);
 
-        g_dsaverifyreq_1k.req_u.dsa_verify.pub_key
-        = kzalloc(pub_key_len, GFP_KERNEL | GFP_DMA);
-        memcpy(g_dsaverifyreq_1k.req_u.dsa_verify.pub_key,
-               PUB_KEY_1024,
-               pub_key_len);
+        g_dsaverifyreq_1k.req_u.dsa_verify.pub_key = kzalloc(pub_key_len, GFP_KERNEL | GFP_DMA);
+        memcpy(g_dsaverifyreq_1k.req_u.dsa_verify.pub_key, PUB_KEY_1024, pub_key_len);
 
-        g_dsaverifyreq_1k.req_u.dsa_verify.m = kzalloc(m_len,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_1k.req_u.dsa_verify.m = kzalloc(m_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_1k.req_u.dsa_verify.m, M_1024, m_len);
 
-        g_dsaverifyreq_1k.req_u.dsa_verify.c = kzalloc(q_len,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_1k.req_u.dsa_verify.c = kzalloc(q_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_1k.req_u.dsa_verify.c, C, q_len);
 
         g_dsaverifyreq_1k.req_u.dsa_verify.d = kzalloc(d, GFP_KERNEL | GFP_DMA);
@@ -170,11 +162,8 @@ void init_dsa_sign_test_1k(void)
         g_dsasignreq_1k.req_u.dsa_sign.g = kzalloc(g_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsasignreq_1k.req_u.dsa_sign.g, G_1024, g_len);
 
-        g_dsasignreq_1k.req_u.dsa_sign.priv_key = kzalloc(priv_key_len,
-                                                          GFP_KERNEL | GFP_DMA);
-        memcpy(g_dsasignreq_1k.req_u.dsa_sign.priv_key,
-               PRIV_KEY_1024,
-               priv_key_len);
+        g_dsasignreq_1k.req_u.dsa_sign.priv_key = kzalloc(priv_key_len, GFP_KERNEL | GFP_DMA);
+        memcpy(g_dsasignreq_1k.req_u.dsa_sign.priv_key, PRIV_KEY_1024, priv_key_len);
 
         g_dsasignreq_1k.req_u.dsa_sign.m = kzalloc(m_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsasignreq_1k.req_u.dsa_sign.m, M_1024, m_len);
@@ -201,34 +190,25 @@ void init_dsa_verify_test_2k(void)
 	g_dsaverifyreq_2k.type = DSA_VERIFY;
 
 #ifdef SEC_DMA
-        g_dsaverifyreq_2k.req_u.dsa_verify.q = kzalloc(q_len_2048,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_2k.req_u.dsa_verify.q = kzalloc(q_len_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_2k.req_u.dsa_verify.q, Q_2048, q_len_2048);
 
-        g_dsaverifyreq_2k.req_u.dsa_verify.r = kzalloc(r_len_2048,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_2k.req_u.dsa_verify.r = kzalloc(r_len_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_2k.req_u.dsa_verify.r, R_2048, r_len_2048);
 
-        g_dsaverifyreq_2k.req_u.dsa_verify.g = kzalloc(g_len_2048,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_2k.req_u.dsa_verify.g = kzalloc(g_len_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_2k.req_u.dsa_verify.g, G_2048, g_len_2048);
 
-        g_dsaverifyreq_2k.req_u.dsa_verify.pub_key
-        = kzalloc(pub_key_len_2048, GFP_KERNEL | GFP_DMA);
-        memcpy(g_dsaverifyreq_2k.req_u.dsa_verify.pub_key,
-               PUB_KEY_2048,
-               pub_key_len_2048);
+        g_dsaverifyreq_2k.req_u.dsa_verify.pub_key = kzalloc(pub_key_len_2048, GFP_KERNEL | GFP_DMA);
+        memcpy(g_dsaverifyreq_2k.req_u.dsa_verify.pub_key, PUB_KEY_2048, pub_key_len_2048);
 
-        g_dsaverifyreq_2k.req_u.dsa_verify.m = kzalloc(m_len_2048,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_2k.req_u.dsa_verify.m = kzalloc(m_len_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_2k.req_u.dsa_verify.m, M_2048, m_len_2048);
 
-        g_dsaverifyreq_2k.req_u.dsa_verify.c = kzalloc(q_len_2048,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_2k.req_u.dsa_verify.c = kzalloc(q_len_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_2k.req_u.dsa_verify.c, C_2048, q_len_2048);
 
-        g_dsaverifyreq_2k.req_u.dsa_verify.d = kzalloc(d_2048,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_2k.req_u.dsa_verify.d = kzalloc(d_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_2k.req_u.dsa_verify.d, D_2048, d_2048);
 #else
 	g_dsaverifyreq_2k.req_u.dsa_verify.q = Q_2048;
@@ -253,26 +233,19 @@ void init_dsa_sign_test_2k(void)
 	g_dsasignreq_2k.type = DSA_SIGN;
 
 #ifdef SEC_DMA
-        g_dsasignreq_2k.req_u.dsa_sign.q = kzalloc(q_len_2048,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_dsasignreq_2k.req_u.dsa_sign.q = kzalloc(q_len_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsasignreq_2k.req_u.dsa_sign.q, Q_2048, q_len_2048);
 
-        g_dsasignreq_2k.req_u.dsa_sign.r = kzalloc(r_len_2048,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_dsasignreq_2k.req_u.dsa_sign.r = kzalloc(r_len_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsasignreq_2k.req_u.dsa_sign.r, R_2048, r_len_2048);
 
-        g_dsasignreq_2k.req_u.dsa_sign.g = kzalloc(g_len_2048,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_dsasignreq_2k.req_u.dsa_sign.g = kzalloc(g_len_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsasignreq_2k.req_u.dsa_sign.g, G_2048, g_len_2048);
 
-        g_dsasignreq_2k.req_u.dsa_sign.priv_key = kzalloc(priv_key_len_2048,
-                                                          GFP_KERNEL | GFP_DMA);
-        memcpy(g_dsasignreq_2k.req_u.dsa_sign.priv_key,
-               PRIV_KEY_2048,
-               priv_key_len_2048);
+        g_dsasignreq_2k.req_u.dsa_sign.priv_key = kzalloc(priv_key_len_2048, GFP_KERNEL | GFP_DMA);
+        memcpy(g_dsasignreq_2k.req_u.dsa_sign.priv_key, PRIV_KEY_2048, priv_key_len_2048);
 
-        g_dsasignreq_2k.req_u.dsa_sign.m = kzalloc(m_len_2048,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_dsasignreq_2k.req_u.dsa_sign.m = kzalloc(m_len_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsasignreq_2k.req_u.dsa_sign.m, M_2048, m_len_2048);
 #else
 	g_dsasignreq_2k.req_u.dsa_sign.q = Q_2048;
@@ -299,34 +272,25 @@ void init_dsa_verify_test_4k(void)
 	g_dsaverifyreq_4k.type = DSA_VERIFY;
 
 #ifdef SEC_DMA
-        g_dsaverifyreq_4k.req_u.dsa_verify.q = kzalloc(q_len_4096,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_4k.req_u.dsa_verify.q = kzalloc(q_len_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_4k.req_u.dsa_verify.q, Q_4096, q_len_4096);
 
-        g_dsaverifyreq_4k.req_u.dsa_verify.r = kzalloc(r_len_4096,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_4k.req_u.dsa_verify.r = kzalloc(r_len_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_4k.req_u.dsa_verify.r, R_4096, r_len_4096);
 
-        g_dsaverifyreq_4k.req_u.dsa_verify.g = kzalloc(g_len_4096,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_4k.req_u.dsa_verify.g = kzalloc(g_len_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_4k.req_u.dsa_verify.g, G_4096, g_len_4096);
 
-        g_dsaverifyreq_4k.req_u.dsa_verify.pub_key
-        = kzalloc(pub_key_len_4096, GFP_KERNEL | GFP_DMA);
-        memcpy(g_dsaverifyreq_4k.req_u.dsa_verify.pub_key,
-               PUB_KEY_4096,
-               pub_key_len_4096);
+        g_dsaverifyreq_4k.req_u.dsa_verify.pub_key = kzalloc(pub_key_len_4096, GFP_KERNEL | GFP_DMA);
+        memcpy(g_dsaverifyreq_4k.req_u.dsa_verify.pub_key, PUB_KEY_4096, pub_key_len_4096);
 
-        g_dsaverifyreq_4k.req_u.dsa_verify.m = kzalloc(m_len_4096,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_4k.req_u.dsa_verify.m = kzalloc(m_len_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_4k.req_u.dsa_verify.m, M_4096, m_len_4096);
 
-        g_dsaverifyreq_4k.req_u.dsa_verify.c = kzalloc(q_len_4096,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_4k.req_u.dsa_verify.c = kzalloc(q_len_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_4k.req_u.dsa_verify.c, C_4096, q_len_4096);
 
-        g_dsaverifyreq_4k.req_u.dsa_verify.d = kzalloc(d_4096,
-                                                       GFP_KERNEL | GFP_DMA);
+        g_dsaverifyreq_4k.req_u.dsa_verify.d = kzalloc(d_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsaverifyreq_4k.req_u.dsa_verify.d, D_4096, d_4096);
 #else
 	g_dsaverifyreq_4k.req_u.dsa_verify.q = Q_4096;
@@ -351,26 +315,19 @@ void init_dsa_sign_test_4k(void)
 	g_dsasignreq_4k.type = DSA_SIGN;
 
 #ifdef SEC_DMA
-        g_dsasignreq_4k.req_u.dsa_sign.q = kzalloc(q_len_4096,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_dsasignreq_4k.req_u.dsa_sign.q = kzalloc(q_len_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsasignreq_4k.req_u.dsa_sign.q, Q_4096, q_len_4096);
 
-        g_dsasignreq_4k.req_u.dsa_sign.r = kzalloc(r_len_4096,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_dsasignreq_4k.req_u.dsa_sign.r = kzalloc(r_len_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsasignreq_4k.req_u.dsa_sign.r, R_4096, r_len_4096);
 
-        g_dsasignreq_4k.req_u.dsa_sign.g = kzalloc(g_len_4096,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_dsasignreq_4k.req_u.dsa_sign.g = kzalloc(g_len_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsasignreq_4k.req_u.dsa_sign.g, G_4096, g_len_4096);
 
-        g_dsasignreq_4k.req_u.dsa_sign.priv_key = kzalloc(priv_key_len_4096,
-                                                          GFP_KERNEL | GFP_DMA);
-        memcpy(g_dsasignreq_4k.req_u.dsa_sign.priv_key,
-               PRIV_KEY_4096,
-               priv_key_len_4096);
+        g_dsasignreq_4k.req_u.dsa_sign.priv_key = kzalloc(priv_key_len_4096, GFP_KERNEL | GFP_DMA);
+        memcpy(g_dsasignreq_4k.req_u.dsa_sign.priv_key, PRIV_KEY_4096, priv_key_len_4096);
 
-        g_dsasignreq_4k.req_u.dsa_sign.m = kzalloc(m_len_4096,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_dsasignreq_4k.req_u.dsa_sign.m = kzalloc(m_len_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dsasignreq_4k.req_u.dsa_sign.m, M_4096, m_len_4096);
 #else
 	g_dsasignreq_4k.req_u.dsa_sign.q = Q_4096;
@@ -639,14 +596,11 @@ int dsa_keygen_verify_test(struct pkc_request *genreq,
         }
         memcpy(req->req_u.dsa_verify.g, G_1024, g_len);
 
-        req->req_u.dsa_verify.pub_key = kzalloc(pub_key_len,
-                                                GFP_KERNEL | GFP_DMA);
+        req->req_u.dsa_verify.pub_key = kzalloc(pub_key_len, GFP_KERNEL | GFP_DMA);
         if (!(req->req_u.dsa_verify.pub_key)) {
             goto error;
         }
-        memcpy(req->req_u.dsa_verify.pub_key,
-               genreq->req_u.dsa_keygen.pubkey,
-               pub_key_len);
+        memcpy(req->req_u.dsa_verify.pub_key, genreq->req_u.dsa_keygen.pubkey, pub_key_len);
 
         req->req_u.dsa_verify.m = kzalloc(m_len, GFP_KERNEL | GFP_DMA);
         if (!(req->req_u.dsa_verify.m)) {
@@ -726,14 +680,11 @@ int dsa_keygen_sign_test(struct pkc_request *ireq, struct pkc_request *req)
         }
         memcpy(req->req_u.dsa_sign.g, G_1024, g_len);
 
-        req->req_u.dsa_sign.priv_key = kzalloc(priv_key_len,
-                                               GFP_KERNEL | GFP_DMA);
+        req->req_u.dsa_sign.priv_key = kzalloc(priv_key_len, GFP_KERNEL | GFP_DMA);
         if (!(req->req_u.dsa_sign.priv_key)) {
             goto error;
         }
-        memcpy(req->req_u.dsa_sign.priv_key,
-               ireq->req_u.dsa_keygen.prvkey,
-               priv_key_len);
+        memcpy(req->req_u.dsa_sign.priv_key, ireq->req_u.dsa_keygen.prvkey, priv_key_len);
 
         req->req_u.dsa_sign.m = kzalloc(m_len, GFP_KERNEL | GFP_DMA);
         if (!(req->req_u.dsa_sign.m)) {
@@ -949,8 +900,7 @@ int dsa_sign_verify_verify_test(struct pkc_request *ireq)
         req->req_u.dsa_verify.g = kzalloc(g_len, GFP_KERNEL | GFP_DMA);
         memcpy(req->req_u.dsa_verify.g, G_1024, g_len);
 
-        req->req_u.dsa_verify.pub_key = kzalloc(pub_key_len,
-                                                GFP_KERNEL | GFP_DMA);
+        req->req_u.dsa_verify.pub_key = kzalloc(pub_key_len, GFP_KERNEL | GFP_DMA);
         memcpy(req->req_u.dsa_verify.pub_key, PUB_KEY_1024, pub_key_len);
 
         req->req_u.dsa_verify.m = kzalloc(m_len, GFP_KERNEL | GFP_DMA);
@@ -1010,8 +960,7 @@ int dsa_sign_verify_sign_test(struct pkc_request *req)
         req->req_u.dsa_sign.g = kzalloc(g_len, GFP_KERNEL | GFP_DMA);
         memcpy(req->req_u.dsa_sign.g, G_1024, g_len);
 
-        req->req_u.dsa_sign.priv_key = kzalloc(priv_key_len,
-                                               GFP_KERNEL | GFP_DMA);
+        req->req_u.dsa_sign.priv_key = kzalloc(priv_key_len, GFP_KERNEL | GFP_DMA);
         memcpy(req->req_u.dsa_sign.priv_key, PRIV_KEY_1024, priv_key_len);
 
         req->req_u.dsa_sign.m = kzalloc(m_len, GFP_KERNEL | GFP_DMA);

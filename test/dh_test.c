@@ -142,8 +142,7 @@ void init_dh_test_2k(void)
         g_dhreq_2k.req_u.dh_req.q = kzalloc(q_len_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dhreq_2k.req_u.dh_req.q, Q_2048, q_len_2048);
 
-        g_dhreq_2k.req_u.dh_req.pub_key = kzalloc(w1_len_2048,
-                                                  GFP_KERNEL | GFP_DMA);
+        g_dhreq_2k.req_u.dh_req.pub_key = kzalloc(w1_len_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dhreq_2k.req_u.dh_req.pub_key, W1_2048, w1_len_2048);
 
         g_dhreq_2k.req_u.dh_req.s = kzalloc(s2_len_2048, GFP_KERNEL | GFP_DMA);
@@ -169,8 +168,7 @@ void init_dh_test_4k(void)
         g_dhreq_4k.req_u.dh_req.q = kzalloc(q_len_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dhreq_4k.req_u.dh_req.q, Q_4096, q_len_4096);
 
-        g_dhreq_4k.req_u.dh_req.pub_key = kzalloc(w1_len_4096,
-                                                  GFP_KERNEL | GFP_DMA);
+        g_dhreq_4k.req_u.dh_req.pub_key = kzalloc(w1_len_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dhreq_4k.req_u.dh_req.pub_key, W1_4096, w1_len_4096);
 
         g_dhreq_4k.req_u.dh_req.s = kzalloc(s2_len_4096, GFP_KERNEL | GFP_DMA);

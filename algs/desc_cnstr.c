@@ -409,11 +409,7 @@ int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
             continue;
         }
 
-        crypto_mem->buffers[i].dev_buffer.h_p_addr
-        = (phys_addr_t)pci_map_single(g_fsl_pci_dev->dev,
-                                      crypto_mem->buffers[i].req_ptr,
-                                      crypto_mem->buffers[i].len,
-                                      PCI_DMA_BIDIRECTIONAL);
+        crypto_mem->buffers[i].dev_buffer.h_p_addr = (phys_addr_t)pci_map_single(g_fsl_pci_dev->dev, crypto_mem->buffers[i].req_ptr, crypto_mem->buffers[i].len, PCI_DMA_BIDIRECTIONAL);
     }
 
     return 0;
@@ -440,10 +436,7 @@ int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
             continue;
         }
 
-        pci_unmap_single(g_fsl_pci_dev->dev,
-                         (dma_addr_t)crypto_mem->buffers[i].dev_buffer.h_p_addr,
-                         crypto_mem->buffers[i].len,
-                         PCI_DMA_BIDIRECTIONAL);
+        pci_unmap_single(g_fsl_pci_dev->dev, (dma_addr_t)crypto_mem->buffers[i].dev_buffer.h_p_addr, crypto_mem->buffers[i].len, PCI_DMA_BIDIRECTIONAL);
     }
 
     return 0;

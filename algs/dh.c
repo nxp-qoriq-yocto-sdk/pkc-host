@@ -219,6 +219,9 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 	dh_key_buffers_t *mem = (dh_key_buffers_t *) (mem_info->buffers);
 	struct dh_key_desc_s *dh_key_desc =
 	    (struct dh_key_desc_s *)mem->desc_buff.v_mem;
+#ifdef SEC_DMA
+        dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+#endif
 #ifdef DUMP_DEBUG_V_INFO
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 #endif
@@ -229,21 +232,9 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 		      HDR_ONE);
 
 #ifdef SEC_DMA
-        ASSIGN64(dh_key_desc->q_dma,
-                 (mem->q_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
-        ASSIGN64(dh_key_desc->w_dma,
-                 (mem->w_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
-        ASSIGN64(dh_key_desc->s_dma,
-                 (mem->s_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
+        ASSIGN64(dh_key_desc->q_dma, (mem->q_buff.dev_buffer.h_p_addr + offset));
+        ASSIGN64(dh_key_desc->w_dma, (mem->w_buff.dev_buffer.h_p_addr + offset));
+        ASSIGN64(dh_key_desc->s_dma, (mem->s_buff.dev_buffer.h_p_addr + offset));
 #else
 	ASSIGN64(dh_key_desc->q_dma, mem->q_buff.dev_buffer.d_p_addr);
 	ASSIGN64(dh_key_desc->w_dma, mem->w_buff.dev_buffer.d_p_addr);
@@ -284,6 +275,9 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	dh_key_buffers_t *mem = (dh_key_buffers_t *) (mem_info->buffers);
 	struct ecdh_key_desc_s *ecdh_key_desc =
 	    (struct ecdh_key_desc_s *)mem->desc_buff.v_mem;
+#ifdef SEC_DMA
+        dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+#endif
 #ifdef DUMP_DEBUG_V_INFO
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 #endif
@@ -294,26 +288,10 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 		      HDR_ONE);
 
 #ifdef SEC_DMA
-        ASSIGN64(ecdh_key_desc->q_dma,
-                 (mem->q_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
-        ASSIGN64(ecdh_key_desc->w_dma,
-                 (mem->w_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
-        ASSIGN64(ecdh_key_desc->s_dma,
-                 (mem->s_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
-        ASSIGN64(ecdh_key_desc->ab_dma,
-                 (mem->ab_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
+        ASSIGN64(ecdh_key_desc->q_dma, (mem->q_buff.dev_buffer.h_p_addr + offset));
+        ASSIGN64(ecdh_key_desc->w_dma, (mem->w_buff.dev_buffer.h_p_addr + offset));
+        ASSIGN64(ecdh_key_desc->s_dma, (mem->s_buff.dev_buffer.h_p_addr + offset));
+        ASSIGN64(ecdh_key_desc->ab_dma, (mem->ab_buff.dev_buffer.h_p_addr + offset));
 #else
 	ASSIGN64(ecdh_key_desc->q_dma, mem->q_buff.dev_buffer.d_p_addr);
 	ASSIGN64(ecdh_key_desc->w_dma, mem->w_buff.dev_buffer.d_p_addr);
@@ -359,6 +337,9 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
     dh_keygen_buffers_t   *mem            =   (dh_keygen_buffers_t *)(mem_info->buffers);
     struct ecdh_keygen_desc_s  *ecdh_keygen_desc  =   (struct ecdh_keygen_desc_s *)mem->desc_buff.v_mem;
+#ifdef SEC_DMA
+    dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+#endif
 #ifdef DUMP_DEBUG_V_INFO    
     uint32_t                *desc_buff      =   (uint32_t *)mem->desc_buff.v_mem;
 #endif
@@ -366,26 +347,10 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
     init_job_desc(&ecdh_keygen_desc->desc_hdr, (start_idx << HDR_START_IDX_SHIFT) | (desc_size & HDR_DESCLEN_MASK) | HDR_ONE);
 
 #ifdef SEC_DMA
-    ASSIGN64(ecdh_keygen_desc->q_dma,
-             (mem->q_buff.dev_buffer.h_p_addr
-             + ((fsl_crypto_dev_t *)(mem_info->dev))
-               ->mem[MEM_TYPE_DRIVER]
-               .dev_p_addr));
-    ASSIGN64(ecdh_keygen_desc->r_dma,
-             (mem->r_buff.dev_buffer.h_p_addr
-             + ((fsl_crypto_dev_t *)(mem_info->dev))
-               ->mem[MEM_TYPE_DRIVER]
-               .dev_p_addr));
-    ASSIGN64(ecdh_keygen_desc->g_dma,
-             (mem->g_buff.dev_buffer.h_p_addr
-             + ((fsl_crypto_dev_t *)(mem_info->dev))
-               ->mem[MEM_TYPE_DRIVER]
-               .dev_p_addr));
-    ASSIGN64(ecdh_keygen_desc->ab_dma,
-             (mem->ab_buff.dev_buffer.h_p_addr
-             + ((fsl_crypto_dev_t *)(mem_info->dev))
-               ->mem[MEM_TYPE_DRIVER]
-               .dev_p_addr));
+    ASSIGN64(ecdh_keygen_desc->q_dma, (mem->q_buff.dev_buffer.h_p_addr + offset));
+    ASSIGN64(ecdh_keygen_desc->r_dma, (mem->r_buff.dev_buffer.h_p_addr + offset));
+    ASSIGN64(ecdh_keygen_desc->g_dma, (mem->g_buff.dev_buffer.h_p_addr + offset));
+    ASSIGN64(ecdh_keygen_desc->ab_dma, (mem->ab_buff.dev_buffer.h_p_addr + offset));
 #else
     ASSIGN64(ecdh_keygen_desc->q_dma, mem->q_buff.dev_buffer.d_p_addr);
     ASSIGN64(ecdh_keygen_desc->r_dma, mem->r_buff.dev_buffer.d_p_addr);
@@ -432,6 +397,9 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
 
     dh_keygen_buffers_t *mem            =   (dh_keygen_buffers_t *)(mem_info->buffers);
     struct dh_keygen_desc_s *dh_keygen_desc =   (struct dh_keygen_desc_s *)mem->desc_buff.v_mem;
+#ifdef SEC_DMA
+    dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+#endif
 #ifdef DUMP_DEBUG_V_INFO    
     uint32_t                *desc_buff      =   (uint32_t *)mem->desc_buff.v_mem;
 #endif
@@ -439,21 +407,9 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
     init_job_desc(&dh_keygen_desc->desc_hdr, (start_idx << HDR_START_IDX_SHIFT) | (desc_size & HDR_DESCLEN_MASK) | HDR_ONE);
 
 #ifdef SEC_DMA
-    ASSIGN64(dh_keygen_desc->q_dma,
-             (mem->q_buff.dev_buffer.h_p_addr
-             + ((fsl_crypto_dev_t *)(mem_info->dev))
-               ->mem[MEM_TYPE_DRIVER]
-               .dev_p_addr));
-    ASSIGN64(dh_keygen_desc->r_dma,
-             (mem->r_buff.dev_buffer.h_p_addr
-             + ((fsl_crypto_dev_t *)(mem_info->dev))
-               ->mem[MEM_TYPE_DRIVER]
-               .dev_p_addr));
-    ASSIGN64(dh_keygen_desc->g_dma,
-             (mem->g_buff.dev_buffer.h_p_addr
-             + ((fsl_crypto_dev_t *)(mem_info->dev))
-               ->mem[MEM_TYPE_DRIVER]
-               .dev_p_addr));
+    ASSIGN64(dh_keygen_desc->q_dma, (mem->q_buff.dev_buffer.h_p_addr + offset));
+    ASSIGN64(dh_keygen_desc->r_dma, (mem->r_buff.dev_buffer.h_p_addr + offset));
+    ASSIGN64(dh_keygen_desc->g_dma, (mem->g_buff.dev_buffer.h_p_addr + offset));
 #else
     ASSIGN64(dh_keygen_desc->q_dma, mem->q_buff.dev_buffer.d_p_addr);
     ASSIGN64(dh_keygen_desc->r_dma, mem->r_buff.dev_buffer.d_p_addr);
@@ -541,6 +497,10 @@ int dh_op(struct pkc_request *req)
 	bool ecdh = false;
 	bool ecc_bin = false;
 
+#ifdef SEC_DMA
+        dev_p_addr_t offset;
+#endif
+
 #ifndef VIRTIO_C2X0
 	if (NULL != req->base.tfm) {
 		dh_completion_cb = pkc_request_complete;
@@ -581,6 +541,10 @@ int dh_op(struct pkc_request *req)
 #endif
 
     }
+
+#ifdef SEC_DMA
+        offset = c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+#endif
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 	print_debug("\t crypto_ctx addr :			:%0llx\n",
@@ -635,8 +599,7 @@ int dh_op(struct pkc_request *req)
             print_debug("\t \t \t Desc constr complete... \n");
 
 #ifdef SEC_DMA
-            sec_dma = dh_keygen_buffs->desc_buff.dev_buffer.h_p_addr
-                      + c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+            sec_dma = dh_keygen_buffs->desc_buff.dev_buffer.h_p_addr + offset;
 #else
             sec_dma =   dh_keygen_buffs->desc_buff.dev_buffer.d_p_addr;
 #endif
@@ -681,8 +644,7 @@ int dh_op(struct pkc_request *req)
 		print_debug("\t \t \t Desc constr complete...\n");
 
 #ifdef SEC_DMA
-                sec_dma = dh_key_buffs->desc_buff.dev_buffer.h_p_addr
-                          + c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+                sec_dma = dh_key_buffs->desc_buff.dev_buffer.h_p_addr + offset;
 #else
 		sec_dma = dh_key_buffs->desc_buff.dev_buffer.d_p_addr;
 #endif

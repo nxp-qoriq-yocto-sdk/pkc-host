@@ -175,6 +175,10 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 	struct rsa_pub_desc_s *rsa_pub_desc =
 	    (struct rsa_pub_desc_s *)mem->desc_buff.v_mem;
 
+#ifdef SEC_DMA
+        dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+#endif
+
 #ifdef DUMP_DEBUG_V_INFO
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 #endif
@@ -186,21 +190,9 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 		      HDR_ONE);
 
 #ifdef SEC_DMA
-	ASSIGN64(rsa_pub_desc->n_dma,
-                 (mem->n_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
-	ASSIGN64(rsa_pub_desc->e_dma,
-                 (mem->e_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
-	ASSIGN64(rsa_pub_desc->f_dma,
-                 (mem->f_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                 ->mem[MEM_TYPE_DRIVER]
-                 .dev_p_addr));
+	ASSIGN64(rsa_pub_desc->n_dma, (mem->n_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(rsa_pub_desc->e_dma, (mem->e_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(rsa_pub_desc->f_dma, (mem->f_buff.dev_buffer.h_p_addr + offset));
 #else
 	ASSIGN64(rsa_pub_desc->n_dma, mem->n_buff.dev_buffer.d_p_addr);
 	ASSIGN64(rsa_pub_desc->e_dma, mem->e_buff.dev_buffer.d_p_addr);
@@ -491,6 +483,10 @@ static void constr_rsa_priv3_op_desc(crypto_mem_info_t *mem_info)
 	    (struct rsa_priv_frm3_desc_s *)mem->desc_buff.v_mem;
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 
+#ifdef SEC_DMA
+        dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+#endif
+
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(desc_buff,
 		      (start_idx << HDR_START_IDX_SHIFT) | (desc_size &
@@ -498,36 +494,12 @@ static void constr_rsa_priv3_op_desc(crypto_mem_info_t *mem_info)
 		      HDR_ONE);
 
 #ifdef SEC_DMA
-	ASSIGN64(rsa_priv_desc->p_dma,
-                 (mem->p_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
-	ASSIGN64(rsa_priv_desc->q_dma,
-                 (mem->q_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
-	ASSIGN64(rsa_priv_desc->dp_dma,
-                 (mem->dp_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
-	ASSIGN64(rsa_priv_desc->dq_dma,
-                 (mem->dq_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
-	ASSIGN64(rsa_priv_desc->c_dma,
-                 (mem->c_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                    ->mem[MEM_TYPE_DRIVER]
-                    .dev_p_addr));
-	ASSIGN64(rsa_priv_desc->g_dma,
-                 (mem->g_buff.dev_buffer.h_p_addr
-                 + ((fsl_crypto_dev_t *)(mem_info->dev))
-                   ->mem[MEM_TYPE_DRIVER]
-                   .dev_p_addr));
+	ASSIGN64(rsa_priv_desc->p_dma, (mem->p_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(rsa_priv_desc->q_dma, (mem->q_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(rsa_priv_desc->dp_dma, (mem->dp_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(rsa_priv_desc->dq_dma, (mem->dq_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(rsa_priv_desc->c_dma, (mem->c_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(rsa_priv_desc->g_dma, (mem->g_buff.dev_buffer.h_p_addr + offset));
 #else
 	ASSIGN64(rsa_priv_desc->p_dma, mem->p_buff.dev_buffer.d_p_addr);
 	ASSIGN64(rsa_priv_desc->q_dma, mem->q_buff.dev_buffer.d_p_addr);
@@ -684,6 +656,10 @@ int rsa_op(struct pkc_request *req)
 	rsa_priv2_op_buffers_t *priv2_op_buffs = NULL;
 	rsa_priv3_op_buffers_t *priv3_op_buffs = NULL;
 
+#ifdef SEC_DMA
+        dev_p_addr_t offset;
+#endif
+
 	/* #ifdef KCAPI_INTEG_BUILD */
 #ifndef VIRTIO_C2X0
 	if (NULL != req->base.tfm) {
@@ -724,6 +700,10 @@ int rsa_op(struct pkc_request *req)
 #endif
     }
 
+#ifdef SEC_DMA
+        offset = c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+#endif
+
 	/* #endif */
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
@@ -760,7 +740,7 @@ int rsa_op(struct pkc_request *req)
 		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
 #ifdef SEC_DMA
-                map_crypto_mem(&crypto_ctx->crypto_mem);
+                map_crypto_mem(&(crypto_ctx->crypto_mem));
 #endif
 
 		print_debug("\t \t \t Host to dev convert complete....\n");
@@ -770,8 +750,7 @@ int rsa_op(struct pkc_request *req)
 		print_debug("\t \t \t Desc constr complete...\n");
 
 #ifdef SEC_DMA
-		sec_dma = pub_op_buffs->desc_buff.dev_buffer.h_p_addr
-                          + c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+		sec_dma = pub_op_buffs->desc_buff.dev_buffer.h_p_addr + offset;
 #else
 		sec_dma = pub_op_buffs->desc_buff.dev_buffer.d_p_addr;
 #endif
@@ -874,7 +853,7 @@ int rsa_op(struct pkc_request *req)
 		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
 #ifdef SEC_DMA
-                map_crypto_mem(&crypto_ctx->crypto_mem);
+                map_crypto_mem(&(crypto_ctx->crypto_mem));
 #endif
 
 		print_debug("\t \t \t Host to dev convert complete....\n");
@@ -884,8 +863,7 @@ int rsa_op(struct pkc_request *req)
 		print_debug("\t \t \t Desc constr complete...\n");
 
 #ifdef SEC_DMA
-		sec_dma = priv3_op_buffs->desc_buff.dev_buffer.h_p_addr
-                          + c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+		sec_dma = priv3_op_buffs->desc_buff.dev_buffer.h_p_addr + offset;
 #else
 		sec_dma = priv3_op_buffs->desc_buff.dev_buffer.d_p_addr;
 #endif

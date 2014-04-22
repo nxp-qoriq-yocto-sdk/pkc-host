@@ -1153,6 +1153,9 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 #ifdef MULTIPLE_RESP_RINGS
 	dev_dma_addr_t ctx_desc = 0;
 	void *h_desc = 0;
+#ifdef SEC_DMA
+        dev_p_addr_t offset = c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+#endif
 #endif
 #endif
 
@@ -1182,13 +1185,14 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 #ifdef MULTIPLE_RESP_RINGS
 	if (jr_id != 0) {
 		ctx_desc = sec_desc & ~((uint64_t) 0x03);
-		if (ctx_desc < c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr)
-			h_desc = c_dev->ip_pool.fw_pool.host_map_v_addr +
-				(ctx_desc - c_dev->ip_pool.fw_pool.dev_p_addr);
-		else
-			h_desc = c_dev->ip_pool.fw_pool.host_map_v_addr +
-				(ctx_desc - c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr -
-				 c_dev->ip_pool.drv_map_pool.p_addr);
+#ifdef SEC_DMA
+                if (ctx_desc < offset) {
+#endif
+                    h_desc = c_dev->ip_pool.fw_pool.host_map_v_addr + (ctx_desc - c_dev->ip_pool.fw_pool.dev_p_addr);
+#ifdef SEC_DMA
+                } else {
+                    h_desc = c_dev->ip_pool.fw_pool.host_map_v_addr + (ctx_desc - offset -  c_dev->ip_pool.drv_map_pool.p_addr);
+#endif
 
 		if (rp->info.flags & APP_RING_PROP_ORDER_MASK >>
 		    APP_RING_PROP_ORDER_SHIFT) {
@@ -1461,18 +1465,26 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 {
 	dma_addr_t *h_desc;
 
-	if (desc < dev->mem[MEM_TYPE_DRIVER].dev_p_addr)
-		h_desc = dev->ip_pool.drv_map_pool.v_addr
-			+ (desc - dev->ip_pool.fw_pool.dev_p_addr);
-	else
-		h_desc = dev->ip_pool.drv_map_pool.v_addr
-			+ (desc - dev->mem[MEM_TYPE_DRIVER].dev_p_addr
-			- dev->ip_pool.drv_map_pool.p_addr);
-
 	crypto_op_ctx_t *ctx0 = NULL;
 #ifndef HIGH_PERF
 	crypto_job_ctx_t *ctx1 = NULL;
+#endif
 
+#ifdef SEC_DMA
+        dev_p_addr_t offset = dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+#endif
+
+#ifdef SEC_DMA
+        if (desc < offset) {
+#endif
+            h_desc = dev->ip_pool.drv_map_pool.v_addr + (desc - dev->ip_pool.fw_pool.dev_p_addr);
+#ifdef SEC_DMA
+        } else {
+            h_desc = dev->ip_pool.drv_map_pool.v_addr + (desc - offset - dev->ip_pool.drv_map_pool.p_addr);
+        }
+#endif
+
+#ifndef HIGH_PER
 	if (get_flag(dev->ip_pool.drv_map_pool.pool, h_desc))
 #endif
 		ctx0 =
@@ -1493,7 +1505,7 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 
 	if (ctx0) {
 #ifdef SEC_DMA
-                if (desc >= dev->mem[MEM_TYPE_DRIVER].dev_p_addr) {
+                if (desc >= offset) {
                     unmap_crypto_mem(&ctx0->crypto_mem);
                 }
 #endif
@@ -2591,8 +2603,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.dsa_sign.q_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_sign.q_len;
 #ifdef SEC_DMA
-		req->req_u.dsa_sign.q = kzalloc(req->req_u.dsa_sign.q_len,
-                                                GFP_KERNEL | GFP_DMA);
+		req->req_u.dsa_sign.q = kzalloc(req->req_u.dsa_sign.q_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.dsa_sign.q =
 		    kzalloc(req->req_u.dsa_sign.q_len, GFP_KERNEL);
@@ -2613,8 +2624,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.dsa_sign.r_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_sign.r_len;
 #ifdef SEC_DMA
-		req->req_u.dsa_sign.r = kzalloc(req->req_u.dsa_sign.r_len,
-                                                GFP_KERNEL | GFP_DMA);
+		req->req_u.dsa_sign.r = kzalloc(req->req_u.dsa_sign.r_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.dsa_sign.r =
 		    kzalloc(req->req_u.dsa_sign.r_len, GFP_KERNEL);
@@ -2635,8 +2645,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.dsa_sign.g_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_sign.g_len;
 #ifdef SEC_DMA
-		req->req_u.dsa_sign.g = kzalloc(req->req_u.dsa_sign.g_len,
-                                                GFP_KERNEL | GFP_DMA);
+		req->req_u.dsa_sign.g = kzalloc(req->req_u.dsa_sign.g_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.dsa_sign.g =
 		    kzalloc(req->req_u.dsa_sign.g_len, GFP_KERNEL);
@@ -2657,9 +2666,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.dsa_sign.priv_key_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_sign.priv_key_len;
 #ifdef SEC_DMA
-		req->req_u.dsa_sign.priv_key
-                = kzalloc(req->req_u.dsa_sign.priv_key_len,
-                          GFP_KERNEL | GFP_DMA);
+		req->req_u.dsa_sign.priv_key = kzalloc(req->req_u.dsa_sign.priv_key_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.dsa_sign.priv_key =
 		    kzalloc(req->req_u.dsa_sign.priv_key_len, GFP_KERNEL);
@@ -2680,8 +2687,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.dsa_sign.m_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_sign.m_len;
 #ifdef SEC_DMA
-		req->req_u.dsa_sign.m = kzalloc(req->req_u.dsa_sign.m_len,
-                                                GFP_KERNEL | GFP_DMA);
+		req->req_u.dsa_sign.m = kzalloc(req->req_u.dsa_sign.m_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.dsa_sign.m =
 		    kzalloc(req->req_u.dsa_sign.m_len, GFP_KERNEL);
@@ -2704,8 +2710,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 			    qemu_cmd->u.pkc.pkc_req.req_u.dsa_sign.ab_len;
 #ifdef SEC_DMA
 			req->req_u.dsa_sign.ab
-                        = kzalloc(req->req_u.dsa_sign.ab_len,
-                                  GFP_KERNEL | GFP_DMA);
+                        = kzalloc(req->req_u.dsa_sign.ab_len, GFP_KERNEL | GFP_DMA);
 #else
 			req->req_u.dsa_sign.ab =
 			    kzalloc(req->req_u.dsa_sign.ab_len, GFP_KERNEL);
@@ -2751,8 +2756,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.dsa_verify.q_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.q_len;
 #ifdef SEC_DMA
-		req->req_u.dsa_verify.q = kzalloc(req->req_u.dsa_verify.q_len,
-                                                  GFP_KERNEL | GFP_DMA);
+		req->req_u.dsa_verify.q = kzalloc(req->req_u.dsa_verify.q_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.dsa_verify.q =
 		    kzalloc(req->req_u.dsa_verify.q_len, GFP_KERNEL);
@@ -2773,8 +2777,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.dsa_verify.r_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.r_len;
 #ifdef SEC_DMA
-		req->req_u.dsa_verify.r = kzalloc(req->req_u.dsa_verify.r_len,
-                                                  GFP_KERNEL | GFP_DMA);
+		req->req_u.dsa_verify.r = kzalloc(req->req_u.dsa_verify.r_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.dsa_verify.r =
 		    kzalloc(req->req_u.dsa_verify.r_len, GFP_KERNEL);
@@ -2795,8 +2798,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.dsa_verify.g_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.g_len;
 #ifdef SEC_DMA
-		req->req_u.dsa_verify.g = kzalloc(req->req_u.dsa_verify.g_len,
-                                                  GFP_KERNEL | GFP_DMA);
+		req->req_u.dsa_verify.g = kzalloc(req->req_u.dsa_verify.g_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.dsa_verify.g =
 		    kzalloc(req->req_u.dsa_verify.g_len, GFP_KERNEL);
@@ -2817,9 +2819,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.dsa_verify.pub_key_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.pub_key_len;
 #ifdef SEC_DMA
-		req->req_u.dsa_verify.pub_key
-                = kzalloc(req->req_u.dsa_verify.pub_key_len,
-                          GFP_KERNEL | GFP_DMA);
+		req->req_u.dsa_verify.pub_key = kzalloc(req->req_u.dsa_verify.pub_key_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.dsa_verify.pub_key =
 		    kzalloc(req->req_u.dsa_verify.pub_key_len, GFP_KERNEL);
@@ -2840,8 +2840,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.dsa_verify.m_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.m_len;
 #ifdef SEC_DMA
-		req->req_u.dsa_verify.m = kzalloc(req->req_u.dsa_verify.m_len,
-                                                  GFP_KERNEL | GFP_DMA);
+		req->req_u.dsa_verify.m = kzalloc(req->req_u.dsa_verify.m_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.dsa_verify.m =
 		    kzalloc(req->req_u.dsa_verify.m_len, GFP_KERNEL);
@@ -2863,9 +2862,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 			req->req_u.dsa_verify.ab_len =
 			    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.ab_len;
 #ifdef SEC_DMA
-			req->req_u.dsa_verify.ab
-                        = kzalloc(req->req_u.dsa_verify.ab_len,
-                                  GFP_KERNEL | GFP_DMA);
+			req->req_u.dsa_verify.ab = kzalloc(req->req_u.dsa_verify.ab_len, GFP_KERNEL | GFP_DMA);
 #else
 			req->req_u.dsa_verify.ab =
 			    kzalloc(req->req_u.dsa_verify.ab_len, GFP_KERNEL);
@@ -2887,8 +2884,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		}
 
 #ifdef SEC_DMA
-		req->req_u.dsa_verify.c = kzalloc(req->req_u.dsa_verify.q_len,
-                                                  GFP_KERNEL | GFP_DMA);
+		req->req_u.dsa_verify.c = kzalloc(req->req_u.dsa_verify.q_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.dsa_verify.c =
 		    kzalloc(req->req_u.dsa_verify.q_len, GFP_KERNEL);
@@ -2909,8 +2905,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.dsa_verify.d_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.dsa_verify.d_len;
 #ifdef SEC_DMA
-		req->req_u.dsa_verify.d = kzalloc(req->req_u.dsa_verify.d_len,
-                                                  GFP_KERNEL | GFP_DMA);
+		req->req_u.dsa_verify.d = kzalloc(req->req_u.dsa_verify.d_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.dsa_verify.d =
 		    kzalloc(req->req_u.dsa_verify.d_len, GFP_KERNEL);
@@ -2994,8 +2989,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_pub_req.n_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_pub_req.n_len;
 #ifdef SEC_DMA
-		req->req_u.rsa_pub_req.n = kzalloc(req->req_u.rsa_pub_req.n_len,
-                                                   GFP_KERNEL | GFP_DMA);
+		req->req_u.rsa_pub_req.n = kzalloc(req->req_u.rsa_pub_req.n_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.rsa_pub_req.n =
 		    kzalloc(req->req_u.rsa_pub_req.n_len, GFP_KERNEL);
@@ -3016,8 +3010,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_pub_req.e_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_pub_req.e_len;
 #ifdef SEC_DMA
-		req->req_u.rsa_pub_req.e = kzalloc(req->req_u.rsa_pub_req.e_len,
-                                                   GFP_KERNEL | GFP_DMA);
+		req->req_u.rsa_pub_req.e = kzalloc(req->req_u.rsa_pub_req.e_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.rsa_pub_req.e =
 		    kzalloc(req->req_u.rsa_pub_req.e_len, GFP_KERNEL);
@@ -3038,8 +3031,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_pub_req.f_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_pub_req.f_len;
 #ifdef SEC_DMA
-		req->req_u.rsa_pub_req.f = kzalloc(req->req_u.rsa_pub_req.f_len,
-                                                   GFP_KERNEL | GFP_DMA);
+		req->req_u.rsa_pub_req.f = kzalloc(req->req_u.rsa_pub_req.f_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.rsa_pub_req.f =
 		    kzalloc(req->req_u.rsa_pub_req.f_len, GFP_KERNEL);
@@ -3227,8 +3219,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f3.p_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_priv_f3.p_len;
 #ifdef SEC_DMA
-		req->req_u.rsa_priv_f3.p = kzalloc(req->req_u.rsa_priv_f3.p_len,
-                                                   GFP_KERNEL | GFP_DMA);
+		req->req_u.rsa_priv_f3.p = kzalloc(req->req_u.rsa_priv_f3.p_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.rsa_priv_f3.p =
 		    kzalloc(req->req_u.rsa_priv_f3.p_len, GFP_KERNEL);
@@ -3249,8 +3240,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f3.q_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_priv_f3.q_len;
 #ifdef SEC_DMA
-		req->req_u.rsa_priv_f3.q = kzalloc(req->req_u.rsa_priv_f3.q_len,
-                                                   GFP_KERNEL | GFP_DMA);
+		req->req_u.rsa_priv_f3.q = kzalloc(req->req_u.rsa_priv_f3.q_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.rsa_priv_f3.q =
 		    kzalloc(req->req_u.rsa_priv_f3.q_len, GFP_KERNEL);
@@ -3271,8 +3261,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f3.dp_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_priv_f3.dp_len;
 #ifdef SEC_DMA
-		req->req_u.rsa_priv_f3.dp
-                = kzalloc(req->req_u.rsa_priv_f3.dp_len, GFP_KERNEL | GFP_DMA);
+		req->req_u.rsa_priv_f3.dp = kzalloc(req->req_u.rsa_priv_f3.dp_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.rsa_priv_f3.dp =
 		    kzalloc(req->req_u.rsa_priv_f3.dp_len, GFP_KERNEL);
@@ -3293,8 +3282,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f3.dq_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_priv_f3.dq_len;
 #ifdef SEC_DMA
-		req->req_u.rsa_priv_f3.dq
-                = kzalloc(req->req_u.rsa_priv_f3.dq_len, GFP_KERNEL | GFP_DMA);
+		req->req_u.rsa_priv_f3.dq = kzalloc(req->req_u.rsa_priv_f3.dq_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.rsa_priv_f3.dq =
 		    kzalloc(req->req_u.rsa_priv_f3.dq_len, GFP_KERNEL);
@@ -3315,8 +3303,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f3.c_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_priv_f3.c_len;
 #ifdef SEC_DMA
-		req->req_u.rsa_priv_f3.c = kzalloc(req->req_u.rsa_priv_f3.c_len,
-                                                   GFP_KERNEL | GFP_DMA);
+		req->req_u.rsa_priv_f3.c = kzalloc(req->req_u.rsa_priv_f3.c_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.rsa_priv_f3.c =
 		    kzalloc(req->req_u.rsa_priv_f3.c_len, GFP_KERNEL);
@@ -3337,8 +3324,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f3.g_len =
 		    qemu_cmd->u.pkc.pkc_req.req_u.rsa_priv_f3.g_len;
 #ifdef SEC_DMA
-		req->req_u.rsa_priv_f3.g = kzalloc(req->req_u.rsa_priv_f3.g_len,
-                                                   GFP_KERNEL | GFP_DMA);
+		req->req_u.rsa_priv_f3.g = kzalloc(req->req_u.rsa_priv_f3.g_len, GFP_KERNEL | GFP_DMA);
 #else
 		req->req_u.rsa_priv_f3.g =
 		    kzalloc(req->req_u.rsa_priv_f3.g_len, GFP_KERNEL);

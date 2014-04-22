@@ -60,16 +60,13 @@ void init_1k_rsa_pub_op_req(void)
 	g_1kpubopreq.type = RSA_PUB;
 
 #ifdef SEC_DMA
-        g_1kpubopreq.req_u.rsa_pub_req.n = kzalloc(ALIGN_LEN_TO_DMA(pub_n_len),
-                                                   GFP_KERNEL | GFP_DMA);
+        g_1kpubopreq.req_u.rsa_pub_req.n = kzalloc(ALIGN_LEN_TO_DMA(pub_n_len), GFP_KERNEL | GFP_DMA);
         memcpy(g_1kpubopreq.req_u.rsa_pub_req.n, PUB_N_1024, pub_n_len);
 
-        g_1kpubopreq.req_u.rsa_pub_req.e = kzalloc(ALIGN_LEN_TO_DMA(pub_e_len),
-                                                   GFP_KERNEL | GFP_DMA);
+        g_1kpubopreq.req_u.rsa_pub_req.e = kzalloc(ALIGN_LEN_TO_DMA(pub_e_len), GFP_KERNEL | GFP_DMA);
         memcpy(g_1kpubopreq.req_u.rsa_pub_req.e, PUB_E_1024, pub_e_len);
 
-        g_1kpubopreq.req_u.rsa_pub_req.f = kzalloc(ALIGN_LEN_TO_DMA(pub_f_len),
-                                                   GFP_KERNEL | GFP_DMA);
+        g_1kpubopreq.req_u.rsa_pub_req.f = kzalloc(ALIGN_LEN_TO_DMA(pub_f_len), GFP_KERNEL | GFP_DMA);
         memcpy(g_1kpubopreq.req_u.rsa_pub_req.f, PUB_F_1024, pub_f_len);
 #else
 	g_1kpubopreq.req_u.rsa_pub_req.n = PUB_N_1024;
@@ -90,16 +87,13 @@ void init_2k_rsa_pub_op_req(void)
 	g_2kpubopreq.type = RSA_PUB;
 
 #ifdef SEC_DMA
-        g_2kpubopreq.req_u.rsa_pub_req.n = kzalloc(n_2048,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_2kpubopreq.req_u.rsa_pub_req.n = kzalloc(n_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_2kpubopreq.req_u.rsa_pub_req.n, N_2048, n_2048);
 
-        g_2kpubopreq.req_u.rsa_pub_req.e = kzalloc(e_2048,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_2kpubopreq.req_u.rsa_pub_req.e = kzalloc(e_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_2kpubopreq.req_u.rsa_pub_req.e, E_2048, e_2048);
 
-        g_2kpubopreq.req_u.rsa_pub_req.f = kzalloc(f_2048,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_2kpubopreq.req_u.rsa_pub_req.f = kzalloc(f_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_2kpubopreq.req_u.rsa_pub_req.f, F_2048, f_2048);
 #else
 	g_2kpubopreq.req_u.rsa_pub_req.n = N_2048;
@@ -120,16 +114,13 @@ void init_4k_rsa_pub_op_req(void)
 	g_4kpubopreq.type = RSA_PUB;
 
 #ifdef SEC_DMA
-        g_4kpubopreq.req_u.rsa_pub_req.n = kzalloc(n_4096,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_4kpubopreq.req_u.rsa_pub_req.n = kzalloc(n_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_4kpubopreq.req_u.rsa_pub_req.n, N_4096, n_4096);
 
-        g_4kpubopreq.req_u.rsa_pub_req.e = kzalloc(e_4096,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_4kpubopreq.req_u.rsa_pub_req.e = kzalloc(e_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_4kpubopreq.req_u.rsa_pub_req.e, E_4096, e_4096);
 
-        g_4kpubopreq.req_u.rsa_pub_req.f = kzalloc(f_4096,
-                                                   GFP_KERNEL | GFP_DMA);
+        g_4kpubopreq.req_u.rsa_pub_req.f = kzalloc(f_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_4kpubopreq.req_u.rsa_pub_req.f, F_4096, f_4096);
 #else
 	g_4kpubopreq.req_u.rsa_pub_req.n = N_4096;
@@ -151,28 +142,22 @@ void init_1k_rsa_prv3_op_req(void)
 	g_1kprv3opreq.type = RSA_PRIV_FORM3;
 
 #ifdef SEC_DMA
-        g_1kprv3opreq.req_u.rsa_priv_f3.p = kzalloc(prv3_p_len,
-                                                    GFP_KERNEL | GFP_DMA);
+        g_1kprv3opreq.req_u.rsa_priv_f3.p = kzalloc(prv3_p_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_1kprv3opreq.req_u.rsa_priv_f3.p, PRV3_P_1024, prv3_p_len);
 
-        g_1kprv3opreq.req_u.rsa_priv_f3.q = kzalloc(prv3_q_len,
-                                                    GFP_KERNEL | GFP_DMA);
+        g_1kprv3opreq.req_u.rsa_priv_f3.q = kzalloc(prv3_q_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_1kprv3opreq.req_u.rsa_priv_f3.q, PRV3_Q_1024, prv3_q_len);
 
-        g_1kprv3opreq.req_u.rsa_priv_f3.dp = kzalloc(prv3_dp_len,
-                                                     GFP_KERNEL | GFP_DMA);
+        g_1kprv3opreq.req_u.rsa_priv_f3.dp = kzalloc(prv3_dp_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_1kprv3opreq.req_u.rsa_priv_f3.dp, PRV3_DP_1024, prv3_dp_len);
 
-        g_1kprv3opreq.req_u.rsa_priv_f3.dq = kzalloc(prv3_dq_len,
-                                                     GFP_KERNEL | GFP_DMA);
+        g_1kprv3opreq.req_u.rsa_priv_f3.dq = kzalloc(prv3_dq_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_1kprv3opreq.req_u.rsa_priv_f3.dq, PRV3_DQ_1024, prv3_dq_len);
 
-        g_1kprv3opreq.req_u.rsa_priv_f3.c = kzalloc(prv3_c_len,
-                                                    GFP_KERNEL | GFP_DMA);
+        g_1kprv3opreq.req_u.rsa_priv_f3.c = kzalloc(prv3_c_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_1kprv3opreq.req_u.rsa_priv_f3.c, PRV3_C_1024, prv3_c_len);
 
-        g_1kprv3opreq.req_u.rsa_priv_f3.g = kzalloc(prv3_g_len,
-                                                    GFP_KERNEL | GFP_DMA);
+        g_1kprv3opreq.req_u.rsa_priv_f3.g = kzalloc(prv3_g_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_1kprv3opreq.req_u.rsa_priv_f3.g, PRV3_G_1024, prv3_g_len);
 #else
 	g_1kprv3opreq.req_u.rsa_priv_f3.p = (uint8_t *) PRV3_P_1024;
@@ -199,28 +184,22 @@ void init_2k_rsa_prv3_op_req(void)
 	g_2kprv3opreq.type = RSA_PRIV_FORM3;
 
 #ifdef SEC_DMA
-        g_2kprv3opreq.req_u.rsa_priv_f3.p = kzalloc(p_2048,
-                                                    GFP_KERNEL | GFP_DMA);
+        g_2kprv3opreq.req_u.rsa_priv_f3.p = kzalloc(p_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_2kprv3opreq.req_u.rsa_priv_f3.p, P_2048, p_2048);
 
-        g_2kprv3opreq.req_u.rsa_priv_f3.q = kzalloc(q_2048,
-                                                    GFP_KERNEL | GFP_DMA);
+        g_2kprv3opreq.req_u.rsa_priv_f3.q = kzalloc(q_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_2kprv3opreq.req_u.rsa_priv_f3.q, Q_2048, q_2048);
 
-        g_2kprv3opreq.req_u.rsa_priv_f3.dp = kzalloc(dp1_2048,
-                                                     GFP_KERNEL | GFP_DMA);
+        g_2kprv3opreq.req_u.rsa_priv_f3.dp = kzalloc(dp1_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_2kprv3opreq.req_u.rsa_priv_f3.dp, DP1_2048, dp1_2048);
 
-        g_2kprv3opreq.req_u.rsa_priv_f3.dq = kzalloc(dq1_2048,
-                                                     GFP_KERNEL | GFP_DMA);
+        g_2kprv3opreq.req_u.rsa_priv_f3.dq = kzalloc(dq1_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_2kprv3opreq.req_u.rsa_priv_f3.dq, DQ1_2048, dq1_2048);
 
-        g_2kprv3opreq.req_u.rsa_priv_f3.c = kzalloc(c_2048,
-                                                    GFP_KERNEL | GFP_DMA);
+        g_2kprv3opreq.req_u.rsa_priv_f3.c = kzalloc(c_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_2kprv3opreq.req_u.rsa_priv_f3.c, C_2048, c_2048);
 
-        g_2kprv3opreq.req_u.rsa_priv_f3.g = kzalloc(n_2048,
-                                                    GFP_KERNEL | GFP_DMA);
+        g_2kprv3opreq.req_u.rsa_priv_f3.g = kzalloc(n_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_2kprv3opreq.req_u.rsa_priv_f3.g, N_2048, n_2048);
 #else
 	g_2kprv3opreq.req_u.rsa_priv_f3.p = (uint8_t *) P_2048;
@@ -247,28 +226,22 @@ void init_4k_rsa_prv3_op_req(void)
 	g_4kprv3opreq.type = RSA_PRIV_FORM3;
 
 #ifdef SEC_DMA
-        g_4kprv3opreq.req_u.rsa_priv_f3.p = kzalloc(p_4096,
-                                                    GFP_KERNEL | GFP_DMA);
+        g_4kprv3opreq.req_u.rsa_priv_f3.p = kzalloc(p_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_4kprv3opreq.req_u.rsa_priv_f3.p, P_4096, p_4096);
 
-        g_4kprv3opreq.req_u.rsa_priv_f3.q = kzalloc(q_4096,
-                                                    GFP_KERNEL | GFP_DMA);
+        g_4kprv3opreq.req_u.rsa_priv_f3.q = kzalloc(q_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_4kprv3opreq.req_u.rsa_priv_f3.q, Q_4096, q_4096);
 
-        g_4kprv3opreq.req_u.rsa_priv_f3.dp = kzalloc(dp1_4096,
-                                                     GFP_KERNEL | GFP_DMA);
+        g_4kprv3opreq.req_u.rsa_priv_f3.dp = kzalloc(dp1_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_4kprv3opreq.req_u.rsa_priv_f3.dp, DP1_4096, dp1_4096);
 
-        g_4kprv3opreq.req_u.rsa_priv_f3.dq = kzalloc(dq1_4096,
-                                                     GFP_KERNEL | GFP_DMA);
+        g_4kprv3opreq.req_u.rsa_priv_f3.dq = kzalloc(dq1_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_4kprv3opreq.req_u.rsa_priv_f3.dq, DQ1_4096, dq1_4096);
 
-        g_4kprv3opreq.req_u.rsa_priv_f3.c = kzalloc(c_4096,
-                                                    GFP_KERNEL | GFP_DMA);
+        g_4kprv3opreq.req_u.rsa_priv_f3.c = kzalloc(c_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_4kprv3opreq.req_u.rsa_priv_f3.c, C_4096, c_4096);
 
-        g_4kprv3opreq.req_u.rsa_priv_f3.g = kzalloc(n_4096,
-                                                    GFP_KERNEL | GFP_DMA);
+        g_4kprv3opreq.req_u.rsa_priv_f3.g = kzalloc(n_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_4kprv3opreq.req_u.rsa_priv_f3.g, N_4096, n_4096);
 #else
 	g_4kprv3opreq.req_u.rsa_priv_f3.p = (uint8_t *) P_4096;
