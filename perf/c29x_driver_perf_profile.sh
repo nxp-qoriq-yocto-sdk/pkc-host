@@ -153,7 +153,7 @@ prepare_command()
         then
                 cpu_mask=2
 		echo ""
-		echo "*** WORNING !! Default cpu mask is setting : 0x$cpu_mask"
+		echo "*** WARNING !! Default cpu mask is setting : 0x$cpu_mask"
         fi
         max_cpu=1
 	c=1
