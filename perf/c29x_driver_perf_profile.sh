@@ -110,13 +110,13 @@ prepare_command()
 	esac
 
 	test_name=$1
-	cpu=1
+	cpu_mask=0
 	thread=1
 	if [ "$2" != "-m" ] || [ "$2" != "-t" ]
 	then
 		if [ "$2" == "-m" ]
 		then
-			cpu=$3
+			cpu_mask=$3
 		fi
 
 		if [ "$2" == "-t" ]
@@ -136,7 +136,7 @@ prepare_command()
 	then
 		if [ "$4" == "-m" ]
 		then
-			cpu=$5
+			cpu_mask=$5
 		fi
 		if [ "$4" == "-t" ]
 		then
@@ -152,13 +152,7 @@ prepare_command()
 	fi
 
 	thread=$(printf "%d\n" $thread)
-	cpu_mask=$(printf "%d\n" $cpu)
-	if [ $cpu_mask -lt 1 ]
-	then
-		cpu_mask=2
-		echo ""
-		echo "*** WARNING !! Default cpu mask is setting : 0x$cpu_mask"
-	fi
+	cpu_mask=$(printf "%d\n" $cpu_mask)
 
 	# max_cpu = 2 ** ncpu
 	max_cpu=1
@@ -170,14 +164,10 @@ prepare_command()
 	done
 
 	max_cpu=`expr $max_cpu - 1`
-	if [ $cpu_mask -gt $max_cpu ]
+	if [ $cpu_mask -lt 1 ] || [ $cpu_mask -gt $max_cpu ]
 	then
-		echo "*** ERROR !! number of cpu should less than max # cpu : $ncpu"
-		echo "See help for more information"
-		echo ""
-		echo "	Example : sh c29x_driver_perf_profile.sh --help";
-		echo ""
-		exit 2
+		cpu_mask=$max_cpu
+		echo "Using default cpu mask: 0x$cpu_mask"
 	fi
 
 	if [ $thread -gt 32 ]
