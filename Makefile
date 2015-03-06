@@ -135,7 +135,7 @@ ifeq ($(ENHANCE_KERNEL_TEST), y)
 EXTRA_CFLAGS += -DENHANCE_KERNEL_TEST
 endif
 
-EXTRA_CFLAGS += -I$(TOPDIR)/host_driver -I$(TOPDIR)/algs -I$(TOPDIR)/crypto_dev -I$(TOPDIR)/dcl -I$(TOPDIR)/test
+EXTRA_CFLAGS += -I$(TOPDIR)/host_driver -I$(TOPDIR)/algs -I$(TOPDIR)/crypto_dev -I$(TOPDIR)/dcl -I$(TOPDIR)/test -g
 
 DRIVER_PATH = $(TOPDIR)
 DRIVER_KOBJ = "fsl_pkc_crypto_offload_drv"
