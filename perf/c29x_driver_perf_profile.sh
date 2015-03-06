@@ -1,50 +1,50 @@
 #!/bin/bash
 
 
+CMD=`basename $0`
+HELP_MSG="usage: $CMD <test_name> [ OPTION ]...
+
+Mandatory arguments.
+ -m  <cpu_mask>		mask for enabled CPUs (default all)
+ -t  <per_cpu_thread>	thread count per cpu
+ -s  <time_duration>	test run time in seconds
+ -r  <enque_request>	number of enqueued jobs
+
+NOTE :
+  Please note that '-s' has higer priority over '-r'. If '-s' is given then '-r' will be ignored.
+  Without '-s' & '-r' , the test will run forever. It can be stopped by CTRL-C
+
+**************** Test name ****************
+RSA PUB		: RSA_PUB_OP_1K | RSA_PUB_OP_2K | RSA_PUB_OP_4K
+RSA PRV		: RSA_PRV_OP_1K | RSA_PRV_OP_2K | RSA_PRV_OP_4K
+DSA SIGN	: DSA_SIGN_TEST_1K | DSA_SIGN_TEST_2K | DSA_SIGN_TEST_4K
+DSA VERIFY	: DSA_VERIFY_TEST_1K | DSA_VERIFY_TEST_2K | DSA_VERIFY_TEST_4K
+DSA KEY GEN	: DSA_KEYGEN_TEST
+DSA SIGN VERIFY	: DSA_SIGN_VERIFY_TEST
+ECDSA KEY GEN	: ECDSA_KEYGEN_TEST
+DH KEY GEN	: DH_KEYGEN_TEST
+ECDH		: ECDH_TEST
+ECDSA		: ECDSA_VERIFY_TEST | ECDSA_SIGN_TEST
+ECP SIGN	: ECP_SIGN_TEST_256 | ECP_SIGN_TEST_384 | ECP_SIGN_TEST_521
+ECP VERIFY	: ECP_VERIFY_TEST_256 | ECP_VERIFY_TEST_384 | ECP_VERIFY_TEST_521
+ECPBN SIGN	: ECPBN_SIGN_TEST_283 | ECPBN_SIGN_TEST_409 | ECPBN_SIGN_TEST_571
+ECPBN VERIFY	: ECPBN_VERIFY_TEST_283 | ECPBN_VERIFY_TEST_409 | ECPBN_VERIFY_TEST_571
+DH		: DH_TEST_1K | DH_TEST_2K | DH_TEST_4K
+ECDH KEY GEN	: ECDH_KEYGEN_P256 | ECDH_KEYGEN_P384 | ECDH_KEYGEN_P521 |
+		  ECDH_KEYGEN_B283 | ECDH_KEYGEN_B409 | ECDH_KEYGEN_B571
+
+Example : $CMD RSA_PUB_OP_1K -m 0x2 -t 1 -s 10 -r 100000
+"
 command_str=""
 ncpu=$(grep -c 'processor' /proc/cpuinfo)
 test_stop=0
 arch=$(uname -m)
 
+
 help()
 {
-	echo "	          Help:"
-	echo "	  =========================="
-	echo "sh c29x_driver_perf_profile.sh <test_name> [ OPTION ]..."
-	echo ""
-	echo "Mandatory arguments."
-	echo " -m  <cpu_mask>		: This enables cpu mask. Test thread will be created only those cpu, enabled by cpu_mask."
-	echo " -t  <per_cpu_thread>	: This many number of test thread  will create per cpu."
-	echo " -s  <time_duration> 	: The test will be running for time_duration second."
-	echo " -r  <enque_request> 	: The test will enque total enque_request number of job."
-	echo ""
-	echo "NOTE :"
-	echo "  Please note that '-s' has higer priority over '-r'. If '-s' is given then '-r' will be ignore."
-	echo "  Without '-s' & '-r' , the test will run forever. Need to stop test by CTRL-C"
-	echo ""
-	echo "**************** Test name ****************"
-	echo " RSA PUB Test		 :  RSA_PUB_OP_1K | RSA_PUB_OP_2K | RSA_PUB_OP_4K "
-	echo " RSA PRV Test		 :  RSA_PRV_OP_1K | RSA_PRV_OP_2K | RSA_PRV_OP_4K "
-	echo " DSA SIGN 		 :  DSA_SIGN_TEST_1K | DSA_SIGN_TEST_2K | DSA_SIGN_TEST_4K"
-	echo " DSA VERIFY Test 	 :  DSA_VERIFY_TEST_1K | DSA_VERIFY_TEST_2K | DSA_VERIFY_TEST_4K"
-	echo " DSA KEY GEN Test	 :  DSA_KEYGEN_TEST"
-	echo " DSA SIGN VERIFY Test	 :  DSA_SIGN_VERIFY_TEST"
-	echo " ECDSA KEY GEN Test	 :  ECDSA_KEYGEN_TEST"
-	echo " DH KEY GEN Test	 :  DH_KEYGEN_TEST"
-	echo " ECDH Test 		 :  ECDH_TEST "
-	echo " ECDSA Test 		 :  ECDSA_VERIFY_TEST | ECDSA_SIGN_TEST "
-	echo " ECP SIGN Test 		 :  ECP_SIGN_TEST_256 | ECP_SIGN_TEST_384 | ECP_SIGN_TEST_521 "
-	echo " ECP VERIFY Test	 	:  ECP_VERIFY_TEST_256 | ECP_VERIFY_TEST_384 | ECP_VERIFY_TEST_521 "
-	echo " ECPBN SIGN Test         :  ECPBN_SIGN_TEST_283 | ECPBN_SIGN_TEST_409 | ECPBN_SIGN_TEST_571 "
-	echo " ECPBN VERIFY Test   :  ECPBN_VERIFY_TEST_283 | ECPBN_VERIFY_TEST_409 | ECPBN_VERIFY_TEST_571 "
-	echo " DH Test		 :  DH_TEST_1K | DH_TEST_2K | DH_TEST_4K"
-	echo " ECDH KEY GEN		 : ECDH_KEYGEN_P256 | ECDH_KEYGEN_P384 | ECDH_KEYGEN_P521 "
-	echo " 				| ECDH_KEYGEN_B283 | ECDH_KEYGEN_B409 | ECDH_KEYGEN_B571 "
-	echo ""
-	echo " Example : sh c29x_driver_perf_profile.sh RSA_PUB_OP_1K -m 0x2 -t 1 -s 10 -r 100000"
-	echo ""
-	echo ""
-	exit 2
+	echo "$HELP_MSG"
+	exit 0
 }
 
 prepare_command()
