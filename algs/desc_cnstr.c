@@ -73,8 +73,7 @@ static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 		case BT_IP:
 			if (!mem_info->split_ip) {
 				mem_info->buffers[i].v_mem = (mem + offset);
-				offset +=
-				    ALIGN_LEN_TO_DMA(mem_info->buffers[i].len);
+				offset += ALIGN_LEN_TO_DMA(mem_info->buffers[i].len);
 			}
 			break;
 		case BT_OP:
@@ -119,12 +118,10 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 			break;
 		case BT_IP:
 			if (!mem_info->split_ip)
-				tot_mem +=
-				    ALIGN_LEN_TO_DMA(mem_info->buffers[i].len);
+				tot_mem += ALIGN_LEN_TO_DMA(mem_info->buffers[i].len);
 			else {
 				mem_info->buffers[i].v_mem =
-				    alloc_mem(mem_info->pool,
-					      mem_info->buffers[i].len);
+				    alloc_mem(mem_info->pool, mem_info->buffers[i].len);
 				if (unlikely(!mem_info->buffers[i].v_mem)) {
 					print_error
 					    ("Alloc mem for buff :%d \

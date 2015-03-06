@@ -665,9 +665,7 @@ int rsa_op(struct pkc_request *req)
 	if (NULL != req->base.tfm) {
 		rsa_completion_cb = pkc_request_complete;
 		/* Get the session context from input request */
-		c_sess =
-		    (crypto_dev_sess_t *)
-		    crypto_pkc_ctx(crypto_pkc_reqtfm(req));
+		c_sess = (crypto_dev_sess_t *) crypto_pkc_ctx(crypto_pkc_reqtfm(req));
 		c_dev = c_sess->c_dev;
 		r_id = c_sess->r_id;
 #ifndef HIGH_PERF
@@ -694,9 +692,8 @@ int rsa_op(struct pkc_request *req)
 
         atomic_inc(&c_dev->active_jobs);
 #else
-        r_id =
-            ((atomic_inc_return(&c_dev->crypto_dev_sess_cnt) -
-                1) % (c_dev->num_of_rings - 1)) + 1;
+        r_id = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
+        r_id = 1 + (r_id - 1) % (c_dev->num_of_rings - 1);
 #endif
     }
 
@@ -726,8 +723,7 @@ int rsa_op(struct pkc_request *req)
 	switch (req->type) {
 	case RSA_PUB:
 		rsa_pub_op_init_crypto_mem(&crypto_ctx->crypto_mem);
-		pub_op_buffs =
-		    (rsa_pub_op_buffers_t *) crypto_ctx->crypto_mem.buffers;
+		pub_op_buffs = (rsa_pub_op_buffers_t *) crypto_ctx->crypto_mem.buffers;
 
 		if (-ENOMEM ==
 		    rsa_pub_op_cp_req(&req->req_u.rsa_pub_req,

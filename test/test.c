@@ -93,16 +93,14 @@ void start_test(void)
 		while (!atomic_read(&hold_off)) {
 			if (-1 != testfunc()) {
 				atomic_set(&total_err_cnt, 0);
-				if (atomic_inc_return(&total_enq_cnt) >=
-				    total_enq_req) {
+				if (atomic_inc_return(&total_enq_cnt) >= total_enq_req) {
 					atomic_set(&hold_off, 1);
 					print_debug("Test is in hold off state\n");
 					break;
 				}
-				print_debug("Enq : %d\n",
-					    atomic_read(&total_enq_cnt));
+				print_debug("Enq : %d\n", atomic_read(&total_enq_cnt));
 			} else {
-				if(atomic_inc_return(&total_err_cnt) > 100000){
+				if(atomic_inc_return(&total_err_cnt) > 100000) {
 					printk("Total Error count : %d exceed MAX_LIMIT.... Exiting Test\n",
 							atomic_read(&total_err_cnt));
 					atomic_set(&hold_off, 1);
@@ -496,8 +494,7 @@ void c2x0_test_func(int8_t *fname, int8_t *test_name, int len, char flag)
 			if (!(cpu_mask & (1 << cpu_loop)))
 				continue;
 			/* Start the test thread */
-			task[no_thread] =
-			    kthread_create(test, NULL, "test_thread");
+			task[no_thread] = kthread_create(test, NULL, "test_thread");
 			if (IS_ERR(task[no_thread])) {
 				printk(KERN_ERR "task creation failed\n");
 				return;

@@ -246,8 +246,7 @@ fsl_crypto_dev_t *get_crypto_dev(uint32_t no)
 	fsl_pci_dev_t *dev_n_cursor = NULL;
 	fsl_pci_dev_t *dev_cursor = NULL;
 
-	list_for_each_entry_safe(dev_cursor,
-		dev_n_cursor, &pci_dev_list, list) {
+	list_for_each_entry_safe(dev_cursor, dev_n_cursor, &pci_dev_list, list) {
 		print_debug("Input number [%d] Dev cursor dev no [%d]\n", no,
 			    dev_cursor->dev_no);
 
@@ -2128,17 +2127,16 @@ static int32_t __init fsl_crypto_drv_init(void)
                 "is not specified, using one thread per cpu\n");
         for_each_online_cpu(ret)
             wt_cpu_mask |= ((1 << ret));
-    }
-    else
+    } else {
 		print_info("CPU mask for NAPI threads "
                 "is specified, configured value : 0x%x\n", wt_cpu_mask);
+    }
 
     if ( -1 == napi_poll_count ) {
         napi_poll_count = 1;
         print_info("NAPI poll count "
                 "is not specified, using default value : %d\n", napi_poll_count);
-    }
-    else{
+    } else {
         print_info("NAPI poll count "
                 "is specified, configured value : %d\n", napi_poll_count);
     }
@@ -2186,8 +2184,7 @@ static int32_t __init fsl_crypto_drv_init(void)
 	}
 	
 	ret = -1;
-	list_for_each_entry_safe(dev_cursor, dev_n_cursor, &pci_dev_list,
-			list) {
+	list_for_each_entry_safe(dev_cursor, dev_n_cursor, &pci_dev_list, list) {
 		if (-1 == dev_cursor->dev_status) {
 			print_error("\n Dev no [%d] failed\n", dev_cursor->dev_no);
 			print_debug("**** RESETTING THE DEVICE ****\n");
@@ -2199,18 +2196,16 @@ static int32_t __init fsl_crypto_drv_init(void)
 			smp_wmb();
 			cleanup_per_pci_devices(dev_cursor);
 			--dev_no;
-		}
-		else
-			/* Atleast one device is up */
+		} else { /* At least one device is up */
 			ret = 0;
+		}
 	}
 	if( -1 == ret ){
 		print_error("\n All devices failed....\n");
 		goto cleanup;
 	}
 	/* Assigning new device no for all active device */
-	list_for_each_entry_safe(dev_cursor, dev_n_cursor, &pci_dev_list,
-                        list) {
+	list_for_each_entry_safe(dev_cursor, dev_n_cursor, &pci_dev_list, list) {
 		dev_cursor->dev_no = devno++;
 	} 
 #ifdef USE_HOST_DMA
