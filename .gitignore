@@ -1,0 +1,13 @@
+*.o
+*.o.cmd
+*.mod.c
+*.ko
+*.ko.cmd
+*~
+.project
+*.cproject
+modules.order
+.tmp_versions
+Module.symvers
+perf/mini_calc/mini_calc
+*.expand
