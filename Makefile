@@ -74,6 +74,12 @@ EXTRA_PKC=Y
 DEBUG_PRINT=n
 
 KERNEL_DIR ?=/lib/modules/$(shell uname -r)/build
+ifneq (${ARCH},)
+KERNEL_MAKE_OPTS += ARCH=${ARCH}
+endif
+ifneq (${CROSS_COMPILE},)
+KERNEL_MAKE_OPTS += CROSS_COMPILE=${CROSS_COMPILE}
+endif
 
 
 ifeq ("$(ARCH)","powerpc")
