@@ -32,9 +32,46 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE)ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-TOPDIR ?= $(shell pwd)
-export TOPDIR
-include $(TOPDIR)/config.mk
+
+#Device configurations
+
+#Specifies type of EP
+P4080_EP=n
+C293_EP=y
+
+#Controls the debug print level
+DEBUG_PRINT=n
+ERROR_PRINT=n
+INFO_PRINT=n
+
+#Enable HASH/SYMMETRIC offloading
+CONFIG_FSL_C2X0_HASH_OFFLOAD=n
+CONFIG_FSL_C2X0_SYMMETRIC_OFFLOAD=n
+
+#Enable RNG offloading
+RNG_OFFLOAD=n
+
+#Specifies whether SEC DMA support to be enabled /disabled in the driver
+#If enabled, then Host DMA support would be always disabled.
+USE_SEC_DMA=y
+
+#Specifies whether host DMA support to be enabled /disabled in the driver
+USE_HOST_DMA=n
+
+#Specifies whether driver/firmware is running high performance mode
+HIGH_PERF_MODE=y
+
+#Enhance pkc kernel test performance, disable kernel test schedule and
+#restriction number of c29x_fw enqueue and dequeue crypto
+ENHANCE_KERNEL_TEST=n
+
+#Specify building host-driver to support Virtualization
+VIRTIO_C2X0=n
+
+#Specify whether build cryptoapi pkc-related into host driver on x86
+EXTRA_PKC=Y
+
+DEBUG_PRINT=n
 
 KERNEL_DIR ?=/lib/modules/$(shell uname -r)/build
 
@@ -137,7 +174,7 @@ ifeq ($(ENHANCE_KERNEL_TEST), y)
 EXTRA_CFLAGS += -DENHANCE_KERNEL_TEST
 endif
 
-EXTRA_CFLAGS += -I$(TOPDIR)/host_driver -I$(TOPDIR)/algs -I$(TOPDIR)/crypto_dev -I$(TOPDIR)/dcl -I$(TOPDIR)/test -g
+EXTRA_CFLAGS += -I$(src)/host_driver -I$(src)/algs -I$(src)/crypto_dev -I$(src)/dcl -I$(src)/test -g
 
 DRIVER_KOBJ = "fsl_pkc_crypto_offload_drv"
 RSA_TEST_KOBJ = "rsa_test"
