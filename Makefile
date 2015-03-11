@@ -139,7 +139,6 @@ endif
 
 EXTRA_CFLAGS += -I$(TOPDIR)/host_driver -I$(TOPDIR)/algs -I$(TOPDIR)/crypto_dev -I$(TOPDIR)/dcl -I$(TOPDIR)/test -g
 
-DRIVER_PATH = $(TOPDIR)
 DRIVER_KOBJ = "fsl_pkc_crypto_offload_drv"
 RSA_TEST_KOBJ = "rsa_test"
 DSA_TEST_KOBJ = "dsa_test"
