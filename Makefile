@@ -182,7 +182,7 @@ endif
 
 EXTRA_CFLAGS += -I$(src)/host_driver -I$(src)/algs -I$(src)/crypto_dev -I$(src)/dcl -I$(src)/test -g
 
-DRIVER_KOBJ = "fsl_pkc_crypto_offload_drv"
+DRIVER_KOBJ = fsl_pkc_crypto_offload_drv
 RSA_TEST_KOBJ = "rsa_test"
 DSA_TEST_KOBJ = "dsa_test"
 ECDSA_TEST_KOBJ = "ecdsa_test"
