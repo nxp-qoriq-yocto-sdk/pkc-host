@@ -36,6 +36,9 @@ TOPDIR ?= $(shell pwd)
 export TOPDIR
 include $(TOPDIR)/config.mk
 
+KERNEL_DIR ?=/lib/modules/$(shell uname -r)/build
+
+
 ifeq ("$(ARCH)","powerpc")
 P4080_BUILD=y
 endif
@@ -81,7 +84,6 @@ endif
 
 ifeq ($(X86_BUILD),y)
 EXTRA_CFLAGS += -DX86_BUILD
-KERNEL_DIR ?=/lib/modules/$(shell uname -r)/build
 endif
 
 ifeq ($(P4080_EP),y)
