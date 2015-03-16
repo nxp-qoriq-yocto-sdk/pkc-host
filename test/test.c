@@ -390,9 +390,7 @@ int parsing_test_command(char *test_name)
 
 	strcpy(g_test_name_tmp, test_name);
 	slen = strlen(g_test_name_tmp);
-	i = 0;
 	g_test_name[0] = '\0';
-	j = 0;
 	while ((g_test_name_tmp[i] != ' ') && (i < slen)) {
 		g_test_name[j++] = g_test_name_tmp[i++];
 	}
