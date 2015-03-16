@@ -275,7 +275,6 @@ uint32_t get_no_of_devices(void);
 void fsl_drv_get_mem(fsl_pci_dev_t *dev, crypto_dev_mem_info_t *mem);
 extern crypto_dev_config_t *get_dev_config(fsl_pci_dev_t *fsl_pci_dev);
 extern int32_t parse_config_file(int8_t *config_file);
-void sysfs_napi_loop_count_set(int8_t *fname, int8_t *count, int len,
-			       char flag);
+void sysfs_napi_loop_count_set(char *fname, char *count, int len, char flag);
 
 #endif

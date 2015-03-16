@@ -181,8 +181,7 @@ void *wt_loop_cnt_sysfs_file;
 /* Pointer to the base of per cpu memory */
 per_core_struct_t __percpu *per_core;
 
-void sysfs_napi_loop_count_set(int8_t *fname, int8_t *count, int len,
-			       char flag)
+void sysfs_napi_loop_count_set(char *fname, char *count, int len, char flag)
 {
 	uint32_t no = *((uint32_t *) (count));
 	printk(KERN_ERR "Count to set... :%d\n", no);

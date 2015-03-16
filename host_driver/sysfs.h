@@ -101,9 +101,9 @@ typedef enum sys_files_id {
 } sys_files_id_t;
 
 typedef struct sysfs_file {
-	int8_t *name;
+	char *name;
 	void *file;
-	void (*cb) (int8_t *, int8_t *, int, char);
+	void (*cb) (char *, char *, int, char);
 } sysfs_file_t;
 
 typedef struct dev_sysfs_entries {
@@ -147,7 +147,7 @@ struct k_sysfs_file {
 	uint8_t buf[MAX_SYSFS_BUFFER];
 	uint32_t num;
 	uint32_t buf_len;
-	void (*cb) (int8_t *, int8_t *, int, char);
+	void (*cb) (char *, char *, int, char);
 };
 
 /* TODO :
@@ -163,10 +163,8 @@ typedef struct fsl_pci_dev fsl_pci_dev_t_1;
 extern void *fsl_sysfs_entries;
 
 /* CALLBACK FUN FOR FW TRIGGER */
-extern void set_device(int8_t *, int8_t *, int, char);
-
-extern void c2x0_test_func(int8_t *fname, int8_t *test_name, int len,
-			   char flag);
+extern void set_device(char *, char *, int, char);
+extern void c2x0_test_func(char *fname, char *test_name, int len, char flag);
 
 void set_sysfs_value(fsl_pci_dev_t_1 *fsl_pci_dev, sys_files_id_t id,
 		     uint8_t *value, uint8_t len);
@@ -260,10 +258,7 @@ static inline void *create_sysfs_file(int8_t *name, void *parent,
 }
 
 static inline void *create_sysfs_file_cb(int8_t *name, void *parent,
-					 uint8_t str_flag, void (*cb) (int8_t *,
-								       int8_t *,
-								       int,
-								       char))
+					 uint8_t str_flag, void (*cb) (char *, char *, int, char))
 {
 	struct k_sysfs_file *file = create_sysfs_file(name, parent, str_flag);
 	if (file)

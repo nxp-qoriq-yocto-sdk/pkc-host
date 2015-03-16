@@ -139,7 +139,7 @@ void process_cmd_response(fsl_crypto_dev_t *c_dev, dev_dma_addr_t desc,
 *				 which was reset previously
 *
 *******************************************************************************/
-void set_device(int8_t *fname, int8_t *device, int32_t size, char flag)
+void set_device(char *fname, char *device, int32_t size, char flag)
 {
 	int32_t cpu = 0;
 	per_dev_struct_t *dev_stat = NULL;

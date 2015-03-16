@@ -51,7 +51,7 @@
 #define MAX_TEST_THREAD_SUPPORT 200
 typedef void (*cb) (struct pkc_request *req, int32_t sec_result);
 
-static int8_t g_test_name[100];
+static char g_test_name[100];
 static struct task_struct *task[MAX_TEST_THREAD_SUPPORT];
 static int32_t no_thread;
 static int32_t no_cpu;
@@ -142,7 +142,7 @@ static void test_timer_expired(unsigned long data)
 int valid_test(void)
 {
 	int ret = 1;
-	int8_t *test_name = g_test_name;
+	char *test_name = g_test_name;
 	if ((!strcmp(test_name, "RSA_PUB_OP_1K")) ||
 	    (!strcmp(test_name, "RSA_PUB_OP_2K")) ||
 	    (!strcmp(test_name, "RSA_PUB_OP_4K")) ||
@@ -243,7 +243,7 @@ void init_all_test(void)
 
 int test(void *data)
 {
-	int8_t *test_name = g_test_name;
+	char *test_name = g_test_name;
 	int8_t run = 1;
 
 	print_debug(KERN_ERR "\n *** Thread  %d is invoked ***\n", (int)data);
@@ -381,9 +381,9 @@ int test(void *data)
 	return 0;
 }
 
-int parsing_test_command(int8_t *test_name)
+int parsing_test_command(char *test_name)
 {
-	int8_t g_test_name_tmp[100];
+	char g_test_name_tmp[100];
 	int i = 0;
 	int j = 0;
 	int slen = 0;
@@ -439,7 +439,7 @@ int parsing_test_command(int8_t *test_name)
 	return 0;
 }
 
-void c2x0_test_func(int8_t *fname, int8_t *test_name, int len, char flag)
+void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 {
 	int loop = 0;
 
