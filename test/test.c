@@ -440,9 +440,6 @@ int parsing_test_command(char *test_name)
 void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 {
 	int loop = 0;
-
-	cpu_mask = 0x2;
-
 	print_debug("Test name : %s\n", test_name);
 
 	if (strcmp(fname, "test_name")) {
