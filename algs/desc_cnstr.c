@@ -294,7 +294,7 @@ Fields      :
 Returns     :	SUCCESS/ FAILURE
 ******************************************************************************/
 
-int32_t host_to_dev(crypto_mem_info_t *mem_info)
+void host_to_dev(crypto_mem_info_t *mem_info)
 {
 	uint32_t i = 0;
 
@@ -381,8 +381,6 @@ int32_t host_to_dev(crypto_mem_info_t *mem_info)
 
 		}
 	}
-
-	return 0;
 }
 
 #ifdef SEC_DMA

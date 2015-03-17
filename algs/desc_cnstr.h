@@ -237,7 +237,7 @@ typedef struct crypto_mem_info {
 } crypto_mem_info_t;
 
 int32_t memcpy_to_dev(crypto_mem_info_t *mem);
-int32_t host_to_dev(crypto_mem_info_t *mem_info);
+void host_to_dev(crypto_mem_info_t *mem_info);
 #ifdef SEC_DMA
 int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem);
 int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem);
