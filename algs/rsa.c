@@ -677,7 +677,6 @@ int rsa_op(struct pkc_request *req)
 	else
 #endif
     {
-        c_sess = c_sess;
         /* By default using first device --
          * Logic here will be replaced with LB */
 #ifdef VIRTIO_C2X0
