@@ -350,8 +350,7 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, rng_ops_t op)
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
-		ret = -ENOMEM;
-		goto error;
+		return -ENOMEM;
 	}
 
 	print_debug("\t Ring selected			:%d\n", r_id);
