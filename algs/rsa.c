@@ -230,18 +230,16 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 
 static void rsa_pub_op_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 {
-	rsa_pub_op_buffers_t *pub_op_buffs = NULL;
+	rsa_pub_op_buffers_t *pub_op_buffs = &(crypto_mem->c_buffers.rsa_pub_op);
 
-	crypto_mem->count =
-	    sizeof(rsa_pub_op_buffers_t) / sizeof(buffer_info_t);
-	crypto_mem->buffers =
-	    (buffer_info_t *) (&(crypto_mem->c_buffers.rsa_pub_op));
-	memset(crypto_mem->buffers, 0, sizeof(rsa_pub_op_buffers_t));
+	crypto_mem->count = sizeof(rsa_pub_op_buffers_t) / sizeof(buffer_info_t);
+	crypto_mem->buffers = (buffer_info_t *) pub_op_buffs;
+	memset(pub_op_buffs, 0, sizeof(rsa_pub_op_buffers_t));
 
 	/* Mark the op buffer */
-	pub_op_buffs = (rsa_pub_op_buffers_t *) crypto_mem->buffers;
-	pub_op_buffs->n_buff.bt = pub_op_buffs->e_buff.bt =
-	    pub_op_buffs->f_buff.bt = BT_IP;
+	pub_op_buffs->n_buff.bt = BT_IP;
+	pub_op_buffs->e_buff.bt = BT_IP;
+	pub_op_buffs->f_buff.bt = BT_IP;
 	pub_op_buffs->g_buff.bt = BT_OP;
 }
 
@@ -328,18 +326,16 @@ static int rsa_priv1_op_cp_req(struct rsa_priv_frm1_req_s *priv1_req,
 
 static void rsa_priv1_op_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 {
-	rsa_priv1_op_buffers_t *priv1_op_buffs = NULL;
+	rsa_priv1_op_buffers_t *priv1_op_buffs = &(crypto_mem->c_buffers.rsa_priv1_op);
 
-	crypto_mem->count =
-	    sizeof(rsa_priv1_op_buffers_t) / sizeof(buffer_info_t);
-	crypto_mem->buffers =
-	    (buffer_info_t *) (&(crypto_mem->c_buffers.rsa_priv1_op));
-	memset(crypto_mem->buffers, 0, sizeof(rsa_priv1_op_buffers_t));
+	crypto_mem->count = sizeof(rsa_priv1_op_buffers_t) / sizeof(buffer_info_t);
+	crypto_mem->buffers = (buffer_info_t *) priv1_op_buffs;
+	memset(priv1_op_buffs, 0, sizeof(rsa_priv1_op_buffers_t));
 
 	/* Mark the op buffer */
-	priv1_op_buffs = (rsa_priv1_op_buffers_t *) crypto_mem->buffers;
-	priv1_op_buffs->n_buff.bt = priv1_op_buffs->d_buff.bt =
-	    priv1_op_buffs->g_buff.bt = BT_IP;
+	priv1_op_buffs->n_buff.bt = BT_IP;
+	priv1_op_buffs->d_buff.bt = BT_IP;
+	priv1_op_buffs->g_buff.bt = BT_IP;
 	priv1_op_buffs->f_buff.bt = BT_OP;
 }
 
@@ -454,19 +450,19 @@ static int rsa_priv2_op_cp_req(struct rsa_priv_frm2_req_s *priv2_req,
 
 static void rsa_priv2_op_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 {
-	rsa_priv2_op_buffers_t *priv2_op_buffs = NULL;
+	rsa_priv2_op_buffers_t *priv2_op_buffs = &(crypto_mem->c_buffers.rsa_priv2_op);
 
-	crypto_mem->count =
-	    sizeof(rsa_priv2_op_buffers_t) / sizeof(buffer_info_t);
-	crypto_mem->buffers =
-	    (buffer_info_t *) (&(crypto_mem->c_buffers.rsa_priv2_op));
-	memset(crypto_mem->buffers, 0, sizeof(rsa_priv2_op_buffers_t));
+	crypto_mem->count = sizeof(rsa_priv2_op_buffers_t) / sizeof(buffer_info_t);
+	crypto_mem->buffers = (buffer_info_t *) priv2_op_buffs;
+	memset(priv2_op_buffs, 0, sizeof(rsa_priv2_op_buffers_t));
 
 	/* Mark the op buffer */
-	priv2_op_buffs = (rsa_priv2_op_buffers_t *) crypto_mem->buffers;
-	priv2_op_buffs->p_buff.bt = priv2_op_buffs->q_buff.bt =
-	    priv2_op_buffs->d_buff.bt = priv2_op_buffs->g_buff.bt =
-	    priv2_op_buffs->tmp1_buff.bt = priv2_op_buffs->tmp2_buff.bt = BT_IP;
+	priv2_op_buffs->p_buff.bt = BT_IP;
+	priv2_op_buffs->q_buff.bt = BT_IP;
+	priv2_op_buffs->d_buff.bt = BT_IP;
+	priv2_op_buffs->g_buff.bt = BT_IP;
+	priv2_op_buffs->tmp1_buff.bt = BT_IP;
+	priv2_op_buffs->tmp2_buff.bt = BT_IP;
 	priv2_op_buffs->f_buff.bt = BT_OP;
 }
 
@@ -618,23 +614,21 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 
 static void rsa_priv3_op_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 {
-	rsa_priv3_op_buffers_t *priv3_op_buffs = NULL;
+	rsa_priv3_op_buffers_t *priv3_op_buffs = &(crypto_mem->c_buffers.rsa_priv3_op);
 
-	crypto_mem->count =
-	    sizeof(rsa_priv3_op_buffers_t) / sizeof(buffer_info_t);
-
-	crypto_mem->buffers =
-	    (buffer_info_t *) (&(crypto_mem->c_buffers.rsa_priv3_op));
-	memset(crypto_mem->buffers, 0, sizeof(rsa_priv3_op_buffers_t));
+	crypto_mem->count = sizeof(rsa_priv3_op_buffers_t) / sizeof(buffer_info_t);
+	crypto_mem->buffers = (buffer_info_t *) priv3_op_buffs;
+	memset(priv3_op_buffs, 0, sizeof(rsa_priv3_op_buffers_t));
 
 	/* Mark the op buffer */
-	priv3_op_buffs = (rsa_priv3_op_buffers_t *) crypto_mem->buffers;
-
-	priv3_op_buffs->p_buff.bt = priv3_op_buffs->q_buff.bt =
-	    priv3_op_buffs->dp_buff.bt = priv3_op_buffs->dq_buff.bt =
-	    priv3_op_buffs->c_buff.bt = priv3_op_buffs->g_buff.bt =
-	    priv3_op_buffs->tmp1_buff.bt = priv3_op_buffs->tmp2_buff.bt = BT_IP;
-
+	priv3_op_buffs->p_buff.bt = BT_IP;
+	priv3_op_buffs->q_buff.bt = BT_IP;
+	priv3_op_buffs->dp_buff.bt = BT_IP;
+	priv3_op_buffs->dq_buff.bt = BT_IP;
+	priv3_op_buffs->c_buff.bt = BT_IP;
+	priv3_op_buffs->g_buff.bt = BT_IP;
+	priv3_op_buffs->tmp1_buff.bt = BT_IP;
+	priv3_op_buffs->tmp2_buff.bt = BT_IP;
 	priv3_op_buffs->f_buff.bt = BT_OP;
 }
 
