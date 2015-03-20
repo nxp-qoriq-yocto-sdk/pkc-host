@@ -82,15 +82,12 @@ static void rsa_op_done(void *ctx, int32_t res)
 
 /* Memory copy functions */
 static void rsa_pub_op_init_len(struct rsa_pub_req_s *pub_req,
-				crypto_mem_info_t *mem_info)
+				rsa_pub_op_buffers_t *mem)
 {
-	rsa_pub_op_buffers_t *mem = &(mem_info->c_buffers.rsa_pub_op);
-
 	mem->n_buff.len = pub_req->n_len;
 	mem->e_buff.len = pub_req->e_len;
 	mem->f_buff.len = pub_req->f_len;
 	mem->g_buff.len = pub_req->g_len;
-
 	mem->desc_buff.len = sizeof(struct rsa_pub_desc_s);
 }
 
@@ -99,7 +96,7 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 {
 	rsa_pub_op_buffers_t *mem = &(mem_info->c_buffers.rsa_pub_op);
 
-	rsa_pub_op_init_len(pub_req, mem_info);
+	rsa_pub_op_init_len(pub_req, mem);
 #ifdef DUMP_DEBUG_V_INFO
 	int i = 0;
 #endif
