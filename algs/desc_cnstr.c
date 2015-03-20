@@ -290,23 +290,12 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
 
 	for (i = 0; i < mem_info->count; i++) {
+		buffers[i].dev_buffer.h_v_addr = (unsigned long)buffers[i].v_mem;
+		buffers[i].dev_buffer.h_p_addr = __pa(buffers[i].dev_buffer.h_v_addr);
+
 		switch (buffers[i].bt) {
 		case BT_DESC:
-			buffers[i].dev_buffer.h_v_addr = (unsigned long)buffers[i].v_mem;
-			buffers[i].dev_buffer.h_p_addr = __pa(buffers[i].dev_buffer.h_v_addr);
-			buffers[i].dev_buffer.h_dma_addr = buffers[i].dev_buffer.h_p_addr;
-			buffers[i].dev_buffer.h_map_p_addr = h_map_p_addr(mem_info->dev,
-					 (unsigned long)buffers[i].v_mem);
-
-			buffers[i].dev_buffer.d_v_addr = desc_d_v_addr(mem_info->dev,
-					  (unsigned long)buffers[i].v_mem);
-			buffers[i].dev_buffer.d_p_addr = desc_d_p_addr(mem_info->dev,
-					  (unsigned long)buffers[i].v_mem);
-			break;
-
 		case BT_IP:
-			buffers[i].dev_buffer.h_v_addr = (unsigned long)buffers[i].v_mem;
-			buffers[i].dev_buffer.h_p_addr = __pa(buffers[i].dev_buffer.h_v_addr);
 			buffers[i].dev_buffer.h_dma_addr = buffers[i].dev_buffer.h_p_addr;
 			buffers[i].dev_buffer.h_map_p_addr = h_map_p_addr(mem_info->dev,
 					 (unsigned long)buffers[i].v_mem);
@@ -319,18 +308,12 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 
 		case BT_OP:
 #ifndef OP_BUFFER_IN_DEV_MEM
-			buffers[i].dev_buffer.h_v_addr = (unsigned long)buffers[i].v_mem;
-			buffers[i].dev_buffer.h_p_addr = __pa(buffers[i].dev_buffer.h_v_addr);
-
 			buffers[i].dev_buffer.h_dma_addr = op_buf_h_dma_addr(mem_info->dev,
 					      (unsigned long) buffers[i].v_mem, buffers[i].len);
 			buffers[i].dev_buffer.d_p_addr = op_buf_d_dma_addr(mem_info->dev,
 					      buffers[i].dev_buffer.h_dma_addr);
 #else
-			buffers[i].dev_buffer.h_v_addr = (unsigned long)buffers[i].v_mem;
-			buffers[i].dev_buffer.h_p_addr = __pa(buffers[i].dev_buffer.h_v_addr);
 			buffers[i].dev_buffer.h_dma_addr = buffers[i].dev_buffer.h_p_addr;
-
 			buffers[i].dev_buffer.d_v_addr = desc_d_v_addr(mem_info->dev,
 					  (unsigned long)buffers[i].v_mem);
 			buffers[i].dev_buffer.d_p_addr = desc_d_p_addr(mem_info->dev,
