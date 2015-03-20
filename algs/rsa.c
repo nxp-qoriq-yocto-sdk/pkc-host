@@ -459,8 +459,8 @@ static void rsa_priv2_op_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 	crypto_mem->count =
 	    sizeof(rsa_priv2_op_buffers_t) / sizeof(buffer_info_t);
 	crypto_mem->buffers =
-	    (buffer_info_t *) (&(crypto_mem->c_buffers.rsa_priv1_op));
-	memset(crypto_mem->buffers, 0, sizeof(rsa_priv1_op_buffers_t));
+	    (buffer_info_t *) (&(crypto_mem->c_buffers.rsa_priv2_op));
+	memset(crypto_mem->buffers, 0, sizeof(rsa_priv2_op_buffers_t));
 
 	/* Mark the op buffer */
 	priv2_op_buffs = (rsa_priv2_op_buffers_t *) crypto_mem->buffers;
