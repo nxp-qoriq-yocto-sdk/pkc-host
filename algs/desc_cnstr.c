@@ -47,18 +47,6 @@
 extern fsl_pci_dev_t *g_fsl_pci_dev;
 #endif
 
-static uint8_t *alloc_mem(void *pool, uint32_t len)
-{
-	uint32_t aligned_len = ALIGN_LEN_TO_DMA(len);
-	print_debug("Allocating len.... :%d\n", aligned_len);
-	return alloc_buffer(pool, aligned_len, 1);
-}
-
-static void dealloc_mem(void *pool, void *buffer)
-{
-	free_buffer(pool, buffer);
-}
-
 static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 {
 	uint32_t i = 0;
@@ -102,8 +90,10 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 {
 	uint32_t i = 0;
 	uint32_t tot_mem = 0;
+	uint32_t aligned_len;
 	uint8_t *mem = NULL;
 	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
+
 #ifdef PRINT_DEBUG
 #ifndef SPLIT_BUFFERS
 #ifdef RETRY_FOR_BUFFERS
@@ -114,19 +104,19 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 
 	/* The structure will have all the memory requirements */
 	for (i = 0; i < mem_info->count; i++) {
+		aligned_len = ALIGN_LEN_TO_DMA(buffers[i].len);
 		switch (buffers[i].bt) {
 		case BT_DESC:
-			tot_mem += ALIGN_LEN_TO_DMA(buffers[i].len);
+			tot_mem += aligned_len;
 			break;
 		case BT_IP:
-			if (!mem_info->split_ip)
-				tot_mem += ALIGN_LEN_TO_DMA(buffers[i].len);
-			else {
-				buffers[i].v_mem = alloc_mem(mem_info->pool, buffers[i].len);
+			if (!mem_info->split_ip) {
+				tot_mem += aligned_len;
+			} else {
+				buffers[i].v_mem = alloc_buffer(mem_info->pool,
+								aligned_len, 1);
 				if (unlikely(!buffers[i].v_mem)) {
-					print_error
-					    ("Alloc mem for buff :%d \
-						 type :%d failed\n",
+					print_error("Alloc mem for buff :%d type :%d failed\n",
 					     i, buffers[i].bt);
 					goto error;
 				}
@@ -135,7 +125,7 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 			break;
 		case BT_OP:
 #ifdef OP_BUFFER_IN_DEV_MEM
-			tot_mem += ALIGN_LEN_TO_DMA(buffers[i].len);
+			tot_mem += aligned_len;
 #endif
 			break;
 		}
@@ -144,10 +134,12 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 	if (tot_mem)
 		mem_info->sg_cnt++;
 
+/* FIXME: Fix clean-up on error path (see second note below) */
+
 #ifdef RETRY_FOR_BUFFERS
 RETRY:
 #endif
-	mem = alloc_mem(mem_info->pool, tot_mem);
+	mem = alloc_buffer(mem_info->pool, tot_mem, 1);
 	if (NULL == mem) {
 #ifdef RETRY_FOR_BUFFERS
 		set_current_state(TASK_INTERRUPTIBLE);
@@ -166,9 +158,9 @@ RETRY:
 	return 0;
 
 error:
-
+	/* FIXME: fix error path deallocation (kind reminder) */
 	/* Deallocate the prev allocated buffers */
-	dealloc_mem(mem_info->pool, mem);
+	free_buffer(mem_info->pool, mem);
 
 	return -ENOMEM;
 }
@@ -191,14 +183,14 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 	uint32_t i = 0;
 
 	if (NULL != buffers[0].v_mem)
-		dealloc_mem(mem_info->pool, buffers[0].v_mem);
+		free_buffer(mem_info->pool, buffers[0].v_mem);
 
 	/* The structure will have all the memory requirements */
 	if (mem_info->split_ip) {
 		for (i = 0; i < mem_info->count; i++) {
 			if (BT_IP == buffers[i].bt) {
 				if (NULL != buffers[i].v_mem)
-					dealloc_mem(mem_info->pool, buffers[i].v_mem);
+					free_buffer(mem_info->pool, buffers[i].v_mem);
 			}
 		}
 	}
@@ -206,7 +198,7 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 #ifdef OP_BUFFER_IN_DEV_MEM
 	for (i = 0; i < mem_info->count; i++) {
 		if (BT_OP == mem_info->buffers[i].bt)
-			dealloc_mem(mem_info->pool, mem_info->buffers[i].v_mem);
+			free_buffer(mem_info->pool, mem_info->buffers[i].v_mem);
 	}
 #endif
 #endif
