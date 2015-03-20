@@ -248,15 +248,16 @@ function result
 }
 
 function control_c {
-	echo " "
-	echo "Test stopped by user"
 	path=/sys/fsl_crypto/fsl_crypto_1/test-i
 	echo "current_test_stop_request" > $path/test_name
 	test_stop=1
+	echo " "
+	echo "Test stopped by user"
 }
 
 perf_test()
 {
+	trap control_c SIGINT
 	command_str=""
 	prepare_command $@
 
@@ -273,13 +274,12 @@ perf_test()
 	date1=$(date +"%s")
 	while [ "$success" != "SUCCESS" ]
 	do
-		success=($(cat $path/res))
-		printf "."
-		trap control_c SIGINT
 		if [ $test_stop -eq 1 ]
 		then
 			break
 		fi
+		printf "."
+		success=($(cat $path/res))
 		sleep 0.1
 		[ $count -eq 0 ] && { printf "\n\nTest failed\n"; exit 2; }
 		count=`expr $count - 1`
