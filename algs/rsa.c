@@ -699,7 +699,7 @@ int rsa_op(struct pkc_request *req)
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
 		ret = -ENOMEM;
-		goto out_err_no_ctx;
+		goto out_no_ctx;
 	}
 
 	print_debug("\t Ring selected			:%d\n", r_id);
@@ -916,11 +916,9 @@ int rsa_op(struct pkc_request *req)
 		ret = -1;
 		goto out_err;
 	}
-#ifndef HIGH_PERF
-	atomic_dec(&c_dev->active_jobs);
 #endif
-#endif
-	return -EINPROGRESS;
+	ret = -EINPROGRESS;
+	goto out_no_ctx;
 
 out_err:
 	if (crypto_ctx->crypto_mem.buffers) {
@@ -929,7 +927,7 @@ out_err:
 	}
 	free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
 	/*kfree(crypto_ctx); */
-out_err_no_ctx:
+out_no_ctx:
 #ifndef HIGH_PERF
 	atomic_dec(&c_dev->active_jobs);
 #endif
