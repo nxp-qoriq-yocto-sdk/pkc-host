@@ -52,10 +52,6 @@
 #define DUMP_DEBUG_V_INFO
 */
 
-#ifndef USE_HOST_DMA
-#define HOST_TO_DEV_MEMCPY
-#endif
-
 /* Callback test functions */
 typedef void (*rsa_op_cb) (struct pkc_request *, int32_t result);
 /* #ifdef KCAPI_INTEG_BUILD
@@ -112,7 +108,7 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 	print_debug("\t \t Calling alloc_crypto_mem\n");
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	memcpy(mem->n_buff.v_mem, pub_req->n, mem->n_buff.len);
 	memcpy(mem->e_buff.v_mem, pub_req->e, mem->e_buff.len);
 	memcpy(mem->f_buff.v_mem, pub_req->f, mem->f_buff.len);
@@ -300,7 +296,7 @@ static int rsa_priv1_op_cp_req(struct rsa_priv_frm1_req_s *priv1_req,
 	print_debug("\t \t Calling alloc_crypto_mem\n");
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	memcpy(mem->n_buff.v_mem, priv1_req->n, mem->n_buff.len);
 	memcpy(mem->d_buff.v_mem, priv1_req->d, mem->d_buff.len);
 	memcpy(mem->g_buff.v_mem, priv1_req->g, mem->g_buff.len);
@@ -406,7 +402,7 @@ static int rsa_priv2_op_cp_req(struct rsa_priv_frm2_req_s *priv2_req,
 	print_debug("\t \t Calling alloc_crypto_mem\n");
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	memcpy(mem->p_buff.v_mem, priv2_req->p, mem->p_buff.len);
 	memcpy(mem->q_buff.v_mem, priv2_req->q, mem->q_buff.len);
 	memcpy(mem->d_buff.v_mem, priv2_req->d, mem->d_buff.len);
@@ -559,7 +555,7 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 	print_debug("\t \t Calling alloc_crypto_mem\n");
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	memcpy(mem->p_buff.v_mem, priv3_req->p, mem->p_buff.len);
 	memcpy(mem->q_buff.v_mem, priv3_req->q, mem->q_buff.len);
 	memcpy(mem->dp_buff.v_mem, priv3_req->dp, mem->dp_buff.len);
@@ -874,7 +870,7 @@ int rsa_op(struct pkc_request *req)
 		break;
 	}
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	/* Since the desc is first memory inthe contig chunk which needs to be
 	 * transferred, hence taking its p addr as the
 	 * source for the complete transfer.
@@ -884,7 +880,7 @@ int rsa_op(struct pkc_request *req)
 #endif
 
 #ifndef SEC_DMA
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 	memcpy_to_dev(&crypto_ctx->crypto_mem);
 #endif
 #endif
@@ -904,7 +900,7 @@ int rsa_op(struct pkc_request *req)
 	virtio_job->ctx = crypto_ctx;
 #endif
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	if (-1 ==
 	    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
 		       dma_tx_complete_cb, crypto_ctx)) {
@@ -930,7 +926,7 @@ error:
 #ifndef HIGH_PERF
 	atomic_dec(&c_dev->active_jobs);
 #endif
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 error1:
 #endif
 	if (crypto_ctx) {

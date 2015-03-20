@@ -52,10 +52,6 @@
 #define DUMP_DEBUG_V_INFO
 */
 
-#ifndef USE_HOST_DMA
-#define HOST_TO_DEV_MEMCPY
-#endif
-
 /* Callback test functions */
 typedef void (*dsa_op_cb) (struct pkc_request *, int32_t result);
 /* #ifdef KCAPI_INTEG_BUILD
@@ -185,7 +181,7 @@ static int dsa_sign_cp_req(struct dsa_sign_req_s *req,
 	print_debug("\t \t Calling alloc_crypto_mem\n");
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	memcpy(mem->q_buff.v_mem, req->q, mem->q_buff.len);
 	memcpy(mem->r_buff.v_mem, req->r, mem->r_buff.len);
 	memcpy(mem->g_buff.v_mem, req->g, mem->g_buff.len);
@@ -227,7 +223,7 @@ static int dsa_verify_cp_req(struct dsa_verify_req_s *req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	memcpy(mem->q_buff.v_mem, req->q, mem->q_buff.len);
 	memcpy(mem->r_buff.v_mem, req->r, mem->r_buff.len);
 	memcpy(mem->g_buff.v_mem, req->g, mem->g_buff.len);
@@ -270,7 +266,7 @@ static int dsa_keygen_cp_req(struct dsa_keygen_req_s *req,
 	print_debug("\t \t Calling alloc_crypto_mem\n\n");
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	memcpy(mem->q_buff.v_mem, req->q, mem->q_buff.len);
 	memcpy(mem->r_buff.v_mem, req->r, mem->r_buff.len);
 	memcpy(mem->g_buff.v_mem, req->g, mem->g_buff.len);
@@ -1069,7 +1065,7 @@ int dsa_op(struct pkc_request *req)
 		ret = -EINVAL;
 		break;
 	}
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	/* Since the desc is first memory inthe contig chunk which needs to be
 	 * transferred, hence taking its p addr as the
 	 * source for the complete transfer.
@@ -1079,7 +1075,7 @@ int dsa_op(struct pkc_request *req)
 #endif
 
 #ifndef SEC_DMA
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 	memcpy_to_dev(&crypto_ctx->crypto_mem);
 #endif
 #endif
@@ -1102,7 +1098,7 @@ int dsa_op(struct pkc_request *req)
 	   structure for further refernce */
 	virtio_job->ctx = crypto_ctx;
 #endif
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	if (-1 ==
 	    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
 		       dma_tx_complete_cb, crypto_ctx)) {
@@ -1130,7 +1126,7 @@ error:
 #ifndef HIGH_PERF
 	atomic_dec(&c_dev->active_jobs);
 #endif
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 error1:
 #endif
 	if (crypto_ctx) {

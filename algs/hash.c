@@ -46,10 +46,6 @@
 
 #include "dma.h"
 
-#ifndef USE_HOST_DMA
-#define HOST_TO_DEV_MEMCPY
-#endif
-
 static void hash_op_done(void *ctx, int32_t res)
 {
 	crypto_op_ctx_t *crypto_ctx = ctx;
@@ -122,7 +118,7 @@ static int hash_cp_key(const uint8_t *input, uint32_t ip_len,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	memcpy(mem->input_buff.v_mem, input, ip_len);
 #else
 	mem->input_buff.req_ptr = (uint8_t *) input;
@@ -247,7 +243,7 @@ static int hash_cp_req(struct ahash_request *req, struct hash_lengths *len,
 
 	mem->output_buff.v_mem = output;
 
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 	for (i = 0; i < (mem_info->count); i++)
 		mem_info->buffers[i].req_ptr = mem_info->buffers[i].v_mem;
 #endif
@@ -364,11 +360,11 @@ static int32_t gen_split_hash_key(crypto_dev_sess_t *c_sess,
 			mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	crypto_ctx->crypto_mem.dest_buff_dma =
 	    crypto_ctx->crypto_mem.buffers[BT_DESC].dev_buffer.h_map_p_addr;
 #endif
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 	memcpy_to_dev(&crypto_ctx->crypto_mem);
 #endif
 
@@ -383,7 +379,7 @@ static int32_t gen_split_hash_key(crypto_dev_sess_t *c_sess,
 	result.err = 0;
 	init_completion(&result.completion);
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	if (-1 ==
 	    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
 		       dma_tx_complete_cb, crypto_ctx)) {
@@ -407,7 +403,7 @@ static int32_t gen_split_hash_key(crypto_dev_sess_t *c_sess,
 
 error:
 	atomic_dec(&c_dev->active_jobs);
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 error1:
 #endif
 	if (crypto_ctx) {
@@ -475,11 +471,11 @@ static uint32_t hash_digest_key(crypto_dev_sess_t *c_sess,
 			mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	crypto_ctx->crypto_mem.dest_buff_dma =
 	    crypto_ctx->crypto_mem.buffers[BT_DESC].dev_buffer.h_map_p_addr;
 #endif
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 	memcpy_to_dev(&crypto_ctx->crypto_mem);
 #endif
 
@@ -494,7 +490,7 @@ static uint32_t hash_digest_key(crypto_dev_sess_t *c_sess,
 	result.err = 0;
 	init_completion(&result.completion);
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	if (-1 ==
 	    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
 		       dma_tx_complete_cb, crypto_ctx)) {
@@ -518,7 +514,7 @@ static uint32_t hash_digest_key(crypto_dev_sess_t *c_sess,
 	return result.err;
 error:
 	atomic_dec(&c_dev->active_jobs);
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 error1:
 #endif
 	if (crypto_ctx) {
@@ -738,11 +734,11 @@ int ahash_digest(struct ahash_request *req)
 			mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	crypto_ctx->crypto_mem.dest_buff_dma =
 	    crypto_ctx->crypto_mem.buffers[BT_DESC].dev_buffer.h_map_p_addr;
 #endif
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 	memcpy_to_dev(&crypto_ctx->crypto_mem);
 #endif
 
@@ -761,7 +757,7 @@ int ahash_digest(struct ahash_request *req)
 	virtio_job->ctx = crypto_ctx;
 #endif
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	if (-1 ==
 	    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
 		       dma_tx_complete_cb, crypto_ctx)) {
@@ -782,7 +778,7 @@ int ahash_digest(struct ahash_request *req)
 	return -EINPROGRESS;
 error:
 	atomic_dec(&c_dev->active_jobs);
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 error1:
 #endif
 	if (crypto_ctx) {
@@ -941,12 +937,12 @@ int ahash_update_ctx(struct ahash_request *req)
 				mem->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
 		sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 		crypto_ctx->crypto_mem.dest_buff_dma =
 		    crypto_ctx->crypto_mem.buffers[BT_DESC].dev_buffer.
 		    h_map_p_addr;
 #endif
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 		memcpy_to_dev(&crypto_ctx->crypto_mem);
 #endif
 
@@ -966,7 +962,7 @@ int ahash_update_ctx(struct ahash_request *req)
 		virtio_job->ctx = crypto_ctx;
 #endif
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 		if (-1 ==
 		    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
 			       dma_tx_complete_cb, crypto_ctx)) {
@@ -1002,7 +998,7 @@ int ahash_update_ctx(struct ahash_request *req)
 	return ret;
 error:
 	atomic_dec(&c_dev->active_jobs);
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 error1:
 #endif
 	if (crypto_ctx) {
@@ -1133,11 +1129,11 @@ int ahash_finup_ctx(struct ahash_request *req)
 			mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	crypto_ctx->crypto_mem.dest_buff_dma =
 	    crypto_ctx->crypto_mem.buffers[BT_DESC].dev_buffer.h_map_p_addr;
 #endif
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 	memcpy_to_dev(&crypto_ctx->crypto_mem);
 #endif
 
@@ -1156,7 +1152,7 @@ int ahash_finup_ctx(struct ahash_request *req)
 	virtio_job->ctx = crypto_ctx;
 #endif
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	if (-1 ==
 	    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
 		       dma_tx_complete_cb, crypto_ctx)) {
@@ -1177,7 +1173,7 @@ int ahash_finup_ctx(struct ahash_request *req)
 	return -EINPROGRESS;
 error:
 	atomic_dec(&c_dev->active_jobs);
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 error1:
 #endif
 	if (crypto_ctx) {
@@ -1312,11 +1308,11 @@ int ahash_final_ctx(struct ahash_request *req)
 			mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	crypto_ctx->crypto_mem.dest_buff_dma =
 	    crypto_ctx->crypto_mem.buffers[BT_DESC].dev_buffer.h_map_p_addr;
 #endif
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 	memcpy_to_dev(&crypto_ctx->crypto_mem);
 #endif
 
@@ -1335,7 +1331,7 @@ int ahash_final_ctx(struct ahash_request *req)
 	virtio_job->ctx = crypto_ctx;
 #endif
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	if (-1 ==
 	    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
 		       dma_tx_complete_cb, crypto_ctx)) {
@@ -1357,7 +1353,7 @@ int ahash_final_ctx(struct ahash_request *req)
 
 error:
 	atomic_dec(&c_dev->active_jobs);
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 error1:
 #endif
 	if (crypto_ctx) {
@@ -1483,11 +1479,11 @@ int ahash_final_no_ctx(struct ahash_request *req)
 	store_priv_data(crypto_ctx->crypto_mem.pool,
 			mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	crypto_ctx->crypto_mem.dest_buff_dma =
 	    crypto_ctx->crypto_mem.buffers[BT_DESC].dev_buffer.h_map_p_addr;
 #endif
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 	memcpy_to_dev(&crypto_ctx->crypto_mem);
 #endif
 
@@ -1506,7 +1502,7 @@ int ahash_final_no_ctx(struct ahash_request *req)
 	virtio_job->ctx = crypto_ctx;
 #endif
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	if (-1 ==
 	    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
 		       dma_tx_complete_cb, crypto_ctx)) {
@@ -1527,7 +1523,7 @@ int ahash_final_no_ctx(struct ahash_request *req)
 	return -EINPROGRESS;
 error:
 	atomic_dec(&c_dev->active_jobs);
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 error1:
 #endif
 	if (crypto_ctx) {
@@ -1661,11 +1657,11 @@ int ahash_finup_no_ctx(struct ahash_request *req)
 			mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	crypto_ctx->crypto_mem.dest_buff_dma =
 	    crypto_ctx->crypto_mem.buffers[BT_DESC].dev_buffer.h_map_p_addr;
 #endif
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 	memcpy_to_dev(&crypto_ctx->crypto_mem);
 #endif
 
@@ -1684,7 +1680,7 @@ int ahash_finup_no_ctx(struct ahash_request *req)
 	virtio_job->ctx = crypto_ctx;
 #endif
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 	if (-1 ==
 	    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
 		       dma_tx_complete_cb, crypto_ctx)) {
@@ -1705,7 +1701,7 @@ int ahash_finup_no_ctx(struct ahash_request *req)
 	return -EINPROGRESS;
 error:
 	atomic_dec(&c_dev->active_jobs);
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 error1:
 #endif
 	if (crypto_ctx) {
@@ -1848,12 +1844,12 @@ int ahash_update_no_ctx(struct ahash_request *req)
 				mem->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
 		sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 		crypto_ctx->crypto_mem.dest_buff_dma =
 		    crypto_ctx->crypto_mem.buffers[BT_DESC].dev_buffer.
 		    h_map_p_addr;
 #endif
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 		memcpy_to_dev(&crypto_ctx->crypto_mem);
 #endif
 
@@ -1872,7 +1868,7 @@ int ahash_update_no_ctx(struct ahash_request *req)
 		virtio_job->ctx = crypto_ctx;
 #endif
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 		if (-1 ==
 		    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
 			       dma_tx_complete_cb, crypto_ctx)) {
@@ -1913,7 +1909,7 @@ int ahash_update_no_ctx(struct ahash_request *req)
 
 error:
 	atomic_dec(&c_dev->active_jobs);
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 error1:
 #endif
 	if (crypto_ctx) {
@@ -2057,12 +2053,12 @@ int ahash_update_first(struct ahash_request *req)
 				mem->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
 		sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 		crypto_ctx->crypto_mem.dest_buff_dma =
 		    crypto_ctx->crypto_mem.buffers[BT_DESC].dev_buffer.
 		    h_map_p_addr;
 #endif
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 		memcpy_to_dev(&crypto_ctx->crypto_mem);
 #endif
 
@@ -2081,7 +2077,7 @@ int ahash_update_first(struct ahash_request *req)
 		virtio_job->ctx = crypto_ctx;
 #endif
 
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 		if (-1 ==
 		    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
 			       dma_tx_complete_cb, crypto_ctx)) {
@@ -2122,7 +2118,7 @@ int ahash_update_first(struct ahash_request *req)
 
 error:
 	atomic_dec(&c_dev->active_jobs);
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 error1:
 #endif
 	if (crypto_ctx) {

@@ -49,10 +49,6 @@
 
 #include "dma.h"
 
-#ifndef USE_HOST_DMA
-#define HOST_TO_DEV_MEMCPY
-#endif
-
 static void ablk_op_done(void *ctx, int32_t res)
 {
 	bool dst_chained;
@@ -285,7 +281,7 @@ static void create_setkey_ctx(struct crypto_ablkcipher *ablkcipher,
 				bool encrypt)
 #endif
 {
-    /* THIS ONLY MATTERS FOR HOST_TO_DEV_MEMCPY
+    /* THIS ONLY MATTERS FOR !USE_HOST_DMA
      * AS KEY IS TAKEN AS DESC BT TYPE
      * NEED TO COPY THE KEY IN LOCAL MEM
      * INSTEAD OF ONLY TAKING REQ POINTER */
@@ -306,7 +302,7 @@ static void create_src_sg_table(symm_ablk_buffers_t *ablk_ctx,
 	sec4_sg_ptr += 1;
 
 	for (i = 0; i < sg_cnt; ++i) {
-#ifndef HOST_TO_DEV_MEMCPY
+#ifdef USE_HOST_DMA
 		/* COPY SG BUFF IN LOCAL MEM */
 		sg_map_copy(ablk_ctx->src_sg[i].v_mem, sg, sg->length,
 			    sg->offset);
@@ -614,7 +610,7 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 	virtio_job->ctx = crypto_ctx;
 #endif
 
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 	memcpy_to_dev(crypto_mem);
 	sec_dma = set_sec_affinity(c_dev, r_id, sec_dma);
 	atomic_dec(&c_dev->active_jobs);
@@ -640,7 +636,7 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 
 error:
 	atomic_dec(&c_dev->active_jobs);
-#ifdef HOST_TO_DEV_MEMCPY
+#ifndef USE_HOST_DMA
 error1:
 #endif
 	dma_unmap_sg_chained(&pci_dev->dev,
