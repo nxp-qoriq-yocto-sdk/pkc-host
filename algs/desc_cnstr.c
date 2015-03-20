@@ -63,23 +63,24 @@ static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 {
 	uint32_t i = 0;
 	uint32_t offset = 0;
+	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
 
 	for (i = 0; i < mem_info->count; i++) {
-		switch (mem_info->buffers[i].bt) {
+		switch (buffers[i].bt) {
 		case BT_DESC:
-			mem_info->buffers[i].v_mem = (mem + offset);
-			offset += ALIGN_LEN_TO_DMA(mem_info->buffers[i].len);
+			buffers[i].v_mem = (mem + offset);
+			offset += ALIGN_LEN_TO_DMA(buffers[i].len);
 			break;
 		case BT_IP:
 			if (!mem_info->split_ip) {
-				mem_info->buffers[i].v_mem = (mem + offset);
-				offset += ALIGN_LEN_TO_DMA(mem_info->buffers[i].len);
+				buffers[i].v_mem = (mem + offset);
+				offset += ALIGN_LEN_TO_DMA(buffers[i].len);
 			}
 			break;
 		case BT_OP:
 #ifdef OP_BUFFER_IN_DEV_MEM
-			mem_info->buffers[i].v_mem = (mem + offset);
-			offset += ALIGN_LEN_TO_DMA(mem_info->buffers[i].len);
+			buffers[i].v_mem = (mem + offset);
+			offset += ALIGN_LEN_TO_DMA(buffers[i].len);
 #endif
 			break;
 		}
@@ -102,6 +103,7 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 	uint32_t i = 0;
 	uint32_t tot_mem = 0;
 	uint8_t *mem = NULL;
+	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
 #ifdef PRINT_DEBUG
 #ifndef SPLIT_BUFFERS
 #ifdef RETRY_FOR_BUFFERS
@@ -112,21 +114,20 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 
 	/* The structure will have all the memory requirements */
 	for (i = 0; i < mem_info->count; i++) {
-		switch (mem_info->buffers[i].bt) {
+		switch (buffers[i].bt) {
 		case BT_DESC:
-			tot_mem += ALIGN_LEN_TO_DMA(mem_info->buffers[i].len);
+			tot_mem += ALIGN_LEN_TO_DMA(buffers[i].len);
 			break;
 		case BT_IP:
 			if (!mem_info->split_ip)
-				tot_mem += ALIGN_LEN_TO_DMA(mem_info->buffers[i].len);
+				tot_mem += ALIGN_LEN_TO_DMA(buffers[i].len);
 			else {
-				mem_info->buffers[i].v_mem =
-				    alloc_mem(mem_info->pool, mem_info->buffers[i].len);
-				if (unlikely(!mem_info->buffers[i].v_mem)) {
+				buffers[i].v_mem = alloc_mem(mem_info->pool, buffers[i].len);
+				if (unlikely(!buffers[i].v_mem)) {
 					print_error
 					    ("Alloc mem for buff :%d \
 						 type :%d failed\n",
-					     i, mem_info->buffers[i].bt);
+					     i, buffers[i].bt);
 					goto error;
 				}
 				mem_info->sg_cnt++;
@@ -134,7 +135,7 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 			break;
 		case BT_OP:
 #ifdef OP_BUFFER_IN_DEV_MEM
-			tot_mem += ALIGN_LEN_TO_DMA(mem_info->buffers[i].len);
+			tot_mem += ALIGN_LEN_TO_DMA(buffers[i].len);
 #endif
 			break;
 		}
@@ -186,18 +187,18 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 {
 	fsl_crypto_dev_t *c_dev = mem_info->dev;
 	fsl_pci_dev_t *pci_dev = c_dev->priv_dev;
+	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
 	uint32_t i = 0;
 
-	if (NULL != mem_info->buffers[0].v_mem)
-		dealloc_mem(mem_info->pool, mem_info->buffers[0].v_mem);
+	if (NULL != buffers[0].v_mem)
+		dealloc_mem(mem_info->pool, buffers[0].v_mem);
 
 	/* The structure will have all the memory requirements */
 	if (mem_info->split_ip) {
 		for (i = 0; i < mem_info->count; i++) {
-			if (BT_IP == mem_info->buffers[i].bt) {
-				if (NULL != mem_info->buffers[i].v_mem)
-					dealloc_mem(mem_info->pool,
-						    mem_info->buffers[i].v_mem);
+			if (BT_IP == buffers[i].bt) {
+				if (NULL != buffers[i].v_mem)
+					dealloc_mem(mem_info->pool, buffers[i].v_mem);
 			}
 		}
 	}
@@ -211,17 +212,14 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 #endif
 
 	for (i = 0; i < mem_info->count; i++) {
-		switch (mem_info->buffers[i].bt) {
+		switch (buffers[i].bt) {
 		case BT_DESC:
 		case BT_IP:
 			break;
 		case BT_OP:
-			if (0 != mem_info->buffers[i].dev_buffer.h_dma_addr)
-				pci_unmap_single(pci_dev->dev,
-						 mem_info->
-						 buffers[i].dev_buffer.
-						 h_dma_addr,
-						 mem_info->buffers[i].len,
+			if (0 != buffers[i].dev_buffer.h_dma_addr)
+				pci_unmap_single(pci_dev->dev, buffers[i].dev_buffer.
+						 h_dma_addr, buffers[i].len,
 						 PCI_DMA_BIDIRECTIONAL);
 			break;
 		}
@@ -297,85 +295,54 @@ Returns     :	SUCCESS/ FAILURE
 void host_to_dev(crypto_mem_info_t *mem_info)
 {
 	uint32_t i = 0;
+	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
 
 	for (i = 0; i < mem_info->count; i++) {
-		switch (mem_info->buffers[i].bt) {
+		switch (buffers[i].bt) {
 		case BT_DESC:
-			mem_info->buffers[i].dev_buffer.h_v_addr =
-			    (unsigned long)mem_info->buffers[i].v_mem;
-			mem_info->buffers[i].dev_buffer.h_p_addr =
-			    __pa(mem_info->buffers[i].dev_buffer.h_v_addr);
-			mem_info->buffers[i].dev_buffer.h_dma_addr =
-			    mem_info->buffers[i].dev_buffer.h_p_addr;
-			mem_info->buffers[i].dev_buffer.h_map_p_addr =
-			    h_map_p_addr(mem_info->dev,
-					 (unsigned long)mem_info->
-					 buffers[i].v_mem);
+			buffers[i].dev_buffer.h_v_addr = (unsigned long)buffers[i].v_mem;
+			buffers[i].dev_buffer.h_p_addr = __pa(buffers[i].dev_buffer.h_v_addr);
+			buffers[i].dev_buffer.h_dma_addr = buffers[i].dev_buffer.h_p_addr;
+			buffers[i].dev_buffer.h_map_p_addr = h_map_p_addr(mem_info->dev,
+					 (unsigned long)buffers[i].v_mem);
 
-			mem_info->buffers[i].dev_buffer.d_v_addr =
-			    desc_d_v_addr(mem_info->dev,
-					  (unsigned long)mem_info->
-					  buffers[i].v_mem);
-			mem_info->buffers[i].dev_buffer.d_p_addr =
-			    desc_d_p_addr(mem_info->dev,
-					  (unsigned long)mem_info->
-					  buffers[i].v_mem);
+			buffers[i].dev_buffer.d_v_addr = desc_d_v_addr(mem_info->dev,
+					  (unsigned long)buffers[i].v_mem);
+			buffers[i].dev_buffer.d_p_addr = desc_d_p_addr(mem_info->dev,
+					  (unsigned long)buffers[i].v_mem);
 			break;
 
 		case BT_IP:
-			mem_info->buffers[i].dev_buffer.h_v_addr =
-			    (unsigned long)mem_info->buffers[i].v_mem;
-			mem_info->buffers[i].dev_buffer.h_p_addr =
-			    __pa(mem_info->buffers[i].dev_buffer.h_v_addr);
-			mem_info->buffers[i].dev_buffer.h_dma_addr =
-			    mem_info->buffers[i].dev_buffer.h_p_addr;
-			mem_info->buffers[i].dev_buffer.h_map_p_addr =
-			    h_map_p_addr(mem_info->dev,
-					 (unsigned long)mem_info->
-					 buffers[i].v_mem);
+			buffers[i].dev_buffer.h_v_addr = (unsigned long)buffers[i].v_mem;
+			buffers[i].dev_buffer.h_p_addr = __pa(buffers[i].dev_buffer.h_v_addr);
+			buffers[i].dev_buffer.h_dma_addr = buffers[i].dev_buffer.h_p_addr;
+			buffers[i].dev_buffer.h_map_p_addr = h_map_p_addr(mem_info->dev,
+					 (unsigned long)buffers[i].v_mem);
 
-			mem_info->buffers[i].dev_buffer.d_v_addr =
-			    desc_d_v_addr(mem_info->dev,
-					  (unsigned long)mem_info->
-					  buffers[i].v_mem);
-			mem_info->buffers[i].dev_buffer.d_p_addr =
-			    desc_d_p_addr(mem_info->dev,
-					  (unsigned long)mem_info->
-					  buffers[i].v_mem);
+			buffers[i].dev_buffer.d_v_addr = desc_d_v_addr(mem_info->dev,
+					  (unsigned long)buffers[i].v_mem);
+			buffers[i].dev_buffer.d_p_addr = desc_d_p_addr(mem_info->dev,
+					  (unsigned long)buffers[i].v_mem);
 			break;
 
 		case BT_OP:
 #ifndef OP_BUFFER_IN_DEV_MEM
-			mem_info->buffers[i].dev_buffer.h_v_addr =
-			    (unsigned long)mem_info->buffers[i].v_mem;
-			mem_info->buffers[i].dev_buffer.h_p_addr =
-			    __pa(mem_info->buffers[i].dev_buffer.h_v_addr);
+			buffers[i].dev_buffer.h_v_addr = (unsigned long)buffers[i].v_mem;
+			buffers[i].dev_buffer.h_p_addr = __pa(buffers[i].dev_buffer.h_v_addr);
 
-			mem_info->buffers[i].dev_buffer.h_dma_addr =
-			    op_buf_h_dma_addr(mem_info->dev,
-					      (unsigned long)
-					      mem_info->buffers[i].v_mem,
-					      mem_info->buffers[i].len);
-			mem_info->buffers[i].dev_buffer.d_p_addr =
-			    op_buf_d_dma_addr(mem_info->dev,
-					      mem_info->buffers[i].
-					      dev_buffer.h_dma_addr);
+			buffers[i].dev_buffer.h_dma_addr = op_buf_h_dma_addr(mem_info->dev,
+					      (unsigned long) buffers[i].v_mem, buffers[i].len);
+			buffers[i].dev_buffer.d_p_addr = op_buf_d_dma_addr(mem_info->dev,
+					      buffers[i].dev_buffer.h_dma_addr);
 #else
-			mem_info->buffers[i].dev_buffer.h_v_addr =
-			    (unsigned long)mem_info->buffers[i].v_mem;
-			mem_info->buffers[i].dev_buffer.h_p_addr =
-			    __pa(mem_info->buffers[i].dev_buffer.h_v_addr);
-			mem_info->buffers[i].dev_buffer.h_dma_addr =
-			    mem_info->buffers[i].dev_buffer.h_p_addr;
+			buffers[i].dev_buffer.h_v_addr = (unsigned long)buffers[i].v_mem;
+			buffers[i].dev_buffer.h_p_addr = __pa(buffers[i].dev_buffer.h_v_addr);
+			buffers[i].dev_buffer.h_dma_addr = buffers[i].dev_buffer.h_p_addr;
 
-			mem_info->buffers[i].dev_buffer.d_v_addr =
-			    desc_d_v_addr(mem_info->dev,
-					  (unsigned long)mem_info->
-					  buffers[i].v_mem);
-			mem_info->buffers[i].dev_buffer.d_p_addr =
-			    desc_d_p_addr(mem_info->dev,
-					  (unsigned long)mem_info->
-					  buffers[i].v_mem);
+			buffers[i].dev_buffer.d_v_addr = desc_d_v_addr(mem_info->dev,
+					  (unsigned long)buffers[i].v_mem);
+			buffers[i].dev_buffer.d_p_addr = desc_d_p_addr(mem_info->dev,
+					  (unsigned long)buffers[i].v_mem);
 #endif
 			break;
 
@@ -393,21 +360,22 @@ void host_to_dev(crypto_mem_info_t *mem_info)
  *                    -1: failure
  */
 int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
-    int32_t i;
+	int32_t i;
+	buffer_info_t *buffers = (buffer_info_t *) &crypto_mem->c_buffers;
 
-    if (!crypto_mem) {
-        return -1;
-    }
+	if (!crypto_mem)
+		return -1;
 
-    for (i = 0; i < crypto_mem->count; i++) {
-        if (crypto_mem->buffers[i].bt != BT_IP) {
-            continue;
-        }
+	for (i = 0; i < crypto_mem->count; i++) {
+		if (buffers[i].bt != BT_IP)
+			continue;
 
-        crypto_mem->buffers[i].dev_buffer.h_p_addr = (phys_addr_t)pci_map_single(g_fsl_pci_dev->dev, crypto_mem->buffers[i].req_ptr, crypto_mem->buffers[i].len, PCI_DMA_BIDIRECTIONAL);
-    }
+		buffers[i].dev_buffer.h_p_addr = (phys_addr_t)pci_map_single(
+			g_fsl_pci_dev->dev, buffers[i].req_ptr, buffers[i].len,
+			PCI_DMA_BIDIRECTIONAL);
+	}
 
-    return 0;
+	return 0;
 }
 
 
@@ -420,21 +388,22 @@ int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
  *                    -1: failure
  */
 int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
-    int32_t i;
+	int32_t i;
+	buffer_info_t *buffers = (buffer_info_t *) &crypto_mem->c_buffers;
 
-    if (!crypto_mem) {
-        return -1;
-    }
+	if (!crypto_mem)
+		return -1;
 
-    for (i = 0; i < crypto_mem->count; i++) {
-        if (crypto_mem->buffers[i].bt != BT_IP) {
-            continue;
-        }
+	for (i = 0; i < crypto_mem->count; i++) {
+		if (buffers[i].bt != BT_IP)
+			continue;
 
-        pci_unmap_single(g_fsl_pci_dev->dev, (dma_addr_t)crypto_mem->buffers[i].dev_buffer.h_p_addr, crypto_mem->buffers[i].len, PCI_DMA_BIDIRECTIONAL);
-    }
+		pci_unmap_single(g_fsl_pci_dev->dev,
+			(dma_addr_t)buffers[i].dev_buffer.h_p_addr, buffers[i].len,
+			PCI_DMA_BIDIRECTIONAL);
+	}
 
-    return 0;
+	return 0;
 }
 #endif
 
@@ -450,13 +419,14 @@ Returns     :	SUCCESS/ FAILURE
 int32_t memcpy_to_dev(crypto_mem_info_t *mem)
 {
 	uint32_t i = 0;
-	buffer_info_t *src = NULL;
-	dev_buffer_t *dst = NULL;
+	buffer_info_t *src;
+	buffer_info_t *buffers = (buffer_info_t *) &mem->c_buffers;
+	dev_buffer_t *dst;
 
 	/* This function will take care of endian conversions across pcie */
 	for (i = 0; i < (mem->count); i++) {
-		src = &(mem->buffers[i]);
-		dst = &(mem->buffers[i].dev_buffer);
+		src = &buffers[i];
+		dst = &buffers[i].dev_buffer;
 		switch (src->bt) {
 		case BT_DESC:
 			memcpy((void *)dst->d_v_addr, src->v_mem, src->len);

@@ -84,8 +84,7 @@ static void rsa_op_done(void *ctx, int32_t res)
 static void rsa_pub_op_init_len(struct rsa_pub_req_s *pub_req,
 				crypto_mem_info_t *mem_info)
 {
-	rsa_pub_op_buffers_t *mem =
-	    (rsa_pub_op_buffers_t *) (mem_info->buffers);
+	rsa_pub_op_buffers_t *mem = &(mem_info->c_buffers.rsa_pub_op);
 
 	mem->n_buff.len = pub_req->n_len;
 	mem->e_buff.len = pub_req->e_len;
@@ -98,8 +97,8 @@ static void rsa_pub_op_init_len(struct rsa_pub_req_s *pub_req,
 static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 			     crypto_mem_info_t *mem_info)
 {
-	rsa_pub_op_buffers_t *mem =
-	    (rsa_pub_op_buffers_t *) (mem_info->buffers);
+	rsa_pub_op_buffers_t *mem = &(mem_info->c_buffers.rsa_pub_op);
+
 	rsa_pub_op_init_len(pub_req, mem_info);
 #ifdef DUMP_DEBUG_V_INFO
 	int i = 0;
@@ -166,8 +165,7 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 	uint32_t desc_size = sizeof(struct rsa_pub_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 1;
 
-	rsa_pub_op_buffers_t *mem =
-	    (rsa_pub_op_buffers_t *) (mem_info->buffers);
+	rsa_pub_op_buffers_t *mem = &(mem_info->c_buffers.rsa_pub_op);
 	struct rsa_pub_desc_s *rsa_pub_desc =
 	    (struct rsa_pub_desc_s *)mem->desc_buff.v_mem;
 
@@ -229,7 +227,6 @@ static void rsa_pub_op_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 	rsa_pub_op_buffers_t *pub_op_buffs = &(crypto_mem->c_buffers.rsa_pub_op);
 
 	crypto_mem->count = sizeof(rsa_pub_op_buffers_t) / sizeof(buffer_info_t);
-	crypto_mem->buffers = (buffer_info_t *) pub_op_buffs;
 	memset(pub_op_buffs, 0, sizeof(rsa_pub_op_buffers_t));
 
 	/* Mark the op buffer */
@@ -247,8 +244,7 @@ static void constr_rsa_priv1_op_desc(crypto_mem_info_t *mem_info)
 	uint32_t start_idx = desc_size - 1;
 	uint32_t desc_hdr = 0;
 
-	rsa_priv1_op_buffers_t *mem =
-	    (rsa_priv1_op_buffers_t *) (mem_info->buffers);
+	rsa_priv1_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv1_op);
 	struct rsa_priv_frm1_desc_s *rsa_priv_desc =
 	    (struct rsa_priv_frm1_desc_s *)mem->desc_buff.v_mem;
 
@@ -273,8 +269,7 @@ static void constr_rsa_priv1_op_desc(crypto_mem_info_t *mem_info)
 static void rsa_priv1_op_init_len(struct rsa_priv_frm1_req_s *priv1_req,
 				  crypto_mem_info_t *mem_info)
 {
-	rsa_priv1_op_buffers_t *mem =
-	    (rsa_priv1_op_buffers_t *) (mem_info->buffers);
+	rsa_priv1_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv1_op);
 
 	mem->n_buff.len = priv1_req->n_len;
 	mem->d_buff.len = priv1_req->d_len;
@@ -287,9 +282,7 @@ static void rsa_priv1_op_init_len(struct rsa_priv_frm1_req_s *priv1_req,
 static int rsa_priv1_op_cp_req(struct rsa_priv_frm1_req_s *priv1_req,
 			       crypto_mem_info_t *mem_info)
 {
-	rsa_priv1_op_buffers_t *mem =
-	    (rsa_priv1_op_buffers_t *) (mem_info->buffers);
-
+	rsa_priv1_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv1_op);
 	rsa_priv1_op_init_len(priv1_req, mem_info);
 
 	/* Alloc mem requrd for crypto operation */
@@ -325,7 +318,6 @@ static void rsa_priv1_op_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 	rsa_priv1_op_buffers_t *priv1_op_buffs = &(crypto_mem->c_buffers.rsa_priv1_op);
 
 	crypto_mem->count = sizeof(rsa_priv1_op_buffers_t) / sizeof(buffer_info_t);
-	crypto_mem->buffers = (buffer_info_t *) priv1_op_buffs;
 	memset(priv1_op_buffs, 0, sizeof(rsa_priv1_op_buffers_t));
 
 	/* Mark the op buffer */
@@ -342,8 +334,7 @@ static void constr_rsa_priv2_op_desc(crypto_mem_info_t *mem_info)
 	    sizeof(struct rsa_priv_frm2_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 1;
 
-	rsa_priv2_op_buffers_t *mem =
-	    (rsa_priv2_op_buffers_t *) (mem_info->buffers);
+	rsa_priv2_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv2_op);
 	struct rsa_priv_frm2_desc_s *rsa_priv_desc =
 	    (struct rsa_priv_frm2_desc_s *)mem->desc_buff.v_mem;
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
@@ -374,8 +365,7 @@ static void constr_rsa_priv2_op_desc(crypto_mem_info_t *mem_info)
 static void rsa_priv2_op_init_len(struct rsa_priv_frm2_req_s *priv2_req,
 				  crypto_mem_info_t *mem_info)
 {
-	rsa_priv2_op_buffers_t *mem =
-	    (rsa_priv2_op_buffers_t *) (mem_info->buffers);
+	rsa_priv2_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv2_op);
 
 	mem->p_buff.len = priv2_req->p_len;
 	mem->q_buff.len = priv2_req->q_len;
@@ -391,8 +381,7 @@ static void rsa_priv2_op_init_len(struct rsa_priv_frm2_req_s *priv2_req,
 static int rsa_priv2_op_cp_req(struct rsa_priv_frm2_req_s *priv2_req,
 			       crypto_mem_info_t *mem_info)
 {
-	rsa_priv2_op_buffers_t *mem =
-	    (rsa_priv2_op_buffers_t *) (mem_info->buffers);
+	rsa_priv2_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv2_op);
 #ifdef DUMP_DEBUG_V_INFO
 	rsa_priv2_op_buffers_t *priv2_op_buffs = mem;
 #endif
@@ -449,7 +438,6 @@ static void rsa_priv2_op_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 	rsa_priv2_op_buffers_t *priv2_op_buffs = &(crypto_mem->c_buffers.rsa_priv2_op);
 
 	crypto_mem->count = sizeof(rsa_priv2_op_buffers_t) / sizeof(buffer_info_t);
-	crypto_mem->buffers = (buffer_info_t *) priv2_op_buffs;
 	memset(priv2_op_buffs, 0, sizeof(rsa_priv2_op_buffers_t));
 
 	/* Mark the op buffer */
@@ -469,8 +457,7 @@ static void constr_rsa_priv3_op_desc(crypto_mem_info_t *mem_info)
 	    sizeof(struct rsa_priv_frm3_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 1;
 
-	rsa_priv3_op_buffers_t *mem =
-	    (rsa_priv3_op_buffers_t *) (mem_info->buffers);
+	rsa_priv3_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv3_op);
 	struct rsa_priv_frm3_desc_s *rsa_priv_desc =
 	    (struct rsa_priv_frm3_desc_s *)mem->desc_buff.v_mem;
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
@@ -525,8 +512,7 @@ static void constr_rsa_priv3_op_desc(crypto_mem_info_t *mem_info)
 static void rsa_priv3_op_init_len(struct rsa_priv_frm3_req_s *priv3_req,
 				  crypto_mem_info_t *mem_info)
 {
-	rsa_priv3_op_buffers_t *mem =
-	    (rsa_priv3_op_buffers_t *) (mem_info->buffers);
+	rsa_priv3_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv3_op);
 
 	mem->p_buff.len = priv3_req->p_len;
 	mem->q_buff.len = priv3_req->q_len;
@@ -544,8 +530,7 @@ static void rsa_priv3_op_init_len(struct rsa_priv_frm3_req_s *priv3_req,
 static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 			       crypto_mem_info_t *mem_info)
 {
-	rsa_priv3_op_buffers_t *mem =
-	    (rsa_priv3_op_buffers_t *) (mem_info->buffers);
+	rsa_priv3_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv3_op);
 #ifdef DUMP_DEBUG_V_INFO
 	rsa_priv3_op_buffers_t *priv3_op_buffs = mem;
 #endif
@@ -613,7 +598,6 @@ static void rsa_priv3_op_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 	rsa_priv3_op_buffers_t *priv3_op_buffs = &(crypto_mem->c_buffers.rsa_priv3_op);
 
 	crypto_mem->count = sizeof(rsa_priv3_op_buffers_t) / sizeof(buffer_info_t);
-	crypto_mem->buffers = (buffer_info_t *) priv3_op_buffs;
 	memset(priv3_op_buffs, 0, sizeof(rsa_priv3_op_buffers_t));
 
 	/* Mark the op buffer */
@@ -712,8 +696,6 @@ int rsa_op(struct pkc_request *req)
 	switch (req->type) {
 	case RSA_PUB:
 		rsa_pub_op_init_crypto_mem(&crypto_ctx->crypto_mem);
-		pub_op_buffs = (rsa_pub_op_buffers_t *) crypto_ctx->crypto_mem.buffers;
-
 		if (-ENOMEM ==
 		    rsa_pub_op_cp_req(&req->req_u.rsa_pub_req,
 				      &crypto_ctx->crypto_mem)) {
@@ -734,6 +716,7 @@ int rsa_op(struct pkc_request *req)
 		constr_rsa_pub_op_desc(&crypto_ctx->crypto_mem);
 		print_debug("\t \t \t Desc constr complete...\n");
 
+		pub_op_buffs = &(crypto_ctx->crypto_mem.c_buffers.rsa_pub_op);
 #ifdef SEC_DMA
 		sec_dma = pub_op_buffs->desc_buff.dev_buffer.h_p_addr + offset;
 #else
@@ -752,9 +735,6 @@ int rsa_op(struct pkc_request *req)
 		break;
 	case RSA_PRIV_FORM1:
 		rsa_priv1_op_init_crypto_mem(&crypto_ctx->crypto_mem);
-		priv1_op_buffs =
-		    (rsa_priv1_op_buffers_t *) crypto_ctx->crypto_mem.buffers;
-
 		if (-ENOMEM ==
 		    rsa_priv1_op_cp_req(&req->req_u.rsa_priv_f1,
 					&crypto_ctx->crypto_mem)) {
@@ -772,6 +752,7 @@ int rsa_op(struct pkc_request *req)
 		constr_rsa_priv1_op_desc(&crypto_ctx->crypto_mem);
 		print_debug("\t \t \t Desc constr complete...\n");
 
+		priv1_op_buffs = &(crypto_ctx->crypto_mem.c_buffers.rsa_priv1_op);
 		sec_dma = priv1_op_buffs->desc_buff.dev_buffer.d_p_addr;
 
 		/* Store the context */
@@ -788,9 +769,6 @@ int rsa_op(struct pkc_request *req)
 
 	case RSA_PRIV_FORM2:
 		rsa_priv2_op_init_crypto_mem(&crypto_ctx->crypto_mem);
-		priv2_op_buffs =
-		    (rsa_priv2_op_buffers_t *) crypto_ctx->crypto_mem.buffers;
-
 		if (-ENOMEM ==
 		    rsa_priv2_op_cp_req(&req->req_u.rsa_priv_f2,
 					&crypto_ctx->crypto_mem)) {
@@ -808,6 +786,7 @@ int rsa_op(struct pkc_request *req)
 		constr_rsa_priv2_op_desc(&crypto_ctx->crypto_mem);
 		print_debug("\t \t \t Desc constr complete...\n");
 
+		priv2_op_buffs = &(crypto_ctx->crypto_mem.c_buffers.rsa_priv2_op);
 		sec_dma = priv2_op_buffs->desc_buff.dev_buffer.d_p_addr;
 
 		/* Store the context */
@@ -824,9 +803,6 @@ int rsa_op(struct pkc_request *req)
 
 	case RSA_PRIV_FORM3:
 		rsa_priv3_op_init_crypto_mem(&crypto_ctx->crypto_mem);
-		priv3_op_buffs =
-		    (rsa_priv3_op_buffers_t *) crypto_ctx->crypto_mem.buffers;
-
 		if (-ENOMEM ==
 		    rsa_priv3_op_cp_req(&req->req_u.rsa_priv_f3,
 					&crypto_ctx->crypto_mem)) {
@@ -847,6 +823,7 @@ int rsa_op(struct pkc_request *req)
 		constr_rsa_priv3_op_desc(&crypto_ctx->crypto_mem);
 		print_debug("\t \t \t Desc constr complete...\n");
 
+		priv3_op_buffs = &(crypto_ctx->crypto_mem.c_buffers.rsa_priv3_op);
 #ifdef SEC_DMA
 		sec_dma = priv3_op_buffs->desc_buff.dev_buffer.h_p_addr + offset;
 #else
@@ -921,10 +898,9 @@ int rsa_op(struct pkc_request *req)
 	goto out_no_ctx;
 
 out_err:
-	if (crypto_ctx->crypto_mem.buffers) {
-		dealloc_crypto_mem(&crypto_ctx->crypto_mem);
-		/*kfree(crypto_ctx->crypto_mem.buffers); */
-	}
+	dealloc_crypto_mem(&crypto_ctx->crypto_mem);
+	/*kfree(crypto_ctx->crypto_mem.buffers); */
+
 	free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
 	/*kfree(crypto_ctx); */
 out_no_ctx:
