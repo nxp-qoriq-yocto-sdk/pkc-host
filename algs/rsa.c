@@ -699,7 +699,7 @@ int rsa_op(struct pkc_request *req)
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
 		ret = -ENOMEM;
-		goto error;
+		goto out_err_no_ctx;
 	}
 
 	print_debug("\t Ring selected			:%d\n", r_id);
@@ -718,7 +718,7 @@ int rsa_op(struct pkc_request *req)
 		    rsa_pub_op_cp_req(&req->req_u.rsa_pub_req,
 				      &crypto_ctx->crypto_mem)) {
 			ret = -ENOMEM;
-			goto error;
+			goto out_err;
 		}
 		print_debug("\t \t \t Rsa pub op init mem complete.....\n");
 
@@ -759,7 +759,7 @@ int rsa_op(struct pkc_request *req)
 		    rsa_priv1_op_cp_req(&req->req_u.rsa_priv_f1,
 					&crypto_ctx->crypto_mem)) {
 			ret = -ENOMEM;
-			goto error;
+			goto out_err;
 		}
 		print_debug("\t \t \t Rsa pub op init mem complete....\n");
 
@@ -795,7 +795,7 @@ int rsa_op(struct pkc_request *req)
 		    rsa_priv2_op_cp_req(&req->req_u.rsa_priv_f2,
 					&crypto_ctx->crypto_mem)) {
 			ret = -ENOMEM;
-			goto error;
+			goto out_err;
 		}
 		print_debug("\t \t \t Rsa pub op init mem complete.....\n");
 
@@ -831,7 +831,7 @@ int rsa_op(struct pkc_request *req)
 		    rsa_priv3_op_cp_req(&req->req_u.rsa_priv_f3,
 					&crypto_ctx->crypto_mem)) {
 			ret = -ENOMEM;
-			goto error;
+			goto out_err;
 		}
 		print_debug("\t \t \t Rsa pub op init mem complete.....\n");
 
@@ -906,37 +906,33 @@ int rsa_op(struct pkc_request *req)
 		       dma_tx_complete_cb, crypto_ctx)) {
 		print_error("DMA to dev failed....\n");
 		ret = -1;
-		goto error;
+		goto out_err;
 	}
 #else
 	print_debug(KERN_ERR "Before app_ring_enqueue\n");
 	sec_dma = set_sec_affinity(c_dev, r_id, sec_dma);
-#ifndef HIGH_PERF
-	atomic_dec(&c_dev->active_jobs);
-#endif
 	/* Now enqueue the job into the app ring */
 	if (app_ring_enqueue(c_dev, r_id, sec_dma)) {
 		ret = -1;
-		goto error1;
+		goto out_err;
 	}
-#endif
-	return -EINPROGRESS;
-
-error:
 #ifndef HIGH_PERF
 	atomic_dec(&c_dev->active_jobs);
 #endif
-#ifndef USE_HOST_DMA
-error1:
 #endif
-	if (crypto_ctx) {
-		if (crypto_ctx->crypto_mem.buffers) {
-			dealloc_crypto_mem(&crypto_ctx->crypto_mem);
-			/*kfree(crypto_ctx->crypto_mem.buffers); */
-		}
-		free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
-		/*kfree(crypto_ctx); */
+	return -EINPROGRESS;
+
+out_err:
+	if (crypto_ctx->crypto_mem.buffers) {
+		dealloc_crypto_mem(&crypto_ctx->crypto_mem);
+		/*kfree(crypto_ctx->crypto_mem.buffers); */
 	}
+	free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
+	/*kfree(crypto_ctx); */
+out_err_no_ctx:
+#ifndef HIGH_PERF
+	atomic_dec(&c_dev->active_jobs);
+#endif
 	return ret;
 }
 
