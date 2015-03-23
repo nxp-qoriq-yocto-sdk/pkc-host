@@ -43,7 +43,6 @@ static bh *first_fit(bp *pool, uint32_t len);
 static void free_link(bp *pool, bh *node);
 static void link_add(bp *pool, bh *node);
 static void link_after(bp *pool, bh *node, bh *after);
-#define create_pool     reg_mem_pool
 
 /* Minimum quantum size in bytes */
 #define MIN_QUANT_SIZE      64

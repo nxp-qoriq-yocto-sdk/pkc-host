@@ -1118,7 +1118,7 @@ void init_op_pool(fsl_crypto_dev_t *dev)
 	dev->op_pool.p_addr = __pa(dev->op_pool.v_addr);
 
 	dev->op_pool.pool =
-	    reg_mem_pool(dev->op_pool.v_addr, DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
+	    create_pool(dev->op_pool.v_addr, DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
 }
 
 void init_ip_pool(fsl_crypto_dev_t *dev)
@@ -1128,7 +1128,7 @@ void init_ip_pool(fsl_crypto_dev_t *dev)
 	    __pa(dev->ip_pool.drv_map_pool.v_addr);
 
 	dev->ip_pool.drv_map_pool.pool =
-	    reg_mem_pool(dev->h_mem->ip_pool, FIRMWARE_IP_BUFFER_POOL_SIZE);
+	    create_pool(dev->h_mem->ip_pool, FIRMWARE_IP_BUFFER_POOL_SIZE);
 	print_debug
 	    ("\t \t Registered Pool Address			:%0x\n",
 	     dev->ip_pool.drv_map_pool.pool);

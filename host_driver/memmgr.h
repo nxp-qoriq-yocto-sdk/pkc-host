@@ -80,7 +80,7 @@ typedef struct buffer_pool {
 	spinlock_t mem_lock;
 } bp;
 
-void *reg_mem_pool(void *mem, uint32_t size);
+void *create_pool(void *mem, uint32_t size);
 void destroy_pool(void *pool);
 void *get_buffer(fsl_crypto_dev_t *c_dev, void *pool, uint32_t size,
 		 unsigned long flags);
