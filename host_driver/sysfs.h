@@ -116,15 +116,10 @@ typedef struct dev_sysfs_entries {
 	void *test_sub_dir;
 
 	sysfs_file_t dev_file;
-
 	sysfs_file_t fw_files[NUM_OF_FW_SYSFS_FILES];
-
 	sysfs_file_t pci_files[NUM_OF_PCI_SYSFS_FILES];
-
 	sysfs_file_t crypto_files[NUM_OF_CRYPTO_SYSFS_FILES];
-
 	sysfs_file_t stats_files[NUM_OF_STATS_SYSFS_FILES];
-
 	sysfs_file_t test_files[NUM_OF_TEST_SYSFS_FILES];
 } dev_sysfs_entries_t;
 
@@ -176,144 +171,8 @@ int32_t init_sysfs(fsl_pci_dev_t_1 *fsl_pci_dev);
 int32_t init_common_sysfs(void);
 void sysfs_cleanup(fsl_pci_dev_t_1 *fsl_pci_dev);
 void clean_common_sysfs(void);
-
-static ssize_t common_sysfs_show(struct kobject *kobj, struct attribute *attr,
-				 char *buf)
-{
-	struct k_obj_attribute *pci_attr =
-	    container_of(attr, struct k_obj_attribute, attr);
-	struct k_sysfs_file *sysfs_file =
-	    container_of(pci_attr, struct k_sysfs_file, attr);
-	uint32_t buf_len = 0;
-	if (sysfs_file->str_flag) {
-		sprintf((char *)buf, "%s\n", sysfs_file->buf);
-		buf_len = sysfs_file->buf_len;
-	} else {
-		sprintf((char *)(buf), "%u\n", sysfs_file->num);
-		buf_len = sizeof(sysfs_file->num);
-		buf_len = strlen(buf);
-	}
-
-	return buf_len;
-}
-
-static ssize_t common_sysfs_store(struct kobject *kobj, struct attribute *attr,
-				  const char *buf, size_t size)
-{
-	struct k_obj_attribute *pci_attr =
-	    container_of(attr, struct k_obj_attribute, attr);
-	struct k_sysfs_file *sysfs_file =
-	    container_of(pci_attr, struct k_sysfs_file, attr);
-
-	if (sysfs_file->str_flag) {
-		strncpy(sysfs_file->buf, buf, (size - 1));
-		sysfs_file->buf[size - 1] = '\0';
-		sysfs_file->buf_len = size;
-		sysfs_file->cb(sysfs_file->name, sysfs_file->buf,
-			       sysfs_file->buf_len, sysfs_file->str_flag);
-
-	} else {
-		sysfs_file->num = simple_strtol(buf, NULL, 10);
-		sysfs_file->cb(sysfs_file->name,
-			       (uint8_t *) (&(sysfs_file->num)), size,
-			       sysfs_file->str_flag);
-	}
-
-	return size;
-}
-
-static const struct sysfs_ops common_sysfs_ops = {
-	.show = common_sysfs_show,
-	.store = common_sysfs_store
-};
-
-static struct kobj_type sysfs_entry_type = {
-	.sysfs_ops = &common_sysfs_ops
-};
-
-static inline void *create_sysfs_file(int8_t *name, void *parent,
-				      uint8_t str_flag)
-{
-	int err = 0;
-	struct k_sysfs_file *newfile =
-	    kzalloc(sizeof(struct k_sysfs_file), GFP_KERNEL);
-	struct sysfs_dir *p_sysfs_dir = (struct sysfs_dir *)parent;
-
-	strcpy(newfile->name, name);
-
-	newfile->str_flag = str_flag;
-	newfile->cb = NULL;
-
-	newfile->attr.attr.name = newfile->name;
-	newfile->attr.attr.mode = S_IRUGO | S_IWUSR;
-	newfile->attr.show = NULL;
-	newfile->attr.store = NULL;
-
-	err = sysfs_create_file(&(p_sysfs_dir->kobj), &(newfile->attr.attr));
-	if (err) {
-		kfree(newfile);
-		return NULL;
-	}
-	return (void *)newfile;
-}
-
-static inline void *create_sysfs_file_cb(int8_t *name, void *parent,
-					 uint8_t str_flag, void (*cb) (char *, char *, int, char))
-{
-	struct k_sysfs_file *file = create_sysfs_file(name, parent, str_flag);
-	if (file)
-		file->cb = cb;
-	return file;
-}
-
-static inline void *create_sysfs_dir(char *name, void *parent)
-{
-	int ret = 0;
-	struct sysfs_dir *p_sysfs_dir = NULL;
-
-	struct sysfs_dir *newdir =
-	    kzalloc(sizeof(struct sysfs_dir), GFP_KERNEL);
-
-	if(!newdir)
-		return NULL;
-
-	p_sysfs_dir = (struct sysfs_dir *)parent;
-
-	strcpy(newdir->name, name);
-
-	KOBJECT_INIT_AND_ADD((&(newdir->kobj)), &sysfs_entry_type,
-			     ((parent == NULL) ? NULL : &(p_sysfs_dir->kobj)),
-			     name);
-
-	if (ret) {
-		kfree(newdir);
-		return NULL;
-	}
-
-	return (void *)newdir;
-}
-
-static inline void delete_sysfs_file(void *file, void *parent)
-{
-	struct k_sysfs_file *sysfs_file = (struct k_sysfs_file *)file;
-
-	if (NULL == file)
-		return;
-
-	sysfs_remove_file(&(((struct sysfs_dir *)parent)->kobj),
-			  &(sysfs_file->attr.attr));
-	kfree(sysfs_file);
-}
-
-static inline void delete_sysfs_dir(void *dir)
-{
-	struct sysfs_dir *sys_dir = (struct sysfs_dir *)dir;
-	if (NULL == dir)
-		return;
-
-	kobject_put(&(sys_dir->kobj));
-	kobject_del(&(sys_dir->kobj));
-	kfree(sys_dir);
-}
+ssize_t common_sysfs_show(struct kobject *, struct attribute *, char *);
+ssize_t common_sysfs_store(struct kobject *, struct attribute *, const char *,
+			size_t);
 
 #endif
