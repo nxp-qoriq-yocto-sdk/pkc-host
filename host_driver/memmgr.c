@@ -426,18 +426,16 @@ static void link_and_merge(bp *pool, bh *node)
 		head = head->next_link;
 	}
 
-	if (!add_after) {
+	if (add_after) {
+		/* Add after the current node */
+		print_debug("\t \t Adding after the node with address   :%0x\n",
+		     add_after);
+		link_after(pool, node, add_after);
+	} else {
 		/* Add before the current head */
 		print_debug("\t \t Adding before the list head....\n");
 		link_add(pool, node);
-	} else {
-		/* Add after the current node */
-		print_debug
-		    ("\t \t Adding after the node with address   :%0x\n",
-		     add_after);
-		link_after(pool, node, add_after);
 	}
-
 }
 
 static void free_link(bp *pool, bh *node)
