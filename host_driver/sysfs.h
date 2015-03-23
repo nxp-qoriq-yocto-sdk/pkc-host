@@ -102,7 +102,7 @@ typedef enum sys_files_id {
 
 typedef struct sysfs_file {
 	char *name;
-	void *file;
+	struct k_sysfs_file *file;
 	void (*cb) (char *, char *, int, char);
 } sysfs_file_t;
 

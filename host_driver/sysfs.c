@@ -121,7 +121,8 @@ ssize_t common_sysfs_store(struct kobject *kobj, struct attribute *attr,
 	return size;
 }
 
-void *create_sysfs_file(int8_t *name, struct sysfs_dir *parent, uint8_t str_flag)
+struct k_sysfs_file *create_sysfs_file(int8_t *name, struct sysfs_dir *parent,
+		uint8_t str_flag)
 {
 	int err = 0;
 	struct k_sysfs_file *newfile =
@@ -142,13 +143,13 @@ void *create_sysfs_file(int8_t *name, struct sysfs_dir *parent, uint8_t str_flag
 		kfree(newfile);
 		return NULL;
 	}
-	return (void *)newfile;
+	return newfile;
 }
 
 
 
-void *create_sysfs_file_cb(int8_t *name, struct sysfs_dir *parent, uint8_t str_flag,
-		void (*cb) (char *, char *, int, char))
+struct k_sysfs_file *create_sysfs_file_cb(int8_t *name, struct sysfs_dir *parent,
+		uint8_t str_flag, void (*cb) (char *, char *, int, char))
 {
 	struct k_sysfs_file *file = create_sysfs_file(name, parent, str_flag);
 	if (file)
@@ -177,15 +178,12 @@ struct sysfs_dir *create_sysfs_dir(char *name, struct sysfs_dir *parent)
 	return newdir;
 }
 
-void delete_sysfs_file(void *file, struct sysfs_dir *parent)
+void delete_sysfs_file(struct k_sysfs_file *file, struct sysfs_dir *parent)
 {
-	struct k_sysfs_file *sysfs_file = (struct k_sysfs_file *)file;
-
-	if (NULL == file)
-		return;
-
-	sysfs_remove_file(&(parent->kobj), &(sysfs_file->attr.attr));
-	kfree(sysfs_file);
+	if (file) {
+		sysfs_remove_file(&(parent->kobj), &(file->attr.attr));
+		kfree(file);
+	}
 }
 
 void delete_sysfs_dir(struct sysfs_dir *sys_dir)
@@ -290,8 +288,7 @@ int32_t init_sysfs(fsl_pci_dev_t *fsl_pci_dev)
 				      fsl_pci_dev->sysfs.fw_sub_dir,
 				      fw_sysfs_file_str_flag[i]);
 		/* SET THE CALLBACK FOR FW_TRIGGER */
-		((struct k_sysfs_file *)
-		 (fsl_pci_dev->sysfs.fw_files[i].file))->cb = set_device;
+		fsl_pci_dev->sysfs.fw_files[i].file->cb = set_device;
 
 		if (unlikely(NULL == fsl_pci_dev->sysfs.fw_files[i].file)) {
 			print_error("Dev file creation failed\n");
