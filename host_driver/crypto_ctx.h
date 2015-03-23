@@ -52,21 +52,6 @@ typedef struct ctx_pool {
 	spinlock_t ctx_lock;
 } ctx_pool_t;
 
-static inline void *init_ctx_pool(void)
-{
-	int i = 0;
-	ctx_pool_t *pool = kzalloc(sizeof(ctx_pool_t), GFP_KERNEL);
-
-	pool->head = &pool->mem[0];
-
-	for (i = 0; i < NUM_OF_CTXS - 1; i++)
-		pool->mem[i].next = &(pool->mem[i + 1]);
-	pool->mem[i].next = NULL;
-
-	spin_lock_init(&pool->ctx_lock);
-
-	return pool;
-}
 
 static inline void destroy_ctx_pool(void *id)
 {
