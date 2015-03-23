@@ -85,10 +85,10 @@ ssize_t common_sysfs_show(struct kobject *kobj, struct attribute *attr,
 	    container_of(pci_attr, struct k_sysfs_file, attr);
 	uint32_t buf_len = 0;
 	if (sysfs_file->str_flag) {
-		sprintf((char *)buf, "%s\n", sysfs_file->buf);
+		sprintf(buf, "%s\n", sysfs_file->buf);
 		buf_len = sysfs_file->buf_len;
 	} else {
-		sprintf((char *)(buf), "%u\n", sysfs_file->num);
+		sprintf(buf, "%u\n", sysfs_file->num);
 		buf_len = sizeof(sysfs_file->num);
 		buf_len = strlen(buf);
 	}
