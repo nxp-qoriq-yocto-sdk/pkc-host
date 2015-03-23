@@ -124,7 +124,7 @@ ssize_t common_sysfs_store(struct kobject *kobj, struct attribute *attr,
 struct k_sysfs_file *create_sysfs_file(int8_t *name, struct sysfs_dir *parent,
 		uint8_t str_flag)
 {
-	int err = 0;
+	int err;
 	struct k_sysfs_file *newfile =
 	    kzalloc(sizeof(struct k_sysfs_file), GFP_KERNEL);
 	if (!newfile)
@@ -133,12 +133,8 @@ struct k_sysfs_file *create_sysfs_file(int8_t *name, struct sysfs_dir *parent,
 	strcpy(newfile->name, name);
 
 	newfile->str_flag = str_flag;
-	newfile->cb = NULL;
-
 	newfile->attr.attr.name = newfile->name;
 	newfile->attr.attr.mode = S_IRUGO | S_IWUSR;
-	newfile->attr.show = NULL;
-	newfile->attr.store = NULL;
 
 	err = sysfs_create_file(&(parent->kobj), &(newfile->attr.attr));
 	if (err) {
@@ -147,8 +143,6 @@ struct k_sysfs_file *create_sysfs_file(int8_t *name, struct sysfs_dir *parent,
 	}
 	return newfile;
 }
-
-
 
 struct k_sysfs_file *create_sysfs_file_cb(int8_t *name, struct sysfs_dir *parent,
 		uint8_t str_flag, void (*cb) (char *, char *, int, char))
@@ -227,6 +221,7 @@ int32_t init_common_sysfs(void)
     }
     return 0;
 }
+
 int32_t init_sysfs(fsl_pci_dev_t *fsl_pci_dev)
 {
 	uint32_t i = 0;
