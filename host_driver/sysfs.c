@@ -121,12 +121,11 @@ ssize_t common_sysfs_store(struct kobject *kobj, struct attribute *attr,
 	return size;
 }
 
-void *create_sysfs_file(int8_t *name, void *parent, uint8_t str_flag)
+void *create_sysfs_file(int8_t *name, struct sysfs_dir *parent, uint8_t str_flag)
 {
 	int err = 0;
 	struct k_sysfs_file *newfile =
 	    kzalloc(sizeof(struct k_sysfs_file), GFP_KERNEL);
-	struct sysfs_dir *p_sysfs_dir = (struct sysfs_dir *)parent;
 
 	strcpy(newfile->name, name);
 
@@ -138,7 +137,7 @@ void *create_sysfs_file(int8_t *name, void *parent, uint8_t str_flag)
 	newfile->attr.show = NULL;
 	newfile->attr.store = NULL;
 
-	err = sysfs_create_file(&(p_sysfs_dir->kobj), &(newfile->attr.attr));
+	err = sysfs_create_file(&(parent->kobj), &(newfile->attr.attr));
 	if (err) {
 		kfree(newfile);
 		return NULL;
@@ -148,7 +147,7 @@ void *create_sysfs_file(int8_t *name, void *parent, uint8_t str_flag)
 
 
 
-void *create_sysfs_file_cb(int8_t *name, void *parent, uint8_t str_flag,
+void *create_sysfs_file_cb(int8_t *name, struct sysfs_dir *parent, uint8_t str_flag,
 		void (*cb) (char *, char *, int, char))
 {
 	struct k_sysfs_file *file = create_sysfs_file(name, parent, str_flag);
@@ -157,52 +156,45 @@ void *create_sysfs_file_cb(int8_t *name, void *parent, uint8_t str_flag,
 	return file;
 }
 
-void *create_sysfs_dir(char *name, void *parent)
+struct sysfs_dir *create_sysfs_dir(char *name, struct sysfs_dir *parent)
 {
 	int ret = 0;
-	struct sysfs_dir *p_sysfs_dir, *newdir;
+	struct sysfs_dir *newdir;
 
 	newdir = kzalloc(sizeof(struct sysfs_dir), GFP_KERNEL);
 	if(!newdir)
 		return NULL;
-
-	p_sysfs_dir = (struct sysfs_dir *)parent;
-
 	strcpy(newdir->name, name);
 
 	KOBJECT_INIT_AND_ADD((&(newdir->kobj)), &sysfs_entry_type,
-			     ((parent == NULL) ? NULL : &(p_sysfs_dir->kobj)),
+			     ((parent == NULL) ? NULL : &(parent->kobj)),
 			     name);
 
 	if (ret) {
 		kfree(newdir);
 		return NULL;
 	}
-
-	return (void *)newdir;
+	return newdir;
 }
 
-void delete_sysfs_file(void *file, void *parent)
+void delete_sysfs_file(void *file, struct sysfs_dir *parent)
 {
 	struct k_sysfs_file *sysfs_file = (struct k_sysfs_file *)file;
 
 	if (NULL == file)
 		return;
 
-	sysfs_remove_file(&(((struct sysfs_dir *)parent)->kobj),
-			  &(sysfs_file->attr.attr));
+	sysfs_remove_file(&(parent->kobj), &(sysfs_file->attr.attr));
 	kfree(sysfs_file);
 }
 
-void delete_sysfs_dir(void *dir)
+void delete_sysfs_dir(struct sysfs_dir *sys_dir)
 {
-	struct sysfs_dir *sys_dir = (struct sysfs_dir *)dir;
-	if (NULL == dir)
-		return;
-
-	kobject_put(&(sys_dir->kobj));
-	kobject_del(&(sys_dir->kobj));
-	kfree(sys_dir);
+	if (sys_dir) {
+		kobject_put(&(sys_dir->kobj));
+		kobject_del(&(sys_dir->kobj));
+		kfree(sys_dir);
+	}
 }
 
 void clean_common_sysfs(void)

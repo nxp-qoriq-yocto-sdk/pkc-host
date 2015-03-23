@@ -175,7 +175,7 @@ LIST_HEAD(crypto_dev_config_list);
 LIST_HEAD(per_core_list_head);
 
 /* Head of all the sysfs entries */
-void *fsl_sysfs_entries;
+struct sysfs_dir *fsl_sysfs_entries;
 void *wt_loop_cnt_sysfs_file;
 
 /* Pointer to the base of per cpu memory */

@@ -107,13 +107,13 @@ typedef struct sysfs_file {
 } sysfs_file_t;
 
 typedef struct dev_sysfs_entries {
-	void *dev_dir;
+	struct sysfs_dir *dev_dir;
 
-	void *fw_sub_dir;
-	void *pci_sub_dir;
-	void *crypto_sub_dir;
-	void *stats_sub_dir;
-	void *test_sub_dir;
+	struct sysfs_dir *fw_sub_dir;
+	struct sysfs_dir *pci_sub_dir;
+	struct sysfs_dir *crypto_sub_dir;
+	struct sysfs_dir *stats_sub_dir;
+	struct sysfs_dir *test_sub_dir;
 
 	sysfs_file_t dev_file;
 	sysfs_file_t fw_files[NUM_OF_FW_SYSFS_FILES];
@@ -155,7 +155,7 @@ struct k_sysfs_file {
 typedef struct fsl_pci_dev fsl_pci_dev_t_1;
 
 /* Head of all the sysfs entries */
-extern void *fsl_sysfs_entries;
+extern struct sysfs_dir *fsl_sysfs_entries;
 
 /* CALLBACK FUN FOR FW TRIGGER */
 extern void set_device(char *, char *, int, char);
