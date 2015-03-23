@@ -180,16 +180,14 @@ void *alloc_buffer(void *id, uint32_t len, unsigned long flag)
 	if (!f_node) {
 		print_debug("No free buffers to allocate ...  Avail mem: %d\n",
 			    pool->tot_free_mem);
-		spin_unlock_bh(&(pool->mem_lock));
-		return NULL;
+		goto error;
 	}
 
 	/* If the requested length does not fit to overall available free mem */
 	if (len > pool->tot_free_mem/*-sizeof(bh)*/) {
 		print_info("Not enough space ...  asked: %d Left: %d\n", len,
 			    pool->tot_free_mem);
-		spin_unlock_bh(&(pool->mem_lock));
-		return NULL;
+		goto error;
 	}
 
 	/*f_node  = best_fit(pool, len); */
@@ -204,8 +202,7 @@ void *alloc_buffer(void *id, uint32_t len, unsigned long flag)
 
 	if (f_node->in_use == 1) {
 		print_error("Free nod is in use....\n");
-		spin_unlock_bh(&(pool->mem_lock));
-		return NULL;
+		goto error;
 	}
 
 	if (len == f_node->len
