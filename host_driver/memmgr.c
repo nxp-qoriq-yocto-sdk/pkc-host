@@ -145,16 +145,7 @@ error:
 
 	return NULL;
 }
-/******************************************************************************
-Description :   Destroying the device memory pool.    
-Fields      :
-			pool    :  address of the mempool.
-Returns     :   None.
-******************************************************************************/
-void destroy_pool(void *pool)
-{
-	kfree(pool);
-}
+
 /******************************************************************************
 Description :	Allocates the memory from mempool.   
 Fields      :	

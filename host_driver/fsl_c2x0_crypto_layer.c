@@ -1431,9 +1431,9 @@ void cleanup_crypto_device(fsl_crypto_dev_t *dev)
 	}
 #endif
 
-	destroy_ctx_pool(dev->ctx_pool);
-	destroy_pool(dev->ip_pool.drv_map_pool.pool);
-	destroy_pool(dev->op_pool.pool);
+	kfree(dev->ctx_pool);
+	kfree(dev->ip_pool.drv_map_pool.pool);
+	kfree(dev->op_pool.pool);
 
 	/* Free the pci alloc consistent mem */
 	if (dev->mem[MEM_TYPE_DRIVER].host_v_addr) {

@@ -52,13 +52,6 @@ typedef struct ctx_pool {
 	spinlock_t ctx_lock;
 } ctx_pool_t;
 
-
-static inline void destroy_ctx_pool(void *id)
-{
-	ctx_pool_t *pool = id;
-	kfree(pool);
-}
-
 static inline void *get_crypto_ctx(void *id)
 {
 	ctx_pool_t *pool = id;
