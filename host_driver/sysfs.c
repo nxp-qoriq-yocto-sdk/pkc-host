@@ -127,6 +127,8 @@ struct k_sysfs_file *create_sysfs_file(int8_t *name, struct sysfs_dir *parent,
 	int err = 0;
 	struct k_sysfs_file *newfile =
 	    kzalloc(sizeof(struct k_sysfs_file), GFP_KERNEL);
+	if (!newfile)
+		return NULL;
 
 	strcpy(newfile->name, name);
 
