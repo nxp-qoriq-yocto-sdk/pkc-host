@@ -49,27 +49,28 @@ extern fsl_pci_dev_t *g_fsl_pci_dev;
 
 static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 {
-	uint32_t i = 0;
-	uint32_t offset = 0;
+	uint32_t i;
 	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
 
-	for (i = 0; i < mem_info->count; i++) {
+	/* BT_DESC is only the first in the array */
+	buffers[0].v_mem = mem;
+	mem += ALIGN_LEN_TO_DMA(buffers[0].len);
+
+	for (i = 1; i < mem_info->count; i++) {
 		switch (buffers[i].bt) {
-		case BT_DESC:
-			buffers[i].v_mem = (mem + offset);
-			offset += ALIGN_LEN_TO_DMA(buffers[i].len);
-			break;
 		case BT_IP:
 			if (!mem_info->split_ip) {
-				buffers[i].v_mem = (mem + offset);
-				offset += ALIGN_LEN_TO_DMA(buffers[i].len);
+				buffers[i].v_mem = mem;
+				mem += ALIGN_LEN_TO_DMA(buffers[i].len);
 			}
 			break;
 		case BT_OP:
 #ifdef OP_BUFFER_IN_DEV_MEM
-			buffers[i].v_mem = (mem + offset);
-			offset += ALIGN_LEN_TO_DMA(buffers[i].len);
+			buffers[i].v_mem = mem;
+			mem += ALIGN_LEN_TO_DMA(buffers[i].len);
 #endif
+			break;
+		default:
 			break;
 		}
 	}
