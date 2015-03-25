@@ -402,6 +402,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			struct virtio_c2x0_job_ctx *next_job = NULL;
 			int ret = -1;
 
+			spin_lock(&cmd_list_lock);
 			list_for_each_entry_safe(virtio_job, next_job,
 						 &virtio_c2x0_cmd_list,
 						 list_entry) {
@@ -581,6 +582,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 		    /********************/
 				}
 			}
+			spin_unlock(&cmd_list_lock);
 			return ret;
 		}
 		break;
