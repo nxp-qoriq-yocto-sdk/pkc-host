@@ -585,8 +585,8 @@ static cmd_op_t *get_cmd_op_ctx(fsl_crypto_dev_t *c_dev,
 	print_debug("c_dev->op_pool.pool : %0llx, %0x\n", c_dev->op_pool.pool,
 		    c_dev->op_pool.pool);
 	cmd_op =
-	    (cmd_op_t *) cmd_get_op_buffer(c_dev->op_pool.pool,
-					   sizeof(cmd_op_t), 0);
+	    (cmd_op_t *) alloc_buffer(c_dev->op_pool.pool, sizeof(cmd_op_t), 0);
+
 	if (NULL == cmd_op) {
 		print_error("Op buffer alloc failed !!!!\n");
 		goto error;
@@ -770,7 +770,7 @@ exit:
 
 	if (NULL != cmd_op) {
 		kfree(cmd_op->cmd_ctx);
-		cmd_put_op_buffer(c_dev->op_pool.pool, cmd_op);
+		free_buffer(c_dev->op_pool.pool, cmd_op);
 	}
 
 	return ret;

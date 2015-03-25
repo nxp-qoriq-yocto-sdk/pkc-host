@@ -556,8 +556,6 @@ void init_fw_resp_ring(fsl_crypto_dev_t *dev);
 void init_rps(fsl_crypto_dev_t *dev);
 crypto_dev_config_t *get_config(uint32_t dev_no);
 
-void *cmd_get_op_buffer(void *id, uint32_t len, unsigned long flag);
-void cmd_put_op_buffer(void *id, void *addr);
 int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set);
 
 #ifdef MULTIPLE_RESP_RINGS

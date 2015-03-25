@@ -1785,16 +1785,6 @@ static inline unsigned long ip_buf_d_v_addr(fsl_crypto_dev_t *dev,
 	return (unsigned long)(dev->ip_pool.fw_pool.host_map_v_addr + offset);
 }
 
-void *cmd_get_op_buffer(void *id, uint32_t len, unsigned long flag)
-{
-	return alloc_buffer(id, len, flag);
-}
-
-void cmd_put_op_buffer(void *id, void *addr)
-{
-	free_buffer(id, addr);
-}
-
 void *get_buffer(fsl_crypto_dev_t *c_dev, void *id, uint32_t len,
 		 unsigned long flag)
 {
@@ -1813,15 +1803,8 @@ void *get_buffer(fsl_crypto_dev_t *c_dev, void *id, uint32_t len,
 
 void put_buffer(fsl_crypto_dev_t *c_dev, void *id, void *addr)
 {
-/*
-	fsl_crypto_dev_t *dev = NULL;
-
-	dev = get_crypto_dev(1);
-*/
-	addr =
-	    c_dev->ip_pool.drv_map_pool.v_addr + (addr -
-						  c_dev->ip_pool.
-						  fw_pool.host_map_v_addr);
+	addr += c_dev->ip_pool.drv_map_pool.v_addr -
+		c_dev->ip_pool.fw_pool.host_map_v_addr;
 	free_buffer(id, addr);
 }
 
