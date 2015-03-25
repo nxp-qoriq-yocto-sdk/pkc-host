@@ -110,17 +110,17 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 			tot_mem += aligned_len;
 			break;
 		case BT_IP:
-			if (!mem_info->split_ip) {
-				tot_mem += aligned_len;
-			} else {
+			if (mem_info->split_ip) {
 				buffers[i].v_mem = alloc_buffer(mem_info->pool,
 								aligned_len, 1);
 				if (unlikely(!buffers[i].v_mem)) {
 					print_error("Alloc mem for buff :%d type :%d failed\n",
-					     i, buffers[i].bt);
+						     i, buffers[i].bt);
 					goto error;
 				}
 				mem_info->sg_cnt++;
+			} else {
+				tot_mem += aligned_len;
 			}
 			break;
 		case BT_OP:
