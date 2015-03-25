@@ -184,18 +184,25 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
 	uint32_t i = 0;
 
-	if (NULL != buffers[0].v_mem)
+	if (buffers[0].v_mem)
 		free_buffer(mem_info->pool, buffers[0].v_mem);
 
-	/* The structure will have all the memory requirements */
-	if (mem_info->split_ip) {
-		for (i = 0; i < mem_info->count; i++) {
-			if (BT_IP == buffers[i].bt) {
-				if (NULL != buffers[i].v_mem)
-					free_buffer(mem_info->pool, buffers[i].v_mem);
-			}
+	for (i = 1; i < mem_info->count; i++) {
+		switch (buffers[i].bt) {
+		case BT_IP:
+			if (mem_info->split_ip && buffers[i].v_mem)
+				free_buffer(mem_info->pool, buffers[i].v_mem);
+			break;
+		case BT_OP:
+			if (buffers[i].dev_buffer.h_dma_addr)
+				pci_unmap_single(pci_dev->dev, buffers[i].dev_buffer.
+						 h_dma_addr, buffers[i].len,
+						 PCI_DMA_BIDIRECTIONAL);
+		default:
+			break;
 		}
 	}
+
 #if 0
 #ifdef OP_BUFFER_IN_DEV_MEM
 	for (i = 0; i < mem_info->count; i++) {
@@ -204,21 +211,6 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 	}
 #endif
 #endif
-
-	for (i = 0; i < mem_info->count; i++) {
-		switch (buffers[i].bt) {
-		case BT_DESC:
-		case BT_IP:
-			break;
-		case BT_OP:
-			if (0 != buffers[i].dev_buffer.h_dma_addr)
-				pci_unmap_single(pci_dev->dev, buffers[i].dev_buffer.
-						 h_dma_addr, buffers[i].len,
-						 PCI_DMA_BIDIRECTIONAL);
-			break;
-		}
-	}
-
 	return 0;
 }
 
