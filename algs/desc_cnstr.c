@@ -40,6 +40,7 @@
 #include "pkc_desc.h"
 #include "memmgr.h"
 
+/* FIXME: code depending on OP_BUFFER_IN_DEV_MEM is wrapped by #if 0 */
 #undef OP_BUFFER_IN_DEV_MEM
 /* #define RETRY_FOR_BUFFERS */
 
