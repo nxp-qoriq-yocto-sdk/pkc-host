@@ -286,7 +286,7 @@ Returns     :	SUCCESS/ FAILURE
 
 void host_to_dev(crypto_mem_info_t *mem_info)
 {
-	uint32_t i = 0;
+	uint32_t i;
 	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
 
 	for (i = 0; i < mem_info->count; i++) {
