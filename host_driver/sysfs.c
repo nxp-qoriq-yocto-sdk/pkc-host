@@ -132,6 +132,7 @@ struct k_sysfs_file *create_sysfs_file(int8_t *name, struct sysfs_dir *parent,
 
 	strcpy(newfile->name, name);
 
+	sysfs_attr_init(&newfile->attr.attr);
 	newfile->str_flag = str_flag;
 	newfile->attr.attr.name = newfile->name;
 	newfile->attr.attr.mode = S_IRUGO | S_IWUSR;
