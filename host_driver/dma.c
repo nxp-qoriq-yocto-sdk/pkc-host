@@ -190,14 +190,10 @@ static int32_t prep_dma_tx(dma_addr_t s_dma_addr, dma_addr_t d_dma_addr,
 	struct dma_device *dma_dev = dma_chnl->chnl->device;
 	struct dma_async_tx_descriptor *dma_desc = NULL;
 	dma_cookie_t dma_cookie = { 0 };
-	enum dma_ctrl_flags dma_flags = 0;
+	enum dma_ctrl_flags dma_flags = DMA_CTRL_ACK | DMA_PREP_INTERRUPT;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)
-	dma_flags =
-	    DMA_CTRL_ACK | DMA_PREP_INTERRUPT;
-#else
-	dma_flags =
-		DMA_CTRL_ACK | DMA_PREP_INTERRUPT | DMA_COMPL_SKIP_DEST_UNMAP;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,12,0)
+	dma_flags |= DMA_COMPL_SKIP_DEST_UNMAP;
 #endif
 
 	dma_desc =
