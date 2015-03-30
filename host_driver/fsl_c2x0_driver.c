@@ -911,8 +911,8 @@ static void response_ring_handler(void *data)
     struct work_struct *work = (struct work_struct *)data; 
 #endif
 	bh_handler_t *bh = container_of(work, bh_handler_t, work);
-	per_core_struct_t *instance = NULL;
-	fsl_crypto_dev_t *c_dev = NULL;
+	per_core_struct_t *instance;
+	fsl_crypto_dev_t *c_dev;
 
 	if (unlikely(NULL == bh)) {
 		print_error("No bottom half handler found for the work\n");
@@ -1575,10 +1575,8 @@ error:
 int32_t create_per_core_info(void)
 {
 	uint32_t i = 0;
-
 	uint8_t wq_name[10];
-
-	per_core_struct_t *instance = NULL;
+	per_core_struct_t *instance;
 
 	per_core = alloc_percpu(per_core_struct_t);
 
