@@ -48,7 +48,6 @@ typedef struct ctx {
 typedef struct ctx_pool {
 	ctx_t mem[NUM_OF_CTXS];
 	ctx_t *head;
-	ctx_t *tail;
 	spinlock_t ctx_lock;
 } ctx_pool_t;
 
