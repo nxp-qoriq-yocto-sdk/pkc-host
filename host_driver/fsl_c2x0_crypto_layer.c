@@ -1793,20 +1793,6 @@ void put_buffer(fsl_crypto_dev_t *c_dev, void *id, void *addr)
 	free_buffer(id, addr);
 }
 
-void store_crypto_ctx(fsl_crypto_dev_t *c_dev, void *pool, void *buffer,
-		      void *ctx)
-{
-/*	fsl_crypto_dev_t *dev = get_crypto_dev(1); */
-	void *addr =
-	    c_dev->ip_pool.drv_map_pool.v_addr + (buffer -
-						  c_dev->ip_pool.
-						  fw_pool.host_map_v_addr);
-#ifndef HIGH_PERF
-	set_flag(pool, addr, 0);
-#endif
-	store_priv_data(pool, addr, (unsigned long)ctx);
-}
-
 #ifndef HIGH_PERF
 #ifdef MULTIPLE_RESP_RINGS
 static void store_dev_ctx(void *buffer, uint8_t rid, uint32_t wi)

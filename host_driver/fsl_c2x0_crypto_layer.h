@@ -542,8 +542,6 @@ int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 void *fsl_crypto_layer_add_device(void *dev, crypto_dev_config_t *config);
 void demux_fw_responses(fsl_crypto_dev_t *dev);
 void cleanup_crypto_device(fsl_crypto_dev_t *dev);
-void store_crypto_ctx(fsl_crypto_dev_t *c_dev, void *pool, void *buffer,
-		      void *ctx);
 int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);
 void rearrange_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);
 int32_t distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);
