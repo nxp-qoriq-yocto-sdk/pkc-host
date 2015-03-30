@@ -320,22 +320,23 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 {
 	/* First get the total ob mem required */
 	uint32_t ob_mem_len = calc_ob_mem_len(dev, config);
+	void *host_v_addr;
 
 	print_debug("\t alloc_ob_mem entered........\n");
 	print_debug("\t Total ob mem returned	:%d\n", ob_mem_len);
 
-	dev->mem[MEM_TYPE_DRIVER].host_v_addr =
-	    pci_alloc_consistent(((fsl_pci_dev_t *) dev->priv_dev)->dev,
-				 ob_mem_len,
-				 &(dev->mem[MEM_TYPE_DRIVER].host_dma_addr));
-	dev->mem[MEM_TYPE_DRIVER].len = ob_mem_len;
-	if (unlikely(NULL == dev->mem[MEM_TYPE_DRIVER].host_v_addr)) {
+	host_v_addr = pci_alloc_consistent(((fsl_pci_dev_t *) dev->priv_dev)->dev,
+			ob_mem_len,
+			&(dev->mem[MEM_TYPE_DRIVER].host_dma_addr));
+	if (unlikely(!host_v_addr)) {
 		print_error("\t \t Allocating ob mem failed....\n");
-		goto error;
+		return -ENOMEM;
 	}
 
-	dev->mem[MEM_TYPE_DRIVER].host_p_addr =
-	    __pa(dev->mem[MEM_TYPE_DRIVER].host_v_addr);
+	dev->mem[MEM_TYPE_DRIVER].host_v_addr = host_v_addr;
+	dev->mem[MEM_TYPE_DRIVER].host_p_addr = __pa(host_v_addr);
+	dev->mem[MEM_TYPE_DRIVER].len = ob_mem_len;
+
 	print_debug("OB Mem address....	:%0x\n",
 		    dev->mem[MEM_TYPE_DRIVER].host_v_addr);
 	print_debug("OB Mem dma address... :%0x\n",
@@ -343,31 +344,18 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	print_debug("OB Mem physical address.. :%0x\n",
 		    dev->mem[MEM_TYPE_DRIVER].host_p_addr);
 
-	dev->h_mem = dev->mem[MEM_TYPE_DRIVER].host_v_addr;
-
 	/* Assign the diff pointers properly */
-	dev->h_mem->fw_resp_ring =
-	    (dev->mem[MEM_TYPE_DRIVER].host_v_addr + dev->ob_mem.fw_resp_ring);
-	dev->h_mem->drv_resp_ring =
-	    (dev->mem[MEM_TYPE_DRIVER].host_v_addr +
-	     dev->ob_mem.drv_resp_rings);
-	dev->h_mem->l_idxs_mem =
-	    (dev->mem[MEM_TYPE_DRIVER].host_v_addr + dev->ob_mem.l_idxs_mem);
-	dev->h_mem->s_c_idxs_mem =
-	    (dev->mem[MEM_TYPE_DRIVER].host_v_addr + dev->ob_mem.s_c_idxs_mem);
-	dev->h_mem->l_r_cntrs_mem =
-	    (dev->mem[MEM_TYPE_DRIVER].host_v_addr + dev->ob_mem.l_r_cntrs_mem);
-	dev->h_mem->s_c_r_cntrs_mem =
-	    (dev->mem[MEM_TYPE_DRIVER].host_v_addr +
-	     dev->ob_mem.s_c_r_cntrs_mem);
-	dev->h_mem->cntrs_mem =
-	    (dev->mem[MEM_TYPE_DRIVER].host_v_addr + dev->ob_mem.cntrs_mem);
-	dev->h_mem->s_c_cntrs_mem =
-	    (dev->mem[MEM_TYPE_DRIVER].host_v_addr + dev->ob_mem.s_c_cntrs_mem);
-	dev->h_mem->op_pool =
-	    (dev->mem[MEM_TYPE_DRIVER].host_v_addr + dev->ob_mem.op_pool);
-	dev->h_mem->ip_pool =
-	    (dev->mem[MEM_TYPE_DRIVER].host_v_addr + dev->ob_mem.ip_pool);
+	dev->h_mem = host_v_addr;
+	dev->h_mem->fw_resp_ring = host_v_addr + dev->ob_mem.fw_resp_ring;
+	dev->h_mem->drv_resp_ring = host_v_addr + dev->ob_mem.drv_resp_rings;
+	dev->h_mem->l_idxs_mem = host_v_addr + dev->ob_mem.l_idxs_mem;
+	dev->h_mem->s_c_idxs_mem = host_v_addr + dev->ob_mem.s_c_idxs_mem;
+	dev->h_mem->l_r_cntrs_mem = host_v_addr + dev->ob_mem.l_r_cntrs_mem;
+	dev->h_mem->s_c_r_cntrs_mem = host_v_addr + dev->ob_mem.s_c_r_cntrs_mem;
+	dev->h_mem->cntrs_mem = host_v_addr + dev->ob_mem.cntrs_mem;
+	dev->h_mem->s_c_cntrs_mem = host_v_addr + dev->ob_mem.s_c_cntrs_mem;
+	dev->h_mem->op_pool = host_v_addr + dev->ob_mem.op_pool;
+	dev->h_mem->ip_pool = host_v_addr + dev->ob_mem.ip_pool;
 
 	print_debug("\n ====== OB MEM POINTERS =======\n");
 	print_debug("\t Hmem			:%0x\n", dev->h_mem);
@@ -391,9 +379,6 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	print_debug("\t Total req mem size	:%0x\n", dev->tot_req_mem_size);
 
 	return 0;
-
-error:
-	return -1;
 }
 
 void init_handshake(fsl_crypto_dev_t *dev)
