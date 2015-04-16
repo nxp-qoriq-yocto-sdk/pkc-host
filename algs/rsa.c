@@ -693,12 +693,10 @@ int rsa_op(struct pkc_request *req)
 	switch (req->type) {
 	case RSA_PUB:
 		rsa_pub_op_init_crypto_mem(&crypto_ctx->crypto_mem);
-		if (-ENOMEM ==
-		    rsa_pub_op_cp_req(&req->req_u.rsa_pub_req,
-				      &crypto_ctx->crypto_mem)) {
-			ret = -ENOMEM;
+		ret = rsa_pub_op_cp_req(&req->req_u.rsa_pub_req, &crypto_ctx->crypto_mem);
+		if (ret != 0)
 			goto out_err;
-		}
+
 		print_debug("\t \t \t Rsa pub op init mem complete.....\n");
 
 		/* Convert the buffers to dev */

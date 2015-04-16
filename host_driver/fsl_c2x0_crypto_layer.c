@@ -1481,16 +1481,11 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 #ifndef HIGH_PER
 	if (get_flag(dev->ip_pool.drv_map_pool.pool, h_desc))
 #endif
-		ctx0 =
-		    (crypto_op_ctx_t *) get_priv_data(dev->ip_pool.
-						      drv_map_pool.pool,
-						      h_desc);
+		ctx0 = (crypto_op_ctx_t *) get_priv_data(dev->ip_pool.drv_map_pool.pool, h_desc);
 #ifndef HIGH_PERF
 	else
-		ctx1 =
-		    (crypto_job_ctx_t *) get_priv_data(dev->
-						       ip_pool.drv_map_pool.
-						       pool, h_desc);
+		ctx1 = (crypto_job_ctx_t *) get_priv_data(dev->ip_pool.drv_map_pool.pool, h_desc);
+
 	print_debug("Total Resp count: %d\n", ++total_resp);
 	print_debug
 	    ("[DEQ] Dev sec desc :%0llx H sec desc :%0x"
@@ -1669,8 +1664,7 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 	char outstr[MAX_ERROR_STRING];
 	fsl_h_rsrc_ring_pair_t *ring_cursor = NULL;
 
-	print_debug
-	    (" ---------------- PROCESSING RESPONSE ------------------\n");
+	print_debug(" ---------------- PROCESSING RESPONSE ------------------\n");
 
 	list_for_each_entry(ring_cursor, ring_list_head, bh_ctx_list_node) {
 		pollcount = 0;
@@ -1679,69 +1673,55 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 #ifdef HOST_TYPE_P4080
 			jobs_added = ring_cursor->s_c_counters->jobs_added;
 #else
-			ASSIGN32(jobs_added,
-				 ring_cursor->s_c_counters->jobs_added);
+			ASSIGN32(jobs_added, ring_cursor->s_c_counters->jobs_added);
 #endif
-			resp_cnt =
-			    jobs_added - ring_cursor->counters->jobs_processed;
-
+			resp_cnt = jobs_added - ring_cursor->counters->jobs_processed;
 			if (!resp_cnt)
 				continue;
 
 			dev = (fsl_crypto_dev_t *) ring_cursor->dev;
 			r_id = ring_cursor->info.ring_id;
 			ri = ring_cursor->indexes->r_index;
-			print_debug("RING ID : %d\n",
-				    ring_cursor->info.ring_id);
-			print_debug("GOT INTERRUPT FROM DEV : %d\n",
-				    dev->config->dev_no);
+			print_debug("RING ID : %d\n", ring_cursor->info.ring_id);
+			print_debug("GOT INTERRUPT FROM DEV : %d\n", dev->config->dev_no);
 
 			while (resp_cnt) {
 #ifdef HOST_TYPE_P4080
 				desc = ring_cursor->resp_r[ri].sec_desc;
 				res = ring_cursor->resp_r[ri].result;
 #else
-				ASSIGN64(desc,
-					 ring_cursor->resp_r[ri].sec_desc);
+				ASSIGN64(desc, ring_cursor->resp_r[ri].sec_desc);
 				ASSIGN32(res, ring_cursor->resp_r[ri].result);
 #endif
 				ri = (ri + 1) % (ring_cursor->depth);
 				ring_cursor->indexes->r_index = ri;
 #ifndef HIGH_PERF
 				if (r_id == 0) {
-					print_debug
-					    ("COMMAND RING GOT AN INTERRUPT\n");
+					print_debug("COMMAND RING GOT AN INTERRUPT\n");
 
 					if (desc)
-						process_cmd_response(dev, desc,
-								     res);
+						process_cmd_response(dev, desc, res);
 				} else 
 #endif
 				{
-					print_debug
-					    ("APP RING GOT AN INTERRUPT\n");
+					print_debug("APP RING GOT AN INTERRUPT\n");
 
 					if (desc) {
-						if (res)
-						{
+						if (res) {
 							sec_jr_strstatus(outstr, res);
-							printk(KERN_INFO "SEC Error:%s\n",
-							       outstr);
+							printk(KERN_INFO "SEC Error:%s\n", outstr);
 						}
 						handle_response(dev, desc, res);
-					} else
-						print_error
-					    ("INVALID DESC AT RI : %u\n",
-					     ri - 1);
+					} else {
+						print_error("INVALID DESC AT RI : %u\n", ri - 1);
+					}
 #ifndef HIGH_PERF
 					atomic_inc_return(&dev->app_resp_cnt);
 #endif
 				}
 				ring_cursor->counters->jobs_processed += 1;
-				ASSIGN32
-				    (ring_cursor->shadow_counters->
-				     resp_jobs_processed,
-				     ring_cursor->counters->jobs_processed);
+				ASSIGN32(ring_cursor->shadow_counters->resp_jobs_processed,
+					ring_cursor->counters->jobs_processed);
 
 				--resp_cnt;
 			}
