@@ -69,7 +69,7 @@ ENHANCE_KERNEL_TEST=n
 VIRTIO_C2X0=n
 
 #Specify whether build cryptoapi pkc-related into host driver on x86
-EXTRA_PKC=Y
+EXTRA_PKC=y
 
 DEBUG_PRINT=n
 
