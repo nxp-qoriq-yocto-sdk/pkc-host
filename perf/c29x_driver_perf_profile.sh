@@ -296,26 +296,12 @@ perf_test()
 	sec_us=1000000
 	if [ $timer_dur -eq 0 ]
 	then
-		if [ "$arch" == "ppc" ]
-		then
-			total_time_us="$(mini_calc $total_time $cpu_frq)"
-			per_job_us="$(mini_calc $total_time_us $repeat)"
-			t_job_s="$(mini_calc $sec_us $per_job_us)"
-		else
-			total_time_us=`echo "$total_time / $cpu_frq" | bc -l`
-			per_job_us=`echo "$total_time_us / $repeat" | bc -l`
-			t_job_s=`echo "$sec_us / $per_job_us" | bc -l`
-		fi
+		total_time_us=`echo "$total_time / $cpu_frq" | bc -l`
+		per_job_us=`echo "$total_time_us / $repeat" | bc -l`
+		t_job_s=`echo "$sec_us / $per_job_us" | bc -l`
 	else
-		if [ "$arch" == "ppc" ]
-        then
-			t_job_s="$(mini_calc $repeat $timer_dur)"
-			tot_time=`expr $timer_dur \* $sec_us`
-			per_job_us="$(mini_calc $tot_time $repeat)"
-		else
-			t_job_s=`echo "$repeat / $timer_dur" | bc -l`
-			per_job_us=`echo "($timer_dur * $sec_us) / $repeat" | bc -l`
-		fi
+		t_job_s=`echo "$repeat / $timer_dur" | bc -l`
+		per_job_us=`echo "($timer_dur * $sec_us) / $repeat" | bc -l`
 	fi
 
 	echo " "

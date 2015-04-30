@@ -203,7 +203,6 @@ endif
 build:
 	make -C $(KERNEL_DIR) SUBDIRS=`pwd` modules
 ifeq ($(X86_BUILD),y)
-	$(CROSS_COMPILE)gcc  -Wall perf/mini_calc/mini_calc.c -o perf/mini_calc/mini_calc -static
 	$(CROSS_COMPILE)gcc  -Wall apps/cli/cli.c -o apps/cli/cli -static
 endif
 
