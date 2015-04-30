@@ -40,13 +40,11 @@
 
 #if defined P4080_EP
 #define FSL_CRYPTO_PCI_DEVICE_ID        0X0400
-#define FSL_CRYPTO_PCI_VENDOR_ID        0X1957
 
 /* 32byte aligned address gives best performance */
 #define DEV_DMA_ALIGNMENT_BYTES				32
 
 #elif defined C293_EP
-#define FSL_CRYPTO_PCI_VENDOR_ID        	0X1957
 #define FSL_CRYPTO_C290_PCI_DEVICE_ID       0X0800
 #define FSL_CRYPTO_C280_PCI_DEVICE_ID       0X0801
 #define FSL_CRYPTO_C270_PCI_DEVICE_ID       0X0803
@@ -64,17 +62,14 @@
 #define DEV_DMA_ALIGNMENT_BYTES				32
 #endif
 
+#define FSL_CRYPTO_PCI_VENDOR_ID        0X1957
+
 #define ALIGN_LEN_TO_DMA(x)		\
 	((x+(DEV_DMA_ALIGNMENT_BYTES-1))&~(DEV_DMA_ALIGNMENT_BYTES-1))
 #define DEV_MEM_SIZE            (1*1024*1024)
 #define FSL_FIRMWARE_SIZE       (28*1024)
 
 #define FIRMWARE_IMAGE_START_OFFSET (DEV_MEM_SIZE - FSL_FIRMWARE_SIZE)
-
-#if defined P4O80_EP || C293_EP
-/* Enabling 36bit DMA support - This helps in setting the DMA mask */
-#define SEC_ENGINE_DMA_36BIT
-#endif
 
 #ifdef P4080_BUILD
 /* Assuming that P4080 linux has multiple MSI support */
@@ -84,6 +79,8 @@
 /*** Register Offsets ***/
 
 #if defined P4080_EP || C293_EP
+/* Enabling 36bit DMA support - This helps in setting the DMA mask */
+#define SEC_ENGINE_DMA_36BIT
 
 /* PCIE1 controller defines */
 #define PCIE1_OB_REGS_BASE_ADDRESS  0X200000
