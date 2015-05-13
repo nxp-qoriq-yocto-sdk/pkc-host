@@ -1112,9 +1112,8 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	print_debug("\n\n ========== PROBE FUNCTION ==========\n");
 
 	if (!dev) {
-		print_error
-		    ("PCI device with VendorId:%0x DeviceId:%0x is not found\n",
-		     id->device, id->vendor);
+		print_error("PCI device with VendorId:%0x DeviceId:%0x is not found\n",
+				id->vendor, id->device);
 		return -ENODEV;
 	}
 
