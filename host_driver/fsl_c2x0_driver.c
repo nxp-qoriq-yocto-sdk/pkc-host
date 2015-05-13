@@ -1136,10 +1136,8 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	/* Starts from 1 */
 	fsl_pci_dev->dev_no = ++dev_no;
 
-	snprintf(fsl_pci_dev->dev_name, FSL_PCI_DEV_NAME_MAX_LEN, "%s",
-		 FSL_PCI_DEV_NAME);
-	snprintf(((fsl_pci_dev->dev_name) + (FSL_PCI_DEV_NAME_MAX_LEN - 2)),
-		 FSL_PCI_DEV_NAME_MAX_LEN, "%d", dev_no);
+	snprintf(fsl_pci_dev->dev_name, FSL_PCI_DEV_NAME_MAX_LEN, "%s%d",
+		 FSL_PCI_DEV_NAME, dev_no);
 
 	DEV_PRINT_DEBUG("Found PCI Device: ");
 
