@@ -38,8 +38,8 @@
 
 extern int napi_poll_count;
 
-/* 64 bytes of handshake memory */
-#define DRIVER_HS_MEM_SIZE		64
+/* handshake memory is the size of a L1 cache line */
+#define DRIVER_HS_MEM_SIZE DEVICE_CACHE_LINE_SIZE
 
 /* Identifies different states of the device */
 typedef enum handshake_state {
