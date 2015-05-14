@@ -1074,6 +1074,59 @@ static void resp_process_tasklet(unsigned long data)
 #endif
 }
 
+int fsl_get_bar_map(fsl_pci_dev_t *fsl_pci_dev)
+{
+	int i, ret=0;
+	struct pci_dev *dev = fsl_pci_dev->dev;
+
+	/* Get the BAR resources and remap them into the driver memory */
+	for (i = 0; i < PCI_IB_BAR_MAX; i++) {
+		/* Read the hardware address */
+		fsl_pci_dev->bars[i].phy_addr = pci_resource_start(dev, i);
+		if (unlikely(0 == fsl_pci_dev->bars[i].phy_addr)) {
+			DEV_PRINT_ERROR
+			    ("Failed to get hardware address of BAR:%d\n", i);
+			ret = -ENOMEM;
+			goto error;
+		}
+
+		DEV_PRINT_DEBUG("Physical address of BAR : %d is %0x\n", i,
+				fsl_pci_dev->bars[i].phy_addr);
+
+		fsl_pci_dev->bars[i].len = pci_resource_len(dev, i);
+
+		/* Request resource region */
+		if (unlikely
+		    (!request_mem_region
+		     (fsl_pci_dev->bars[i].phy_addr, fsl_pci_dev->bars[i].len,
+		      "FSL-CRYPTO"))) {
+			DEV_PRINT_ERROR("Bar:%d Request mem region failed\n",
+					i);
+			ret = -ENOMEM;
+			goto error;
+		}
+
+		/* Map the MEM to the kernel address space */
+		fsl_pci_dev->bars[i].v_addr =
+		    ioremap(fsl_pci_dev->bars[i].phy_addr,
+			    fsl_pci_dev->bars[i].len);
+		if (unlikely(NULL == fsl_pci_dev->bars[i].v_addr)) {
+			DEV_PRINT_ERROR
+			    ("Bar:%d Mapping to kernel address failed\n", i);
+			ret = -ENOMEM;
+			goto error;
+		}
+		DEV_PRINT_DEBUG("Bar:%d virtual address [%0x] Length [%0x]\n",
+				i, fsl_pci_dev->bars[i].v_addr,
+				fsl_pci_dev->bars[i].len);
+		/* We will not be using DMA from RC or DMA from EP.
+		 * Hence this memory need not be mapped to DMA. */
+		fsl_pci_dev->bars[i].dma_addr = 0;
+	}
+error:
+	return ret;
+}
+
 /*******************************************************************************
  * Function     : fsl_crypto_pci_probe
  *
@@ -1214,50 +1267,9 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	/* Set bus master */
 	pci_set_master(dev);
 
-	/* Get the BAR resources and remap them into the driver memory */
-	for (i = 0; i < PCI_IB_BAR_MAX; i++) {
-		/* Read the hardware address */
-		fsl_pci_dev->bars[i].phy_addr = pci_resource_start(dev, i);
-		if (unlikely(0 == fsl_pci_dev->bars[i].phy_addr)) {
-			DEV_PRINT_ERROR
-			    ("Failed to get hardware address of BAR:%d\n", i);
-			ret = -ENOMEM;
-			goto error;
-		}
-
-		DEV_PRINT_DEBUG("Physical address of BAR : %d is %0x\n", i,
-				fsl_pci_dev->bars[i].phy_addr);
-
-		fsl_pci_dev->bars[i].len = pci_resource_len(dev, i);
-
-		/* Request resource region */
-		if (unlikely
-		    (!request_mem_region
-		     (fsl_pci_dev->bars[i].phy_addr, fsl_pci_dev->bars[i].len,
-		      "FSL-CRYPTO"))) {
-			DEV_PRINT_ERROR("Bar:%d Request mem region failed\n",
-					i);
-			ret = -ENOMEM;
-			goto error;
-		}
-
-		/* Map the MEM to the kernel address space */
-		fsl_pci_dev->bars[i].v_addr =
-		    ioremap(fsl_pci_dev->bars[i].phy_addr,
-			    fsl_pci_dev->bars[i].len);
-		if (unlikely(NULL == fsl_pci_dev->bars[i].v_addr)) {
-			DEV_PRINT_ERROR
-			    ("Bar:%d Mapping to kernel address failed\n", i);
-			ret = -ENOMEM;
-			goto error;
-		}
-		DEV_PRINT_DEBUG("Bar:%d virtual address [%0x] Length [%0x]\n",
-				i, fsl_pci_dev->bars[i].v_addr,
-				fsl_pci_dev->bars[i].len);
-		/* We will not be using DMA from RC or DMA from EP.
-		 * Hence this memory need not be mapped to DMA. */
-		fsl_pci_dev->bars[i].dma_addr = 0;
-	}
+	ret = fsl_get_bar_map(fsl_pci_dev);
+	if (ret)
+		goto error;
 
 	/* RESET THE PIC_PIR */
 #define PIC_PIR 0x041090
