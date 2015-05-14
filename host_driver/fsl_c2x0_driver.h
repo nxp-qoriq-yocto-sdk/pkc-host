@@ -181,8 +181,7 @@ typedef struct pci_bar_info {
 	void *v_addr;
 	phys_addr_t phy_addr;
 	dma_addr_t dma_addr;
-
-	unsigned long len;
+	resource_size_t len;
 } pci_bar_info_t;
 
 /*******************************************************************************

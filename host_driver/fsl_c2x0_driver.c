@@ -1127,8 +1127,8 @@ int fsl_get_bar_map(fsl_pci_dev_t *fsl_pci_dev)
 
 		if (request_and_map_pci_resource(&bars[i]) != 0)
 			goto error;
-		DEV_PRINT_DEBUG("Bar %d: virtual address %p, length %0x\n", i,
-				bars[i].v_addr, bars[i].len);
+		DEV_PRINT_DEBUG("Bar %d: virtual address %p, length %pa\n", i,
+				bars[i].v_addr, &bars[i].len);
 	}
 	return 0;
 
