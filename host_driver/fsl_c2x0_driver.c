@@ -1141,6 +1141,107 @@ error:
 	return -ENOMEM;
 }
 
+/* If MSIx is supported - Then number of vectors to be asked
+ * should be equal to the number of application
+ * rings + command ring.
+ */
+int get_msix_iv_cnt(fsl_pci_dev_t *fsl_pci_dev, uint8_t num_of_vectors)
+{
+	int err, i;
+
+	fsl_pci_dev->intr_info.msix_entries = kzalloc(
+		num_of_vectors * sizeof(struct msix_entry), GFP_KERNEL);
+	if (!fsl_pci_dev->intr_info.msix_entries) {
+		DEV_PRINT_ERROR("MSIx entries mem alloc failed\n");
+		return -ENOMEM;
+	}
+
+	/* In case of MSIx - The driver needs to fill
+	 * this value inside the MSIx entry. For this
+	 * entry number, kernel will fill the vector number.
+	 */
+	for (i = 0; i < num_of_vectors; i++)
+		fsl_pci_dev->intr_info.msix_entries[i].entry = i;
+
+	/* Though we may need vectors we want,
+	 * the Kernel/APIC may not entertain it.
+	 * This loop determines the actual number of
+	 * vectors allocated by the APIC
+	 * for this device. We have to live with it.
+	 * The actual distribution of rings
+	 * to the iv's will be done in later stage.
+	 */
+	do {
+		i = num_of_vectors;
+		err = pci_enable_msix(fsl_pci_dev->dev,
+					fsl_pci_dev->intr_info.msix_entries,
+					num_of_vectors);
+		num_of_vectors = err;
+	} while (err > 0);
+
+	if (err) {
+		DEV_PRINT_ERROR("MSIx enable failed!!\n");
+		kfree(fsl_pci_dev->intr_info.msix_entries);
+		return -ENODEV;
+	}
+
+	fsl_pci_dev->intr_info.intr_vectors_cnt = i;
+	return 0;
+}
+
+#ifdef MULTIPLE_MSI_SUPPORT
+int get_msi_iv_cnt(fsl_pci_dev_t *fsl_pci_dev, uint8_t num_of_vectors)
+{
+	int err, tmp;
+	uint16_t msi_ctrl_word;
+	uint32_t mmc_count, mme_count;
+
+	/* Check whether the device supports multiple MSI interrupts */
+	dev_pci_cfg_read_word16(fsl_pci_dev->dev, PCI_MSI_CTRL_REGISTER,
+				&msi_ctrl_word);
+
+	/* Check the MMC field to see how many MSIs are supported */
+	mmc_count = (msi_ctrl_word & MSI_CTRL_WORD_MMC_MASK) >>
+			MSI_CTRL_WORD_MMC_SHIFT;
+	mmc_count = 0x01 << mmc_count;
+
+	/* Check the MME field to see how many are actually enabled
+	 * by PCI subsystem */
+	mme_count = (msi_ctrl_word & MSI_CTRL_WORD_MME_MASK) >>
+			MSI_CTRL_WORD_MME_SHIFT;
+	mme_count = 0x01 << mme_count;
+
+	DEV_PRINT_DEBUG("MMC count [%d] MME count [%d]\n", mmc_count, mme_count);
+
+	do {
+		tmp = num_of_vectors;
+		err = pci_enable_msi_block(fsl_pci_dev->dev, num_of_vectors);
+		num_of_vectors = err;
+	} while (err > 0);
+
+	if (err) {
+		DEV_PRINT_ERROR("MSI enable failed!!\n");
+		return -ENODEV;
+	}
+
+	DEV_PRINT_DEBUG("Number of MSI vectors actually enabled %d\n", tmp);
+	fsl_pci_dev->intr_info.intr_vectors_cnt = tmp;
+
+	return 0;
+}
+#else
+int get_msi_iv(fsl_pci_dev_t *fsl_pci_dev)
+{
+	if (pci_enable_msi(fsl_pci_dev->dev) != 0) {
+		DEV_PRINT_ERROR("MSI enable failed !!\n");
+		return -ENODEV;
+	}
+
+	fsl_pci_dev->intr_info.intr_vectors_cnt = 1;
+	return 0;
+}
+#endif
+
 /*******************************************************************************
  * Function     : fsl_crypto_pci_probe
  *
@@ -1321,112 +1422,28 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 	/*** Following code setup the interrupt ***/
 
-	/* If MSIx is supported - Then number of vectors to be asked
-	 * should be equal to the number of application
-	 * rings + command ring.
-	 *
-	 * [MAK] TODO: Discuss how this would scale in case if there are
+	/* [MAK] TODO: Discuss how this would scale in case if there are
 	 * number of cores less than application rings.
 	 * What is the important - Parallel processing or
 	 * data path separation ??
 	 * For now, with virtualization in mind,
 	 * data path separation is considered.
 	 */
-	if (is_msix_cap) {
-		/* The count here is total count - cmd + no of app rings */
-		num_of_vectors = config->num_of_rings;
-
-		fsl_pci_dev->intr_info.msix_entries =
-		    kzalloc((num_of_vectors * sizeof(struct msix_entry)),
-			    GFP_KERNEL);
-		if (unlikely(NULL == fsl_pci_dev->intr_info.msix_entries)) {
-			DEV_PRINT_ERROR("MSIx entries mem alloc failed\n");
-			ret = -ENODEV;
-			goto error;
-		}
-
-		for (i = 0; i < num_of_vectors; i++) {
-			/* In case of MSIx - The driver needs to fill
-			 * this value inside the MSIx entry. For this
-			 * entry number, kernel will fill the vector number.
-			 */
-			fsl_pci_dev->intr_info.msix_entries[i].entry = i;
-		}
-
-		/* Though we may need vectors we want,
-		 * the Kernel/APIC may not entertain it.
-		 * This loop determines the actual number of
-		 * vectors allocated by the APIC
-		 * for this device. We have to live with it.
-		 * The actual distribution of rings
-		 * to the iv's will be done in later stage.
-		 */
-		while (ret > 0) {
-			ret =
-			    pci_enable_msix(dev,
-					    fsl_pci_dev->intr_info.msix_entries,
-					    num_of_vectors);
-			if (ret > 0)
-				num_of_vectors = ret;
-		}
-		if (ret < 0) {
-			DEV_PRINT_ERROR("MSIx enable failed !!\n");
-			ret = -ENODEV;
-			goto error;
-		}
-	} else if (is_msi_cap) {
-		num_of_vectors = 1;
+	if (is_msix_cap)
+		ret = get_msix_iv_cnt(fsl_pci_dev, config->num_of_rings);
+	else if (is_msi_cap)
 #ifdef MULTIPLE_MSI_SUPPORT
-		/* Check whether the device supports multiple MSI interrupts */
-		uint16_t msi_ctrl_word = 0x0;
-		uint32_t mmc_count = 0x0;
-		uint32_t mme_count = 0x0;
-		dev_pci_cfg_read_word16(dev, PCI_MSI_CTRL_REGISTER,
-					&msi_ctrl_word);
-
-		/* Check the MMC field to see how many MSIs are supported */
-		mmc_count =
-		    (msi_ctrl_word & MSI_CTRL_WORD_MMC_MASK) >>
-		    MSI_CTRL_WORD_MMC_SHIFT;
-		mmc_count = ((0x01) << mmc_count);
-
-		/* Check the MME field to see howo many are actually
-		 * enabled by PCI subsystem */
-		mme_count =
-		    (msi_ctrl_word & MSI_CTRL_WORD_MME_MASK) >>
-		    MSI_CTRL_WORD_MME_SHIFT;
-		mme_count = ((0x01) << mmc_count);
-
-		DEV_PRINT_DEBUG("MMC count [%d] MME count [%d]\n", mmc_count,
-				mme_count);
-
-		/* As for number of vectors equal to number of rings */
-		num_of_vectors = config->num_of_rings;
-		while (ret > 0) {
-			ret = pci_enable_msi_block(dev, num_of_vectors);
-			if (ret > 0)
-				num_of_vectors = ret;
-		}
-		if (ret < 0) {
-			DEV_PRINT_ERROR("MSI enable failed !!\n");
-			ret = -ENODEV;
-			goto error;
-		}
-
-		DEV_PRINT_DEBUG("Number of MSI vectors actually enabled %d\n",
-				num_of_vectors);
+		ret = get_msi_iv_cnt(fsl_pci_dev, config->num_of_rings);
 #else
-		ret = pci_enable_msi(dev);
-		if (unlikely(ret)) {
-			DEV_PRINT_ERROR("MSI enable failed !!\n");
-			ret = -ENODEV;
-			goto error;
-		}
+		ret = get_msi_iv(fsl_pci_dev);
 #endif
-	} else
-		num_of_vectors = 1;
+	else
+		fsl_pci_dev->intr_info.intr_vectors_cnt = 1;
 
-	fsl_pci_dev->intr_info.intr_vectors_cnt = num_of_vectors;
+	if (ret)
+		goto error;
+
+	num_of_vectors = fsl_pci_dev->intr_info.intr_vectors_cnt;
 
 	/* Init the intr list head */
 	INIT_LIST_HEAD(&(fsl_pci_dev->intr_info.isr_ctx_list_head));
