@@ -1287,17 +1287,15 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 	/* Allocate memory for the new PCI device data structure */
 	fsl_pci_dev = kzalloc(sizeof(fsl_pci_dev_t), GFP_KERNEL);
-	if (unlikely((NULL == fsl_pci_dev))) {
+	if (!fsl_pci_dev) {
 		print_error("Memory allocation failed\n");
-		ret = -ENOMEM;
-		goto error;
+		return -ENOMEM;
 	}
 
 	/* Set this device instance as private data inside the pci dev struct */
 	dev_set_drvdata(&(dev->dev), fsl_pci_dev);
 
 	fsl_pci_dev->dev = dev;
-
 	fsl_pci_dev->id = id;
 
 	/* Starts from 1 */
