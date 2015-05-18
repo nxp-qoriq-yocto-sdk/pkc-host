@@ -214,7 +214,6 @@ Fields      :	dev_name: Name of the device
 *******************************************************************************/
 typedef struct fsl_pci_dev {
 	uint32_t dev_no;
-	uint32_t dev_status;
 
 	struct pci_dev *dev;
 	const struct pci_device_id *id;

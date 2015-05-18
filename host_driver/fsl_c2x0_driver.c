@@ -85,8 +85,6 @@ static void fsl_crypto_pci_remove(struct pci_dev *dev);
 static char *dev_config_file = "/etc/crypto/crypto.cfg";
 int napi_poll_count = -1;
 
-static uint8_t pci_driver_registered;
-
 #ifdef VIRTIO_C2X0
 struct list_head virtio_c2x0_cmd_list;
 struct list_head virtio_c2x0_hash_sess_list;
@@ -1579,9 +1577,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 free_isr_context:
 	kfree(isr_context);
 error:
-	fsl_pci_dev->dev_status = -1;
-	DEV_PRINT_ERROR("Probe of device [%d] failed with status : [%d]\n",
-			fsl_pci_dev->dev_no, fsl_pci_dev->dev_status);
+	DEV_PRINT_ERROR("Probe of device [%d] failed\n", fsl_pci_dev->dev_no);
 	dev_no--; /* don't count this device as usable */
 
 	return ret;
@@ -2141,8 +2137,6 @@ static int32_t __init fsl_crypto_drv_init(void)
 		print_error("ERROR: pci_register_driver \n");
 		goto free_percore;
 	}
-	
-	pci_driver_registered = true;
 
 	/* If there is no device detected -- goto error */
 	if (!dev_no) {
@@ -2279,8 +2273,7 @@ static void __exit fsl_crypto_drv_exit(void)
 	fsl_cryptodev_deregister();
 
 	/* Clean up all the devices and the resources */
-	if (pci_driver_registered)
-		pci_unregister_driver(&fsl_cypto_driver);
+	pci_unregister_driver(&fsl_cypto_driver);
 
 	clean_common_sysfs();
 
