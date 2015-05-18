@@ -1242,6 +1242,29 @@ int get_msi_iv(fsl_pci_dev_t *fsl_pci_dev)
 }
 #endif
 
+/* Get the MSI address and MSI data from the configuration space */
+void get_msi_config_data(fsl_pci_dev_t *fsl_pci_dev, isr_ctx_t *isr_context)
+{
+	pci_bar_info_t *bar = &fsl_pci_dev->bars[PCI_BAR_NUM_3];
+
+	dev_pci_cfg_read_word32(fsl_pci_dev->dev, PCI_MSI_ADDR_LOW,
+			&(isr_context->msi_addr_low));
+	dev_pci_cfg_read_word32(fsl_pci_dev->dev, PCI_MSI_ADDR_HIGH,
+			&(isr_context->msi_addr_high));
+	dev_pci_cfg_read_word16(fsl_pci_dev->dev, PCI_MSI_ADDR_DATA,
+			&(isr_context->msi_data));
+
+	DEV_PRINT_DEBUG("MSI addr low [%0X] MSI addr high [%0X] MSI data [%0X]\n",
+			isr_context->msi_addr_low, isr_context->msi_addr_high,
+			isr_context->msi_data);
+
+	bar->phy_addr = isr_context->msi_addr_low;
+	if (sizeof(phys_addr_t) == HOST_64_BIT_ADDR_SIZE)
+		bar->phy_addr |= ((u64) isr_context->msi_addr_high) << 32;
+
+	bar->v_addr = (void *) phys_to_virt(bar->phy_addr);
+}
+
 /*******************************************************************************
  * Function     : fsl_crypto_pci_probe
  *
@@ -1501,34 +1524,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 			 * number. The exact implementation will depend on the
 			 * MSIx implementation in the device.*/
 		} else if (is_msi_cap) {
-			/* Get the MSI address and MSI data from the
-			 * configuration space */
-			dev_pci_cfg_read_word32(dev, PCI_MSI_ADDR_LOW,
-						&(isr_context->msi_addr_low));
-			dev_pci_cfg_read_word32(dev, PCI_MSI_ADDR_HIGH,
-						&(isr_context->msi_addr_high));
-			dev_pci_cfg_read_word16(dev, PCI_MSI_ADDR_DATA,
-						&(isr_context->msi_data));
-
-			DEV_PRINT_DEBUG
-			    ("MSI addr low [%0X] MSI addr high [%0X] "
-			     "MSI data [%0X]\n",
-			     isr_context->msi_addr_low,
-			     isr_context->msi_addr_high, isr_context->msi_data);
-
-			if (sizeof(phys_addr_t) == HOST_64_BIT_ADDR_SIZE) {
-				fsl_pci_dev->bars[PCI_BAR_NUM_3].phy_addr =
-				    ((((u64) isr_context->msi_addr_high) << 32)
-				     | isr_context->msi_addr_low);
-			} else {
-				fsl_pci_dev->bars[PCI_BAR_NUM_3].phy_addr =
-				    isr_context->msi_addr_low;
-			}
-
-			fsl_pci_dev->bars[PCI_BAR_NUM_3].v_addr =
-			    (void *)
-			    phys_to_virt(fsl_pci_dev->bars[PCI_BAR_NUM_3].
-					 phy_addr);
+			get_msi_config_data(fsl_pci_dev, isr_context);
 		}
 	}
 
