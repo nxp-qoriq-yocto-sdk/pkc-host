@@ -1472,21 +1472,17 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 		/* Register the ISR with kernel for each vector */
 		if (is_msix_cap) {
-			ret =
-			    request_irq(fsl_pci_dev->intr_info.
-					msix_entries[i].vector,
+			ret = request_irq(fsl_pci_dev->intr_info.msix_entries[i].vector,
 					(irq_handler_t) fsl_crypto_isr, 0,
 					fsl_pci_dev->dev_name, isr_context);
 
 		} else {
 #ifdef MULTIPLE_MSI_SUPPORT
-			ret =
-			    request_irq((dev->irq + i),
+			ret = request_irq(dev->irq + i,
 					(irq_handler_t) fsl_crypto_isr, 0,
 					fsl_pci_dev->dev_name, isr_context);
 #else
-			ret =
-			    request_irq((dev->irq),
+			ret = request_irq(dev->irq,
 					(irq_handler_t) fsl_crypto_isr, 0,
 					fsl_pci_dev->dev_name, isr_context);
 #endif
@@ -1563,9 +1559,8 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	 * crypto device related handling will be done
 	 * by the crypto layer.
 	 */
-	fsl_pci_dev->crypto_dev =
-	    fsl_crypto_layer_add_device(fsl_pci_dev, config);
-	if (unlikely(NULL == fsl_pci_dev->crypto_dev)) {
+	fsl_pci_dev->crypto_dev = fsl_crypto_layer_add_device(fsl_pci_dev, config);
+	if (!fsl_pci_dev->crypto_dev) {
 		DEV_PRINT_ERROR("Adding device as crypto dev failed\n");
 		ret = -1;
 		goto error;
@@ -1576,10 +1571,10 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	snprintf(pci_info, 60, "VendorId:%0x DeviceId:%0x BusNo:%0x\nCAP:PCIe\n",
 		 id->device, id->vendor, fsl_pci_dev->dev->bus->number);
 	strcpy(sys_pci_info, pci_info);
-	if (true == is_msi_cap)
-		strcat(sys_pci_info, "MSI CAP\n");
-	else if (true == is_msix_cap)
+	if (is_msix_cap)
 		strcat(sys_pci_info, "MSIx CAP\n");
+	else if (is_msi_cap)
+		strcat(sys_pci_info, "MSI CAP\n");
 	else
 		strcat(sys_pci_info, "INTR CAP\n");
 
@@ -2158,40 +2153,39 @@ static int32_t __init fsl_crypto_drv_init(void)
 {
 	int32_t ret = 0;
 	int32_t devno = 1;
-    fsl_pci_dev_t *dev_cursor = NULL;
+	fsl_pci_dev_t *dev_cursor = NULL;
 	fsl_pci_dev_t *dev_n_cursor = NULL;
-	
-	if (-1 == wt_cpu_mask) {
-		print_info("CPU mask for NAPI threads "
-                "is not specified, using one thread per cpu\n");
-        for_each_online_cpu(ret)
-            wt_cpu_mask |= ((1 << ret));
-    } else {
-		print_info("CPU mask for NAPI threads "
-                "is specified, configured value : 0x%x\n", wt_cpu_mask);
-    }
 
-    if ( -1 == napi_poll_count ) {
-        napi_poll_count = 1;
-        print_info("NAPI poll count "
-                "is not specified, using default value : %d\n", napi_poll_count);
-    } else {
-        print_info("NAPI poll count "
-                "is specified, configured value : %d\n", napi_poll_count);
-    }
+	if (-1 == wt_cpu_mask) {
+		print_info("CPU mask for NAPI threads is not specified, using one thread per cpu\n");
+		for_each_online_cpu(ret)
+			wt_cpu_mask |= 1 << ret;
+	} else {
+		print_info("CPU mask for NAPI threads is specified, configured value: 0x%x\n",
+				wt_cpu_mask);
+	}
+
+	if ( -1 == napi_poll_count ) {
+		napi_poll_count = 1;
+		print_info("NAPI poll count is not specified, using default value: %d\n",
+				napi_poll_count);
+	} else {
+		print_info("NAPI poll count is specified, configured value: %d\n",
+				napi_poll_count);
+	}
 
 	ret = 0;
 
 	/* Read the configuration file - Path will be passed as module param */
-	if (likely(parse_config_file(dev_config_file) < 0)) {
+	if (parse_config_file(dev_config_file) < 0) {
 		print_error("Invalid path/configuration file\n");
 		return -1;
 	}
 
-    if(init_common_sysfs( ) ) {
-        print_error("Sysfs creation failed\n");
-        return -1;
-    }
+	if(init_common_sysfs( ) ) {
+		print_error("Sysfs creation failed\n");
+		return -1;
+	}
 
 	/* Create the per core data structures */
 	if (unlikely(create_per_core_info())) {
@@ -2208,9 +2202,8 @@ static int32_t __init fsl_crypto_drv_init(void)
 	 */
 	ret = pci_register_driver(&fsl_cypto_driver);
 	if (ret < 0) {
-		print_error
-		    ("[FSL CRYPTO DRV:%s:%d] pci_register_driver( ) failed ",
-		     __func__, __LINE__);
+		print_error("[FSL CRYPTO DRV:%s:%d] pci_register_driver( ) failed ",
+				__func__, __LINE__);
 		goto cleanup;
 	}
 	
@@ -2285,7 +2278,7 @@ static int32_t __init fsl_crypto_drv_init(void)
 
 cleanup:
 	/* Clean up all the devices and the resources */
-    if (true == pci_driver_registered) {
+	if (pci_driver_registered) {
 		fsl_pci_dev_t *dev_cursor = NULL;
 		list_for_each_entry(dev_cursor, &pci_dev_list, list) {
 			FSL_DEVICE_WRITE32_BAR0_REG(dev_cursor->
@@ -2293,8 +2286,7 @@ cleanup:
 						0x1);
 			smp_wmb();
 		}
-                /* Unregister the PCI driver */
-	        pci_unregister_driver(&fsl_cypto_driver);
+		pci_unregister_driver(&fsl_cypto_driver);
 	}
 	/* Cleanup the configuration file linked list */
 	cleanup_config_list();
@@ -2380,11 +2372,10 @@ static void __exit fsl_crypto_drv_exit(void)
 	fsl_cryptodev_deregister();
 
 	/* Clean up all the devices and the resources */
-	if (true == pci_driver_registered)
-		/* Unregister the PCI driver */
+	if (pci_driver_registered)
 		pci_unregister_driver(&fsl_cypto_driver);
 
-    clean_common_sysfs();
+	clean_common_sysfs();
 
 	/* Cleanup the configuration file linked list */
 	cleanup_config_list();
