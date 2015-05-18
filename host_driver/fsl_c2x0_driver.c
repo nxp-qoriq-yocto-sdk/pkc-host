@@ -1467,22 +1467,19 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 	num_of_vectors = fsl_pci_dev->intr_info.intr_vectors_cnt;
 
-	/* Init the intr list head */
-	INIT_LIST_HEAD(&(fsl_pci_dev->intr_info.isr_ctx_list_head));
-
 	/* Number of vectors required are determined in the above logic,
 	 * now allocate memory for the isr contexts */
+	isr_context = kzalloc(num_of_vectors * sizeof(isr_ctx_t), GFP_KERNEL);
+	if (!isr_context) {
+		DEV_PRINT_ERROR("Mem alloc failed\n");
+		ret = -ENOMEM;
+		goto error;
+	}
+
+	/* Init the intr list head */
+	INIT_LIST_HEAD(&(fsl_pci_dev->intr_info.isr_ctx_list_head));
 	for (i = 0; i < num_of_vectors; i++) {
-		isr_context = kzalloc(sizeof(isr_ctx_t), GFP_KERNEL);
-
-		if (unlikely(NULL == isr_context)) {
-			DEV_PRINT_ERROR("Mem alloc failed\n");
-			ret = -ENOMEM;
-			goto error;
-		}
-
 		isr_context->dev = fsl_pci_dev;
-
 		tasklet_init(&(isr_context->tasklet), resp_process_tasklet,
 			     (unsigned long)isr_context);
 
@@ -1507,7 +1504,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		if (ret) {
 			DEV_PRINT_ERROR("Request IRQ failed for vector: %d\n", i);
 			ret = -ENODEV;
-			goto error;
+			goto free_isr_context;
 		}
 
 		if (is_msix_cap) {
@@ -1520,17 +1517,18 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		} else if (is_msi_cap) {
 			get_msi_config_data(fsl_pci_dev, isr_context);
 		}
+		isr_context++;
 	}
 
 	/* [MAK] TODO: Loop through each IRQ and distribute them
 	 * to the available cores.  Worst distribution is when
 	 * number of IRQs are more than the number of CPUs, this
 	 * can happen when number of rings are more than the cores.
-	 */
+
 	isr_context = NULL;
-	list_for_each_entry(isr_context,
-			    &(fsl_pci_dev->intr_info.isr_ctx_list_head), list) {
+	list_for_each_entry(isr_context, &(fsl_pci_dev->intr_info.isr_ctx_list_head), list) {
 	}
+	*/
 
 	/* [MAK] TODO: Create the device node with next minor number */
 
@@ -1575,13 +1573,15 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 	g_fsl_pci_dev = fsl_pci_dev;
 
+	/* FIXME: check exit logic on normal and error paths */
+	return 0;
+
+free_isr_context:
+	kfree(isr_context);
 error:
-	if (unlikely(-1 == ret))
-	{
-		fsl_pci_dev->dev_status = -1;
-		DEV_PRINT_ERROR("Probe of device [%d] failed with status : [%d]\n",
-		 fsl_pci_dev->dev_no, fsl_pci_dev->dev_status);
-	}
+	fsl_pci_dev->dev_status = -1;
+	DEV_PRINT_ERROR("Probe of device [%d] failed with status : [%d]\n",
+			fsl_pci_dev->dev_no, fsl_pci_dev->dev_status);
 	return ret;
 }
 
