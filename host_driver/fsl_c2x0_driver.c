@@ -1246,7 +1246,7 @@ int get_msi_iv(fsl_pci_dev_t *fsl_pci_dev)
  * Function     : fsl_crypto_pci_probe
  *
  * Arguments    : dev : PCI device structure instance.
- *				  id  : Id of the PCI device.
+ * 		  id  : Id of the PCI device.
  *
  * Return Value : int32_t
  *
@@ -2305,11 +2305,8 @@ cleanup:
  * Function     : fsl_crypto_pci_remove
  *
  * Arguments    : dev : PCI device structure instance.
- *                id  : Id of the PCI device.
- *
- * Return Value : int32_t
- *
- * Description  : Handles the PCI probe of the device.
+ * Return Value : void
+ * Description  : Handles the PCI removal of the device.
  *
  ******************************************************************************/
 static void fsl_crypto_pci_remove(struct pci_dev *dev)
@@ -2330,7 +2327,6 @@ static void fsl_crypto_pci_remove(struct pci_dev *dev)
 	list_del(&(fsl_pci_dev->list));
 
 	kfree(fsl_pci_dev);
-
 }
 
 /*******************************************************************************
