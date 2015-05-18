@@ -2260,18 +2260,16 @@ static int32_t __init fsl_crypto_drv_init(void)
 	rng_init();
 #endif
 
-#ifndef VIRTIO_C2X0
-	init_all_test();
-#endif
-/* #endif */
 #ifdef VIRTIO_C2X0
-	/* rng_init(); */
 	INIT_LIST_HEAD(&virtio_c2x0_cmd_list);
 	INIT_LIST_HEAD(&virtio_c2x0_hash_sess_list);
 	INIT_LIST_HEAD(&virtio_c2x0_symm_sess_list);
 	spin_lock_init(&cmd_list_lock);
 	spin_lock_init(&hash_sess_list_lock);
 	spin_lock_init(&symm_sess_list_lock);
+#else
+	/* FIXME: proper clean-up for tests */
+	init_all_test();
 #endif
 
 	return 0;
