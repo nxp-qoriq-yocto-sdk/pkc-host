@@ -1292,6 +1292,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	uint8_t is_intr_cap = 0;
 
 	uint32_t num_of_vectors = 0;
+	uint32_t irq;
 
 	int8_t pci_info[60];
 	int8_t sys_pci_info[100];
@@ -1491,27 +1492,20 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		list_add(&(isr_context->list),
 			 &(fsl_pci_dev->intr_info.isr_ctx_list_head));
 
-		/* Register the ISR with kernel for each vector */
-		if (is_msix_cap) {
-			ret = request_irq(fsl_pci_dev->intr_info.msix_entries[i].vector,
-					(irq_handler_t) fsl_crypto_isr, 0,
-					fsl_pci_dev->dev_name, isr_context);
-
-		} else {
+		if (is_msix_cap)
+			irq = fsl_pci_dev->intr_info.msix_entries[i].vector;
+		else
 #ifdef MULTIPLE_MSI_SUPPORT
-			ret = request_irq(dev->irq + i,
-					(irq_handler_t) fsl_crypto_isr, 0,
-					fsl_pci_dev->dev_name, isr_context);
+			irq = dev->irq + i;
 #else
-			ret = request_irq(dev->irq,
-					(irq_handler_t) fsl_crypto_isr, 0,
-					fsl_pci_dev->dev_name, isr_context);
+			irq = dev->irq;
 #endif
-		}
 
-		if (likely(ret)) {
-			DEV_PRINT_ERROR("Request IRQ failed for vector : %d\n",
-					i);
+		/* Register the ISR with kernel for each vector */
+		ret = request_irq(irq, (irq_handler_t) fsl_crypto_isr, 0,
+				fsl_pci_dev->dev_name, isr_context);
+		if (ret) {
+			DEV_PRINT_ERROR("Request IRQ failed for vector: %d\n", i);
 			ret = -ENODEV;
 			goto error;
 		}
