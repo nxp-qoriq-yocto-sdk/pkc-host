@@ -1330,9 +1330,6 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 	DEV_PRINT_DEBUG("Found PCI Device: ");
 
-	/* Add this node to the pci device's linked list */
-	list_add(&(fsl_pci_dev->list), &pci_dev_list);
-
 	/* TODO :- We may need to remove the following code */
 	/* The following code is generally not required -
 	 * But it is seen that u-boot of the
@@ -1573,6 +1570,9 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 	g_fsl_pci_dev = fsl_pci_dev;
 
+	/* Add this node to the pci device's linked list */
+	list_add(&(fsl_pci_dev->list), &pci_dev_list);
+
 	/* FIXME: check exit logic on normal and error paths */
 	return 0;
 
@@ -1582,6 +1582,8 @@ error:
 	fsl_pci_dev->dev_status = -1;
 	DEV_PRINT_ERROR("Probe of device [%d] failed with status : [%d]\n",
 			fsl_pci_dev->dev_no, fsl_pci_dev->dev_status);
+	dev_no--; /* don't count this device as usable */
+
 	return ret;
 }
 
