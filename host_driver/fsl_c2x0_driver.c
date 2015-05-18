@@ -2019,57 +2019,6 @@ disable_dev:
 }
 
 /*******************************************************************************
- * Function     : cleanup_per_pci_devices
- *
- * Arguments    : pci device
- *
- * Return Value : None
- *
- * Description  : Does the cleanup of one pci devices
- *
- ******************************************************************************/
-static void cleanup_per_pci_devices(fsl_pci_dev_t *dev_cursor)
-{
-		/* To do crypto layer related cleanup
-		 * corresponding to this device */
-		cleanup_crypto_device(dev_cursor->crypto_dev);
-		/* Cleanup the PCI related resources */
-		cleanup_pci_device(dev_cursor);
-		/* Delete the device from list */
-		list_del(&(dev_cursor->list));
-		kfree(dev_cursor);
-}
-
-
-/*******************************************************************************
- * Function     : cleanup_pci_devices
- *
- * Arguments    : void
- *
- * Return Value : None
- *
- * Description  : Does the cleanup of all the pci devices
- *
- ******************************************************************************/
-static void cleanup_pci_devices(void)
-{
-	fsl_pci_dev_t *dev_cursor = NULL;
-	fsl_pci_dev_t *dev_n_cursor = NULL;
-
-	list_for_each_entry_safe(dev_cursor, dev_n_cursor, &pci_dev_list, list) {
-		/* To do crypto layer related cleanup
-		 * corresponding to this device */
-		cleanup_crypto_device(dev_cursor->crypto_dev);
-		/* Cleanup the PCI related resources */
-		cleanup_pci_device(dev_cursor);
-		/* Delete the device from list */
-		list_del(&(dev_cursor->list));
-		kfree(dev_cursor);
-	}
-
-}
-
-/*******************************************************************************
  * Function     : cleanup_percore_list
  *
  * Arguments    : void
@@ -2140,9 +2089,6 @@ static void cleanup_config_list(void)
 static int32_t __init fsl_crypto_drv_init(void)
 {
 	int32_t ret = 0;
-	int32_t devno = 1;
-	fsl_pci_dev_t *dev_cursor = NULL;
-	fsl_pci_dev_t *dev_n_cursor = NULL;
 
 	if (-1 == wt_cpu_mask) {
 		print_info("CPU mask for NAPI threads is not specified, using one thread per cpu\n");
@@ -2162,24 +2108,24 @@ static int32_t __init fsl_crypto_drv_init(void)
 				napi_poll_count);
 	}
 
-	ret = 0;
-
 	/* Read the configuration file - Path will be passed as module param */
-	if (parse_config_file(dev_config_file) < 0) {
+	ret = parse_config_file(dev_config_file);
+	if (ret) {
 		print_error("Invalid path/configuration file\n");
-		return -1;
+		return ret;
 	}
 
-	if(init_common_sysfs( ) ) {
+	ret = init_common_sysfs();
+	if(ret) {
 		print_error("Sysfs creation failed\n");
-		return -1;
+		goto free_config;
 	}
 
 	/* Create the per core data structures */
-	if (unlikely(create_per_core_info())) {
+	ret = create_per_core_info();
+	if (ret) {
 		print_error("Per cpu alloc failed\n");
-		ret = -1;
-		goto cleanup;
+		goto free_sysfs;
 	}
 
 	/* Register the PCIe driver for the device,
@@ -2190,63 +2136,46 @@ static int32_t __init fsl_crypto_drv_init(void)
 	 */
 	ret = pci_register_driver(&fsl_cypto_driver);
 	if (ret < 0) {
-		print_error("[FSL CRYPTO DRV:%s:%d] pci_register_driver( ) failed ",
-				__func__, __LINE__);
-		goto cleanup;
+		print_error("ERROR: pci_register_driver \n");
+		goto free_percore;
 	}
 	
 	pci_driver_registered = true;
 
 	/* If there is no device detected -- goto error */
 	if (!dev_no) {
-		print_error("\n NO DEVICE FOUND...\n");
-		goto cleanup;
+		ret = -1;
+		print_error("NO DEVICE FOUND...\n");
+		goto unreg_drv;
 	}
-	
-	ret = -1;
-	list_for_each_entry_safe(dev_cursor, dev_n_cursor, &pci_dev_list, list) {
-		if (-1 == dev_cursor->dev_status) {
-			print_error("\n Dev no [%d] failed\n", dev_cursor->dev_no);
-			print_debug("**** RESETTING THE DEVICE ****\n");
-			print_debug("BAR0 V ADDR    :%0x\n",
-					dev_cursor->bars[PCI_BAR_NUM_0].v_addr);
 
-			FSL_DEVICE_WRITE32_BAR0_REG(dev_cursor->bars[PCI_BAR_NUM_0].
-					v_addr, PIC_PIR, 0x1);
-			smp_wmb();
-			cleanup_per_pci_devices(dev_cursor);
-			--dev_no;
-		} else { /* At least one device is up */
-			ret = 0;
-		}
-	}
-	if( -1 == ret ){
-		print_error("\n All devices failed....\n");
-		goto cleanup;
-	}
-	/* Assigning new device no for all active device */
-	list_for_each_entry_safe(dev_cursor, dev_n_cursor, &pci_dev_list, list) {
-		dev_cursor->dev_no = devno++;
-	} 
-#ifdef USE_HOST_DMA
 	/* For P4080 RC DMA channels will be used for transfer */
-	if (-1 == init_rc_dma()) {
-		print_error("\n Init DMA failed...\n");
-		goto cleanup;
+	ret = init_rc_dma();
+	if (ret) {
+		print_error("ERROR: init_rc_dma\n");
+		goto unreg_drv;
 	}
-#endif
-	if (0 != fsl_cryptodev_register()) {
-		print_error("ERROR:fsl_cryptodev_register\n");
-		goto cleanup;
+
+	ret = fsl_cryptodev_register();
+	if (ret) {
+		print_error("ERROR: fsl_cryptodev_register\n");
+		goto free_rc_dma;
 	}
 
 /* #ifdef KCAPI_INTEG_BUILD */
 #ifndef VIRTIO_C2X0
-	fsl_algapi_init();
+	ret = fsl_algapi_init();
+	if (ret) {
+		print_error("ERROR: fsl_algapi_init\n");
+		goto unreg_cdev;
+	}
 #endif
-#ifdef RNG_OFFLOAD
-	rng_init();
-#endif
+
+	ret = rng_init();
+	if (ret) {
+		print_error("ERROR: rng_init\n");
+		goto free_algapi;
+	}
 
 #ifdef VIRTIO_C2X0
 	INIT_LIST_HEAD(&virtio_c2x0_cmd_list);
@@ -2259,32 +2188,26 @@ static int32_t __init fsl_crypto_drv_init(void)
 	/* FIXME: proper clean-up for tests */
 	init_all_test();
 #endif
-
 	return 0;
 
-cleanup:
-	/* Clean up all the devices and the resources */
-	if (pci_driver_registered) {
-		fsl_pci_dev_t *dev_cursor = NULL;
-		list_for_each_entry(dev_cursor, &pci_dev_list, list) {
-			FSL_DEVICE_WRITE32_BAR0_REG(dev_cursor->
-						bars[PCI_BAR_NUM_0].v_addr, PIC_PIR,
-						0x1);
-			smp_wmb();
-		}
-		pci_unregister_driver(&fsl_cypto_driver);
-	}
-	/* Cleanup the configuration file linked list */
-	cleanup_config_list();
-	/* Cleanup the per core linked list */
+free_algapi:
+#ifndef VIRTIO_C2X0
+	fsl_algapi_exit();
+#endif
+unreg_cdev:
+	fsl_cryptodev_deregister();
+free_rc_dma:
+	cleanup_rc_dma();
+unreg_drv:
+	pci_unregister_driver(&fsl_cypto_driver);
+free_percore:
 	cleanup_percore_list();
-	/* Cleanup the devices */
-	cleanup_pci_devices();
-	/* Cleanup the sysfs entry */
+free_sysfs:
 	clean_common_sysfs();
+free_config:
+	cleanup_config_list();
 
-	return -1;
-
+	return ret;
 }
 
 /*******************************************************************************
