@@ -41,6 +41,8 @@
 #include "algs.h"
 #include "dma.h"
 
+#ifdef USE_HOST_DMA
+
 host_dma_t hostdma;
 
 per_cpu_dma_chnls_t per_cpu_dma[NR_CPUS];
@@ -283,9 +285,7 @@ Returns     :	SUCCESS/ FAILURE
 int init_rc_dma(void)
 {
 	int ret;
-#ifndef USE_HOST_DMA
-	return 0;
-#endif
+
 	print_debug("Init RC DMA \n");
 
 	if (cpu_mask_count != NR_CPUS) {
@@ -532,3 +532,17 @@ error:
 	/* Need to cleanup the desc */
 	return -1;
 }
+
+#else
+
+int init_rc_dma(void)
+{
+	return 0;
+}
+
+void cleanup_rc_dma(void)
+{
+	return;
+}
+
+#endif

@@ -46,6 +46,7 @@
 #include "fsl_c2x0_virtio.h"
 #endif
 
+#ifdef RNG_OFFLOAD
 static struct rng_ctx *r_ctx;
 static struct hwrng *rng;
 
@@ -420,4 +421,19 @@ int32_t process_virtio_rng_job(struct virtio_c2x0_job_ctx *virtio_job)
 	}
 	return ret;
 }
-#endif
+
+#endif /*VIRTIO_C2X0*/
+
+#else
+
+int rng_init(void)
+{
+	return 0;
+}
+
+void rng_exit(void)
+{
+	return;
+}
+
+#endif /* RNG_OFFLOAD */

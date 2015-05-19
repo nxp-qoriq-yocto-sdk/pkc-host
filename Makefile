@@ -166,9 +166,7 @@ ifeq ($(EXTRA_PKC),y)
 $(DRIVER_KOBJ)-objs += crypto/pkc.o
 endif
 endif
-ifeq ($(USE_HOST_DMA),y)
 $(DRIVER_KOBJ)-objs += host_driver/dma.o
-endif
 $(DRIVER_KOBJ)-objs += algs/algs.o
 $(DRIVER_KOBJ)-objs += algs/rsa.o
 $(DRIVER_KOBJ)-objs += algs/dsa.o
@@ -182,9 +180,7 @@ endif
 ifeq ($(CONFIG_FSL_C2X0_SYMMETRIC_OFFLOAD),y)
 $(DRIVER_KOBJ)-objs += algs/symmetric.o
 endif
-ifeq ($(RNG_OFFLOAD),y)
 $(DRIVER_KOBJ)-objs += algs/rng.o
-endif
 
 ifeq ($(VIRTIO_C2X0),n)
 $(DRIVER_KOBJ)-objs += test/rsa_test.o
