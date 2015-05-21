@@ -390,35 +390,38 @@ void sysfs_cleanup(fsl_pci_dev_t *fsl_pci_dev)
 	delete_sysfs_dir(fsl_pci_dev->sysfs.dev_dir);
 }
 
-void set_sysfs_value(fsl_pci_dev_t *fsl_pci_dev, sys_files_id_t id,
-		     uint8_t *value, uint8_t len)
+struct k_sysfs_file *get_sys_file(fsl_pci_dev_t *fsl_pci_dev, sys_files_id_t id)
 {
-	struct k_sysfs_file *file = NULL;
+	struct k_sysfs_file *file;
 
 	if (id > DEVICE_SYS_FILES_START && id < DEVICE_SYS_FILES_END) {
 		file = fsl_pci_dev->sysfs.dev_file.file;
 	} else if (id > FIRMWARE_SYS_FILES_START && id < FIRMWARE_SYS_FILE_END) {
-		file =
-		    fsl_pci_dev->sysfs.fw_files[id - FIRMWARE_SYS_FILES_START -
-						1].file;
+		id -= FIRMWARE_SYS_FILES_START + 1;
+		file = fsl_pci_dev->sysfs.fw_files[id].file;
 	} else if (id > PCI_SYS_FILES_START && id < PCI_SYS_FILES_END) {
-		file =
-		    fsl_pci_dev->sysfs.pci_files[id - PCI_SYS_FILES_START -
-						 1].file;
+		id -= PCI_SYS_FILES_START + 1;
+		file = fsl_pci_dev->sysfs.pci_files[id].file;
 	} else if (id > CRYPTO_SYS_FILES_START && id < CRYPTO_SYS_FILES_END) {
-		file =
-		    fsl_pci_dev->sysfs.crypto_files[id -
-						    CRYPTO_SYS_FILES_START -
-						    1].file;
+		id -= CRYPTO_SYS_FILES_START + 1;
+		file = fsl_pci_dev->sysfs.crypto_files[id].file;
 	} else if (id > STATS_SYS_FILES_START && id < STATS_SYS_FILES_END) {
-		file =
-		    fsl_pci_dev->sysfs.stats_files[id - STATS_SYS_FILES_START -
-						   1].file;
+		id -= STATS_SYS_FILES_START + 1;
+		file = fsl_pci_dev->sysfs.stats_files[id].file;
 	} else if (id > TEST_SYS_FILES_START && id < TEST_SYS_FILES_END) {
-		file =
-		    fsl_pci_dev->sysfs.test_files[id - TEST_SYS_FILES_START -
-						  1].file;
+		id -= TEST_SYS_FILES_START + 1;
+		file = fsl_pci_dev->sysfs.test_files[id].file;
+	} else {
+		file = NULL; /* this should not be the case */
 	}
+
+	return file;
+}
+
+void set_sysfs_value(fsl_pci_dev_t *fsl_pci_dev, sys_files_id_t id,
+		     uint8_t *value, uint8_t len)
+{
+	struct k_sysfs_file *file = get_sys_file(fsl_pci_dev, id);
 
 	if (file->str_flag)
 		memcpy(file->buf, value, len);
@@ -426,38 +429,12 @@ void set_sysfs_value(fsl_pci_dev_t *fsl_pci_dev, sys_files_id_t id,
 		file->num = *((uint32_t *) (value));
 
 	file->buf_len = len;
-
 }
 
 void get_sysfs_value(fsl_pci_dev_t *fsl_pci_dev, sys_files_id_t id,
 		     uint8_t *value, uint8_t *len)
 {
-	struct k_sysfs_file *file = NULL;
-
-	if (id > DEVICE_SYS_FILES_START && id < DEVICE_SYS_FILES_END) {
-		file = fsl_pci_dev->sysfs.dev_file.file;
-	} else if (id > FIRMWARE_SYS_FILES_START && id < FIRMWARE_SYS_FILE_END) {
-		file =
-		    fsl_pci_dev->sysfs.fw_files[id - FIRMWARE_SYS_FILES_START -
-						1].file;
-	} else if (id > PCI_SYS_FILES_START && id < PCI_SYS_FILES_END) {
-		file =
-		    fsl_pci_dev->sysfs.pci_files[id - PCI_SYS_FILES_START -
-						 1].file;
-	} else if (id > CRYPTO_SYS_FILES_START && id < CRYPTO_SYS_FILES_END) {
-		file =
-		    fsl_pci_dev->sysfs.crypto_files[id -
-						    CRYPTO_SYS_FILES_START -
-						    1].file;
-	} else if (id > STATS_SYS_FILES_START && id < STATS_SYS_FILES_END) {
-		file =
-		    fsl_pci_dev->sysfs.stats_files[id - STATS_SYS_FILES_START -
-						   1].file;
-	} else if (id > TEST_SYS_FILES_START && id < TEST_SYS_FILES_END) {
-		file =
-		    fsl_pci_dev->sysfs.test_files[id - TEST_SYS_FILES_START -
-						  1].file;
-	}
+	struct k_sysfs_file *file = get_sys_file(fsl_pci_dev, id);
 
 	if (file->str_flag) {
 		strncpy(value, file->buf, file->buf_len);
