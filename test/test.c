@@ -91,7 +91,7 @@ void start_test(void)
 	}
 	while (!exit) {
 		while (!atomic_read(&hold_off)) {
-			if (-1 != testfunc()) {
+			if (testfunc() == 0) {
 				atomic_set(&total_err_cnt, 0);
 				if (atomic_inc_return(&total_enq_cnt) >= total_enq_req) {
 					atomic_set(&hold_off, 1);
