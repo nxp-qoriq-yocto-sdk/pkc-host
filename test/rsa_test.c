@@ -408,7 +408,7 @@ static void dec_count(void)
 }
 #endif
 
-void rsa_op_done(struct pkc_request *req, int32_t sec_result)
+void rsa_done(struct pkc_request *req, int32_t sec_result)
 {
 #ifndef SIMPLE_TEST_ENABLE
 #ifndef PERF_TEST
@@ -478,7 +478,7 @@ void rsa_op_done(struct pkc_request *req, int32_t sec_result)
 
 int test_rsa_pub_op_1k(void)
 {
-	if (-1 == test_rsa_op(&g_1kpubopreq, rsa_op_done))
+	if (-1 == test_rsa_op(&g_1kpubopreq, rsa_done))
 		return -1;
 
 	return 0;
@@ -486,7 +486,7 @@ int test_rsa_pub_op_1k(void)
 
 int test_rsa_pub_op_2k(void)
 {
-	if (-1 == test_rsa_op(&g_2kpubopreq, rsa_op_done))
+	if (-1 == test_rsa_op(&g_2kpubopreq, rsa_done))
 		return -1;
 
 	return 0;
@@ -494,7 +494,7 @@ int test_rsa_pub_op_2k(void)
 
 int test_rsa_pub_op_4k(void)
 {
-	if (-1 == test_rsa_op(&g_4kpubopreq, rsa_op_done))
+	if (-1 == test_rsa_op(&g_4kpubopreq, rsa_done))
 		return -1;
 
 	return 0;
@@ -525,7 +525,7 @@ int rsa_priv2_op_test(void)
 
 	req->req_u.rsa_priv_f2.n_len = prv2_n_len;
 
-	ret = test_rsa_op(req, rsa_op_done);
+	ret = test_rsa_op(req, rsa_done);
 
 	if (-1 == ret) {
 		kfree(req->req_u.rsa_priv_f2.f);
@@ -543,7 +543,7 @@ int rsa_priv2_op_test(void)
 
 int test_rsa_priv_op_1k(void)
 {
-	if (-1 == test_rsa_op(&g_1kprv3opreq, rsa_op_done))
+	if (-1 == test_rsa_op(&g_1kprv3opreq, rsa_done))
 		return -1;
 
 	return 0;
@@ -551,7 +551,7 @@ int test_rsa_priv_op_1k(void)
 
 int test_rsa_priv_op_2k(void)
 {
-	if (-1 == test_rsa_op(&g_2kprv3opreq, rsa_op_done))
+	if (-1 == test_rsa_op(&g_2kprv3opreq, rsa_done))
 		return -1;
 
 	return 0;
@@ -559,7 +559,7 @@ int test_rsa_priv_op_2k(void)
 
 int test_rsa_priv_op_4k(void)
 {
-	if (-1 == test_rsa_op(&g_4kprv3opreq, rsa_op_done))
+	if (-1 == test_rsa_op(&g_4kprv3opreq, rsa_done))
 		return -1;
 
 	return 0;
