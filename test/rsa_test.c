@@ -478,31 +478,22 @@ void rsa_done(struct pkc_request *req, int32_t sec_result)
 
 int test_rsa_pub_op_1k(void)
 {
-	if (-1 == test_rsa_op(&g_1kpubopreq, rsa_done))
-		return -1;
-
-	return 0;
+	return test_rsa_op(&g_1kpubopreq, rsa_done);
 }
 
 int test_rsa_pub_op_2k(void)
 {
-	if (-1 == test_rsa_op(&g_2kpubopreq, rsa_done))
-		return -1;
-
-	return 0;
+	return test_rsa_op(&g_2kpubopreq, rsa_done);
 }
 
 int test_rsa_pub_op_4k(void)
 {
-	if (-1 == test_rsa_op(&g_4kpubopreq, rsa_done))
-		return -1;
-
-	return 0;
+	return test_rsa_op(&g_4kpubopreq, rsa_done);
 }
 
 int rsa_priv2_op_test(void)
 {
-	int ret = 0;
+	int err;
 	struct pkc_request *req =
 	    kzalloc(sizeof(struct pkc_request), GFP_KERNEL);
 
@@ -525,9 +516,8 @@ int rsa_priv2_op_test(void)
 
 	req->req_u.rsa_priv_f2.n_len = prv2_n_len;
 
-	ret = test_rsa_op(req, rsa_done);
-
-	if (-1 == ret) {
+	err = test_rsa_op(req, rsa_done);
+	if (err) {
 		kfree(req->req_u.rsa_priv_f2.f);
 		kfree(req);
 	}
@@ -538,29 +528,20 @@ int rsa_priv2_op_test(void)
 	}
 #endif
 
-	return ret;
+	return err;
 }
 
 int test_rsa_priv_op_1k(void)
 {
-	if (-1 == test_rsa_op(&g_1kprv3opreq, rsa_done))
-		return -1;
-
-	return 0;
+	return test_rsa_op(&g_1kprv3opreq, rsa_done);
 }
 
 int test_rsa_priv_op_2k(void)
 {
-	if (-1 == test_rsa_op(&g_2kprv3opreq, rsa_done))
-		return -1;
-
-	return 0;
+	return test_rsa_op(&g_2kprv3opreq, rsa_done);
 }
 
 int test_rsa_priv_op_4k(void)
 {
-	if (-1 == test_rsa_op(&g_4kprv3opreq, rsa_done))
-		return -1;
-
-	return 0;
+	return test_rsa_op(&g_4kprv3opreq, rsa_done);
 }

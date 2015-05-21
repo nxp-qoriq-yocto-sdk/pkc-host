@@ -914,18 +914,16 @@ int test_rsa_op(struct pkc_request *req,
 		void (*cb) (struct pkc_request *, int32_t result))
 #endif
 {
-    int32_t ret = 0;
+	int err;
+
 	rsa_completion_cb = cb;
 #ifdef VIRTIO_C2X0
-	ret = rsa_op(req, virtio_job);
+	err = rsa_op(req, virtio_job);
 #else
-	ret = rsa_op(req);
+	err = rsa_op(req);
 #endif
-    if (-EINPROGRESS == ret)
-        ret = 0;
-    if (0 > ret)
-        ret = -1;
-
-    return ret;
+	if (err == -EINPROGRESS)
+		err = 0;
+	return err;
 }
 EXPORT_SYMBOL(test_rsa_op);
