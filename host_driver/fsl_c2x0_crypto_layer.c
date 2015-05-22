@@ -246,6 +246,11 @@ static uint32_t calc_rp_mem_len(crypto_dev_config_t *config)
 	return len;
 }
 
+/*
+ * Calculate outbound memory requirements.
+ * ob_mem->h_mem will contain the memory map relative to address 0. It will be
+ * translated relative to a pci mapped address by alloc_ob_mem
+ */
 static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 				crypto_dev_config_t *config)
 {
@@ -315,33 +320,37 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	return ob_mem_len;
 }
 
+/*
+ * Allocate outbound memory
+ * dev->h_mem will contain the driver's memory map
+ */
 int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 {
-	/* First get the total ob mem required */
-	uint32_t ob_mem_len = calc_ob_mem_len(dev, config);
 	void *host_v_addr;
+	crypto_dev_mem_info_t *mem;
+	uint32_t ob_mem_len;
+
+	/* First get the total ob mem required */
+	ob_mem_len = calc_ob_mem_len(dev, config);
+	mem = &(dev->mem[MEM_TYPE_DRIVER]);
 
 	print_debug("\t alloc_ob_mem entered........\n");
 	print_debug("\t Total ob mem returned	:%d\n", ob_mem_len);
 
 	host_v_addr = pci_alloc_consistent(((fsl_pci_dev_t *) dev->priv_dev)->dev,
-			ob_mem_len,
-			&(dev->mem[MEM_TYPE_DRIVER].host_dma_addr));
-	if (unlikely(!host_v_addr)) {
+			ob_mem_len, &(mem->host_dma_addr));
+	if (!host_v_addr) {
 		print_error("\t \t Allocating ob mem failed....\n");
 		return -ENOMEM;
 	}
 
-	dev->mem[MEM_TYPE_DRIVER].host_v_addr = host_v_addr;
-	dev->mem[MEM_TYPE_DRIVER].host_p_addr = __pa(host_v_addr);
-	dev->mem[MEM_TYPE_DRIVER].len = ob_mem_len;
+	mem->host_v_addr = host_v_addr;
+	mem->host_p_addr = __pa(host_v_addr);
+	mem->len = ob_mem_len;
 
-	print_debug("OB Mem address....	:%0x\n",
-		    dev->mem[MEM_TYPE_DRIVER].host_v_addr);
-	print_debug("OB Mem dma address... :%0x\n",
-		    dev->mem[MEM_TYPE_DRIVER].host_dma_addr);
-	print_debug("OB Mem physical address.. :%0x\n",
-		    dev->mem[MEM_TYPE_DRIVER].host_p_addr);
+	print_debug("OB Mem address....	:%0x\n", mem->host_v_addr);
+	print_debug("OB Mem dma address... :%0x\n", mem->host_dma_addr);
+	print_debug("OB Mem physical address.. :%0x\n", mem->host_p_addr);
 
 	/* Assign the diff pointers properly */
 	dev->h_mem = host_v_addr;
