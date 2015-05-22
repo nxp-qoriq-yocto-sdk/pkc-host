@@ -1278,17 +1278,20 @@ int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set)
 void *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 				  crypto_dev_config_t *config)
 {
-	uint32_t i = 0;
-	uint8_t  crypto_info_str[200];	
+	uint32_t i;
+	uint8_t crypto_info_str[200];
+	fsl_crypto_dev_t *c_dev;
+	fsl_h_rsrc_ring_pair_t *rp;
 
-	fsl_crypto_dev_t *c_dev = kzalloc(sizeof(fsl_crypto_dev_t), GFP_KERNEL);
-	fsl_h_rsrc_ring_pair_t *rp =
-	    kzalloc(sizeof(fsl_h_rsrc_ring_pair_t) * config->num_of_rings,
-		    GFP_KERNEL);
+	c_dev = kzalloc(sizeof(fsl_crypto_dev_t), GFP_KERNEL);
+	if (!c_dev)
+		return NULL;
 
-	if (unlikely(NULL == c_dev) || unlikely(NULL == rp)) {
-		print_error("\t Mem alloc failed !!\n");
-		goto error;
+	rp = kzalloc(sizeof(fsl_h_rsrc_ring_pair_t) * config->num_of_rings,
+			GFP_KERNEL);
+	if (!rp) {
+		kfree(c_dev);
+		return NULL;
 	}
 
 	c_dev->priv_dev = fsl_pci_dev;
@@ -1393,6 +1396,8 @@ void *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	       c_dev->config->dev_no);
 
 	return c_dev;
+
+/* FIXME: this is not proper clean-up */
 error:
 	cleanup_crypto_device(c_dev);
 	return NULL;
