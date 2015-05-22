@@ -217,9 +217,8 @@ void rearrange_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 
 	/* Put the rings in proper prio q */
 	for (i = 0; i < config->num_of_rings; i++) {
-		pri =
-		    (((config->ring[i].flags) & APP_RING_PROP_PRIO_MASK) >>
-		     APP_RING_PROP_PRIO_SHIFT);
+		pri = ((config->ring[i].flags) & APP_RING_PROP_PRIO_MASK) >>
+				APP_RING_PROP_PRIO_SHIFT;
 		dev->max_pri_level =
 		    (dev->max_pri_level < pri) ? pri : dev->max_pri_level;
 
@@ -265,8 +264,8 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
 	dev->ob_mem.drv_resp_rings = ob_mem_len;
 	rp_len = calc_rp_mem_len(config);
-	ob_mem_len += (rp_len * sizeof(resp_ring_entry_t));
-	dev->tot_req_mem_size += (rp_len * sizeof(req_ring_entry_t));
+	ob_mem_len 	      += rp_len * sizeof(resp_ring_entry_t);
+	dev->tot_req_mem_size += rp_len * sizeof(req_ring_entry_t);
 
 	/* For each rp we need a local memory for indexes */
 	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
@@ -358,25 +357,19 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	dev->h_mem->ip_pool = host_v_addr + dev->ob_mem.ip_pool;
 
 	print_debug("\n ====== OB MEM POINTERS =======\n");
-	print_debug("\t Hmem			:%0x\n", dev->h_mem);
-	print_debug("\t H HS Mem		:%0x\n", &(dev->h_mem->hs_mem));
-	print_debug("\t Fw resp ring		:%0x\n",
-		    dev->h_mem->fw_resp_ring);
-	print_debug("\t Drv resp ring		:%0x\n",
-		    dev->h_mem->drv_resp_ring);
-	print_debug("\t L Idxs mem		:%0x\n",
-		    dev->h_mem->l_idxs_mem);
-	print_debug("\t S C Idxs mem		:%0x\n",
-		    dev->h_mem->s_c_idxs_mem);
-	print_debug("\t L R cntrs mem		:%0x\n",
-		    dev->h_mem->l_r_cntrs_mem);
+	print_debug("\t Hmem		:%0x\n", dev->h_mem);
+	print_debug("\t H HS Mem	:%0x\n", &(dev->h_mem->hs_mem));
+	print_debug("\t Fw resp ring	:%0x\n", dev->h_mem->fw_resp_ring);
+	print_debug("\t Drv resp ring	:%0x\n", dev->h_mem->drv_resp_ring);
+	print_debug("\t L Idxs mem	:%0x\n", dev->h_mem->l_idxs_mem);
+	print_debug("\t S C Idxs mem	:%0x\n", dev->h_mem->s_c_idxs_mem);
+	print_debug("\t L R cntrs mem	:%0x\n", dev->h_mem->l_r_cntrs_mem);
 	print_debug("\t S C R cntrs mem	:%0x\n", dev->h_mem->s_c_r_cntrs_mem);
-	print_debug("\t Cntrs mem		:%0x\n", dev->h_mem->cntrs_mem);
-	print_debug("\t S C cntrs mem		:%0x\n",
-		    dev->h_mem->s_c_cntrs_mem);
-	print_debug("\t OP pool			:%0x\n", dev->h_mem->op_pool);
-	print_debug("\t IP pool			:%0x\n", dev->h_mem->ip_pool);
-	print_debug("\t Total req mem size	:%0x\n", dev->tot_req_mem_size);
+	print_debug("\t Cntrs mem	:%0x\n", dev->h_mem->cntrs_mem);
+	print_debug("\t S C cntrs mem	:%0x\n", dev->h_mem->s_c_cntrs_mem);
+	print_debug("\t OP pool		:%0x\n", dev->h_mem->op_pool);
+	print_debug("\t IP pool		:%0x\n", dev->h_mem->ip_pool);
+	print_debug("\t Total req mem size :%0x\n", dev->tot_req_mem_size);
 
 	return 0;
 }
@@ -1389,9 +1382,9 @@ void *fsl_crypto_layer_add_device(void *dev, crypto_dev_config_t *config)
 	set_sysfs_value(dev, DEVICE_STATE_SYSFILE, (uint8_t *) "DRIVER READY\n",
 			strlen("DRIVER READY\n"));
 
-    prepare_crypto_cfg_info_string(config, crypto_info_str);
-    set_sysfs_value(dev, CRYPTO_INFO_SYS_FILE, (uint8_t *)crypto_info_str,
-            strlen(crypto_info_str));
+	prepare_crypto_cfg_info_string(config, crypto_info_str);
+	set_sysfs_value(dev, CRYPTO_INFO_SYS_FILE, (uint8_t *)crypto_info_str,
+			strlen(crypto_info_str));
 
 	printk(KERN_INFO "[FSL-CRYPTO-OFFLOAD-DRV] DevId:%d DEVICE IS UP\n",
 	       c_dev->config->dev_no);

@@ -628,7 +628,7 @@ int rsa_op(struct pkc_request *req)
 	rsa_priv3_op_buffers_t *priv3_op_buffs = NULL;
 
 #ifdef SEC_DMA
-        dev_p_addr_t offset;
+	dev_p_addr_t offset;
 #endif
 
 	/* #ifdef KCAPI_INTEG_BUILD */
@@ -644,34 +644,32 @@ int rsa_op(struct pkc_request *req)
 			return -1;
 #endif
 	}
-	/* #else */
+
 	else
 #endif
-    {
-        /* By default using first device --
-         * Logic here will be replaced with LB */
+	{
+	/* By default using first device --
+	 * Logic here will be replaced with LB */
 #ifdef VIRTIO_C2X0
-        if(NULL == (c_dev = get_device_rr()))
-            return -1;
+	if(NULL == (c_dev = get_device_rr()))
+		return -1;
 #else
-        c_dev = get_crypto_dev(1);
+	c_dev = get_crypto_dev(1);
 #endif  
-#ifndef HIGH_PERF    
-        if(0 == (r_id = get_ring_rr(c_dev)))
-            return -1;
+#ifndef HIGH_PERF
+	if(0 == (r_id = get_ring_rr(c_dev)))
+		return -1;
 
-        atomic_inc(&c_dev->active_jobs);
+	atomic_inc(&c_dev->active_jobs);
 #else
-        r_id = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
-        r_id = 1 + (r_id - 1) % (c_dev->num_of_rings - 1);
+	r_id = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
+	r_id = 1 + (r_id - 1) % (c_dev->num_of_rings - 1);
 #endif
-    }
+	}
 
 #ifdef SEC_DMA
-        offset = c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+	offset = c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
-
-	/* #endif */
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 	print_debug("\t crypto_ctx addr :			:%0llx\n",
@@ -702,7 +700,7 @@ int rsa_op(struct pkc_request *req)
 		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
 #ifdef SEC_DMA
-                map_crypto_mem(&(crypto_ctx->crypto_mem));
+		map_crypto_mem(&(crypto_ctx->crypto_mem));
 #endif
 
 		print_debug("\t \t \t Host to dev convert complete....\n");

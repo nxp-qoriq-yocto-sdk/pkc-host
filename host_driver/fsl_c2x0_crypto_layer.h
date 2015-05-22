@@ -524,6 +524,7 @@ typedef struct fsl_crypto_dev {
 	/* Holds the count of number of crypto dev sessions */
 	atomic_t crypto_dev_sess_cnt;
 
+	/* FIXME: really? a percpu variable to remember a device state? */
 	/* FLAG TO INDICATE DEVICE'S LIVELENESS STATUS */
 	per_dev_struct_t __percpu *dev_status;
 	atomic_t active_jobs;

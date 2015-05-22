@@ -869,9 +869,7 @@ static int32_t flush_app_jobs(fsl_crypto_dev_t *dev)
 			ASSIGN32(jobs_added,
 				 dev->ring_pairs[i].s_c_counters->jobs_added);
 #endif
-			while (0 != (jobs_added -
-				     dev->ring_pairs[i].
-				     counters->jobs_processed)) {
+			while (0 != (jobs_added - dev->ring_pairs[i].counters->jobs_processed)) {
 				print_debug
 				    ("%d, jobs pending resps on ring :%d\n",
 				     (jobs_added -
