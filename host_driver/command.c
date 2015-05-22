@@ -174,7 +174,7 @@ void set_device(char *fname, char *device, int32_t size, char flag)
 	}
 
 	/* CLEAN DEVICE */
-	fsl_pci_dev = (fsl_pci_dev_t *) c_dev->priv_dev;
+	fsl_pci_dev = c_dev->priv_dev;
 	cleanup_crypto_device(c_dev);
 
 	/* PUT DEVICE IN SET MODE */
@@ -204,8 +204,7 @@ void set_device(char *fname, char *device, int32_t size, char flag)
  ******************************************************************************/
 int32_t rehandshake(int8_t *config_file, fsl_crypto_dev_t *dev)
 {
-	crypto_dev_config_t *curr_config =
-	    get_dev_config(dev->priv_dev);
+	crypto_dev_config_t *curr_config = get_dev_config(dev->priv_dev);
 	fsl_crypto_dev_t *crypto_dev = NULL; 
 	crypto_dev_config_t *new_config = NULL;
 
@@ -220,7 +219,7 @@ int32_t rehandshake(int8_t *config_file, fsl_crypto_dev_t *dev)
 		return -1;
 	}
     
-    crypto_dev = get_crypto_dev(curr_config->dev_no);
+	crypto_dev = get_crypto_dev(curr_config->dev_no);
 
 	/* SEARCH FOR MAX DEVICES */
 	for (; new_dev_no <= dev_count; ++new_dev_no) {
@@ -275,7 +274,7 @@ dconfig:
 	/* FREE THE CURRENT RINGS */
 	kfree(crypto_dev->ring_pairs);
 	/* REALLOCATE OB MEMORY */
-	pci_free_consistent(((fsl_pci_dev_t *) crypto_dev->priv_dev)->dev,
+	pci_free_consistent(crypto_dev->priv_dev->dev,
 			    crypto_dev->mem[MEM_TYPE_DRIVER].len,
 			    crypto_dev->mem[MEM_TYPE_DRIVER].host_v_addr,
 			    crypto_dev->mem[MEM_TYPE_DRIVER].host_dma_addr);

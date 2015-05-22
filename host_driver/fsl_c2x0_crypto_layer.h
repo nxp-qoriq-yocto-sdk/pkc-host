@@ -455,6 +455,8 @@ typedef struct per_dev_struct {
 	atomic_t device_status;
 } per_dev_struct_t;
 
+typedef struct fsl_pci_dev fsl_pci_dev_t;
+
 /*******************************************************************************
 Description :	Contains all the information of the crypto device.
 Fields      :	priv_dev	: Low level private data structure of the device
@@ -468,18 +470,13 @@ Fields      :	priv_dev	: Low level private data structure of the device
 		list		: To make multiple instances of this structure
 					as linked list.
 *******************************************************************************/
-
 typedef struct fsl_crypto_dev {
-	void *priv_dev;
+	fsl_pci_dev_t *priv_dev;
 
 	crypto_dev_info_t dev_info;
-
 	crypto_dev_config_t *config;
-
 	crypto_dev_mem_info_t mem[MEM_TYPE_MAX + 1];
-
 	driver_ob_mem_t ob_mem;
-
 	uint32_t tot_req_mem_size;
 
 	/* Pointer to the memory on the host side, structures the plain bytes.
@@ -540,7 +537,7 @@ int32_t app_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 			 dev_dma_addr_t sec_desc);
 
-void *fsl_crypto_layer_add_device(void *dev, crypto_dev_config_t *config);
+void *fsl_crypto_layer_add_device(fsl_pci_dev_t *dev, crypto_dev_config_t *config);
 void demux_fw_responses(fsl_crypto_dev_t *dev);
 void cleanup_crypto_device(fsl_crypto_dev_t *dev);
 int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);

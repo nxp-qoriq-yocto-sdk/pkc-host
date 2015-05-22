@@ -76,22 +76,19 @@ int32_t distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	uint32_t core_no = 0;
 	uint32_t isr_count = 0;
 	uint32_t i = 0;
-
+	struct list_head *isr_ctx_list_head;
 	uint32_t total_cores = 0;
-
 	per_core_struct_t *instance = NULL;
 	isr_ctx_t *isr_ctx = NULL;
+
+	isr_ctx_list_head = &(dev->priv_dev->intr_info.isr_ctx_list_head);
 
 	for_each_online_cpu(i)
 	    ++total_cores;
 
 	print_debug("Total cores        :%d\n", total_cores);
-#define TOTAL_NUM_OF_ISRS            (((fsl_pci_dev_t *)dev->priv_dev)\
-					->intr_info.intr_vectors_cnt)
-	isr_ctx =
-	    list_entry((&
-			(((fsl_pci_dev_t *) (dev->priv_dev))->
-			 intr_info.isr_ctx_list_head))->next, isr_ctx_t, list);
+#define TOTAL_NUM_OF_ISRS  dev->priv_dev->intr_info.intr_vectors_cnt
+	isr_ctx = list_entry(isr_ctx_list_head->next, isr_ctx_t, list);
 
 	INIT_LIST_HEAD(&(isr_ctx->ring_list_head));
 
@@ -126,12 +123,8 @@ int32_t distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 		if ((++isr_count) % TOTAL_NUM_OF_ISRS)
 			list_entry(isr_ctx->list.next, isr_ctx_t, list);
 		else
-			isr_ctx =
-			    list_entry((&
-					(((fsl_pci_dev_t *) dev->
-					  priv_dev)->intr_info.
-					 isr_ctx_list_head))->next, isr_ctx_t,
-				       list);
+			isr_ctx = list_entry(isr_ctx_list_head->next, isr_ctx_t,
+						list);
 
 		print_debug("ISR COUNT  :%d total num of isrs   :%d\n",
 			    isr_count, TOTAL_NUM_OF_ISRS);
@@ -337,7 +330,7 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	print_debug("\t alloc_ob_mem entered........\n");
 	print_debug("\t Total ob mem returned	:%d\n", ob_mem_len);
 
-	host_v_addr = pci_alloc_consistent(((fsl_pci_dev_t *) dev->priv_dev)->dev,
+	host_v_addr = pci_alloc_consistent(dev->priv_dev->dev,
 			ob_mem_len, &(mem->host_dma_addr));
 	if (!host_v_addr) {
 		print_error("\t \t Allocating ob mem failed....\n");
@@ -1282,7 +1275,7 @@ int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set)
 	return 0;
 }
 
-void *fsl_crypto_layer_add_device(void *dev, crypto_dev_config_t *config)
+void *fsl_crypto_layer_add_device(fsl_pci_dev_t *dev, crypto_dev_config_t *config)
 {
 	uint32_t i = 0;
 	uint8_t  crypto_info_str[200];	
@@ -1302,7 +1295,7 @@ void *fsl_crypto_layer_add_device(void *dev, crypto_dev_config_t *config)
 	c_dev->config = config;
 
 	/* HACK */
-	((fsl_pci_dev_t *) dev)->crypto_dev = c_dev;
+	dev->crypto_dev = c_dev;
 
 	/* Get the inbound memory addresses from the PCI driver */
 	for (i = 0; i < MEM_TYPE_MAX; i++) {
@@ -1424,7 +1417,7 @@ void cleanup_crypto_device(fsl_crypto_dev_t *dev)
 
 	/* Free the pci alloc consistent mem */
 	if (dev->mem[MEM_TYPE_DRIVER].host_v_addr) {
-		pci_free_consistent(((fsl_pci_dev_t *) (dev->priv_dev))->dev,
+		pci_free_consistent(dev->priv_dev->dev,
 				    dev->mem[MEM_TYPE_DRIVER].len,
 				    dev->mem[MEM_TYPE_DRIVER].host_v_addr,
 				    dev->mem[MEM_TYPE_DRIVER].host_dma_addr);

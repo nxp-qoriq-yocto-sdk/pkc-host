@@ -54,9 +54,7 @@ static void ablk_op_done(void *ctx, int32_t res)
 	bool dst_chained;
 	uint32_t dst_sgcnt = 0;
 	crypto_op_ctx_t *crypto_ctx = ctx;
-	struct pci_dev *pci_dev = ((fsl_pci_dev_t *)
-				   ((fsl_crypto_dev_t *) (crypto_ctx->c_dev))->
-				   priv_dev)->dev;
+	struct pci_dev *pci_dev = (((fsl_crypto_dev_t *) (crypto_ctx->c_dev))->priv_dev)->dev;
 
 	print_debug("ABLK OP DONE\n");
 	dst_sgcnt = sg_count(crypto_ctx->req.ablk->dst,
@@ -416,7 +414,7 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 	int32_t ivsize = crypto_ablkcipher_ivsize(ablkcipher);
 	uint32_t r_id = c_sess->r_id;
 	fsl_crypto_dev_t *c_dev = c_sess->c_dev;
-	struct pci_dev *pci_dev = ((fsl_pci_dev_t *) c_dev->priv_dev)->dev;
+	struct pci_dev *pci_dev = c_dev->priv_dev->dev;
 #endif
 	crypto_op_ctx_t *crypto_ctx = NULL;
 	crypto_mem_info_t *crypto_mem = NULL;
@@ -462,7 +460,7 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 	r_id = c_sess->r_id;
 	c_dev = c_sess->c_dev;
 
-	pci_dev = ((fsl_pci_dev_t *) c_dev->priv_dev)->dev;
+	pci_dev = c_dev->priv_dev->dev;
 #endif
 
 	if (-1 == check_device(c_dev))
