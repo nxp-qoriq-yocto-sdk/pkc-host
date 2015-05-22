@@ -1275,7 +1275,8 @@ int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set)
 	return 0;
 }
 
-void *fsl_crypto_layer_add_device(fsl_pci_dev_t *dev, crypto_dev_config_t *config)
+void *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
+				  crypto_dev_config_t *config)
 {
 	uint32_t i = 0;
 	uint8_t  crypto_info_str[200];	
@@ -1290,17 +1291,17 @@ void *fsl_crypto_layer_add_device(fsl_pci_dev_t *dev, crypto_dev_config_t *confi
 		goto error;
 	}
 
-	c_dev->priv_dev = dev;
+	c_dev->priv_dev = fsl_pci_dev;
 	c_dev->ring_pairs = rp;
 	c_dev->config = config;
 
 	/* HACK */
-	dev->crypto_dev = c_dev;
+	fsl_pci_dev->crypto_dev = c_dev;
 
 	/* Get the inbound memory addresses from the PCI driver */
 	for (i = 0; i < MEM_TYPE_MAX; i++) {
 		c_dev->mem[i].type = i;
-		fsl_drv_get_mem(dev, &c_dev->mem[i]);
+		fsl_drv_get_mem(fsl_pci_dev, &c_dev->mem[i]);
 	}
 
 	atomic_set(&(c_dev->crypto_dev_sess_cnt), 0);
@@ -1365,7 +1366,7 @@ void *fsl_crypto_layer_add_device(fsl_pci_dev_t *dev, crypto_dev_config_t *confi
 	check_ep_bootup(c_dev);
 #endif
 
-	set_sysfs_value(dev, DEVICE_STATE_SYSFILE, (uint8_t *) "HS Started\n",
+	set_sysfs_value(fsl_pci_dev, DEVICE_STATE_SYSFILE, (uint8_t *) "HS Started\n",
 			strlen("HS Started\n"));
 
 	c_dev->dev_status = alloc_percpu(per_dev_struct_t);
@@ -1378,14 +1379,14 @@ void *fsl_crypto_layer_add_device(fsl_pci_dev_t *dev, crypto_dev_config_t *confi
 		goto error;
 	}
 
-	set_sysfs_value(dev, FIRMWARE_STATE_SYSFILE, (uint8_t *) "FW READY\n",
+	set_sysfs_value(fsl_pci_dev, FIRMWARE_STATE_SYSFILE, (uint8_t *) "FW READY\n",
 			strlen("FW READY\n"));
 
-	set_sysfs_value(dev, DEVICE_STATE_SYSFILE, (uint8_t *) "DRIVER READY\n",
+	set_sysfs_value(fsl_pci_dev, DEVICE_STATE_SYSFILE, (uint8_t *) "DRIVER READY\n",
 			strlen("DRIVER READY\n"));
 
 	prepare_crypto_cfg_info_string(config, crypto_info_str);
-	set_sysfs_value(dev, CRYPTO_INFO_SYS_FILE, (uint8_t *)crypto_info_str,
+	set_sysfs_value(fsl_pci_dev, CRYPTO_INFO_SYS_FILE, (uint8_t *)crypto_info_str,
 			strlen(crypto_info_str));
 
 	printk(KERN_INFO "[FSL-CRYPTO-OFFLOAD-DRV] DevId:%d DEVICE IS UP\n",
