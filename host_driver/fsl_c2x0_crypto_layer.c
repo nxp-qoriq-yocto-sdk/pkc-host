@@ -121,7 +121,7 @@ int32_t distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 		list_add(&(rp->bh_ctx_list_node), &(instance->ring_list_head));
 
 		if ((++isr_count) % TOTAL_NUM_OF_ISRS)
-			list_entry(isr_ctx->list.next, isr_ctx_t, list);
+			isr_ctx = list_entry(isr_ctx->list.next, isr_ctx_t, list);
 		else
 			isr_ctx = list_entry(isr_ctx_list_head->next, isr_ctx_t,
 						list);
