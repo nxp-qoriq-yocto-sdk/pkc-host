@@ -208,7 +208,7 @@ int32_t rehandshake(int8_t *config_file, fsl_crypto_dev_t *dev)
 	fsl_crypto_dev_t *crypto_dev;
 	crypto_dev_config_t *new_config = NULL;
 
-	uint32_t i = 0;
+	uint32_t size, i = 0;
 	int32_t new_dev_no = 1;
 	int32_t tot_dev_count = 0;
 
@@ -282,15 +282,14 @@ dconfig:
 	atomic_set(&(crypto_dev->crypto_dev_sess_cnt), 0);
 
 	/* ALLOCATE MEMORY FOR RINGS */
-	crypto_dev->ring_pairs =
-	    kzalloc(sizeof(fsl_h_rsrc_ring_pair_t) * curr_config->num_of_rings,
-		    GFP_KERNEL);
+	size = sizeof(fsl_h_rsrc_ring_pair_t) * curr_config->num_of_rings;
+	crypto_dev->ring_pairs = kzalloc(size, GFP_KERNEL);
+	if (!crypto_dev->ring_pairs)
+	{
+		print_error("Mem alloc failed for ring pairs\n");
+		return -1;
+	}
 
-    if( NULL == crypto_dev->ring_pairs )
-    {
-        print_error("\t Mem alloc failed for ring pares....\n");
-        return -1;
-    }
 	/* atomic_set(&(crypto_dev->crypto_dev_sess_cnt), 0);   */
 
 	/* Rearrange rings acc to their priority */
