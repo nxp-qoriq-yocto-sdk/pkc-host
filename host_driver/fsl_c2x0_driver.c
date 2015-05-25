@@ -917,7 +917,7 @@ static void response_ring_handler(void *data)
 		return;
 	}
 
-	c_dev = (fsl_crypto_dev_t *) bh->c_dev;	/* get_crypto_dev(1); */
+	c_dev = bh->c_dev;	/* get_crypto_dev(1); */
 	print_debug("GOT INTERRUPT FROM DEV : %d\n", c_dev->config->dev_no);
 #ifdef MULTIPLE_RESP_RINGS
 	print_debug("Worker thread invoked on cpu [%d]\n", bh->core_no);

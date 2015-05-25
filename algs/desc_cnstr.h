@@ -232,7 +232,7 @@ typedef struct crypto_mem_info {
 	dma_addr_t dest_buff_dma;
 	buffer_info_t *buffers;
 	void *pool;
-	void *dev;
+	fsl_crypto_dev_t *dev;
 	crypto_buffers_t c_buffers;
 } crypto_mem_info_t;
 

@@ -54,7 +54,7 @@ static void ablk_op_done(void *ctx, int32_t res)
 	bool dst_chained;
 	uint32_t dst_sgcnt = 0;
 	crypto_op_ctx_t *crypto_ctx = ctx;
-	struct pci_dev *pci_dev = (((fsl_crypto_dev_t *) (crypto_ctx->c_dev))->priv_dev)->dev;
+	struct pci_dev *pci_dev = crypto_ctx->c_dev->priv_dev->dev;
 
 	print_debug("ABLK OP DONE\n");
 	dst_sgcnt = sg_count(crypto_ctx->req.ablk->dst,

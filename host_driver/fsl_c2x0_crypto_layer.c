@@ -1275,7 +1275,7 @@ int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set)
 	return 0;
 }
 
-void *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
+fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 				  crypto_dev_config_t *config)
 {
 	uint32_t i;
@@ -1648,6 +1648,7 @@ CMD_RING_RESP:
 
 #else
 
+/* FIXME: function argument dev is overwritten in the first loop */
 int32_t process_response(fsl_crypto_dev_t *dev,
 			 struct list_head *ring_list_head)
 {
@@ -1680,7 +1681,7 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 			if (!resp_cnt)
 				continue;
 
-			dev = (fsl_crypto_dev_t *) ring_cursor->dev;
+			dev = ring_cursor->dev;
 			r_id = ring_cursor->info.ring_id;
 			ri = ring_cursor->indexes->r_index;
 			print_debug("RING ID : %d\n", ring_cursor->info.ring_id);

@@ -216,7 +216,7 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 	struct dh_key_desc_s *dh_key_desc =
 	    (struct dh_key_desc_s *)mem->desc_buff.v_mem;
 #ifdef SEC_DMA
-        dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+        dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 #ifdef DUMP_DEBUG_V_INFO
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
@@ -272,7 +272,7 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	struct ecdh_key_desc_s *ecdh_key_desc =
 	    (struct ecdh_key_desc_s *)mem->desc_buff.v_mem;
 #ifdef SEC_DMA
-        dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+        dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 #ifdef DUMP_DEBUG_V_INFO
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
@@ -334,7 +334,7 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
     dh_keygen_buffers_t   *mem            =   (dh_keygen_buffers_t *)(mem_info->buffers);
     struct ecdh_keygen_desc_s  *ecdh_keygen_desc  =   (struct ecdh_keygen_desc_s *)mem->desc_buff.v_mem;
 #ifdef SEC_DMA
-    dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+    dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 #ifdef DUMP_DEBUG_V_INFO    
     uint32_t                *desc_buff      =   (uint32_t *)mem->desc_buff.v_mem;
@@ -394,7 +394,7 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
     dh_keygen_buffers_t *mem            =   (dh_keygen_buffers_t *)(mem_info->buffers);
     struct dh_keygen_desc_s *dh_keygen_desc =   (struct dh_keygen_desc_s *)mem->desc_buff.v_mem;
 #ifdef SEC_DMA
-    dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+    dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 #ifdef DUMP_DEBUG_V_INFO    
     uint32_t                *desc_buff      =   (uint32_t *)mem->desc_buff.v_mem;

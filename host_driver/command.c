@@ -184,9 +184,9 @@ void set_device(char *fname, char *device, int32_t size, char flag)
 
 	/* GET THE OLD DEVICE CONFIG */
 	config = get_dev_config(fsl_pci_dev);
-	fsl_pci_dev->crypto_dev =
-	    fsl_crypto_layer_add_device(fsl_pci_dev, config);
-	if (unlikely(NULL == fsl_pci_dev->crypto_dev)) {
+
+	fsl_pci_dev->crypto_dev = fsl_crypto_layer_add_device(fsl_pci_dev, config);
+	if (!fsl_pci_dev->crypto_dev) {
 		print_error("ADDING DEVICE FAILED\n");
 		return;
 	}
@@ -205,7 +205,7 @@ void set_device(char *fname, char *device, int32_t size, char flag)
 int32_t rehandshake(int8_t *config_file, fsl_crypto_dev_t *dev)
 {
 	crypto_dev_config_t *curr_config = get_dev_config(dev->priv_dev);
-	fsl_crypto_dev_t *crypto_dev = NULL; 
+	fsl_crypto_dev_t *crypto_dev;
 	crypto_dev_config_t *new_config = NULL;
 
 	uint32_t i = 0;

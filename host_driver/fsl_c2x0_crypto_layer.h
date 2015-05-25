@@ -537,7 +537,7 @@ int32_t app_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 			 dev_dma_addr_t sec_desc);
 
-void *fsl_crypto_layer_add_device(fsl_pci_dev_t *dev, crypto_dev_config_t *config);
+fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *dev, crypto_dev_config_t *config);
 void demux_fw_responses(fsl_crypto_dev_t *dev);
 void cleanup_crypto_device(fsl_crypto_dev_t *dev);
 int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);

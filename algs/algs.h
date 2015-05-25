@@ -184,7 +184,7 @@ typedef struct crypto_op_ctx {
 	crypto_op_t oprn;
 	uint32_t rid;
 	dev_dma_addr_t desc;
-	void *c_dev;
+	fsl_crypto_dev_t *c_dev;
 
 	atomic_t maxreqs;
 	atomic_t reqcnt;

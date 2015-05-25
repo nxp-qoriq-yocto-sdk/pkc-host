@@ -301,7 +301,7 @@ static void constr_dsa_sign_desc(crypto_mem_info_t *mem_info)
 	struct dsa_sign_desc_s *dsa_sign_desc =
 	    (struct dsa_sign_desc_s *)mem->desc_buff.v_mem;
 #ifdef SEC_DMA
-        dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+        dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 #ifdef DUMP_DEBUG_V_INFO
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
@@ -384,7 +384,7 @@ static void constr_dsa_verify_desc(crypto_mem_info_t *mem_info)
 	struct dsa_verify_desc_s *dsa_verify_desc =
 	    (struct dsa_verify_desc_s *)mem->desc_buff.v_mem;
 #ifdef SEC_DMA
-        dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+        dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 #ifdef DUMP_DEBUG_V_INFO
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
@@ -454,7 +454,7 @@ static void constr_dsa_keygen_desc(crypto_mem_info_t *mem_info)
 	    (struct dsa_keygen_desc_s *)mem->desc_buff.v_mem;
 
 #ifdef SEC_DMA
-        dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+        dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 
 	start_idx &= HDR_START_IDX_MASK;
@@ -513,7 +513,7 @@ static void constr_ecdsa_sign_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	struct ecdsa_sign_desc_s *ecdsa_sign_desc =
 	    (struct ecdsa_sign_desc_s *)mem->desc_buff.v_mem;
 #ifdef SEC_DMA
-        dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+        dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 #ifdef DUMP_DEBUG_V_INFO
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
@@ -606,7 +606,7 @@ static void constr_ecdsa_verify_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	struct ecdsa_verify_desc_s *ecdsa_verify_desc =
 	    (struct ecdsa_verify_desc_s *)mem->desc_buff.v_mem;
 #ifdef SEC_DMA
-        dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+        dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 #ifdef DUMP_DEBUG_V_INFO
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
@@ -688,7 +688,7 @@ static void constr_ecdsa_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	    (struct ecdsa_keygen_desc_s *)mem->desc_buff.v_mem;
 
 #ifdef SEC_DMA
-        dev_p_addr_t offset = ((fsl_crypto_dev_t *)(mem_info->dev))->mem[MEM_TYPE_DRIVER].dev_p_addr;
+        dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 
 	start_idx &= HDR_START_IDX_MASK;

@@ -216,7 +216,7 @@ typedef struct fsl_pci_dev {
 
 	struct pci_dev *dev;
 	const struct pci_device_id *id;
-	void *crypto_dev;
+	fsl_crypto_dev_t *crypto_dev;
 
 	char dev_name[FSL_PCI_DEV_NAME_MAX_LEN];
 	char dev_node_path[FSL_PCI_DEV_NODE_STD_PATH_LEN +
@@ -241,7 +241,7 @@ Fields	    :	core_no: Number of the core to which this BH is affined
 *******************************************************************************/
 typedef struct bh_handler {
 	int core_no;
-	void *c_dev;
+	fsl_crypto_dev_t *c_dev;
 	struct workqueue_struct *workq;
 	struct work_struct work;
 } bh_handler_t;
