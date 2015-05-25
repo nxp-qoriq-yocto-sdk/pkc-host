@@ -464,7 +464,7 @@ void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 		printk(KERN_ERR "Some test is in progress....\n");
 		return;
 	}
-	/*get_sysfs_value(g_fsl_pci_dev,TEST_REPEAT_SYS_FILE,&repeat,NULL); */
+
 	g_is_test_in_progress = 1;
 
 	if (-1 == parsing_test_command(test_name)) {

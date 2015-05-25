@@ -430,19 +430,3 @@ void set_sysfs_value(fsl_pci_dev_t *fsl_pci_dev, sys_files_id_t id,
 
 	file->buf_len = len;
 }
-
-void get_sysfs_value(fsl_pci_dev_t *fsl_pci_dev, sys_files_id_t id,
-		     uint8_t *value, uint8_t *len)
-{
-	struct k_sysfs_file *file = get_sys_file(fsl_pci_dev, id);
-
-	if (file->str_flag) {
-		strncpy(value, file->buf, file->buf_len);
-		if (len)
-			*len = file->buf_len;
-	} else {
-		value = (uint8_t *) &(file->num);
-		if (len)
-			*len = sizeof(file->num);
-	}
-}

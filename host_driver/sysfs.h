@@ -164,9 +164,6 @@ extern void c2x0_test_func(char *fname, char *test_name, int len, char flag);
 void set_sysfs_value(fsl_pci_dev_t_1 *fsl_pci_dev, sys_files_id_t id,
 		     uint8_t *value, uint8_t len);
 
-void get_sysfs_value(fsl_pci_dev_t_1 *fsl_pci_dev, sys_files_id_t id,
-		     uint8_t *value, uint8_t *len);
-
 int32_t init_sysfs(fsl_pci_dev_t_1 *fsl_pci_dev);
 int32_t init_common_sysfs(void);
 void sysfs_cleanup(fsl_pci_dev_t_1 *fsl_pci_dev);
