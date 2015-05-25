@@ -179,7 +179,7 @@ typedef struct crypto_job_ctx {
 } crypto_job_ctx_t;
 
 typedef struct crypto_op_ctx {
-	void *ctx_pool;
+	void *ctx_pool; /* pointer to the enclosing pool */
 	crypto_mem_info_t crypto_mem;
 	crypto_op_t oprn;
 	uint32_t rid;

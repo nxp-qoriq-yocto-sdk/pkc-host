@@ -113,15 +113,13 @@ void *create_pool(void *buf, uint32_t len)
 		return NULL;
 	}
 
-	/* memset(pool, 0, sizeof(bp)); */
-
 	pool->buff = buf;
 	pool->len = len;
 
 	/* Spinlock for shared access protection */
 	spin_lock_init(&(pool->mem_lock));
 
-	/* Changing len into multiples of quant blocks */
+	/* Truncate len to multiple of quant blocks */
 	len &= ~(MIN_QUANT_SIZE - 1);
 
 	/* Initialise the header */
@@ -134,8 +132,8 @@ void *create_pool(void *buf, uint32_t len)
 	/* Link this header to the free list */
 	pool->free_list = header;
 	pool->tot_free_mem = len - sizeof(bh);
-	print_debug("\t Total free mem  :%d\n", pool->tot_free_mem);
 
+	print_debug("\t Total free mem  :%d\n", pool->tot_free_mem);
 	print_debug("\t Creating pool done\n");
 
 	return pool;
