@@ -310,7 +310,7 @@ dconfig:
 	init_fw_resp_ring(crypto_dev);
 
 	/* Init rp struct */
-	init_rps(crypto_dev);
+	init_ring_pairs(crypto_dev);
 
 	/* Distribute rings to cores and BHs */
 	distribute_rings(crypto_dev, curr_config);

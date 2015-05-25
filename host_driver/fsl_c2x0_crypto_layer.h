@@ -549,7 +549,7 @@ void init_op_pool(fsl_crypto_dev_t *dev);
 void init_crypto_ctx_pool(fsl_crypto_dev_t *dev);
 void init_handshake(fsl_crypto_dev_t *dev);
 void init_fw_resp_ring(fsl_crypto_dev_t *dev);
-void init_rps(fsl_crypto_dev_t *dev);
+void init_ring_pairs(fsl_crypto_dev_t *dev);
 crypto_dev_config_t *get_config(uint32_t dev_no);
 
 int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set);

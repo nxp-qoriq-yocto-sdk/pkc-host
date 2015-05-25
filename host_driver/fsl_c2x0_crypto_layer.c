@@ -447,7 +447,7 @@ void make_fw_resp_ring_circ_list(fsl_crypto_dev_t *dev)
 	dev->fw_resp_rings[i - 1].next = dev->fw_resp_rings[0].next;
 }
 
-void init_rps(fsl_crypto_dev_t *dev)
+void init_ring_pairs(fsl_crypto_dev_t *dev)
 {
 	fsl_h_rsrc_ring_pair_t *rp = NULL;
 	uint32_t off = 0, i = 0;
@@ -1343,7 +1343,7 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 
 	print_debug("\t Init ring  pair....\n");
 	/* Init rp struct */
-	init_rps(c_dev);
+	init_ring_pairs(c_dev);
 	print_debug("\t Init ring pair complete...\n");
 
 	print_debug("\t Distribute ring...\n");
