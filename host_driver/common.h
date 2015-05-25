@@ -77,8 +77,6 @@
 #endif
 #endif
 
-#define LINKED_LIST_HEAD(x)     struct list_head x
-
 /* Endian conversion macro's */
 
 #define IO_BE_WRITE64(val, addr)        { \

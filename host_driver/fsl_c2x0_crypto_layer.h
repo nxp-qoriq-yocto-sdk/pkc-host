@@ -311,7 +311,7 @@ Fields      :	ring_list_head	: Head of the equal priority ring pairs.
 typedef struct fsl_priority_queue {
 	/*fsl_h_rsrc_ring_pair_t *ring_pair; */
 	uint32_t ring_count;
-	 LINKED_LIST_HEAD(ring_list_head);
+	struct list_head ring_list_head;
 } fsl_priority_queue_t;
 
 /*******************************************************************************

@@ -167,7 +167,7 @@ typedef struct isr_ctx {
 	/* Only 16bit MSI data */
 	uint16_t msi_data;
 	struct list_head list;
-	 LINKED_LIST_HEAD(ring_list_head);
+	struct list_head ring_list_head;
 } isr_ctx_t;
 
 /*******************************************************************************
@@ -195,8 +195,7 @@ typedef struct pci_intr_info {
 
 	/* Kernel DS :- Required for MSIx support */
 	struct msix_entry *msix_entries;
-
-	 LINKED_LIST_HEAD(isr_ctx_list_head);
+	struct list_head isr_ctx_list_head;
 } pci_intr_info_t;
 
 /*******************************************************************************
@@ -261,8 +260,7 @@ typedef struct per_core_struct {
 	void *context;
 	void (*cb) (void *);
 	bh_handler_t bh_handler;
-/*	struct list_head	list; */
-	 LINKED_LIST_HEAD(ring_list_head);
+	struct list_head ring_list_head;
 } per_core_struct_t;
 
 extern per_core_struct_t __percpu *per_core;
