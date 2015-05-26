@@ -225,16 +225,24 @@ void rearrange_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	dev->num_of_rings = config->num_of_rings;
 }
 
+uint32_t round_to_power2(uint32_t n)
+{
+	uint32_t i = 1;
+	while (i < n)
+		i = i << 1;
+	return i;
+}
+
 static uint32_t calc_rp_mem_len(crypto_dev_config_t *config)
 {
-	uint32_t i = 0, pow2 = 0x01, len = 0;
+	uint32_t i, len = 0;
+	struct ring_info *ring;
+
 	/* Correct the ring depths to be power of 2 */
 	for (i = 0; i < config->num_of_rings; i++) {
-		for (pow2 = 0X01; (pow2 < config->ring[i].depth);
-		     (pow2 = pow2 << 1))
-			 ;
-		config->ring[i].depth = pow2;
-		len += pow2;
+		ring = &(config->ring[i]);
+		ring->depth = round_to_power2(ring->depth);
+		len += ring->depth;
 	}
 	return len;
 }
