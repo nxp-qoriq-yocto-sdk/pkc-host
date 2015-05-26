@@ -94,8 +94,8 @@ Returns		:	None.
 
 void *create_pool(void *buf, uint32_t len)
 {
-	bp *pool = NULL;
-	bh *header = NULL;
+	bp *pool;
+	bh *header;
 
 	print_debug("\n Creating Pool\n");
 

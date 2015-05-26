@@ -199,8 +199,7 @@ static void rearrange_config(crypto_dev_config_t *config)
 
 void rearrange_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 {
-	uint32_t i = 0;
-	uint32_t pri = 0;
+	uint32_t i, pri;
 
 	pow2_rp_len(config);
 	rearrange_config(config);
@@ -424,8 +423,8 @@ void init_handshake(fsl_crypto_dev_t *dev)
 
 void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 {
-	fw_resp_ring_t *fw_ring = dev->fw_resp_rings;
-	int i = 0, offset = 0;
+	fw_resp_ring_t *fw_ring;
+	int i, offset;
 
 	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
 		fw_ring = &dev->fw_resp_rings[i];
@@ -441,6 +440,8 @@ void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 		    &(dev->h_mem->s_c_r_cntrs_mem[dev->num_of_rings]);
 		fw_ring->s_cntrs = NULL;
 
+		/* FIXME: clean-up leftovers. It probably makes sense to actually
+		 * use offset variable when NUM_OF_RESP_RINGS != 1 */
 		offset += (DEFAULT_FIRMWARE_RESP_RING_DEPTH *
 			   sizeof(resp_ring_entry_t));
 	}
@@ -448,7 +449,7 @@ void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 
 void make_fw_resp_ring_circ_list(fsl_crypto_dev_t *dev)
 {
-	int i = 0;
+	int i;
 
 	for (i = 1; i < NUM_OF_RESP_RINGS; i++)
 		dev->fw_resp_rings[i - 1].next = &(dev->fw_resp_rings[i]);
@@ -457,8 +458,8 @@ void make_fw_resp_ring_circ_list(fsl_crypto_dev_t *dev)
 
 void init_ring_pairs(fsl_crypto_dev_t *dev)
 {
-	fsl_h_rsrc_ring_pair_t *rp = NULL;
-	uint32_t off = 0, i = 0;
+	fsl_h_rsrc_ring_pair_t *rp;
+	uint32_t off = 0, i;
 
 	for (i = 0; i < dev->num_of_rings; i++) {
 		rp = &(dev->ring_pairs[i]);
@@ -1661,13 +1662,13 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 			 struct list_head *ring_list_head)
 {
 #define MAX_ERROR_STRING 400
-	uint64_t desc = 0;
-	uint32_t r_id = 0;
+	uint64_t desc;
+	uint32_t r_id;
 	uint32_t resp_cnt = 0;
-	uint32_t ri = 0;
+	uint32_t ri;
 	int32_t res = 0;
 	uint32_t jobs_added = 0;
-	uint32_t pollcount = 0;
+	uint32_t pollcount;
 #ifndef HIGH_PERF
 	uint32_t app_resp_cnt = 0;
 #endif
