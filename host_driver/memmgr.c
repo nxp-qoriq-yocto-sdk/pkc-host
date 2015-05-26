@@ -110,7 +110,7 @@ void *create_pool(void *buf, uint32_t len)
 	pool = kzalloc(sizeof(bp), GFP_KERNEL);
 	if (!pool) {
 		print_error("Mem allocation for pool failed\n");
-		goto error;
+		return NULL;
 	}
 
 	/* memset(pool, 0, sizeof(bp)); */
@@ -139,11 +139,6 @@ void *create_pool(void *buf, uint32_t len)
 	print_debug("\t Creating pool done\n");
 
 	return pool;
-
-error:
-	/* kfree(pool); */
-
-	return NULL;
 }
 
 /******************************************************************************
