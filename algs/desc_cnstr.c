@@ -179,8 +179,7 @@ Returns     :	SUCCESS/FAILURE
 
 int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 {
-	fsl_crypto_dev_t *c_dev = mem_info->dev;
-	fsl_pci_dev_t *pci_dev = c_dev->priv_dev;
+	fsl_pci_dev_t *pci_dev = mem_info->dev->priv_dev;
 	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
 	uint32_t i = 0;
 
