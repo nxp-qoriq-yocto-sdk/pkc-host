@@ -155,18 +155,28 @@ static void pow2_rp_len(crypto_dev_config_t *config)
 	}
 }
 
+/* utilities to get/set ring priority from ring flags */
+uint8_t f_get_p(uint8_t flags)
+{
+	return (flags & APP_RING_PROP_PRIO_MASK) >> APP_RING_PROP_PRIO_SHIFT;
+}
+
+void f_set_p(uint8_t *flags, uint8_t priority)
+{
+	*flags &= ~APP_RING_PROP_PRIO_MASK;
+	*flags |= priority << APP_RING_PROP_PRIO_SHIFT;
+}
+
 static void rearrange_config(crypto_dev_config_t *config)
 {
 	struct ring_info temp;
-	uint32_t pri_j, pri_j_1, i, j;
+	uint8_t pri_j, pri_j_1, i, j;
 
 	/* sort rings by their ring priority */
 	for (i = 1; i < config->num_of_rings - 1; i++) {
 		for (j = 1; j < config->num_of_rings - i; j++) {
-			pri_j = (config->ring[j].flags & APP_RING_PROP_PRIO_MASK) >>
-			     APP_RING_PROP_PRIO_SHIFT;
-			pri_j_1 = (config->ring[j + 1].flags & APP_RING_PROP_PRIO_MASK) >>
-			     APP_RING_PROP_PRIO_SHIFT;
+			pri_j = f_get_p(config->ring[j].flags);
+			pri_j_1 = f_get_p(config->ring[j + 1].flags);
 			if (pri_j > pri_j_1) {
 				temp = config->ring[j];
 				config->ring[j] = config->ring[j + 1];
@@ -178,33 +188,28 @@ static void rearrange_config(crypto_dev_config_t *config)
 	/* Ring 0 is set priority 1 */
 	j = 1;
 	config->ring[0].ring_id = 0;
-	config->ring[0].flags &= ~(APP_RING_PROP_PRIO_MASK);
-	config->ring[0].flags |= (uint8_t) (j) << APP_RING_PROP_PRIO_SHIFT;
+	f_set_p(&config->ring[0].flags, j);
 
 	/* Rings 1..num_of_rings rebase their priority starting from 1
 	 * with increments of 1. This number (minus one) will be used as the
 	 * number of the priority queue */
 	for (i = 1; i < config->num_of_rings - 1; i++) {
 		config->ring[i].ring_id = i;
-		pri_j = (config->ring[i].flags & APP_RING_PROP_PRIO_MASK) >>
-				APP_RING_PROP_PRIO_SHIFT;
-		pri_j_1 = (config->ring[i + 1].flags & APP_RING_PROP_PRIO_MASK) >>
-				APP_RING_PROP_PRIO_SHIFT;
+		pri_j = f_get_p(config->ring[i].flags);
+		pri_j_1 = f_get_p(config->ring[i + 1].flags);
 
-		config->ring[i].flags &= ~(APP_RING_PROP_PRIO_MASK);
-		config->ring[i].flags |= (uint8_t) (j) << APP_RING_PROP_PRIO_SHIFT;
+		f_set_p(&config->ring[i].flags, j);
 
 		if (pri_j_1 != pri_j)
 			j++;
 	}
 	config->ring[i].ring_id = i;
-	config->ring[i].flags &= ~(APP_RING_PROP_PRIO_MASK);
-	config->ring[i].flags |= (uint8_t) (j) << APP_RING_PROP_PRIO_SHIFT;
+	f_set_p(&config->ring[i].flags, j);
 }
 
 void rearrange_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 {
-	uint32_t i, pri;
+	uint8_t i, pri;
 
 	pow2_rp_len(config);
 	rearrange_config(config);
@@ -215,8 +220,7 @@ void rearrange_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	/* Put the rings in proper priority queue. The ring priority will be
 	 * used as the priority queue id */
 	for (i = 0; i < config->num_of_rings; i++) {
-		pri = (config->ring[i].flags & APP_RING_PROP_PRIO_MASK) >>
-				APP_RING_PROP_PRIO_SHIFT;
+		pri = f_get_p(config->ring[i].flags);
 		dev->max_pri_level = max(pri, dev->max_pri_level);
 		dev->ring_pairs[i].info = config->ring[i];
 
@@ -1259,9 +1263,7 @@ void prepare_crypto_cfg_info_string( crypto_dev_config_t *config, uint8_t *cryp_
     for (i = 0; i < config->num_of_rings; i++) {
         sprintf(ring_str, " %d,%4d,%d,%d,%d\n", i, config->ring[i].depth,
             (((config->ring[i].flags) & APP_RING_PROP_AFFINE_MASK) >>
-             APP_RING_PROP_AFFINE_SHIFT),
-            (((config->ring[i].flags) & APP_RING_PROP_PRIO_MASK) >>
-             APP_RING_PROP_PRIO_SHIFT),
+             APP_RING_PROP_AFFINE_SHIFT), f_get_p(config->ring[i].flags),
             (((config->ring[i].flags) & APP_RING_PROP_ORDER_MASK) >>
              APP_RING_PROP_ORDER_SHIFT));
         strcat(cryp_cfg_str, ring_str);

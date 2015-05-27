@@ -512,7 +512,7 @@ typedef struct fsl_crypto_dev {
 	fw_resp_ring_t fw_resp_rings[NUM_OF_RESP_RINGS];
 
 #define MAX_PRIORITY_LEVELS		16
-	uint32_t max_pri_level;
+	uint8_t max_pri_level;
 	fsl_priority_queue_t pri_queue[MAX_PRIORITY_LEVELS];
 
 	uint32_t num_of_rings;
