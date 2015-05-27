@@ -459,7 +459,9 @@ void make_fw_resp_ring_circ_list(fsl_crypto_dev_t *dev)
 void init_ring_pairs(fsl_crypto_dev_t *dev)
 {
 	fsl_h_rsrc_ring_pair_t *rp;
-	uint32_t off = 0, i;
+	uint32_t i;
+	/* all response ring entries start here. Each ring has rp->depth entries */
+	void *resp_r = dev->h_mem->drv_resp_ring;
 
 	for (i = 0; i < dev->num_of_rings; i++) {
 		rp = &(dev->ring_pairs[i]);
@@ -470,10 +472,8 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 
 		rp->ip_pool = dev->ip_pool.drv_map_pool.pool;
 		rp->req_r = NULL;
-		rp->resp_r =
-		    (resp_ring_entry_t *) ((uint8_t *) dev->h_mem->
-					   drv_resp_ring + off);
-		off += (rp->depth * sizeof(resp_ring_entry_t));
+		rp->resp_r = (resp_ring_entry_t *) resp_r;
+		resp_r += rp->depth * sizeof(resp_ring_entry_t);
 
 		rp->intr_ctrl_flag = NULL;
 		rp->indexes = &(dev->h_mem->l_idxs_mem[i]);
