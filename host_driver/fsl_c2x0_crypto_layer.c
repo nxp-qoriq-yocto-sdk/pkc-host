@@ -135,15 +135,23 @@ int32_t distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	return 0;
 }
 
+uint32_t round_to_power2(uint32_t n)
+{
+	uint32_t i = 1;
+	while (i < n)
+		i = i << 1;
+	return i;
+}
+
+/* FIXME: the ring depths are rounded twice, once here, inside rearrange_config
+ * and the second time inside calc_rp_mem_len. Check which one is the first
+ * and remove the other one */
 static void pow2_rp_len(crypto_dev_config_t *config)
 {
-	uint32_t i = 0, pow2 = 0x01;
+	uint32_t i;
 	/* Correct the ring depths to be power of 2 */
 	for (i = 0; i < config->num_of_rings; i++) {
-		for (pow2 = 0X01; (pow2 < config->ring[i].depth);
-		    (pow2 = pow2 << 1))
-			;
-		config->ring[i].depth = pow2;
+		config->ring[i].depth = round_to_power2(config->ring[i].depth);
 	}
 }
 
@@ -218,14 +226,6 @@ void rearrange_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 			      &(dev->pri_queue[pri].ring_list_head));
 	}
 	dev->num_of_rings = config->num_of_rings;
-}
-
-uint32_t round_to_power2(uint32_t n)
-{
-	uint32_t i = 1;
-	while (i < n)
-		i = i << 1;
-	return i;
 }
 
 static uint32_t calc_rp_mem_len(crypto_dev_config_t *config)
