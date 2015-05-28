@@ -621,6 +621,7 @@ int rsa_op(struct pkc_request *req)
 	fsl_crypto_dev_t *c_dev = NULL;
 
 	dev_dma_addr_t sec_dma = 0;
+	uint32_t counter;
 	uint32_t r_id = 0;
 	rsa_pub_op_buffers_t *pub_op_buffs = NULL;
 	rsa_priv1_op_buffers_t *priv1_op_buffs = NULL;
@@ -655,15 +656,15 @@ int rsa_op(struct pkc_request *req)
 		return -1;
 #else
 	c_dev = get_crypto_dev(1);
-#endif  
-#ifndef HIGH_PERF
-	if(0 == (r_id = get_ring_rr(c_dev)))
-		return -1;
+#endif
 
+	/* Choose ring id with round robin. Start ring counter from 1 since
+	 * ring 0 is used for commands */
+	counter = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
+	r_id = 1 + counter % (c_dev->num_of_rings - 1);
+
+#ifndef HIGH_PERF
 	atomic_inc(&c_dev->active_jobs);
-#else
-	r_id = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
-	r_id = 1 + (r_id - 1) % (c_dev->num_of_rings - 1);
 #endif
 	}
 
