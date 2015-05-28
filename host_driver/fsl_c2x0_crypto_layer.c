@@ -1488,7 +1488,7 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
         }
 #endif
 
-#ifndef HIGH_PER
+#ifndef HIGH_PERF
 	if (get_flag(dev->ip_pool.drv_map_pool.pool, h_desc))
 #endif
 		ctx0 = (crypto_op_ctx_t *) get_priv_data(dev->ip_pool.drv_map_pool.pool, h_desc);
