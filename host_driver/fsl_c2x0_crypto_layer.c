@@ -1125,17 +1125,25 @@ void init_ip_pool(fsl_crypto_dev_t *dev)
 
 void init_crypto_ctx_pool(fsl_crypto_dev_t *dev)
 {
-	int i;
-	ctx_pool_t *pool = kzalloc(sizeof(ctx_pool_t), GFP_KERNEL);
+	int i, id;
+	ctx_pool_t *pool;
 
-	for (i = 0; i < NUM_OF_CTXS - 1; i++)
-		pool->mem[i].next = &(pool->mem[i + 1]);
+	/* FIXME: clean-up on error path */
+	pool = kzalloc(sizeof(ctx_pool_t) * NR_CTX_POOLS, GFP_KERNEL);
 
-	pool->mem[i].next = NULL;
-	pool->head = &pool->mem[0];
-	spin_lock_init(&pool->ctx_lock);
-
+	/* save the address of the first context pool */
 	dev->ctx_pool = pool;
+
+	for (id = 0; id < NR_CTX_POOLS; id++) {
+		for (i = 0; i < NUM_OF_CTXS - 1; i++)
+			pool->mem[i].next = &(pool->mem[i + 1]);
+
+		pool->mem[i].next = NULL;
+		pool->head = &pool->mem[0];
+		spin_lock_init(&pool->ctx_lock);
+
+		pool += 1;
+	}
 }
 
 static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,

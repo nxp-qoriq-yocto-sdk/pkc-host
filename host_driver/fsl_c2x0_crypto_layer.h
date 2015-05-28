@@ -41,6 +41,10 @@ extern int napi_poll_count;
 /* handshake memory is the size of a L1 cache line */
 #define DRIVER_HS_MEM_SIZE DEVICE_CACHE_LINE_SIZE
 
+/* the number of context pools is arbitrary and NR_CPUS is a good default
+ * considering that worker threads using the contexts are local to a CPU */
+#define NR_CTX_POOLS NR_CPUS
+
 /* Identifies different states of the device */
 typedef enum handshake_state {
 	DEFAULT,
@@ -456,6 +460,7 @@ typedef struct per_dev_struct {
 } per_dev_struct_t;
 
 typedef struct fsl_pci_dev fsl_pci_dev_t;
+typedef struct ctx_pool ctx_pool_t;
 
 /*******************************************************************************
 Description :	Contains all the information of the crypto device.
@@ -505,7 +510,7 @@ typedef struct fsl_crypto_dev {
 
 	/* Ctx pool - Will be used during data path to allocate one
 	 * of the available static contexts */
-	void *ctx_pool;
+	ctx_pool_t *ctx_pool;
 
 	/* Firmware resp ring information */
 #define NUM_OF_RESP_RINGS 1

@@ -627,6 +627,8 @@ int rsa_op(struct pkc_request *req)
 	rsa_priv1_op_buffers_t *priv1_op_buffs = NULL;
 	rsa_priv2_op_buffers_t *priv2_op_buffs = NULL;
 	rsa_priv3_op_buffers_t *priv3_op_buffs = NULL;
+	ctx_pool_t *ctx_pool;
+	uint32_t ctx_pool_id = 0;
 
 #ifdef SEC_DMA
 	dev_p_addr_t offset;
@@ -662,6 +664,8 @@ int rsa_op(struct pkc_request *req)
 	 * ring 0 is used for commands */
 	counter = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
 	r_id = 1 + counter % (c_dev->num_of_rings - 1);
+	ctx_pool_id = counter % NR_CTX_POOLS;
+
 
 #ifndef HIGH_PERF
 	atomic_inc(&c_dev->active_jobs);
@@ -672,7 +676,10 @@ int rsa_op(struct pkc_request *req)
 	offset = c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 
-	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
+	/* FIXME: When  (NULL != req->base.tfm) ctx_pool_id doesn't change
+	 * resulting in a performance regression on multi-core */
+	ctx_pool = &c_dev->ctx_pool[ctx_pool_id];
+	crypto_ctx = get_crypto_ctx(ctx_pool);
 	print_debug("\t crypto_ctx addr :			:%0llx\n",
 		    crypto_ctx);
 
@@ -683,7 +690,7 @@ int rsa_op(struct pkc_request *req)
 	}
 
 	print_debug("\t Ring selected			:%d\n", r_id);
-	crypto_ctx->ctx_pool = c_dev->ctx_pool;
+	crypto_ctx->ctx_pool = ctx_pool;
 	crypto_ctx->crypto_mem.dev = c_dev;
 	crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
 	print_debug("\t IP Buffer pool address		:%0x\n",
