@@ -80,10 +80,12 @@ typedef struct buffer_pool {
 	spinlock_t mem_lock;
 } bp;
 
+typedef struct cmd_ring_entry_desc cmd_ring_entry_desc_t;
+
 void *create_pool(void *mem, uint32_t size);
 void destroy_pool(void *pool);
-void *get_buffer(fsl_crypto_dev_t *c_dev, void *pool, uint32_t size,
-		 unsigned long flags);
+cmd_ring_entry_desc_t *get_buffer(fsl_crypto_dev_t *c_dev, void *pool,
+		uint32_t size, unsigned long flags);
 void put_buffer(fsl_crypto_dev_t *c_dev, void *pool, void *buffer);
 void *alloc_buffer(void *pool, uint32_t size, unsigned long flags);
 void free_buffer(void *pool, void *buffer);

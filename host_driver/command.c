@@ -456,8 +456,7 @@ int32_t process_cmd_req(fsl_crypto_dev_t *c_dev,
 	case SECSTAT:
 	case RINGSTAT:
 	case PINGDEV:
-		result =
-		    send_command_to_fw(c_dev, usr_cmd_desc->cmd_type,
+		result = send_command_to_fw(c_dev, usr_cmd_desc->cmd_type,
 				       usr_cmd_desc);
 		if (result == -1)
 			print_error("Sending command failed....\n");
@@ -646,12 +645,9 @@ int32_t send_command_to_fw(fsl_crypto_dev_t *c_dev, commands_t command,
 	int32_t ret = 0;
 	print_debug("Sending command  :%d to firmware\n", command);
 
-	pci_cmd_desc =
-	    (cmd_ring_entry_desc_t *) get_buffer(c_dev,
-						 c_dev->ring_pairs[0].ip_pool,
-						 sizeof(cmd_ring_entry_desc_t),
-						 0);
-	if (NULL == pci_cmd_desc) {
+	pci_cmd_desc = get_buffer(c_dev, c_dev->ring_pairs[0].ip_pool,
+			sizeof(cmd_ring_entry_desc_t), 0);
+	if (!pci_cmd_desc) {
 		print_error("Cmd desc alloc failed !!!!\n");
 		ret = -1;
 		goto exit;

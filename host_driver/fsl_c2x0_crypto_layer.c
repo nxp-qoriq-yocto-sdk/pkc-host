@@ -1761,26 +1761,20 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 #endif
 
 /* Backward compatible functions for other algorithms */
-static inline unsigned long ip_buf_d_v_addr(fsl_crypto_dev_t *dev,
-					    unsigned long h_v_addr)
+static inline void *ip_buf_d_v_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
-	unsigned long offset =
-	    h_v_addr - (unsigned long)dev->ip_pool.drv_map_pool.v_addr;
-	return (unsigned long)(dev->ip_pool.fw_pool.host_map_v_addr + offset);
+	unsigned long offset = h_v_addr - dev->ip_pool.drv_map_pool.v_addr;
+	return dev->ip_pool.fw_pool.host_map_v_addr + offset;
 }
 
-void *get_buffer(fsl_crypto_dev_t *c_dev, void *id, uint32_t len,
+cmd_ring_entry_desc_t *get_buffer(fsl_crypto_dev_t *c_dev, void *id, uint32_t len,
 		 unsigned long flag)
 {
-	void *addr = NULL;
-/*	fsl_crypto_dev_t *c_dev = NULL;	*/
+	void *addr;
 
 	addr = alloc_buffer(id, len, flag);
-	if (NULL == addr)
-		return addr;
-
-/*	c_dev = get_crypto_dev(1);	*/
-	addr = (void *)ip_buf_d_v_addr(c_dev, (unsigned long)addr);
+	if (addr)
+		addr = ip_buf_d_v_addr(c_dev, addr);
 
 	return addr;
 }
