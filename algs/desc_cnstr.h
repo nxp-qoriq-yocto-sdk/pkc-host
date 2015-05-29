@@ -44,12 +44,12 @@ typedef enum buffer_type {
 
 typedef struct dev_buffer {
 	/* Device related fields */
-	unsigned long d_v_addr;
+	void *d_v_addr;
 	dev_p_addr_t d_p_addr;
 	phys_addr_t h_map_p_addr;
 
 	/* Host related fields */
-	unsigned long h_v_addr;
+	void *h_v_addr;
 	phys_addr_t h_p_addr;
 	dma_addr_t h_dma_addr;
 } dev_buffer_t;
