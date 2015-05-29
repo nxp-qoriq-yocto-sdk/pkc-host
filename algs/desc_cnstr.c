@@ -229,22 +229,6 @@ static inline unsigned long desc_d_v_addr(fsl_crypto_dev_t *dev,
 	return (unsigned long)(dev->ip_pool.fw_pool.host_map_v_addr + offset);
 }
 
-static inline dev_dma_addr_t ip_buf_d_p_addr(fsl_crypto_dev_t *dev,
-					     unsigned long h_v_addr)
-{
-	unsigned long offset =
-	    h_v_addr - (unsigned long)dev->ip_pool.drv_map_pool.v_addr;
-	return (dev_dma_addr_t) (dev->ip_pool.fw_pool.dev_p_addr + offset);
-}
-
-static inline unsigned long ip_buf_d_v_addr(fsl_crypto_dev_t *dev,
-					    unsigned long h_v_addr)
-{
-	unsigned long offset =
-	    h_v_addr - (unsigned long)dev->ip_pool.drv_map_pool.v_addr;
-	return (unsigned long)(dev->ip_pool.fw_pool.host_map_v_addr + offset);
-}
-
 static inline dma_addr_t op_buf_h_dma_addr(fsl_crypto_dev_t *dev,
 					   unsigned long h_v_addr, uint32_t len)
 {
@@ -408,43 +392,3 @@ int32_t memcpy_to_dev(crypto_mem_info_t *mem)
 
 	return 0;
 }
-
-#if 0
-unsigned long ib_dev_v_addr(fsl_crypto_dev_t *dev, unsigned long h_mem_addr)
-{
-	unsigned long dev_v_addr =
-	    h_mem_addr - dev->mem[MEM_TYPE_SRAM].host_v_addr;
-	return dev_v_addr + dev->mem[MEM_TYPE_SRAM].dev_v_addr;
-}
-
-dev_dma_addr_t ib_dev_p_addr(fsl_crypto_dev_t *dev, phys_addr_t h_p_addr)
-{
-	phys_addr_t dev_p_addr = h_p_addr - dev->mem[MEM_TYPE_SRAM].host_p_addr;
-	return dev_p_addr + dev->mem[MEM_TYPE_SRAM].dev_p_addr;
-}
-
-unsigned long ib_h_map_v_addr(fsl_crypto_dev_t *dev, unsigned long d_v_addr)
-{
-	unsigned long h_v_addr = d_v_addr - dev->mem[MEM_TYPE_SRAM].dev_v_addr;
-	return h_v_addr + dev->mem[MEM_TYPE_SRAM].host_v_addr;
-}
-
-phys_addr_t ib_h_map_p_addr(fsl_crypto_dev_t *dev, unsigned long h_v_addr)
-{
-	return __pa(h_v_addr);
-}
-
-dma_addr_t h_dma_map_op_buffer(fsl_crypto_dev_t *dev, unsigned long h_v_addr,
-			       uint32_t len)
-{
-	return pci_map_single
-	    (dev->priv_dev->pci_dev, h_v_addr, len, PCI_DMA_BIDIRECTIONAL);
-}
-
-dev_dma_addr_t ob_dev_dma_addr(fsl_crypto_dev_t *dev, phys_addr_t h_p_addr)
-{
-	dev_dma_addr_t dev_p_addr =
-	    h_p_addr - dev->mem[MEM_TYPE_DRIVER].host_p_addr;
-	return dev_p_addr + dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
-}
-#endif

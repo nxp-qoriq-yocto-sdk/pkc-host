@@ -62,9 +62,6 @@ void crypto_op_done(fsl_crypto_dev_t *c_dev, crypto_job_ctx_t *ctx,
 {
 	enum pkc_req_type crypto_req_type = 0;
 	char outstr[MAX_ERROR_STRING];
-/* #ifdef KCAPI_INTEG_BUILD */
-/*      uint32_t dev_sg_count = 0;	*/
-/* #endif */
 	print_debug("Crypto operation complete\n");
 
 	/* For certain commands like SEC-RESET, RESET-DEV for smooth exit,
@@ -215,7 +212,6 @@ void crypto_op_done(fsl_crypto_dev_t *c_dev, crypto_job_ctx_t *ctx,
 		default:
 			break;
 		}
-/* #ifdef KCAPI_INTEG_BUILD */
 #ifndef VIRTIO_C2X0
 		if (NULL != ctx->req.pkc->base.tfm)
 			pkc_request_complete(ctx->req.pkc, sec_result);
@@ -227,26 +223,6 @@ void crypto_op_done(fsl_crypto_dev_t *c_dev, crypto_job_ctx_t *ctx,
 		break;
 	case HASH_SPLIT_KEY:
 	case HASH_DIGEST_KEY:
-#if 0
-#ifdef KCAPI_INTEG_BUILD
-		if (ctx->dev_mem.ahash->src)
-			put_buffer(c_dev, ctx->pool, ctx->dev_mem.ahash->src);
-		if (ctx->dev_mem.ahash->dst_host_dma)
-			pci_unmap_single(ctx->pci_dev,
-					 ctx->dev_mem.ahash->dst_host_dma,
-					 ctx->dev_mem.ahash->dst_len,
-					 PCI_DMA_BIDIRECTIONAL);
-
-		ctx->result->err = sec_result;
-		complete(&ctx->result->completion);
-
-		put_buffer(c_dev, ctx->pool, ctx->req_mem);
-
-		kfree(ctx->dev_mem.ahash);
-		kfree(ctx);
-#endif
-#endif
-		break;
 	case AHASH_DIGEST:
 	case AHASH_UPDATE_CTX:
 	case AHASH_FINUP_CTX:
@@ -255,53 +231,6 @@ void crypto_op_done(fsl_crypto_dev_t *c_dev, crypto_job_ctx_t *ctx,
 	case AHASH_FINUP_NO_CTX:
 	case AHASH_UPDATE_NO_CTX:
 	case AHASH_UPDATE_FIRST:
-#if 0
-#ifdef KCAPI_INTEG_BUILD
-		if (ctx->dev_mem.ahash->src) {
-			if (ctx->dev_mem.ahash->req_dma)
-				kfree(ctx->dev_mem.ahash->src);
-			else
-				put_buffer(c_dev, ctx->pool,
-					   ctx->dev_mem.ahash->src);
-		}
-		if (ctx->dev_mem.ahash->dst_host_dma)
-			pci_unmap_single(ctx->pci_dev,
-					 ctx->dev_mem.ahash->dst_host_dma,
-					 ctx->dev_mem.ahash->dst_len,
-					 PCI_DMA_BIDIRECTIONAL);
-
-		if (ctx->dev_mem.ahash->src_host_dma)
-			pci_unmap_single(ctx->pci_dev,
-					 ctx->dev_mem.ahash->src_host_dma,
-					 ctx->dev_mem.ahash->src_len,
-					 PCI_DMA_BIDIRECTIONAL);
-
-		if (ctx->dev_mem.ahash->req_dma)
-			pci_unmap_sg_chained(ctx->pci_dev, ctx->req.ahash->src,
-					     ctx->dev_mem.
-					     ahash->src_nents ? : 1,
-					     PCI_DMA_TODEVICE,
-					     ctx->dev_mem.ahash->chained);
-
-		dev_sg_count = ctx->dev_mem.ahash->dev_sg_count;
-
-		while (dev_sg_count) {
-			put_buffer(c_dev, ctx->pool,
-				   ctx->dev_mem.ahash->dev_sg[--dev_sg_count]);
-		}
-
-		kfree(ctx->dev_mem.ahash->dev_sg);
-
-		ctx->req.ahash->base.complete(&ctx->req.ahash->base,
-					      sec_result);
-		put_buffer(c_dev, ctx->pool, ctx->req_mem);
-
-		kfree(ctx->dev_mem.ahash);
-		kfree(ctx);
-#endif
-#endif
-		break;
-
 	case AEAD_SETKEY:
 	case AEAD_ENCRYPT:
 	case AEAD_DECRYPT:
