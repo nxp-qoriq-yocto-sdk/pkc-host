@@ -92,26 +92,25 @@ void ecpbn_done(struct pkc_request *req, int32_t sec_result)
 	}
 	dec_count();
     uint32_t i = 0;
-    printk("ECDSA REQ TYPE [%d]\n", req->type);
-    printk("RESULT : %d\n ", sec_result);
+    print_debug("ECDSA REQ TYPE [%d]\n", req->type);
+    print_debug("RESULT : %d\n ", sec_result);
     switch (req->type) {
         case ECDSA_SIGN:
-            printk(" C/D\n");
-            printk("Length : %d\n", req->req_u.dsa_sign.d_len);
-
-            printk("\n C\n");
+            print_debug("C/D\n");
+            print_debug("Length : %d\n", req->req_u.dsa_sign.d_len);
+            print_debug("C\n");
             for (i = 0; i < req->req_u.dsa_sign.d_len; i++)
-                printk("0x%x, ", req->req_u.dsa_sign.c[i]);
+                print_debug("0x%x, ", req->req_u.dsa_sign.c[i]);
 
-            printk("\n D\n");
+            print_debug("D\n");
             for (i = 0; i < req->req_u.dsa_sign.d_len; i++)
-                printk("0x%x, ", req->req_u.dsa_sign.d[i]);
+                print_debug("0x%x, ", req->req_u.dsa_sign.d[i]);
             break;
 	    case ECDSA_VERIFY:
-            printk("Ecp Verify Done\n");
+            print_debug("Ecp Verify Done\n");
             break;
         default:
-            printk("Wrong test\n");
+            print_debug("Wrong test\n");
             break;
     }
 #endif

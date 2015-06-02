@@ -95,7 +95,7 @@ int32_t distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	for_each_online_cpu(i)
 	    ++total_cores;
 
-	print_debug("Total cores        :%d\n", total_cores);
+	print_debug("Total cores: %d\n", total_cores);
 #define TOTAL_NUM_OF_ISRS  dev->priv_dev->intr_info.intr_vectors_cnt
 	isr_ctx = list_entry(isr_ctx_list_head->next, isr_ctx_t, list);
 
@@ -114,7 +114,7 @@ int32_t distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 		while (!(wt_cpu_mask & (1 << core_no)))
 			core_no = (core_no + 1) % total_cores;
 
-		print_debug("Ring no:   %d Core no: %d\n", i, core_no);
+		print_debug("Ring no: %d Core no: %d\n", i, core_no);
 		instance = per_cpu_ptr(per_core, core_no);
 
 		rp = &(dev->ring_pairs[i]);
@@ -135,7 +135,7 @@ int32_t distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 			isr_ctx = list_entry(isr_ctx_list_head->next, isr_ctx_t,
 						list);
 
-		print_debug("ISR COUNT  :%d total num of isrs   :%d\n",
+		print_debug("ISR COUNT: %d total num of isrs: %d\n",
 			    isr_count, TOTAL_NUM_OF_ISRS);
 
 		core_no = (core_no + 1) % total_cores;
@@ -343,13 +343,13 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	ob_mem_len = calc_ob_mem_len(dev, config);
 	mem = &(dev->mem[MEM_TYPE_DRIVER]);
 
-	print_debug("\t alloc_ob_mem entered........\n");
-	print_debug("\t Total ob mem returned	:%d\n", ob_mem_len);
+	print_debug("alloc_ob_mem entered...\n");
+	print_debug("Total ob mem returned: %d\n", ob_mem_len);
 
 	host_v_addr = pci_alloc_consistent(dev->priv_dev->dev,
 			ob_mem_len, &(mem->host_dma_addr));
 	if (!host_v_addr) {
-		print_error("\t \t Allocating ob mem failed....\n");
+		print_error("Allocating ob mem failed...\n");
 		return -ENOMEM;
 	}
 
@@ -357,9 +357,9 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	mem->host_p_addr = __pa(host_v_addr);
 	mem->len = ob_mem_len;
 
-	print_debug("OB Mem address....	:%0x\n", mem->host_v_addr);
-	print_debug("OB Mem dma address... :%0x\n", mem->host_dma_addr);
-	print_debug("OB Mem physical address.. :%0x\n", mem->host_p_addr);
+	print_debug("OB Mem address	: %p\n", mem->host_v_addr);
+	print_debug("OB Mem dma address	: %pad\n", &(mem->host_dma_addr));
+	print_debug("OB Mem physical address: %pa\n", &(mem->host_p_addr));
 
 	/* Assign the diff pointers properly */
 	dev->h_mem = host_v_addr;
@@ -374,20 +374,20 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	dev->h_mem->op_pool = host_v_addr + dev->ob_mem.op_pool;
 	dev->h_mem->ip_pool = host_v_addr + dev->ob_mem.ip_pool;
 
-	print_debug("\n ====== OB MEM POINTERS =======\n");
-	print_debug("\t Hmem		:%0x\n", dev->h_mem);
-	print_debug("\t H HS Mem	:%0x\n", &(dev->h_mem->hs_mem));
-	print_debug("\t Fw resp ring	:%0x\n", dev->h_mem->fw_resp_ring);
-	print_debug("\t Drv resp ring	:%0x\n", dev->h_mem->drv_resp_ring);
-	print_debug("\t L Idxs mem	:%0x\n", dev->h_mem->l_idxs_mem);
-	print_debug("\t S C Idxs mem	:%0x\n", dev->h_mem->s_c_idxs_mem);
-	print_debug("\t L R cntrs mem	:%0x\n", dev->h_mem->l_r_cntrs_mem);
-	print_debug("\t S C R cntrs mem	:%0x\n", dev->h_mem->s_c_r_cntrs_mem);
-	print_debug("\t Cntrs mem	:%0x\n", dev->h_mem->cntrs_mem);
-	print_debug("\t S C cntrs mem	:%0x\n", dev->h_mem->s_c_cntrs_mem);
-	print_debug("\t OP pool		:%0x\n", dev->h_mem->op_pool);
-	print_debug("\t IP pool		:%0x\n", dev->h_mem->ip_pool);
-	print_debug("\t Total req mem size :%0x\n", dev->tot_req_mem_size);
+	print_debug("====== OB MEM POINTERS =======\n");
+	print_debug("Hmem		: %p\n", dev->h_mem);
+	print_debug("H HS Mem		: %p\n", &(dev->h_mem->hs_mem));
+	print_debug("Fw resp ring	: %p\n", dev->h_mem->fw_resp_ring);
+	print_debug("Drv resp ring	: %p\n", dev->h_mem->drv_resp_ring);
+	print_debug("L Idxs mem		: %p\n", dev->h_mem->l_idxs_mem);
+	print_debug("S C Idxs mem	: %p\n", dev->h_mem->s_c_idxs_mem);
+	print_debug("L R cntrs mem	: %p\n", dev->h_mem->l_r_cntrs_mem);
+	print_debug("S C R cntrs mem	: %p\n", dev->h_mem->s_c_r_cntrs_mem);
+	print_debug("Cntrs mem		: %p\n", dev->h_mem->cntrs_mem);
+	print_debug("S C cntrs mem	: %p\n", dev->h_mem->s_c_cntrs_mem);
+	print_debug("OP pool		: %p\n", dev->h_mem->op_pool);
+	print_debug("IP pool		: %p\n", dev->h_mem->ip_pool);
+	print_debug("Total req mem size : %d\n", dev->tot_req_mem_size);
 
 	return 0;
 }
@@ -404,10 +404,8 @@ void init_handshake(fsl_crypto_dev_t *dev)
 
 	dev->h_mem->hs_mem.state = DEFAULT;
 
-	print_debug("C HS mem addr		:%0x\n",
-		    &(dev->c_hs_mem->h_ob_mem_l));
-	print_debug("Host ob mem addr,	L	:%0x	H	:%0x\n", l_val,
-		    h_val);
+	print_debug("C HS mem addr: %p\n", &(dev->c_hs_mem->h_ob_mem_l));
+	print_debug("Host ob mem addr	L: %0x	H: %0x\n", l_val, h_val);
 #ifdef P4080_BUILD
 	IO_LE_WRITE32(l_val, &(dev->c_hs_mem->h_ob_mem_l));
 	IO_LE_WRITE32(h_val, &(dev->c_hs_mem->h_ob_mem_h));
@@ -419,8 +417,7 @@ void init_handshake(fsl_crypto_dev_t *dev)
 	/* Write MSI info the device */
 	l_val = (uint32_t) (msi_mem & PHYS_ADDR_L_32_BIT_MASK);
 	h_val = (msi_mem & PHYS_ADDR_H_32_BIT_MASK) >> 32;
-	print_debug("MSI mem addr,	L	:%0x	H	:%0x\n", l_val,
-		    h_val);
+	print_debug("MSI mem addr,	L: %0x	H: %x\n", l_val, h_val);
 #ifdef P4080_BUILD
 	IO_LE_WRITE32(l_val, &(dev->c_hs_mem->h_msi_mem_l));
 	IO_LE_WRITE32(h_val, &(dev->c_hs_mem->h_msi_mem_h));
@@ -544,32 +541,17 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 			ASSIGN32(dev->c_hs_mem->data.config.fw_resp_ring_depth,
 				 DEFAULT_FIRMWARE_RESP_RING_DEPTH);
 
-			print_debug("\n	HS_INIT_CONFIG Details\n");
-			print_debug
-			    ("\t Num of rps			:%d\n",
-			     dev->num_of_rings);
-			print_debug
-			    ("\t Max pri			:%d\n",
-			     dev->max_pri_level);
-			print_debug
-			    ("\t Req mem size			:%d\n",
-			     dev->tot_req_mem_size);
-			print_debug
-			    ("\t Drv resp ring			:%0x\n",
-			     drv_resp_rings);
-			print_debug
-			    ("\t Fw resp ring			:%0x\n",
-			     fw_resp_ring);
-			print_debug
-			    ("\t S C Counters			:%0x\n",
-			     s_cntrs);
-			print_debug
-			    ("\t R S C counters			:%0x\n",
-			     r_s_cntrs);
+			print_debug("HS_INIT_CONFIG Details\n");
+			print_debug("Num of rps: %d\n", dev->num_of_rings);
+			print_debug("Max pri: %d\n", dev->max_pri_level);
+			print_debug("Req mem size: %d\n", dev->tot_req_mem_size);
+			print_debug("Drv resp ring: %pa\n", &(drv_resp_rings));
+			print_debug("Fw resp ring: %pa\n", &(fw_resp_ring));
+			print_debug("S C Counters: %pa\n", &(s_cntrs));
+			print_debug("R S C counters: %pa\n", &(r_s_cntrs));
 		}
-		print_debug
-		    ("\t Sending FW_INIT_CONFIG command at addr	:%0x\n",
-		     &(dev->c_hs_mem->state));
+		print_debug("Sending FW_INIT_CONFIG command at addr: %p\n",
+				&(dev->c_hs_mem->state));
 		ASSIGN8(dev->c_hs_mem->state, FW_INIT_CONFIG);
 		break;
 
@@ -597,29 +579,13 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 				 ring->msi_addr_h);
 			ASSIGN32(dev->c_hs_mem->data.ring.s_r_cntrs, s_r_cntrs);
 
-			print_debug("\n	HS_INIT_RING_PAIR Details\n");
-			print_debug
-			    ("\t Rid					:%d\n",
-			     ring->ring_id);
-			print_debug
-			    ("\t Depth					:%d\n",
-			     ring->depth);
-			print_debug
-			    ("\t MSI Data				:%0x\n",
-			     ring->msi_data);
-			print_debug
-			    ("\t MSI Addr L				:%0x\n",
-			     ring->msi_addr_l);
-			print_debug
-			    ("\t MSI Addr H				:%0x\n",
-			     ring->msi_addr_h);
-			print_debug
-			    ("\t MSI data				:%0x\n",
-			     ring->msi_data);
-			print_debug
-			    ("\t Ring counters addr			:%0x\n",
-			     s_r_cntrs);
-
+			print_debug("HS_INIT_RING_PAIR Details\n");
+			print_debug("Rid: %d\n", ring->ring_id);
+			print_debug("Depth: %d\n", ring->depth);
+			print_debug("MSI Data: %x\n", ring->msi_data);
+			print_debug("MSI Addr L: %x\n", ring->msi_addr_l);
+			print_debug("MSI Addr H: %x\n", ring->msi_addr_h);
+			print_debug("Ring counters addr: %pa\n", &(s_r_cntrs));
 		}
 		ASSIGN8(dev->c_hs_mem->state, FW_INIT_RING_PAIR);
 		break;
@@ -656,7 +622,7 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 
 		break;
 	default:
-		print_error("Invalid command	:%d\n", cmd);
+		print_error("Invalid command: %d\n", cmd);
 	}
 
 	return;
@@ -677,7 +643,7 @@ int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 		ASSIGN8(dev->h_mem->hs_mem.state, dev->h_mem->hs_mem.state);
 		switch (dev->h_mem->hs_mem.state) {
 		case FIRMWARE_UP:
-			print_debug("\n ----------- FIRMWARE_UP -----------\n");
+			print_debug(" ----------- FIRMWARE_UP -----------\n");
 			str_state = "FIRMWARE_UP\n";
 			set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
 					(uint8_t *) str_state,
@@ -700,14 +666,12 @@ int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 			ASSIGN32(dev->h_mem->hs_mem.data.device.no_secs,
 				 dev->h_mem->hs_mem.data.device.no_secs);
 
-			print_debug("\t Device Shared Details ::\n");
-			print_debug
-			    ("\tIb mem PhyAddr L:%0x, Ib mem PhyAddr H:%0x\n",
+			print_debug("Device Shared Details\n");
+			print_debug("Ib mem PhyAddr L: %0x, H: %0x\n",
 			     dev->h_mem->hs_mem.data.device.p_ib_mem_base_l,
 			     dev->h_mem->hs_mem.data.device.p_ib_mem_base_h);
 
-			print_debug
-			    ("\tOb mem PhyAddr L:%0x, Ob mem PhyAddr H:%0x\n",
+			print_debug("Ob mem PhyAddr L: %0x, H: %0x\n",
 			     dev->h_mem->hs_mem.data.device.p_ob_mem_base_l,
 			     dev->h_mem->hs_mem.data.device.p_ob_mem_base_h);
 
@@ -723,18 +687,16 @@ int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 			      device.p_ob_mem_base_h) << 32) | (dev->h_mem->
 				  hs_mem.data.device.p_ob_mem_base_l);
 
-			print_debug
-			    ("\t Formed dev ib mem phys address  : %0llx\n",
-			     dev->mem[MEM_TYPE_SRAM].dev_p_addr);
-			print_debug
-			    ("\t Formed dev ob mem phys address  : %0llx\n",
-			     dev->mem[MEM_TYPE_DRIVER].dev_p_addr);
+			print_debug("Formed dev ib mem phys address: %llx\n",
+			     (uint64_t)dev->mem[MEM_TYPE_SRAM].dev_p_addr);
+			print_debug("Formed dev ob mem phys address: %llx\n",
+			     (uint64_t)dev->mem[MEM_TYPE_DRIVER].dev_p_addr);
 
 			send_hs_command(HS_INIT_CONFIG, dev, config);
 			break;
 
 		case FW_INIT_CONFIG_COMPLETE:
-			print_debug("\n --- FW_INIT_CONFIG_COMPLETE ---\n");
+			print_debug("--- FW_INIT_CONFIG_COMPLETE ---\n");
 			str_state = "FW_INIT_CONFIG_COMPLETE\n";
 			set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
 					(uint8_t *) str_state,
@@ -786,44 +748,26 @@ int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 					dev->fw_resp_rings[i].s_cntrs =
 					    &(dev->s_mem.
 					      s_r_cntrs[dev->num_of_rings + i]);
-					print_debug
-				    ("\t FW Intrl Ctrl Flag:%0x\n",
+					print_debug("FW Intrl Ctrl Flag: %p\n",
 				     dev->fw_resp_rings[i].intr_ctrl_flag);
 				}
 			}
 
-			print_debug
-			    ("\n ----- Details from firmware  -------\n");
-			print_debug
-			    ("\t \t SRAM H V ADDR		:%0x\n",
-			     dev->mem[MEM_TYPE_SRAM].host_v_addr);
-			print_debug("\t \t S R CNTRS OFFSET	:%0x\n",
-				    dev->h_mem->hs_mem.data.config.s_r_cntrs);
-			print_debug
-			    ("\t \t S CNTRS				:%0x\n",
-			     dev->h_mem->hs_mem.data.config.s_cntrs);
-			print_debug("\n -----------------------------------\n");
-
-			print_debug
-			    ("\t R S Cntrs				:%0x\n",
-			     dev->s_mem.s_r_cntrs);
-			print_debug
-			    ("\t S Cntrs				:%0x\n",
-			     dev->s_mem.s_cntrs);
-			print_debug
-			    ("\t FW Pool Dev P addr			:%0x\n",
-			     dev->ip_pool.fw_pool.dev_p_addr);
-			print_debug("\t FW Pool host P addr		:%0x\n",
-				    dev->ip_pool.fw_pool.host_map_p_addr);
-			print_debug("\t FW Pool host V addr		:%0x\n",
-				    dev->ip_pool.fw_pool.host_map_v_addr);
-			send_hs_command(HS_INIT_RING_PAIR, dev,
-					&(config->ring[rid]));
+			print_debug(" ----- Details from firmware  -------\n");
+			print_debug("SRAM H V ADDR: %p\n", dev->mem[MEM_TYPE_SRAM].host_v_addr);
+			print_debug("S R CNTRS OFFSET: %x\n", dev->h_mem->hs_mem.data.config.s_r_cntrs);
+			print_debug("S CNTRS: %x\n", dev->h_mem->hs_mem.data.config.s_cntrs);
+			print_debug("-----------------------------------\n");
+			print_debug("R S Cntrs: %p\n", dev->s_mem.s_r_cntrs);
+			print_debug("S Cntrs: %p\n", dev->s_mem.s_cntrs);
+			print_debug("FW Pool Dev P addr: %llx\n", (uint64_t)dev->ip_pool.fw_pool.dev_p_addr);
+			print_debug("FW Pool host P addr: %pa\n", &(dev->ip_pool.fw_pool.host_map_p_addr));
+			print_debug("FW Pool host V addr: %p\n", dev->ip_pool.fw_pool.host_map_v_addr);
+			send_hs_command(HS_INIT_RING_PAIR, dev,	&(config->ring[rid]));
 			break;
 
 		case FW_INIT_RING_PAIR_COMPLETE:
-			print_debug
-			    ("\n ---- FW_INIT_RING_PAIR_COMPLETE ----\n");
+			print_debug("---- FW_INIT_RING_PAIR_COMPLETE ----\n");
 			str_state = "FW_INIT_RING_PAIR_COMPLETE\n";
 			set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
 					(uint8_t *) str_state,
@@ -833,9 +777,8 @@ int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 			if(((config->ring[rid].flags & APP_RING_PROP_AFFINE_MASK)
 				>> APP_RING_PROP_AFFINE_SHIFT) >
 				(dev->h_mem->hs_mem.data.device.no_secs)){
-				print_error("Wrong Affinity for the ring: %d "
-					"No of SECs are %d\n",rid,
-					dev->h_mem->hs_mem.data.device.no_secs);
+				print_error("Wrong Affinity for the ring: %d\n", rid);
+				print_error("No of SECs are %d\n", dev->h_mem->hs_mem.data.device.no_secs);
 				goto error;
 			}
 			ASSIGN32(dev->h_mem->hs_mem.data.ring.req_r,
@@ -852,15 +795,10 @@ int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 			    ((dev->mem[MEM_TYPE_SRAM].host_v_addr) +
 			     dev->h_mem->hs_mem.data.ring.intr_ctrl_flag);
 
-			print_debug
-			    ("\t Ring id				:%d\n",
-			     rid);
-			print_debug
-			    ("\t Shadow cntrs				:%0x\n",
-			     dev->ring_pairs[rid].shadow_counters);
-			print_debug
-			    ("\t Req r					:%0x\n",
-			     dev->ring_pairs[rid].req_r);
+			print_debug("Ring id: %d\n", rid);
+			print_debug("Shadow cntrs: %p\n", dev->ring_pairs[rid].shadow_counters);
+			print_debug("Req r: %p\n", dev->ring_pairs[rid].req_r);
+
 			if (++rid >= dev->num_of_rings) {
 				send_hs_command(HS_COMPLETE, dev, NULL);
 			} else
@@ -870,7 +808,7 @@ int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 		case FW_INIT_RNG:
 			send_hs_command(WAIT_FOR_RNG, dev, NULL);
 			if (rng_instantiation(dev)) {
-				print_error("RNG Instantiation Failed.\n");
+				print_error("RNG Instantiation Failed!\n");
 				goto error;
 			} else {
 				send_hs_command(RNG_DONE, dev, NULL);
@@ -884,7 +822,7 @@ int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 			if (!
 			    (HS_TIMEOUT_IN_MS -
 			     (timeoutcntr * LOOP_BREAK_TIMEOUT_MS))) {
-				print_error("HS Timed out !!!!\n");
+				print_error("HS Timed out!!!!\n");
 				goto error;
 			}
 
@@ -896,8 +834,7 @@ int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 			break;
 
 		default:
-			print_error("Invalid state	:%d\n",
-				    dev->h_mem->hs_mem.state);
+			print_error("Invalid state: %d\n", dev->h_mem->hs_mem.state);
 			goto error;
 		}
 	}
@@ -920,7 +857,7 @@ static void check_ep_bootup(fsl_crypto_dev_t *dev)
 	int i = 0, bootup = 1;
 	char val = 0;
 
-	print_debug("\n\n======= check_ep_bootup =======\n");
+	print_debug("======= check_ep_bootup =======\n");
 	print_debug("IB Addr: %0x, OB Addr: %0x\n", ibaddr, obaddr);
 
 	ibaddr += (512 * 1024);
@@ -943,10 +880,10 @@ static void check_ep_bootup(fsl_crypto_dev_t *dev)
 	for (i = 0; i < 100; i++) {
 		strncpy(obstr, obaddr, sizeof(stdstr));
 		if (!strcmp(obstr, stdstr)) {
-			print_debug("\n Got ittttt....");
+			print_debug("Got ittttt....");
 			break;
 		} else
-			print_debug("\n Not yetttt... ");
+			print_debug("Not yetttt... ");
 
 		set_current_state(TASK_INTERRUPTIBLE);
 		schedule_timeout(msecs_to_jiffies(100));
@@ -964,13 +901,12 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	phys_addr_t msi_mem = dev->mem[MEM_TYPE_MSI].host_p_addr;
 	char ccsr_bar = 0;
 #endif
-	print_debug("\n\n ======= setup_ep =======\n");
-	print_debug("Ob mem dma addr	:%0x , len: %d\n",
-		    dev->mem[MEM_TYPE_DRIVER].host_p_addr,
+	print_debug("======= setup_ep =======\n");
+	print_debug("Ob mem dma addr	:%pa , len: %d\n",
+		    &(dev->mem[MEM_TYPE_DRIVER].host_p_addr),
 		    dev->mem[MEM_TYPE_DRIVER].len);
-	print_debug("BAR0 V Addr	: %0x\n",
-		    dev->mem[MEM_TYPE_CONFIG].host_v_addr);
-	print_debug("MSI mem		: %0x\n", msi_mem);
+	print_debug("BAR0 V Addr	: %p\n", dev->mem[MEM_TYPE_CONFIG].host_v_addr);
+	print_debug("MSI mem		: %pa\n", &msi_mem);
 
 #define HELP_MACRO(x, y)	\
 	FSL_DEVICE_WRITE32_BAR0_REG(dev->mem[MEM_TYPE_CONFIG].host_v_addr, x, y)
@@ -1038,7 +974,7 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 #define BOOTUP_REG_DUMP
 #ifdef BOOTUP_REG_DUMP
 	/* Dumping the registers set */
-	print_debug("\n ==== EP REGISTERS ====\n");
+	print_debug(" ==== EP REGISTERS ====\n");
 	print_debug("0X20100 :- %0x\n", BAR1_R_MACRO(ccsr_bar + 0x20100));
 	print_debug("0X20104 :- %0x\n", BAR1_R_MACRO(ccsr_bar + 0x20104));
 	print_debug("0X20000 :- %0x\n", BAR1_R_MACRO(ccsr_bar + 0x20000));
@@ -1062,7 +998,7 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	print_debug("0xac48 :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xac48));
 	print_debug("0xac50 :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xac50));
 
-	print_debug("\n =======================\n");
+	print_debug("=======================\n");
 #endif
 }
 
@@ -1085,7 +1021,7 @@ static int32_t boot_device(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 		return -1;
 	}
 
-	print_debug("Firmware file path     :%s\n", fw_file_path);
+	print_debug("Firmware file path: %s\n", fw_file_path);
 
 	file = filp_open((const char *)fw_file_path, O_RDWR, 0);
 	if (IS_ERR(file)) {
@@ -1127,9 +1063,7 @@ void init_ip_pool(fsl_crypto_dev_t *dev)
 
 	dev->ip_pool.drv_map_pool.pool =
 	    create_pool(dev->h_mem->ip_pool, FIRMWARE_IP_BUFFER_POOL_SIZE);
-	print_debug
-	    ("\t \t Registered Pool Address			:%0x\n",
-	     dev->ip_pool.drv_map_pool.pool);
+	print_debug("Registered Pool Address: %p\n", dev->ip_pool.drv_map_pool.pool);
 }
 
 void init_crypto_ctx_pool(fsl_crypto_dev_t *dev)
@@ -1175,8 +1109,8 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 #endif
 #endif
 
-	print_debug("Sec desc addr	: %0llx\n", sec_desc);
-	print_debug("Enqueue job in ring	: %d\n", jr_id);
+	print_debug("Sec desc addr: %llx\n", sec_desc);
+	print_debug("Enqueue job in ring: %d\n", jr_id);
 
 	rp = &(c_dev->ring_pairs[jr_id]);
 
@@ -1193,7 +1127,7 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 	(((rp->counters->jobs_added - jobs_processed) >= rp->depth) ? 1 : 0)
 
 	if (RING_FULL(rp)) {
-		print_error("Ring	:%d is full\n", jr_id);
+		print_error("Ring: %d is full\n", jr_id);
 		spin_unlock_bh(&(rp->ring_lock));
 		return -1;
 	}
@@ -1213,10 +1147,10 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 
 		if (rp->info.flags & APP_RING_PROP_ORDER_MASK >>
 		    APP_RING_PROP_ORDER_SHIFT) {
-			print_debug("Order bit is set : %d, Desc : %0llx\n", rp->indexes->w_index, sec_desc);
+			print_debug("Order bit is set: %d, Desc: %llx\n", rp->indexes->w_index, sec_desc);
 			store_dev_ctx(h_desc, jr_id, rp->indexes->w_index + 1);
 		} else{
-			print_debug("Order bit is not set : %d, Desc : %0llx\n", rp->indexes->w_index, sec_desc);
+			print_debug("Order bit is not set: %d, Desc: %0llx\n", rp->indexes->w_index, sec_desc);
 			store_dev_ctx(h_desc, jr_id, 0);
 		}
 	}
@@ -1224,10 +1158,9 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 #endif
 	wi = rp->indexes->w_index;
 
-	print_debug("Enqueuing at the index : %d\n", wi);
-	print_debug("Enqueuing to the req r addr	:%0x\n", rp->req_r);
-	print_debug("Writing at the addr		:%0x\n",
-		    &(rp->req_r[wi].sec_desc));
+	print_debug("Enqueuing at the index: %d\n", wi);
+	print_debug("Enqueuing to the req r addr: %p\n", rp->req_r);
+	print_debug("Writing at the addr	: %p\n", &(rp->req_r[wi].sec_desc));
 
 #ifndef P4080_BUILD
 	ASSIGN64(rp->req_r[wi].sec_desc, sec_desc);
@@ -1236,10 +1169,10 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 #endif
 
 	rp->indexes->w_index = (wi + 1) % rp->depth;
-	print_debug("Update W index		: %d\n", rp->indexes->w_index);
+	print_debug("Update W index: %d\n", rp->indexes->w_index);
 
 	rp->counters->jobs_added += 1;
-	print_debug("Updated jobs added	:%d\n", rp->counters->jobs_added);
+	print_debug("Updated jobs added: %d\n", rp->counters->jobs_added);
 #ifndef HIGH_PERF
 	if (jr_id) {
 		app_req_cnt =  atomic_inc_return(&c_dev->app_req_cnt);
@@ -1248,7 +1181,7 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 				sizeof(app_req_cnt));
 	}
 #endif
-	print_debug("Ring	:%d	Shadow counter address	%0x\n", jr_id,
+	print_debug("Ring: %d	Shadow counter address	%p\n", jr_id,
 		    &(rp->shadow_counters->req_jobs_added));
 #ifndef P4080_BUILD
 	ASSIGN32(rp->shadow_counters->req_jobs_added, rp->counters->jobs_added);
@@ -1340,21 +1273,17 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	    (crypto_c_hs_mem_t *) (c_dev->mem[MEM_TYPE_SRAM].host_v_addr +
 				   DEV_MEM_SIZE - FSL_FIRMWARE_SIZE -
 				   DEVICE_CACHE_LINE_SIZE);
-	print_debug
-	    ("\t IB mem addr					:%0x\n",
-	     c_dev->mem[MEM_TYPE_SRAM].host_v_addr);
-	print_debug
-	    ("\t Device hs mem addr				:%0x\n",
-	     c_dev->c_hs_mem);
+	print_debug("IB mem addr: %p\n", c_dev->mem[MEM_TYPE_SRAM].host_v_addr);
+	print_debug("Device hs mem addr: %p\n", c_dev->c_hs_mem);
 
-	print_debug("\t Rearrange rings.....\n");
 	/* Rearrange rings acc to their priority */
+	print_debug("Rearrange rings.....\n");
 	rearrange_rings(c_dev, config);
-	print_debug("\t Rearrange complete....\n");
+	print_debug("Rearrange complete....\n");
 
 	/* Alloc ob mem */
 	if (unlikely(alloc_ob_mem(c_dev, config))) {
-		print_error("\t Ob mem alloc failed....\n");
+		print_error("Ob mem alloc failed....\n");
 		goto error;
 	}
 
@@ -1362,31 +1291,31 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	init_op_pool(c_dev);
 	init_crypto_ctx_pool(c_dev);
 
-	print_debug("\t Init fw resp ring....\n");
+	print_debug("Init fw resp ring....\n");
 	/* Initialise fw resp ring info */
 	init_fw_resp_ring(c_dev);
 	make_fw_resp_ring_circ_list(c_dev);
-	print_debug("\t Init fw resp ring complete...\n");
+	print_debug("Init fw resp ring complete...\n");
 
-	print_debug("\t Init ring  pair....\n");
+	print_debug("Init ring  pair....\n");
 	/* Init rp struct */
 	init_ring_pairs(c_dev);
-	print_debug("\t Init ring pair complete...\n");
+	print_debug("Init ring pair complete...\n");
 
-	print_debug("\t Distribute ring...\n");
+	print_debug("Distribute ring...\n");
 	/* Distribute rings to cores and BHs */
 	distribute_rings(c_dev, config);
-	print_debug("\t Distribute ring complete...\n");
+	print_debug("Distribute ring complete...\n");
 
 #ifdef C293_EP
 	/* Set the EP registers correctly before booting... */
 	setup_ep(c_dev);
 #endif
 
-	print_debug("\t Init Handshake....\n");
+	print_debug("Init Handshake....\n");
 	/* Initialise hs mem */
 	init_handshake(c_dev);
-	print_debug("\t Init Handshake complete...\n");
+	print_debug("Init Handshake complete...\n");
 
 	if (unlikely(boot_device(c_dev, config->fw_file_path))) {
 		print_error("Firmware download failed\n");
@@ -1466,8 +1395,7 @@ int32_t app_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 #ifndef HIGH_PERF
 	/* Check the block flag for the ring */
 	if (0 != atomic_read(&(c_dev->ring_pairs[jr_id].block))) {
-		print_debug("Block condition is set for the ring    :%d\n",
-			    jr_id);
+		print_debug("Block condition is set for the ring: %d\n", jr_id);
 		return -1;
 	}
 #endif
@@ -1479,7 +1407,7 @@ int32_t app_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 			 dev_dma_addr_t sec_desc)
 {
-	print_debug("Command ring enqueue called.....\n");
+	print_debug("Command ring enqueue called...\n");
 	return ring_enqueue(c_dev, jr_id, sec_desc);
 }
 
@@ -1515,9 +1443,10 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 		ctx1 = (crypto_job_ctx_t *) get_priv_data(dev->ip_pool.drv_map_pool.pool, h_desc);
 
 	print_debug("Total Resp count: %d\n", ++total_resp);
-	print_debug
-	    ("[DEQ] Dev sec desc :%0llx H sec desc :%0x"
-	     "Ctx0 address :%0x Ctx1 address :%0x\n", desc, h_desc, ctx0, ctx1);
+	print_debug("[DEQ] Dev sec desc : %llx\n", desc);
+	print_debug("[DEQ] H sec desc: %pa\n", &h_desc);
+	print_debug("[DEQ] Ctx0 address: %p\n", ctx0);
+	print_debug("[DEQ] Ctx1 address: %p\n", ctx1);
 #endif
 
 	if (ctx0) {
@@ -1529,7 +1458,7 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 		ctx0->op_done(ctx0, res);
         }
 	else
-		print_debug("NULL Context !!\n");
+		print_debug("NULL Context!!\n");
 
 #ifndef HIGH_PERF
 	if (ctx1)
@@ -1587,16 +1516,16 @@ void demux_fw_responses(fsl_crypto_dev_t *dev)
 		sec_jr_strstatus(outstr, res);
 
 		if (res)
-			print_error("Error from SEC	:%s\n", outstr);
+			print_error("Error from SEC: %s\n", outstr);
 
 		ri = (ri + 1) % (dev->fw_resp_ring.depth);
 
 		count--;
 
-		print_debug("Read index : %d\n", ri);
+		print_debug("Read index: %d\n", ri);
 
 		handle_response(dev, desc, res);
-		print_debug("Handle response done....\n");
+		print_debug("Handle response done...\n");
 
 		atomic_inc_return(&dev->app_resp_cnt);
 	}
@@ -1636,8 +1565,7 @@ CMD_RING_RESP:
 		ASSIGN64(desc, dev->ring_pairs[0].resp_r[ri].sec_desc);
 #endif
 
-		print_debug
-		    ("DEQUEUE RESP AT : %u RESP DESC : %0llx  == [%0lx]",
+		print_debug("DEQUEUE RESP AT: %u RESP DESC: %llx  == [%p]",
 		     ri, desc, &(dev->ring_pairs[0].resp_r[ri]));
 
 		if (desc) {
@@ -1683,7 +1611,7 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 	char outstr[MAX_ERROR_STRING];
 	fsl_h_rsrc_ring_pair_t *ring_cursor = NULL;
 
-	print_debug(" ---------------- PROCESSING RESPONSE ------------------\n");
+	print_debug("---------------- PROCESSING RESPONSE ------------------\n");
 
 	list_for_each_entry(ring_cursor, ring_list_head, bh_ctx_list_node) {
 		pollcount = 0;
@@ -1701,8 +1629,8 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 			dev = ring_cursor->dev;
 			r_id = ring_cursor->info.ring_id;
 			ri = ring_cursor->indexes->r_index;
-			print_debug("RING ID : %d\n", ring_cursor->info.ring_id);
-			print_debug("GOT INTERRUPT FROM DEV : %d\n", dev->config->dev_no);
+			print_debug("RING ID: %d\n", ring_cursor->info.ring_id);
+			print_debug("GOT INTERRUPT FROM DEV: %d\n", dev->config->dev_no);
 
 			while (resp_cnt) {
 #ifdef HOST_TYPE_P4080
@@ -1717,14 +1645,12 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 #ifndef HIGH_PERF
 				if (r_id == 0) {
 					print_debug("COMMAND RING GOT AN INTERRUPT\n");
-
 					if (desc)
 						process_cmd_response(dev, desc, res);
 				} else 
 #endif
 				{
 					print_debug("APP RING GOT AN INTERRUPT\n");
-
 					if (desc) {
 						if (res) {
 							sec_jr_strstatus(outstr, res);
@@ -1755,7 +1681,7 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 			(uint8_t *) &(app_resp_cnt),
 			sizeof(app_resp_cnt));
 #endif
-	print_debug(" DONE PROCESSING RESPONSE :)\n");
+	print_debug("DONE PROCESSING RESPONSE\n");
 	return 0;
 }
 #endif
@@ -1947,85 +1873,63 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 			case RSA_PUB:
 				print_debug("RSA_PUB completion\n");
 
-				ret =
-				    copy_to_user((void __user *)q_req->
+				ret = copy_to_user((void __user *)q_req->
 						 req_u.rsa_pub_req.g,
 						 (void *)req->req_u.rsa_pub_req.
 						 g,
 						 req->req_u.rsa_pub_req.g_len);
 				if (ret != 0)
-					print_debug
-					    ("return value for RSA PUB of"
-						"ouput copy_to_user = %d\n",
-						ret);
+					print_debug("return value for RSA PUB of ouput copy_to_user = %d\n", ret);
 
 				cleanup_virtio_pkc_buffers(req);
 				break;
 
 			case RSA_PRIV_FORM1:
-				print_debug
-				("RSA_FORM1 completion : "
-				"Output f_len = %d\n",
-				req->req_u.rsa_priv_f1.f_len);
+				print_debug("RSA_FORM1 completion: Output f_len = %d\n",
+						req->req_u.rsa_priv_f1.f_len);
 
-				ret =
-				    copy_to_user((void __user *)q_req->req_u.
+				ret = copy_to_user((void __user *)q_req->req_u.
 						 rsa_priv_f1.f,
 						 (void *)req->req_u.
 						 rsa_priv_f1.f,
 						 req->req_u.rsa_priv_f1.f_len);
 
 				if (ret != 0)
-					print_debug("return value for RSA"
-					"FORM 1 of ouput copy_to_user = %d\n",
-					ret);
+					print_debug("return value for RSA FORM 1 of ouput copy_to_user = %d\n", ret);
 
 				cleanup_virtio_pkc_buffers(req);
-
 				break;
 
 			case RSA_PRIV_FORM2:
-				print_debug
-				("RSA_FORM2 completion : "
-				"Output f_len = %d\n",
-				req->req_u.rsa_priv_f2.f_len);
+				print_debug("RSA_FORM2 completion : Output f_len = %d\n",
+						req->req_u.rsa_priv_f2.f_len);
 
-				ret =
-				    copy_to_user((void __user *)q_req->req_u.
+				ret = copy_to_user((void __user *)q_req->req_u.
 						 rsa_priv_f2.f,
 						 (void *)req->req_u.
 						 rsa_priv_f2.f,
 						 req->req_u.rsa_priv_f2.f_len);
 
 				if (ret != 0)
-					print_debug
-					("return value for RSA FORM 2 of ouput"
-						"copy_to_user = %d\n", ret);
+					print_debug("return value for RSA FORM 2 of ouput copy_to_user = %d\n", ret);
 
 				cleanup_virtio_pkc_buffers(req);
-
 				break;
 
 			case RSA_PRIV_FORM3:
-				print_debug
-				("RSA_FORM3 completion : "
-				"Output f_len = %d\n",
-				req->req_u.rsa_priv_f3.f_len);
+				print_debug("RSA_FORM3 completion : Output f_len = %d\n",
+						req->req_u.rsa_priv_f3.f_len);
 
-				ret =
-				    copy_to_user((void __user *)q_req->req_u.
+				ret = copy_to_user((void __user *)q_req->req_u.
 						 rsa_priv_f3.f,
 						 (void *)req->req_u.
 						 rsa_priv_f3.f,
 						 req->req_u.rsa_priv_f3.f_len);
 
 				if (ret != 0)
-					print_debug
-					("return value for RSA FORM 3 of ouput"
-					"copy_to_user = %d\n", ret);
+					print_debug("return value for RSA FORM 3 of ouput copy_to_user = %d\n", ret);
 
 				cleanup_virtio_pkc_buffers(req);
-
 				break;
 
 			default:
@@ -2045,9 +1949,7 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 			switch (q_req->type) {
 			case DSA_SIGN:
 			case ECDSA_SIGN:{
-					print_debug
-					    ("DSA/ECDSA_SIGN completion\n");
-
+					print_debug("DSA/ECDSA_SIGN completion\n");
 					ret = copy_to_user((void __user *)
 							   q_req->
 							   req_u.dsa_sign.c,
@@ -2057,9 +1959,7 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 							   d_len);
 
 					if (ret != 0)
-						print_debug
-						("ret val DSASIGN c of ouput"
-						"copy_to_user = %d\n", ret);
+						print_debug("ret val DSASIGN c of ouput copy_to_user = %d\n", ret);
 
 					ret = copy_to_user((void __user *)
 							   q_req->req_u.
@@ -2070,9 +1970,7 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 							   d_len);
 
 					if (ret != 0)
-						print_debug("return value DSA"
-						"SIGN 'd' of ouput"
-						"copy_to_user = %d\n", ret);
+						print_debug("return value DSA SIGN 'd' of ouput copy_to_user = %d\n", ret);
 
 					cleanup_virtio_pkc_buffers(req);
 				}
@@ -2080,8 +1978,7 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 			case DSA_VERIFY:
 			case ECDSA_VERIFY:
 				{
-					print_debug
-					    ("DSA/ECDSA_VERIFY completion\n");
+					print_debug("DSA/ECDSA_VERIFY completion\n");
 					cleanup_virtio_pkc_buffers(req);
 				}
 				break;
@@ -2104,8 +2001,7 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 			case DH_COMPUTE_KEY:
 			case ECDH_COMPUTE_KEY:
 				{
-					print_debug
-					    ("DH/ECDH_COMPUTE completion\n");
+					print_debug("DH/ECDH_COMPUTE completion\n");
 					ret = copy_to_user((void __user *)
 							   q_req->req_u.
 							   dh_req.z,
@@ -2115,9 +2011,7 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 							   z_len);
 
 					if (ret != 0)
-						print_debug("return value DH/"
-						"ECDH z ouput"
-						"copy_to_user = %d\n", ret);
+						print_debug("return value DH/ ECDH z ouput copy_to_user = %d\n", ret);
 
 					cleanup_virtio_pkc_buffers(req);
 				}
@@ -2147,16 +2041,10 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 					   virtio_job->qemu_cmd.u.
 					   hash.digest_req.digestsize);
 			if (ret != 0)
-				print_debug
-					("return val AHASH_DIGEST "
-					"ouput copy_to_user = %d\n",
-					ret);
+				print_debug("return val AHASH_DIGEST ouput copy_to_user = %d\n", ret);
 
 			sg = virtio_job->ctx->req.ahash->src;
-			for (i = 0;
-			     i <
-			     virtio_job->qemu_cmd.u.hash.digest_req.
-			     sg_info.sg_count; i++) {
+			for (i = 0; i < virtio_job->qemu_cmd.u.hash.digest_req.sg_info.sg_count; i++) {
 				buf = sg_virt(sg);
 				kfree(buf);
 
@@ -2178,9 +2066,7 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 			uint8_t *buf = NULL;
 			int i = 0;
 
-			print_debug
-			    ("AHASH_UPDATE [%d] completion\n",
-			     virtio_job->qemu_cmd.op);
+			print_debug("AHASH_UPDATE [%d] completion\n", virtio_job->qemu_cmd.op);
 
 			state = ahash_request_ctx(virtio_job->ctx->req.ahash);
 			ret = copy_to_user((void __user *)
@@ -2190,15 +2076,10 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 					   virtio_job->qemu_cmd.u.
 					   hash.update_req.ctxlen);
 			if (ret != 0)
-				print_debug
-				("return value AHASH_UPDATE "
-				"ouput copy_to_user = %d\n",
-				ret);
+				print_debug("return value AHASH_UPDATE ouput copy_to_user = %d\n", ret);
+
 			sg = virtio_job->ctx->req.ahash->src;
-			for (i = 0;
-			     i <
-			     virtio_job->qemu_cmd.u.hash.update_req.
-			     sg_info.sg_count; i++) {
+			for (i = 0; i < virtio_job->qemu_cmd.u.hash.update_req.sg_info.sg_count; i++) {
 				buf = sg_virt(sg);
 				kfree(buf);
 
@@ -2212,9 +2093,7 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 	case AHASH_FINAL_CTX:
 	case AHASH_FINAL_NO_CTX:
 		{
-			print_debug
-			    ("AHASH_FINAL[%d] completion\n",
-			     virtio_job->qemu_cmd.op);
+			print_debug("AHASH_FINAL[%d] completion\n", virtio_job->qemu_cmd.op);
 
 			ret = copy_to_user((void __user *)
 					   virtio_job->qemu_cmd.u.
@@ -2223,10 +2102,7 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 					   virtio_job->qemu_cmd.u.
 					   hash.final_req.digestsize);
 			if (ret != 0)
-				print_debug
-				("return value AHASH_FINAL "
-				"ouput copy_to_user = %d\n",
-				ret);
+				print_debug("return value AHASH_FINAL ouput copy_to_user = %d\n", ret);
 
 			kfree(virtio_job->ctx->req.ahash->result);
 			kfree(virtio_job->ctx->req.ahash);
@@ -2239,9 +2115,8 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 			uint8_t *buf = NULL;
 			int i = 0;
 
-			print_debug
-			    ("AHASH_FINUP[%d] completion\n",
-			     virtio_job->qemu_cmd.op);
+			print_debug("AHASH_FINUP[%d] completion\n", virtio_job->qemu_cmd.op);
+
 			ret = copy_to_user((void __user *)
 					   virtio_job->qemu_cmd.u.
 					   hash.finup_req.result, (void *)
@@ -2249,16 +2124,10 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 					   virtio_job->qemu_cmd.u.
 					   hash.finup_req.digestsize);
 			if (ret != 0)
-				print_debug
-				("return value AHASH_FINUP "
-				"ouput copy_to_user = %d\n",
-				ret);
+				print_debug("return value AHASH_FINUP ouput copy_to_user = %d\n", ret);
 
 			sg = virtio_job->ctx->req.ahash->src;
-			for (i = 0;
-			     i <
-			     virtio_job->qemu_cmd.u.hash.finup_req.
-			     sg_info.sg_count; i++) {
+			for (i = 0; i < virtio_job->qemu_cmd.u.hash.finup_req.sg_info.sg_count; i++) {
 				buf = sg_virt(sg);
 				kfree(buf);
 
@@ -2280,14 +2149,10 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 			uint8_t *buf = NULL;
 			int i = 0;
 
-			print_debug
-			    ("ABLK [%d] completion\n", virtio_job->qemu_cmd.op);
+			print_debug("ABLK [%d] completion\n", virtio_job->qemu_cmd.op);
 
 			sg = virtio_job->ctx->req.ablk->dst;
-			for (i = 0;
-			     i <
-			     virtio_job->qemu_cmd.u.symm.cmd_req.
-			     dst_sg_info.sg_count; i++) {
+			for (i = 0; i < virtio_job->qemu_cmd.u.symm.cmd_req.dst_sg_info.sg_count; i++) {
 				buf = sg_virt(sg);
 				ret = copy_to_user((void __user *)
 						   virtio_job->qemu_cmd.u.
@@ -2296,10 +2161,8 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 						   virtio_job->qemu_cmd.u.
 						   symm.cmd_req.dst_len[i]);
 				if (ret != 0)
-					print_debug
-					("return value ABLK[%d] "
-					"ouput copy_to_user = %d\n",
-					virtio_job->qemu_cmd.op, ret);
+					print_debug("return value ABLK[%d] ouput copy_to_user = %d\n",
+							virtio_job->qemu_cmd.op, ret);
 
 				sg = scatterwalk_sg_next(sg);
 				kfree(buf);
@@ -2307,10 +2170,7 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 			}
 
 			sg = virtio_job->ctx->req.ablk->src;
-			for (i = 0;
-			     i <
-			     virtio_job->qemu_cmd.u.symm.cmd_req.
-			     src_sg_info.sg_count; i++) {
+			for (i = 0; i < virtio_job->qemu_cmd.u.symm.cmd_req.src_sg_info.sg_count; i++) {
 				buf = sg_virt(sg);
 				kfree(buf);
 
@@ -2327,9 +2187,7 @@ void process_virtio_job_response(struct virtio_c2x0_job_ctx *virtio_job)
 			kfree(virtio_job->ctx->req.ablk->info);
 			kfree(virtio_job->ctx->req.ablk);
 
-			print_debug
-			    ("ABLK [%d] completion Success\n",
-			     virtio_job->qemu_cmd.op);
+			print_debug("ABLK [%d] completion Success\n", virtio_job->qemu_cmd.op);
 
 			break;
 		}
@@ -2367,8 +2225,7 @@ int32_t process_virtio_dh_job(struct virtio_c2x0_job_ctx *virtio_job)
 	    (struct pkc_request *)kzalloc(sizeof(struct pkc_request),
 					  GFP_KERNEL);
 	if (!req) {
-		print_error("Alloc failed req:%p, qemu_cmd:%p\n", req,
-			    qemu_cmd);
+		print_error("Alloc failed req:%p, qemu_cmd:%p\n", req, qemu_cmd);
 		return -1;
 	}
 
@@ -2391,7 +2248,7 @@ int32_t process_virtio_dh_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dh_req.q_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dh_req.q) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2413,7 +2270,7 @@ int32_t process_virtio_dh_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dh_req.pub_key_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dh_req.pub_key) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2435,7 +2292,7 @@ int32_t process_virtio_dh_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dh_req.s_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dh_req.s) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2458,7 +2315,7 @@ int32_t process_virtio_dh_job(struct virtio_c2x0_job_ctx *virtio_job)
 			    kzalloc(req->req_u.dh_req.ab_len, GFP_KERNEL);
 #endif
 			if (NULL == req->req_u.dh_req.ab) {
-				print_error("kzlloc failed\n");
+				print_error("kzalloc failed\n");
 				goto error;
 			}
 			ret =
@@ -2477,7 +2334,7 @@ int32_t process_virtio_dh_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.dh_req.z =
 		    kzalloc(req->req_u.dh_req.z_len, GFP_KERNEL);
 		if (NULL == req->req_u.dh_req.z) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 
@@ -2554,7 +2411,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dsa_sign.q_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dsa_sign.q) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2575,7 +2432,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dsa_sign.r_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dsa_sign.r) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2596,7 +2453,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dsa_sign.g_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dsa_sign.g) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2617,7 +2474,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dsa_sign.priv_key_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dsa_sign.priv_key) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2638,7 +2495,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dsa_sign.m_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dsa_sign.m) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2661,7 +2518,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 			    kzalloc(req->req_u.dsa_sign.ab_len, GFP_KERNEL);
 #endif
 			if (NULL == req->req_u.dsa_sign.ab) {
-				print_error("kzlloc failed\n");
+				print_error("kzalloc failed\n");
 				goto error;
 			}
 			ret =
@@ -2682,13 +2539,13 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.dsa_sign.c =
 		    kzalloc(req->req_u.dsa_sign.d_len, GFP_KERNEL);
 		if (NULL == req->req_u.dsa_sign.c) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		req->req_u.dsa_sign.d =
 		    kzalloc(req->req_u.dsa_sign.d_len, GFP_KERNEL);
 		if (NULL == req->req_u.dsa_sign.d) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 
@@ -2707,7 +2564,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dsa_verify.q_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dsa_verify.q) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2728,7 +2585,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dsa_verify.r_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dsa_verify.r) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2749,7 +2606,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dsa_verify.g_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dsa_verify.g) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2770,7 +2627,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dsa_verify.pub_key_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dsa_verify.pub_key) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2791,7 +2648,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dsa_verify.m_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dsa_verify.m) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2813,7 +2670,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 			    kzalloc(req->req_u.dsa_verify.ab_len, GFP_KERNEL);
 #endif
 			if (NULL == req->req_u.dsa_verify.ab) {
-				print_error("kzlloc failed\n");
+				print_error("kzalloc failed\n");
 				goto error;
 			}
 			ret =
@@ -2835,7 +2692,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dsa_verify.q_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dsa_verify.c) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2856,7 +2713,7 @@ int32_t process_virtio_dsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.dsa_verify.d_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.dsa_verify.d) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2940,7 +2797,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.rsa_pub_req.n_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.rsa_pub_req.n) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2961,7 +2818,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.rsa_pub_req.e_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.rsa_pub_req.e) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -2982,7 +2839,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.rsa_pub_req.f_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.rsa_pub_req.f) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3000,7 +2857,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_pub_req.g =
 		    kzalloc(req->req_u.rsa_pub_req.g_len, GFP_KERNEL);
 		if (NULL == req->req_u.rsa_pub_req.g) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 
@@ -3014,7 +2871,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f1.n =
 		    kzalloc(req->req_u.rsa_priv_f1.n_len, GFP_KERNEL);
 		if (NULL == req->req_u.rsa_priv_f1.n) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3031,7 +2888,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f1.d =
 		    kzalloc(req->req_u.rsa_priv_f1.d_len, GFP_KERNEL);
 		if (NULL == req->req_u.rsa_priv_f1.d) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3049,7 +2906,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f1.f =
 		    kzalloc(req->req_u.rsa_priv_f1.f_len, GFP_KERNEL);
 		if (NULL == req->req_u.rsa_priv_f1.f) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 
@@ -3058,7 +2915,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f1.g =
 		    kzalloc(req->req_u.rsa_priv_f1.g_len, GFP_KERNEL);
 		if (NULL == req->req_u.rsa_priv_f1.g) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3080,7 +2937,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f2.p =
 		    kzalloc(req->req_u.rsa_priv_f2.p_len, GFP_KERNEL);
 		if (NULL == req->req_u.rsa_priv_f2.p) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3097,7 +2954,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f2.q =
 		    kzalloc(req->req_u.rsa_priv_f2.q_len, GFP_KERNEL);
 		if (NULL == req->req_u.rsa_priv_f2.q) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3114,7 +2971,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f2.d =
 		    kzalloc(req->req_u.rsa_priv_f2.d_len, GFP_KERNEL);
 		if (NULL == req->req_u.rsa_priv_f2.d) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3131,7 +2988,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f2.g =
 		    kzalloc(req->req_u.rsa_priv_f2.g_len, GFP_KERNEL);
 		if (NULL == req->req_u.rsa_priv_f2.g) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3149,7 +3006,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f2.f =
 		    kzalloc(req->req_u.rsa_priv_f2.f_len, GFP_KERNEL);
 		if (NULL == req->req_u.rsa_priv_f2.f) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 
@@ -3170,7 +3027,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.rsa_priv_f3.p_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.rsa_priv_f3.p) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3191,7 +3048,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.rsa_priv_f3.q_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.rsa_priv_f3.q) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3212,7 +3069,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.rsa_priv_f3.dp_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.rsa_priv_f3.dp) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3233,7 +3090,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.rsa_priv_f3.dq_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.rsa_priv_f3.dq) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3254,7 +3111,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.rsa_priv_f3.c_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.rsa_priv_f3.c) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3275,7 +3132,7 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		    kzalloc(req->req_u.rsa_priv_f3.g_len, GFP_KERNEL);
 #endif
 		if (NULL == req->req_u.rsa_priv_f3.g) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 		ret =
@@ -3293,15 +3150,13 @@ int32_t process_virtio_rsa_job(struct virtio_c2x0_job_ctx *virtio_job)
 		req->req_u.rsa_priv_f3.f =
 		    kzalloc(req->req_u.rsa_priv_f3.f_len, GFP_KERNEL);
 		if (NULL == req->req_u.rsa_priv_f3.f) {
-			print_error("kzlloc failed\n");
+			print_error("kzalloc failed\n");
 			goto error;
 		}
 
 		break;
 	default:
-		print_error
-		    ("OP[%d];subop[%d:%d];cmd_index[%d];"
-			 "guest_id[%d] NOT handled\n",
+		print_error("OP[%d]; subop[%d:%d]; cmd_index[%d]; guest_id[%d] NOT handled\n",
 		     qemu_cmd->op, qemu_cmd->u.pkc.pkc_req.type, req->type,
 		     qemu_cmd->cmd_index, qemu_cmd->guest_id);
 		goto error_op;
@@ -3336,7 +3191,7 @@ int32_t process_virtio_hash_split_key_job(struct virtio_c2x0_job_ctx *
 	    (uint8_t *) kzalloc((qemu_cmd->u.hash).setkey_req.keylen,
 				GFP_KERNEL);
 	if (!key) {
-		print_error("Alloc failed setkey_req:%p, qemu_cmd:%p\n",
+		print_error("Alloc failed setkey_req: %p, qemu_cmd: %p\n",
 			    key, qemu_cmd);
 		return -1;
 	}
@@ -3470,7 +3325,7 @@ int32_t process_virtio_ahash_digest_job(struct virtio_c2x0_job_ctx *virtio_job)
 	    (struct ahash_request *)kzalloc(sizeof(struct ahash_request),
 					    GFP_KERNEL);
 	if (!req) {
-		print_error("Alloc failed req:%p,\n", req);
+		print_error("Alloc failed req: %p,\n", req);
 		goto failed_req;
 	}
 
@@ -3491,13 +3346,12 @@ int32_t process_virtio_ahash_digest_job(struct virtio_c2x0_job_ctx *virtio_job)
 	src_len = NULL;
 
 	if (-1 != ret) {
-		print_debug
-		    ("AHASH_DIGEST[%d] job succesfully given to card : %d\n",
+		print_debug("AHASH_DIGEST[%d] job succesfully given to card: %d\n",
 		     qemu_cmd->op, ret);
 		return 0;
 	}
 
-	print_error("AHASH_DIGEST[%d] returns : %d\n", qemu_cmd->op, ret);
+	print_error("AHASH_DIGEST[%d] returns: %d\n", qemu_cmd->op, ret);
 
 	kfree(req->result);
 failed_result:
@@ -3602,8 +3456,7 @@ int32_t process_virtio_ahash_update_job(struct virtio_c2x0_job_ctx *virtio_job)
 	 */
 	for (i = 0; i < qemu_cmd->u.hash.update_req.sg_info.sg_count; i++) {
 		buflen = src_len[i];
-		print_debug("sg[%d] len = %u; %u; %d\n", i, src_len[i], buflen,
-			    buflen);
+		print_debug("sg[%d] len = %u\n", i, buflen);
 		buf = kzalloc(buflen, GFP_KERNEL);
 		if (!buf) {
 			print_error("buf alloc failed\n");
@@ -3624,8 +3477,7 @@ int32_t process_virtio_ahash_update_job(struct virtio_c2x0_job_ctx *virtio_job)
 	/*
 	 * Creating ahash_request
 	 */
-	req =
-	    (struct ahash_request *)kzalloc(sizeof(struct ahash_request) +
+	req = (struct ahash_request *)kzalloc(sizeof(struct ahash_request) +
 					    sizeof(struct hash_state),
 					    GFP_KERNEL);
 	if (!req) {
@@ -3661,12 +3513,11 @@ int32_t process_virtio_ahash_update_job(struct virtio_c2x0_job_ctx *virtio_job)
 	src_len = NULL;
 
 	if (-1 != ret) {
-		print_debug
-		    ("AHASH_UPDATE[%d] job succesfully given to card : %d\n",
-		     qemu_cmd->op, ret);
+		print_debug("AHASH_UPDATE[%d] job succesfully given to card : %d\n",
+				qemu_cmd->op, ret);
 		return 0;
 	}
-	print_error("AHASH_UPDATE[%d] returns : %d\n", qemu_cmd->op, ret);
+	print_error("AHASH_UPDATE[%d] returns: %d\n", qemu_cmd->op, ret);
 
 failed_copy_state:
 	kfree(req);
@@ -3734,12 +3585,11 @@ int32_t process_virtio_ahash_final_job(struct virtio_c2x0_job_ctx *virtio_job)
 		ret = ahash_final_no_ctx(req, virtio_job);
 
 	if (-1 != ret) {
-		print_debug
-		    ("AHASH_FINAL[%d] job succesfully given to card : %d\n",
+		print_debug("AHASH_FINAL[%d] job succesfully given to card: %d\n",
 		     qemu_cmd->op, ret);
 		return 0;
 	}
-	print_error("AHASH_FINAL[%d] returns : %d\n", qemu_cmd->op, ret);
+	print_error("AHASH_FINAL[%d] returns: %d\n", qemu_cmd->op, ret);
 
 	kfree(req->result);
 failed_copy_state:
@@ -3877,12 +3727,11 @@ int32_t process_virtio_ahash_finup_job(struct virtio_c2x0_job_ctx *virtio_job)
 		ret = ahash_finup_no_ctx(req, virtio_job);
 
 	if (-1 != ret) {
-		print_debug
-		    ("AHASH_FINUP[%d] job succesfully given to card : %d\n",
+		print_debug("AHASH_FINUP[%d] job succesfully given to card: %d\n",
 		     qemu_cmd->op, ret);
 		return 0;
 	}
-	print_error("AHASH_FINUP[%d] returns : %d\n", qemu_cmd->op, ret);
+	print_error("AHASH_FINUP[%d] returns: %d\n", qemu_cmd->op, ret);
 
 failed_copy_state:
 	kfree(req->result);
@@ -4230,7 +4079,7 @@ int32_t process_virtio_ablkcipher_job(struct virtio_c2x0_job_ctx *virtio_job)
 	    (struct ablkcipher_request *)
 	    kzalloc(sizeof(struct ablkcipher_request), GFP_KERNEL);
 	if (!req) {
-		print_error("Alloc failed req:%p,\n", req);
+		print_error("Alloc failed req: %p,\n", req);
 		goto failed_req;
 	}
 
@@ -4257,10 +4106,10 @@ int32_t process_virtio_ablkcipher_job(struct virtio_c2x0_job_ctx *virtio_job)
 		ret = fsl_ablkcipher(req, false, virtio_job);
 
 	if (-1 != ret) {
-		print_debug("ABLK job succesfully given to card : %d\n", ret);
+		print_debug("ABLK job succesfully given to card: %d\n", ret);
 		return 0;
 	}
-	print_error("fsl_ablkcipher_desc_alloc returns : %d\n", ret);
+	print_error("fsl_ablkcipher_desc_alloc returns: %d\n", ret);
 
 failed_copy_info:
 	kfree(req->info);
@@ -4323,7 +4172,7 @@ int32_t process_virtio_app_req(struct virtio_c2x0_job_ctx *virtio_job)
 	int32_t ret = 0;
 	struct virtio_c2x0_qemu_cmd *qemu_cmd = &virtio_job->qemu_cmd;
 
-	print_debug("Virtio job request with operation : %d\n", qemu_cmd->op);
+	print_debug("Virtio job request with operation: %d\n", qemu_cmd->op);
 	switch (qemu_cmd->op) {
 	case RSA:
 		print_debug(" RSA Operation\n");
@@ -4430,7 +4279,7 @@ int32_t process_virtio_app_req(struct virtio_c2x0_job_ctx *virtio_job)
 		break;
 #endif
 	default:
-		print_error(" Invalid Operation ");
+		print_error("Invalid Operation!");
 		ret = -1;
 		break;
 	}

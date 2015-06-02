@@ -127,7 +127,7 @@ static int rng_self_test_cp_output(uint32_t *output, uint32_t length,
 	rng_self_test_init_len(length, mem_info);
 
 	/* Alloc mem requrd for crypto operation */
-	print_debug("\t \t Calling alloc_crypto_mem\n");
+	print_debug("Calling alloc_crypto_mem\n");
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
@@ -142,7 +142,7 @@ static int rng_init_cp_pers_str(uint32_t *pers_str, uint32_t length,
 	rng_init_init_len(length, mem_info);
 
 	/* Alloc mem requrd for crypto operation */
-	print_debug("\t \t Calling alloc_crypto_mem\n");
+	print_debug("Calling alloc_crypto_mem\n");
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 	mem->pers_str_buff.req_ptr = (uint8_t *) pers_str;
@@ -221,16 +221,13 @@ static void constr_rng_self_test_desc(crypto_mem_info_t *mem_info)
 	change_desc_endianness(desc_buff, l_desc, desc_size);
 
 #ifdef DUMP_DEBUG_V_INFO
-
-	print_debug("OUTPUT DMA           :%0llx\n",
-		    mem->output_buff.dev_buffer.d_p_addr);
-
-	print_debug("\n [RNG INIT]  Descriptor words\n");
+	print_debug("OUTPUT DMA: %llx\n", (uint64_t)mem->output_buff.dev_buffer.d_p_addr);
+	print_debug("[RNG INIT] Descriptor words\n");
 	{
 		uint32_t *words = (uint32_t *) desc_buff;
 		uint32_t i = 0;
 		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d    :   %0x\n", i, words[i]);
+			print_debug("Word %d: %x\n", i, words[i]);
 	}
 #endif
 }
@@ -263,16 +260,13 @@ static void constr_rng_init_desc(crypto_mem_info_t *mem_info)
 	change_desc_endianness(desc_buff, desc, desc_size);
 
 #ifdef DUMP_DEBUG_V_INFO
-
-	print_debug("PERS_STR DMA			:%0llx\n",
-		    mem->pers_str_buff.dev_buffer.d_p_addr);
-
-	print_debug("[RNG INIT]	Descriptor words\n");
+	print_debug("PERS_STR DMA: %llx\n", (uint64_t)mem->pers_str_buff.dev_buffer.d_p_addr);
+	print_debug("[RNG INIT] Descriptor words\n");
 	{
 		uint32_t *words = (uint32_t *) desc_buff;
 		uint32_t i = 0;
 		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d	:	%0x\n", i, words[i]);
+			print_debug("Word %d: %x\n", i, words[i]);
 	}
 #endif
 }
@@ -345,20 +339,18 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, rng_ops_t op)
 	}
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
-	print_debug("\t crypto_ctx addr :			:%0llx\n",
-		    crypto_ctx);
+	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
 		return -ENOMEM;
 	}
 
-	print_debug("\t Ring selected			:%d\n", r_id);
+	print_debug("Ring selected: %d\n", r_id);
 	crypto_ctx->ctx_pool = c_dev->ctx_pool;
 	crypto_ctx->crypto_mem.dev = c_dev;
 	crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-	print_debug("\t IP Buffer pool address		:%0x\n",
-		    crypto_ctx->crypto_mem.pool);
+	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 	switch (op) {
 	case R_INIT:
@@ -376,23 +368,22 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, rng_ops_t op)
 			ret = -ENOMEM;
 			goto error;
 		}
-		print_debug("\t \t \t RNG init mem complete.....\n");
+		print_debug("RNG init mem complete.....\n");
 
 		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
 
-		print_debug("\t \t \t Host to dev convert complete....\n");
+		print_debug("Host to dev convert complete....\n");
 
 		/* Constr the hw desc */
 		constr_rng_init_desc(&crypto_ctx->crypto_mem);
-		print_debug("\t \t \t Desc constr complete...\n");
+		print_debug("Desc constr complete...\n");
 
 		sec_dma = rng_init_buffs->desc_buff.dev_buffer.d_p_addr;
 
 		/* Store the context */
-		print_debug
-		    ("[Enq]Desc addr :%0llx Hbuff addr :%0x Crypto ctx :%0x\n",
-		     rng_init_buffs->desc_buff.dev_buffer.d_p_addr,
+		print_debug("[Enq]Desc addr: %llx Hbuff addr: %p Crypto ctx: %p\n",
+		     (uint64_t)rng_init_buffs->desc_buff.dev_buffer.d_p_addr,
 		     rng_init_buffs->desc_buff.v_mem, crypto_ctx);
 
 		store_priv_data(crypto_ctx->crypto_mem.pool,
@@ -418,23 +409,22 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, rng_ops_t op)
 			ret = -ENOMEM;
 			goto error;
 		}
-		print_debug("\t \t \t RNG self test mem complete.....\n");
+		print_debug("RNG self test mem complete.....\n");
 
 		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
 
-		print_debug("\t \t \t Host to dev convert complete....\n");
+		print_debug("Host to dev convert complete....\n");
 
 		/* Constr the hw desc */
 		constr_rng_self_test_desc(&crypto_ctx->crypto_mem);
-		print_debug("\t \t \t Desc constr complete...\n");
+		print_debug("Desc constr complete...\n");
 
 		sec_dma = rng_self_test_buffs->desc_buff.dev_buffer.d_p_addr;
 
 		/* Store the context */
-		print_debug
-		    ("[Enq]Desc addr :%0llx Hbuff addr :%0x Crypto ctx :%0x\n",
-		     rng_self_test_buffs->desc_buff.dev_buffer.d_p_addr,
+		print_debug("[Enq]Desc addr: %llx Hbuff addr: %p Crypto ctx: %p\n",
+		     (uint64_t) rng_self_test_buffs->desc_buff.dev_buffer.d_p_addr,
 		     rng_self_test_buffs->desc_buff.v_mem, crypto_ctx);
 
 		store_priv_data(crypto_ctx->crypto_mem.pool,

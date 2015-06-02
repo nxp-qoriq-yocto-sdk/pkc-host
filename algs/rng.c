@@ -82,7 +82,7 @@ static int rng_cp_output(uint8_t *output, crypto_mem_info_t *mem_info)
 	rng_init_len(mem_info);
 
 	/* Alloc mem requrd for crypto operation */
-	print_debug("\t \t Calling alloc_crypto_mem\n");
+	print_debug("Calling alloc_crypto_mem\n");
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
@@ -156,7 +156,7 @@ static int submit_job(struct rng_ctx *ctx, int to_current)
 		return -1;
 
 	crypto_ctx = get_crypto_ctx(ctx->c_dev->ctx_pool);
-	print_debug("\t crypto_ctx addr :           :%0llx\n", crypto_ctx);
+	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
@@ -167,8 +167,7 @@ static int submit_job(struct rng_ctx *ctx, int to_current)
 	crypto_ctx->ctx_pool = ctx->c_dev->ctx_pool;
 	crypto_ctx->crypto_mem.dev = ctx->c_dev;
 	crypto_ctx->crypto_mem.pool = ctx->c_dev->ring_pairs[r_id].ip_pool;
-	print_debug("\t IP Buffer pool address      :%0x\n",
-		    crypto_ctx->crypto_mem.pool);
+	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 	rng_init_crypto_mem(&crypto_ctx->crypto_mem);
 	rng_buffs = (rng_buffers_t *) crypto_ctx->crypto_mem.buffers;
@@ -178,23 +177,22 @@ static int submit_job(struct rng_ctx *ctx, int to_current)
 		goto error;
 	}
 
-	print_debug("\t \t \t RNG mem complete.....\n");
+	print_debug("RNG mem complete.....\n");
 
 	/* Convert the buffers to dev */
 	host_to_dev(&crypto_ctx->crypto_mem);
 
-	print_debug("\t \t \t Host to dev convert complete....\n");
+	print_debug("Host to dev convert complete....\n");
 
 	/* Constr the hw desc */
 	constr_rng_desc(&crypto_ctx->crypto_mem, ctx);
-	print_debug("\t \t \t Desc constr complete...\n");
+	print_debug("Desc constr complete...\n");
 
 	sec_dma = rng_buffs->desc_buff.dev_buffer.d_p_addr;
 
 	/* Store the context */
-	print_debug
-	    ("[Enq]Desc addr :%0llx Hbuff addr :%0x Crypto ctx :%0x\n",
-	     rng_buffs->desc_buff.dev_buffer.d_p_addr,
+	print_debug("[Enq]Desc addr: %llx Hbuff addr: %p Crypto ctx:%p\n",
+	     (uint64_t)rng_buffs->desc_buff.dev_buffer.d_p_addr,
 	     rng_buffs->desc_buff.v_mem, crypto_ctx);
 
 	store_priv_data(crypto_ctx->crypto_mem.pool,
@@ -402,17 +400,7 @@ int32_t process_virtio_rng_job(struct virtio_c2x0_job_ctx *virtio_job)
 	ret = submit_job(ctx, buf_id == ctx->current_buf);
 	if (0 == ret) {
 		wait_for_completion(&bd->filled);
-#if 0
-		{
-			int i = 0;
-
-			for (i = 0; i < RN_BUF_SIZE; i++)
-				printk("%c", bd->buf[i]);
-			printk("\n");
-		}
-#endif
-		ret =
-		    copy_to_user(qemu_cmd->u.rng.rng_req.buf, bd->buf,
+		ret = copy_to_user(qemu_cmd->u.rng.rng_req.buf, bd->buf,
 				 RN_BUF_SIZE);
 		if (0 != ret) {
 			print_error("COPY TO USER failed with %d ret\n", ret);

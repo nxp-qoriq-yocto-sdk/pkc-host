@@ -402,7 +402,7 @@ static void dec_count(void)
 	int32_t d_cnt = 0;
 	d_cnt = atomic_inc_return(&rsa_deq_count);
 
-	printk("Deq cnt... :%d\n", d_cnt);
+	print_debug("Deq cnt... :%d\n", d_cnt);
 #endif
 	atomic_inc(&total_deq_cnt);
 }
@@ -463,7 +463,7 @@ void rsa_done(struct pkc_request *req, int32_t sec_result)
 			kfree(req->req_u.rsa_pub_req.g);
 			break;
 		default:
-			print_error("\ninvalid option\n");
+			print_error("invalid option\n");
 		}
 	} else
 		print_error
@@ -523,7 +523,7 @@ int rsa_priv2_op_test(void)
 	}
 #ifndef PERF_TEST
 	else {
-		printk("Enq test_rsa_prv2_op : %d\n",
+		print_debug("Enq test_rsa_prv2_op : %d\n",
 		       atomic_inc_return(&rsa_enq_count));
 	}
 #endif

@@ -70,8 +70,7 @@ void dsa_done(struct pkc_request *req, int32_t sec_result)
 
 void dsa_keygen_done(struct pkc_request *req, int32_t sec_result)
 {
-	print_debug(KERN_ERR "%s( ): Req :%0x, result: %0x \n", __func__,
-		    req, sec_result);
+	print_debug("req: %p, result: %x \n", req, sec_result);
 	complete(&serialize_keygen);
 }
 
@@ -571,9 +570,8 @@ int dsa_keygen_verify_test(struct pkc_request *genreq,
 {
 	int ret = 0;
 
-	print_debug(KERN_ERR
-		    "%s( ): genReq: %0x, signreq: %0x, verify req: %0x\n",
-		    __func__, genreq, signreq, req);
+	print_debug("genreq: %p, signreq: %p, verify req: %p\n",
+			genreq, signreq, req);
 
 	req->type = DSA_VERIFY;
 
@@ -656,8 +654,7 @@ error:
 int dsa_keygen_sign_test(struct pkc_request *ireq, struct pkc_request *req)
 {
 	int ret = 0;
-	print_debug(KERN_ERR "%s( ): genreq: %0x req : %0x\n", __func__,
-		    ireq, req);
+	print_debug("genreq: %p req: %p\n", ireq, req);
 
 	req->type = DSA_SIGN;
 
@@ -736,14 +733,14 @@ int dsa_keygen_test(void)
 	    kzalloc(sizeof(struct pkc_request), GFP_KERNEL);
 
 	if (!genreq || !signreq || !verifyreq) {
-		print_error(KERN_ERR "(%d) mem alloc failed.... \n", __LINE__);
+		print_error("mem alloc failed!\n");
 		return -1;
 	}
 
 	init_completion(&serialize_keygen);
 
-	print_debug(KERN_ERR "%s( ): pkc_request size: %d req ptr: %0x \n",
-		    __func__, sizeof(struct pkc_request), genreq);
+	print_debug("pkc_request size: %d req ptr: %p \n",
+			sizeof(struct pkc_request), genreq);
 
 	genreq->type = DSA_KEYGEN;
 

@@ -210,8 +210,7 @@ static void dec_count(void)
 
 void ecdsa_keygen_done(struct pkc_request *req, int32_t sec_result)
 {
-	print_debug(KERN_ERR "%s( ): req:%0x, sec_result:%0x \n", __func__,
-		    req, sec_result);
+	print_debug("req: %p, sec_result: %0x \n", req, sec_result);
 	complete(&keygen_control_completion_var);
 }
 
@@ -222,20 +221,20 @@ void ecdsa_done(struct pkc_request *req, int32_t sec_result)
 	uint32_t i = 0;
 #endif
 	print_debug("ECDSA REQ TYPE [%d]\n", req->type);
-	print_debug("RESULT : %d\n ", sec_result);
+	print_debug("RESULT: %d\n ", sec_result);
 	switch (req->type) {
 	case ECDSA_SIGN:
 #ifndef PERF_TEST
-		print_debug(" C/D\n");
-		print_debug("Length : %d\n", req->req_u.dsa_sign.d_len);
+		print_debug("C/D\n");
+		print_debug("Length: %d\n", req->req_u.dsa_sign.d_len);
 
-		print_debug(" C\n");
+		print_debug("C\n");
 		for (i = 0; i < req->req_u.dsa_sign.d_len; i++)
-			print_debug("0x%0x,\t", req->req_u.dsa_sign.c[i]);
+			print_debug("%x,\t", req->req_u.dsa_sign.c[i]);
 
-		print_debug(" D\n");
+		print_debug("D\n");
 		for (i = 0; i < req->req_u.dsa_sign.d_len; i++)
-			print_debug("0x%0x,\t", req->req_u.dsa_sign.d[i]);
+			print_debug("%x,\t", req->req_u.dsa_sign.d[i]);
 
 #endif
 		kfree(req->req_u.dsa_sign.c);

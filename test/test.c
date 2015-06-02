@@ -47,7 +47,6 @@
 
 #include "test.h"
 
-/* #define print_debug printk  */
 #define MAX_TEST_THREAD_SUPPORT 200
 typedef void (*cb) (struct pkc_request *req, int32_t sec_result);
 
@@ -83,9 +82,9 @@ static int cpu_mask;
 void start_test(void)
 {
 	newtest = 1;
-	print_debug("This Thread is invoked by CPU : %d\n", get_cpu());
+	print_debug("This Thread is invoked by CPU: %d\n", get_cpu());
 	if (!atomic_read(&test_started)) {
-		print_debug("S_timr is captured by this thread ");
+		print_debug("S_timr is captured by this thread\n");
 		s_time = get_cpu_ticks();
 		atomic_set(&test_started, 1);
 	}
@@ -98,10 +97,10 @@ void start_test(void)
 					print_debug("Test is in hold off state\n");
 					break;
 				}
-				print_debug("Enq : %d\n", atomic_read(&total_enq_cnt));
+				print_debug("Enq: %d\n", atomic_read(&total_enq_cnt));
 			} else {
 				if(atomic_inc_return(&total_err_cnt) > 100000) {
-					printk("Total Error count : %d exceed MAX_LIMIT.... Exiting Test\n",
+					print_debug("Total Error count : %d exceed MAX_LIMIT.... Exiting Test\n",
 							atomic_read(&total_err_cnt));
 					atomic_set(&hold_off, 1);
 					atomic_set(&test_done, 1);
@@ -112,9 +111,9 @@ void start_test(void)
 #endif
 			}
 		}
-		print_debug(KERN_ERR "\n Waitingggg......\n");
+		print_debug("Waitingggg......\n");
 		if (atomic_read(&test_done) && newtest) {
-			print_debug("\n\nTest request count exceed\n\n");
+			print_debug("Test request count exceed\n");
 			strcpy(g_test_name, "INVALID");
 			g_is_test_in_progress = 0;
 			if (!timer_set) {
@@ -134,7 +133,7 @@ static void test_timer_expired(unsigned long data)
 {
 	total_succ_jobs = atomic_read(&total_deq_cnt);
 	atomic_set(&hold_off, 1);
-	print_debug(KERN_ERR "Tot jobs completed.. :%d \n", total_succ_jobs);
+	print_debug("Tot jobs completed.. :%d\n", total_succ_jobs);
 	total_enq_req = 0;
 	timer_test_done_check();
 }
@@ -246,7 +245,7 @@ int test(void *data)
 	char *test_name = g_test_name;
 	int8_t run = 1;
 
-	print_debug(KERN_ERR "\n *** Thread  %d is invoked ***\n", (int)data);
+	print_debug("*** Thread  %d is invoked ***\n", (int)data);
 	/* This need to call once to initialize all the test */
 	if (!strcmp(test_name, "RSA_PUB_OP_1K")) {
 		print_debug("RSA_PUB_OP_1K invoking\n");
@@ -369,7 +368,7 @@ int test(void *data)
         print_debug("ECDH_KEYGEN_B571 invoking\n");
         testfunc = ecdh_keygen_test_b571;
 	} else {
-		print_debug(KERN_ERR "Invalid test name... :%s\n", test_name);
+		print_debug("Invalid test name... :%s\n", test_name);
 		run = 0;
 	}
 
@@ -440,10 +439,10 @@ int parsing_test_command(char *test_name)
 void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 {
 	int loop = 0;
-	print_debug("Test name : %s\n", test_name);
+	print_debug("Test name: %s\n", test_name);
 
 	if (strcmp(fname, "test_name")) {
-		print_debug("Returning from here.....\n");
+		print_debug("Returning from here...\n");
 		return;
 	}
 	if (!strcmp(test_name, "INVALID"))
@@ -453,7 +452,7 @@ void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 		total_succ_jobs = atomic_read(&total_deq_cnt);
 		e_time = get_cpu_ticks();
 		atomic_set(&hold_off, 1);
-		print_debug("\n\nTest stopped by user\n\n");
+		print_debug("Test stopped by user\n\n");
 		strcpy(g_test_name, "INVALID");
 		g_is_test_in_progress = 0;
 		check_test_done_test();
@@ -461,14 +460,14 @@ void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 	}
 
 	if (g_is_test_in_progress) {
-		printk(KERN_ERR "Some test is in progress....\n");
+		print_debug("Some test is in progress....\n");
 		return;
 	}
 
 	g_is_test_in_progress = 1;
 
 	if (-1 == parsing_test_command(test_name)) {
-		printk("Invalid test\n");;
+		print_debug("Invalid test\n");;
 		return;
 	}
 
@@ -477,10 +476,8 @@ void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 	for_each_online_cpu(loop)
 	    no_cpu++;
 
-	print_debug
-		("Test Name : %s, # Cpu : %d, # Thread : %d, Timer : %d sec, # req count : %x\n",
-	     g_test_name, cpu_mask, threads_per_cpu, time_duration,
-	     total_enq_req);
+	print_debug("Test Name: %s, Cpu: %d, Thread: %d, Timer: %d sec, req count: %d\n",
+	     g_test_name, cpu_mask, threads_per_cpu, time_duration, total_enq_req);
 	/* Start up the threads per CPU */
 	for (loop = 0; loop < threads_per_cpu; loop++) {
 		int cpu_loop;
@@ -491,11 +488,11 @@ void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 			/* Start the test thread */
 			task[no_thread] = kthread_create(test, NULL, "test_thread");
 			if (IS_ERR(task[no_thread])) {
-				printk(KERN_ERR "task creation failed\n");
+				print_debug("task creation failed\n");
 				return;
 			}
 			kthread_bind(task[no_thread], cpu_loop);
-			print_debug("Thread %d created with : %d cpu\n",
+			print_debug("Thread %d created with: %d cpu\n",
 				    no_thread, cpu_loop);
 			no_thread++;
 		}
@@ -505,7 +502,7 @@ void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 		print_error("Max thread limit exeed\n");
 		return;
 	}
-	print_debug("no of thread created : %d\n", no_thread);
+	print_debug("no of thread created: %d\n", no_thread);
 	atomic_set(&test_started, 0);
 	atomic_set(&hold_off, 0);
 	exit = 0;
@@ -528,8 +525,7 @@ inline void check_test_done_test(void)
 {
 	print_debug("Inside check_test_done_test\n");
 	if (newtest) {
-		print_debug("No of job successfully finished : :%d\n",
-			    total_succ_jobs);
+		print_debug("No of job successfully finished: %d\n", total_succ_jobs);
 		newtest = 0;
 		atomic_set(&hold_off, 1);
 		print_debug("Set hold_off\n");
@@ -538,7 +534,7 @@ inline void check_test_done_test(void)
 		while (atomic_read(&total_deq_cnt) !=
 		       atomic_read(&total_enq_cnt)) {
 			print_debug("Enq is not equal to deq\n");
-			print_debug("Total enq : %d, Total deq : %d\n",
+			print_debug("Total enq: %d, Total deq: %d\n",
 				    atomic_read(&total_enq_cnt),
 				    atomic_read(&total_deq_cnt));
 			set_current_state(TASK_INTERRUPTIBLE);
@@ -546,11 +542,11 @@ inline void check_test_done_test(void)
 		}
 		exit = 1;
 		timer_set = 0;
-		print_debug("Total enq : %d, Total deq : %d\n",
+		print_debug("Total enq: %d, Total deq: %d\n",
 			    atomic_read(&total_enq_cnt),
 			    atomic_read(&total_deq_cnt));
-		print_debug("s_time : %0llx, e_time : %0llx\n", s_time, e_time);
-		printk(KERN_ERR "\t\t*** Test Complete ***\n");
+		print_debug("s_time: %llx, e_time: %llx\n", s_time, e_time);
+		print_debug("*** Test Complete ***\n");
 		{
 			uint8_t sysfs_val[30];
 			uint8_t cycle_diff_s[16];
@@ -563,29 +559,27 @@ inline void check_test_done_test(void)
 			uint32_t cpu_freq = ppc_proc_freq;
 			cpu_freq = cpu_freq / 1000000;
 #endif
-			print_debug(KERN_ERR "Cpu Freq : %d\n", cpu_freq);
+			print_debug("Cpu Freq: %d\n", cpu_freq);
 			sprintf(cpu_freq_s, "%d", cpu_freq);
-			print_debug(KERN_ERR "Cpu Freq_s : %s\n", cpu_freq_s);
-			print_debug(KERN_ERR "Diff : %0llx\n", cycle_diff);
-			print_debug(KERN_ERR "total_jobs_s : %0x\n",
-				    total_succ_jobs);
+			print_debug("Cpu Freq_s: %s\n", cpu_freq_s);
+			print_debug("Diff: %llx\n", cycle_diff);
+			print_debug("total_jobs_s: %0x\n", total_succ_jobs);
 			/* Write to the sysfs file entry */
 
 			if (timer_set)
 				cycle_diff = time_duration;
 
 			sprintf(cycle_diff_s, "%0llx", cycle_diff);
-			print_debug(KERN_ERR "cycle_diff_s : %s\n",
-				    cycle_diff_s);
+			print_debug("cycle_diff_s: %s\n", cycle_diff_s);
 
 			strcpy(sysfs_val, cycle_diff_s);
-			print_debug("sysfs val : %s\n", sysfs_val);
+			print_debug("sysfs val: %s\n", sysfs_val);
 
 			strcat(sysfs_val, " ");
 			print_debug("sysfs val space: %s\n", sysfs_val);
 
 			strcat(sysfs_val, cpu_freq_s);
-			print_debug(KERN_ERR "sysfs_val : %s\n", sysfs_val);
+			print_debug("sysfs_val: %s\n", sysfs_val);
 
 			set_sysfs_value(g_fsl_pci_dev, TEST_PERF_SYS_FILE,
 					(uint8_t *) sysfs_val,
@@ -609,7 +603,7 @@ inline void check_test_done_test(void)
 
 void common_dec_count(void)
 {
-	print_debug("Checking Tot: %d, Dec count : %d\n ", total_enq_req,
+	print_debug("Checking Tot: %d, Dec count: %d\n ", total_enq_req,
 		    atomic_read(&total_deq_cnt));
 	if ((atomic_inc_return(&total_deq_cnt) >= total_enq_req)) {
 		if (!atomic_read(&flag)) {

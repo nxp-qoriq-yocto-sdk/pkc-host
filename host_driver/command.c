@@ -71,52 +71,44 @@ void process_cmd_response(fsl_crypto_dev_t *c_dev, dev_dma_addr_t desc,
 
 	cmd_ring_entry_desc_t *cmd_desc = NULL;
 
-	print_debug("h_desc %0llx\n", h_desc);
-	print_debug("Desc : %0llx, Result : %0x\n", desc, result);
+	print_debug("h_desc %p\n", h_desc);
+	print_debug("Desc: %llx, Result: %x\n", (uint64_t)desc, result);
 
 	cmd_desc = (cmd_ring_entry_desc_t *) h_desc;
-	print_debug("cmd_desc : %0x\n", cmd_desc);
 
-	print_debug("cmd_desc->cmd_op                      :%0llx\n",
-		    cmd_desc->cmd_op);
+	print_debug("cmd_desc: %p\n", cmd_desc);
+	print_debug("cmd_desc->cmd_op: %llx\n", (uint64_t)cmd_desc->cmd_op);
 
 #ifndef P4080_BUILD
 	IO_BE_READ64(op_buf_addr, &(cmd_desc->cmd_op));
 #else
 	IO_LE_READ64(op_buf_addr, &(cmd_desc->cmd_op));
 #endif
-	print_debug("Dev domain output buffer address       :%0llx\n",
-		    op_buf_addr);
+	print_debug("Dev domain output buffer address: %llx\n", op_buf_addr);
 
 	if (0 == op_buf_addr) {
 		print_debug("No output buffer address for the command.....\n");
 		return;
 	}
 
-	print_debug("DEV_P_ADDR:%0llx   HOST_V_ADDR:%0llx\n",
-		    c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr,
+	print_debug("DEV_P_ADDR: %llx   HOST_V_ADDR: %p\n",
+		    (uint64_t)c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr,
 		    c_dev->mem[MEM_TYPE_DRIVER].host_v_addr);
 
-	op_buf_addr =
-	    (dev_dma_addr_t) (op_buf_addr -
-			      c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr);
-	print_debug("Offset in device domain            :%0llx\n", op_buf_addr);
+	op_buf_addr = (dev_dma_addr_t) (op_buf_addr - c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr);
+	print_debug("Offset in device domain: %llx\n", (uint64_t)op_buf_addr);
 
 	op_buf_addr = (op_buf_addr - c_dev->mem[MEM_TYPE_DRIVER].host_p_addr);
-	print_debug("Offset in host domain              :%0llx\n", op_buf_addr);
+	print_debug("Offset in host domain: %llx\n", (uint64_t)op_buf_addr);
 
-	op_mem =
-	    (cmd_op_t *) (c_dev->mem[MEM_TYPE_DRIVER].host_v_addr +
+	op_mem = (cmd_op_t *) (c_dev->mem[MEM_TYPE_DRIVER].host_v_addr +
 			  (unsigned long)op_buf_addr);
-	print_debug("Buffer virtual address               :%0llx\n", op_mem);
+	print_debug("Buffer virtual address: %p\n", op_mem);
 
-	op_mem =
-	    (cmd_op_t *) ((unsigned long)op_mem - sizeof(cmd_trace_ctx_t *));
-	print_debug("response for command type          :%d\n",
-		    op_mem->cmd_ctx->cmd_type);
+	op_mem = (cmd_op_t *) ((unsigned long)op_mem - sizeof(cmd_trace_ctx_t *));
+	print_debug("response for command type: %d\n", op_mem->cmd_ctx->cmd_type);
 
-	print_debug
-	    ("JOB COMPLETED, op_mem: %0x, cmd_ctx :%0x, cmd_compltn: %0x\n",
+	print_debug("JOB COMPLETED, op_mem: %p, cmd_ctx: %p, cmd_completion: %p\n",
 	     op_mem, op_mem->cmd_ctx, &(op_mem->cmd_ctx->cmd_completion));
 	if (op_mem->cmd_ctx) {
 		op_mem->cmd_ctx->result = result;
@@ -154,7 +146,7 @@ void set_device(char *fname, char *device, int32_t size, char flag)
 		return;
 	}
 
-	print_debug("GOT THE VALUE : %lu\n", dev_no);
+	print_debug("GOT THE VALUE: %lu\n", dev_no);
 	print_debug("GOING FOR DEVICE SET\n");
 
 	/* GET THE DEVICE */
@@ -212,7 +204,7 @@ int32_t rehandshake(int8_t *config_file, fsl_crypto_dev_t *dev)
 	int32_t new_dev_no = 1;
 	int32_t tot_dev_count = 0;
 
-	print_debug("\n --- REHANDSHAKE ---\n");
+	print_debug("--- REHANDSHAKE ---\n");
 
 	if (NULL == curr_config) {
 		print_error("Could not get the config for device.....\n");
@@ -236,13 +228,12 @@ int32_t rehandshake(int8_t *config_file, fsl_crypto_dev_t *dev)
 	/* GET THE NEW PARSE CONFIG FILE */
 	new_config = get_config(new_dev_no);
 	if (NULL == new_config) {
-		print_error
-		    ("COULD NOT FIND THE NEW CONFIGURATION ... EXITING\n");
+		print_error("COULD NOT FIND THE NEW CONFIGURATION ... EXITING\n");
 		return -1;
 	}
 
 	/* Get the config node for the device and edit it */
-	print_debug("\n User given configuration\n");
+	print_debug("User given configuration\n");
 	curr_config->num_of_rings = new_config->num_of_rings;
 
 	for (i = 0; i < curr_config->num_of_rings; ++i) {
@@ -297,7 +288,7 @@ dconfig:
 
 	/* Alloc ob mem */
 	if (unlikely(alloc_ob_mem(crypto_dev, curr_config))) {
-		print_error("\t Ob mem alloc failed....\n");
+		print_error("Ob mem alloc failed....\n");
 		kfree(crypto_dev->ring_pairs);
 		return -1;
 	}
@@ -399,7 +390,7 @@ void wait_active_jobs_to_finish(fsl_crypto_dev_t *c_dev)
 	uint32_t count = 0;
 	while (atomic_read(&(c_dev->active_jobs))) {
 		if (++count > 1000000)
-			print_error("WAITING ACTIVE JOBS TO FINISH : %d\n",
+			print_error("WAITING ACTIVE JOBS TO FINISH: %d\n",
 				    atomic_read(&(c_dev->active_jobs)));
 	}
 	return;
@@ -516,12 +507,10 @@ int32_t process_cmd_req(fsl_crypto_dev_t *c_dev,
 		break;
 
 	case DEBUG:
-		print_debug(" DEBUGGGING ...\n");
-		print_debug(" GOT DEBUG COMMAND :%d\n",
-			    usr_cmd_desc->rsrc.dgb.cmd_id);
-		print_debug(" GOT ADDRESS : %u\n",
-			    usr_cmd_desc->rsrc.dgb.address);
-		print_debug(" GOT VALUE   : %u\n", usr_cmd_desc->rsrc.dgb.val);
+		print_debug("DEBUGGGING...\n");
+		print_debug("GOT DEBUG COMMAND: %d\n", usr_cmd_desc->rsrc.dgb.cmd_id);
+		print_debug("GOT ADDRESS: %u\n", usr_cmd_desc->rsrc.dgb.address);
+		print_debug("GOT VALUE: %u\n", usr_cmd_desc->rsrc.dgb.val);
 		result =
 		    send_command_to_fw(c_dev, usr_cmd_desc->cmd_type,
 				       usr_cmd_desc);
@@ -540,7 +529,7 @@ int32_t process_cmd_req(fsl_crypto_dev_t *c_dev,
 out:
 	if (copy_to_user
 	    ((void __user *)usr_cmd_desc->result, &(result), sizeof(result))) {
-		print_error("Copy to user failed ....\n");
+		print_error("Copy to user failed...\n");
 		return -1; 
 	}
 
@@ -567,7 +556,7 @@ static int32_t wait_for_cmd_response(cmd_op_t *cmd_op)
 				break;
 			}
 		}
-		print_debug("Result from fw     :%d\n", ret);
+		print_debug("Result from fw: %d\n", ret);
 	}
 
 	return ret;
@@ -579,8 +568,7 @@ static cmd_op_t *get_cmd_op_ctx(fsl_crypto_dev_t *c_dev,
 	cmd_op_t *cmd_op = NULL;
 	dev_dma_addr_t op_dev_addr = 0;
 
-	print_debug("c_dev->op_pool.pool : %0llx, %0x\n", c_dev->op_pool.pool,
-		    c_dev->op_pool.pool);
+	print_debug("c_dev->op_pool.pool: %p\n", c_dev->op_pool.pool);
 	cmd_op =
 	    (cmd_op_t *) alloc_buffer(c_dev->op_pool.pool, sizeof(cmd_op_t), 0);
 
@@ -589,26 +577,20 @@ static cmd_op_t *get_cmd_op_ctx(fsl_crypto_dev_t *c_dev,
 		goto error;
 	}
 
-	print_debug("get_cmd_op_ctx: cmd_op adr : %0llx, %0x\n", cmd_op,
-		    cmd_op);
+	print_debug("get_cmd_op_ctx: cmd_op adr: %p\n", cmd_op);
 	cmd_op->cmd_ctx = kzalloc(sizeof(cmd_trace_ctx_t), GFP_KERNEL);
 	if (NULL == cmd_op->cmd_ctx) {
 		print_error("Ctx buffer alloc failed !!!!\n");
 		goto error;
 	}
-	print_debug("CMD CTX:%0llx\n", cmd_op->cmd_ctx);
+	print_debug("CMD CTX: %p\n", cmd_op->cmd_ctx);
 
 	init_completion(&(cmd_op->cmd_ctx->cmd_completion));
 
-	print_debug("host_p_addr: %0llx, %0x\n",
-		    c_dev->mem[MEM_TYPE_DRIVER].host_p_addr,
-		    c_dev->mem[MEM_TYPE_DRIVER].host_p_addr);
-	print_debug("host_v_addr: %0llx, %0x\n",
-		    c_dev->mem[MEM_TYPE_DRIVER].host_v_addr,
-		    c_dev->mem[MEM_TYPE_DRIVER].host_v_addr);
-	print_debug("get_cmd_op_ctx: cmd_op adr : %0llx, %0x\n", cmd_op,
-		    cmd_op);
-	print_debug("cmd_trace_ctx_t size : %d\n", sizeof(cmd_trace_ctx_t *));
+	print_debug("host_p_addr: %pa\n", &(c_dev->mem[MEM_TYPE_DRIVER].host_p_addr));
+	print_debug("host_v_addr: %p\n", c_dev->mem[MEM_TYPE_DRIVER].host_v_addr);
+	print_debug("get_cmd_op_ctx: cmd_op adr: %p\n", cmd_op);
+	print_debug("cmd_trace_ctx_t size: %d\n", sizeof(cmd_trace_ctx_t));
 
 	op_dev_addr = (dev_dma_addr_t)
 	    (c_dev->mem[MEM_TYPE_DRIVER].host_p_addr) +
@@ -643,12 +625,12 @@ int32_t send_command_to_fw(fsl_crypto_dev_t *c_dev, commands_t command,
 	dev_dma_addr_t desc_dev_addr = 0;
 
 	int32_t ret = 0;
-	print_debug("Sending command  :%d to firmware\n", command);
+	print_debug("Sending command: %d to firmware\n", command);
 
 	pci_cmd_desc = get_buffer(c_dev, c_dev->ring_pairs[0].ip_pool,
 			sizeof(cmd_ring_entry_desc_t), 0);
 	if (!pci_cmd_desc) {
-		print_error("Cmd desc alloc failed !!!!\n");
+		print_error("Cmd desc alloc failed!!!\n");
 		ret = -1;
 		goto exit;
 	}
@@ -695,28 +677,22 @@ int32_t send_command_to_fw(fsl_crypto_dev_t *c_dev, commands_t command,
 		}
 	}
 
-	print_debug("pci_cmd_desc :  %0x, %0llx\n", (unsigned long)pci_cmd_desc,
-		    (unsigned long)pci_cmd_desc);
-	print_debug("host_v_addr :  %0x, %0llx\n",
-		    (unsigned long)c_dev->mem[MEM_TYPE_SRAM].host_v_addr,
-		    (unsigned long)c_dev->mem[MEM_TYPE_SRAM].host_v_addr);
+	print_debug("pci_cmd_desc: %p\n", pci_cmd_desc);
+	print_debug("host_v_addr: %p\n", c_dev->mem[MEM_TYPE_SRAM].host_v_addr);
 
 	desc_dev_addr =
 	    (dev_dma_addr_t) ((unsigned long)pci_cmd_desc -
 			      (unsigned long)c_dev->mem[MEM_TYPE_SRAM].
 			      host_v_addr);
 
-	print_debug("desc_dev_addr : %0x, %0llx\n", desc_dev_addr,
-		    desc_dev_addr);
-	print_debug("dev_p_addr : %0x, %0llx\n",
-		    c_dev->mem[MEM_TYPE_SRAM].dev_p_addr,
-		    c_dev->mem[MEM_TYPE_SRAM].dev_p_addr);
+	print_debug("desc_dev_addr: %llx\n", (uint64_t)desc_dev_addr);
+	print_debug("dev_p_addr: %llx\n", (uint64_t)c_dev->mem[MEM_TYPE_SRAM].dev_p_addr);
 
 	desc_dev_addr =
 	    (dev_dma_addr_t) (c_dev->mem[MEM_TYPE_SRAM].dev_p_addr +
 			      desc_dev_addr);
 
-	print_debug("Enqueueing CMD DESC ADDR   :%0llx\n", desc_dev_addr);
+	print_debug("Enqueueing CMD DESC ADDR: %llx\n", (uint64_t) desc_dev_addr);
 
 	if (-1 == cmd_ring_enqueue(c_dev, 0, desc_dev_addr)) {
 		print_error("Command ring enqueue failed.....\n");
@@ -738,12 +714,10 @@ int32_t send_command_to_fw(fsl_crypto_dev_t *c_dev, commands_t command,
 		return 0;
 	}
 
-	print_debug
-	    ("Going to wait for response for command.. %d, cmd_op : %0x\n",
-	     command, cmd_op);
+	print_debug("Going to wait for response for command.. %d, cmd_op : %p\n",
+			command, cmd_op);
 	if (-1 == wait_for_cmd_response(cmd_op)) {
-		print_debug
-		    ("Wait finished but no response from firmware.....\n");
+		print_debug("Wait finished but no response from firmware.....\n");
 		ret = -1;
 		goto exit;
 	}
@@ -803,8 +777,7 @@ static void flush_app_resp_rings(fsl_crypto_dev_t *dev)
 		dev->fw_resp_rings[i].cntrs->jobs_processed = 0;
 		dev->fw_resp_rings[i].s_c_cntrs->jobs_added = 0;
 		dev->fw_resp_rings[i].idxs->r_index = 0;
-		print_debug
-		    ("dev->fw_resp_ring.cntrs->jobs_processed : %d\n",
+		print_debug("dev->fw_resp_ring.cntrs->jobs_processed: %d\n",
 		     dev->fw_resp_rings[i].cntrs->jobs_processed);
 	}
 }
@@ -864,11 +837,8 @@ static int32_t flush_app_jobs(fsl_crypto_dev_t *dev)
 				 dev->ring_pairs[i].s_c_counters->jobs_added);
 #endif
 			while (0 != (jobs_added - dev->ring_pairs[i].counters->jobs_processed)) {
-				print_debug
-				    ("%d, jobs pending resps on ring :%d\n",
-				     (jobs_added -
-				      dev->ring_pairs[i].
-				      counters->jobs_processed), i);
+				print_debug("%d, jobs pending resps on ring: %d\n",
+				     (jobs_added - dev->ring_pairs[i].counters->jobs_processed), i);
 
 				/* Give some time for the jobs to get stopped */
 				set_current_state(TASK_INTERRUPTIBLE);

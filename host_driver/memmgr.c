@@ -97,10 +97,10 @@ void *create_pool(void *buf, uint32_t len)
 	bp *pool;
 	bh *header;
 
-	print_debug("\n Creating Pool\n");
+	print_debug("Creating Pool\n");
 
-	print_debug("\t Buffer  :%0x\n", buf);
-	print_debug("\t Len     :%d\n", len);
+	print_debug("Buffer: %p\n", buf);
+	print_debug("Len   : %d\n", len);
 
 	if (len < MIN_QUANT_SIZE) {
 		print_error("Cannot register a buffer less the quant size\n");
@@ -133,8 +133,8 @@ void *create_pool(void *buf, uint32_t len)
 	pool->free_list = header;
 	pool->tot_free_mem = len - sizeof(bh);
 
-	print_debug("\t Total free mem  :%d\n", pool->tot_free_mem);
-	print_debug("\t Creating pool done\n");
+	print_debug("Total free mem: %d\n", pool->tot_free_mem);
+	print_debug("Creating pool done\n");
 
 	return pool;
 }
@@ -155,7 +155,7 @@ void *alloc_buffer(void *id, uint32_t len, unsigned long flag)
 	bh *a_node = NULL;
 	bh *new_node = NULL;
 
-	print_debug("\n Allocating buffer\n");
+	print_debug("Allocating buffer\n");
 
 	spin_lock_bh(&(pool->mem_lock));
 
@@ -168,7 +168,7 @@ void *alloc_buffer(void *id, uint32_t len, unsigned long flag)
 
 	/* If the requested length does not fit to overall available free mem */
 	if (len > pool->tot_free_mem/*-sizeof(bh)*/) {
-		print_info("Not enough space ...  asked: %d Left: %d\n", len,
+		print_info("Not enough space...  asked: %d Left: %d\n", len,
 			    pool->tot_free_mem);
 		goto error;
 	}
@@ -177,8 +177,7 @@ void *alloc_buffer(void *id, uint32_t len, unsigned long flag)
 	f_node = first_fit(pool, len);
 
 	if (!f_node) {
-		print_error
-		    ("No free node has mem ...  asked :%d tot mem avail :%d\n",
+		print_error("No free node has mem...  asked: %d tot mem avail: %d\n",
 		     len, pool->tot_free_mem);
 		goto error;
 	}
@@ -190,8 +189,7 @@ void *alloc_buffer(void *id, uint32_t len, unsigned long flag)
 
 	if (len == f_node->len
 	    || ((f_node->len - len) < (MIN_QUANT_SIZE + sizeof(bh)))) {
-		print_debug
-		    ("Giving free node itself..Asked len :%d, f node len :%d\n",
+		print_debug("Giving free node itself... Asked len: %d, f node len: %d\n",
 		     len, f_node->len);
 
 		a_node = f_node;
@@ -199,8 +197,7 @@ void *alloc_buffer(void *id, uint32_t len, unsigned long flag)
 
 		pool->tot_free_mem -= f_node->len;
 	} else {
-		print_debug
-		    ("f_node is bigger than asked..Asked :%d, f node len :%d\n",
+		print_debug("f_node is bigger than asked... Asked: %d, f node len: %d\n",
 		     len, f_node->len);
 
 		new_node = (bh *) ((uint8_t *) f_node + sizeof(bh) + len);
@@ -227,7 +224,7 @@ void *alloc_buffer(void *id, uint32_t len, unsigned long flag)
 	}
 	a_node->flag = flag;
 	spin_unlock_bh(&(pool->mem_lock));
-	print_debug("\t Buffer allocation done !!!\n");
+	print_debug("Buffer allocation done!!!\n");
 	return (uint8_t *) a_node + sizeof(bh);
 
 error:
@@ -248,17 +245,17 @@ void free_buffer(void *id, void *buffer)
 	bp *pool = id;
 	bh *header = NULL;
 
-	print_debug("\n Free Buffer\n");
+	print_debug(" Free Buffer\n");
 
 	spin_lock_bh(&(pool->mem_lock));
 
-	print_debug("\t Buffer  :%0x\n", buffer);
+	print_debug("Buffer: %p\n", buffer);
 	header = (bh *) (buffer - sizeof(bh));
 
 	if (header->in_use == 0)
 		goto out;
 
-	print_debug("\t Header  :%0x\n", header);
+	print_debug("Header: %p\n", header);
 
 	pool->tot_free_mem += header->len;
 	header->in_use = 0;
@@ -268,7 +265,7 @@ void free_buffer(void *id, void *buffer)
 out:
 	spin_unlock_bh(&(pool->mem_lock));
 
-	print_debug("\t Free buffer done !!!!\n");
+	print_debug("Free buffer done !!!!\n");
 }
 
 /******************************************************************************
@@ -408,19 +405,19 @@ static void link_and_merge(bp *pool, bh *node)
 
 	if (add_after) {
 		/* Add after the current node */
-		print_debug("\t \t Adding after the node with address   :%0x\n",
+		print_debug("Adding after the node with address: %p\n",
 		     add_after);
 		link_after(pool, node, add_after);
 	} else {
 		/* Add before the current head */
-		print_debug("\t \t Adding before the list head....\n");
+		print_debug("Adding before the list head....\n");
 		link_add(pool, node);
 	}
 }
 
 static void free_link(bp *pool, bh *node)
 {
-	print_debug("\t Freeing link for node       :%0x\n", node);
+	print_debug("Freeing link for node: %p\n", node);
 
 	if (node->prev_link)
 		node->prev_link->next_link = node->next_link;
@@ -429,7 +426,7 @@ static void free_link(bp *pool, bh *node)
 		node->next_link->prev_link = node->prev_link;
 
 	if (pool->free_list == node) {
-		print_debug("\t List has gone completely empty.......\n");
+		print_debug("List has gone completely empty.......\n");
 		/*pool->free_list = NULL; */
 		pool->free_list = node->next_link;
 	}
@@ -440,10 +437,10 @@ static void free_link(bp *pool, bh *node)
 
 static void link_add(bp *pool, bh *node)
 {
-	print_debug("\n Link Add ...........\n");
+	print_debug(" Link Add ...........\n");
 
 	if (!pool->free_list) {
-		print_debug("\t First node to add\n");
+		print_debug("First node to add\n");
 		pool->free_list = node;
 		node->next_link = node->prev_link = NULL;
 		node->in_use = 0;
@@ -451,8 +448,7 @@ static void link_add(bp *pool, bh *node)
 		/* See if we can merge */
 		if (((uint8_t *) node + sizeof(bh)) + node->len ==
 		    (uint8_t *) pool->free_list) {
-			print_debug
-			    ("\t Merging node :%0x and free list head :%0x\n",
+			print_debug("Merging node: %p and free list head: %p\n",
 			     node, pool->free_list);
 			node->len += pool->free_list->len + sizeof(bh);
 
@@ -469,7 +465,7 @@ static void link_add(bp *pool, bh *node)
 			pool->tot_free_mem += sizeof(bh);
 		} else {
 
-			print_debug("\tNot merging\n");
+			print_debug("Not merging\n");
 			pool->free_list->prev_link = node;
 			node->prev_link = NULL;
 			node->next_link = pool->free_list;
@@ -486,7 +482,7 @@ static void link_after(bp *pool, bh *node, bh *after)
 	bh *prev = NULL;
 	bh *next = NULL;
 
-	print_debug("\n Link After  .........\n");
+	print_debug("Link After  .........\n");
 
 	/* First create the link */
 	if (after->next_link)
@@ -504,7 +500,7 @@ static void link_after(bp *pool, bh *node, bh *after)
 	n_buff = (uint8_t *) node;
 
 	if (prev)
-		print_debug("Prev buff   :%0x    Node buff   :%0x\n",
+		print_debug("Prev buff: %p    Node buff: %p\n",
 			    ((uint8_t *) prev + prev->len + sizeof(bh)),
 			    n_buff);
 
@@ -526,7 +522,7 @@ static void link_after(bp *pool, bh *node, bh *after)
 	n_buff = (uint8_t *) node + sizeof(bh);
 
 	if (next)
-		print_debug("Node buff   :%0x    next buff   :%0x\n",
+		print_debug("Node buff: %p    next buff: %p\n",
 			    (n_buff + node->len),
 			    ((uint8_t *) next + sizeof(bh)));
 	if (next && ((n_buff + node->len) == ((uint8_t *) next))) {

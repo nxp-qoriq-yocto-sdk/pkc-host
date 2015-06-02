@@ -72,16 +72,14 @@ static int alloc_channel_to_cpu(int cpu, int mask)
 {
 	int i = 0;
 	if (!mask) {
-		print_info("No DMA channel is \
-				allocated for CPU: %d Please check the \
-				dma_channel_cpu_mask \n", cpu);
+		print_info("No DMA channel is allocated for CPU: %d\n", cpu);
+		print_info("Please check the dma_channel_cpu_mask\n");
 		return -1;
 	}
 
 	for (i = 0; i < dma_channel_count; i++) {
 		if (mask & (1 << i)) {
-			print_debug("DMA channel.. : %d for CPU : %d \n", i,
-				    cpu);
+			print_debug("DMA channel: %d for CPU: %d\n", i, cpu);
 			if (!per_cpu_dma[cpu].head)
 				per_cpu_dma[cpu].head =
 				    &(hostdma.dma_channels[i]);
@@ -121,14 +119,13 @@ static int dma_chnl_acquire_thread(void *p)
 
 	dmachnl->chnl = dma_find_channel(DMA_MEMCPY);
 	if (NULL == dmachnl->chnl) {
-		print_error("Failed acquiring channel :.... \n");
+		print_error("Failed acquiring channel...\n");
 		chnl_acquire_status =  0;
         complete(&chnl_acquire_done);
 		return -1;
 	}
 
-	print_debug(KERN_ERR "%s( ): DMA channel             :%0x \n",
-		    __FUNCTION__, dmachnl->chnl);
+	print_debug("DMA channel: %x\n", dmachnl->chnl);
 
 	chnl_acquire_status = 1;
 	complete(&chnl_acquire_done);
@@ -150,7 +147,7 @@ static int acquire_ioat_dma_chnls(void)
 
 		wait_for_completion_interruptible(&chnl_acquire_done);
 		if (!chnl_acquire_status) {
-			print_error("Channel acquire failed.. \n");
+			print_error("Channel acquire failed...\n");
 			goto free_channels;
 		}
 	}
@@ -171,7 +168,7 @@ static int acquire_dma_chnls(void)
 		hostdma.dma_channels[i].chnl =
 		    dma_request_channel(hostdma.dma_mask, NULL, NULL);
 		if (NULL == hostdma.dma_channels[i].chnl) {
-			print_error("Channel :%d acquire failed \n", i);
+			print_error("Channel: %d acquire failed\n", i);
 			goto free_channels;
 		}
 	}
@@ -211,7 +208,7 @@ static int32_t prep_dma_tx(dma_addr_t s_dma_addr, dma_addr_t d_dma_addr,
 
 	dma_cookie = dma_desc->tx_submit(dma_desc);
 	if (dma_submit_error(dma_cookie)) {
-		print_error("DMA submit error....\n");
+		print_error("DMA submit error...\n");
 		goto error;
 	}
 
@@ -235,7 +232,7 @@ static uint32_t prep_dma_tx_sg(crypto_mem_info_t *mem_info)
 
     if( NULL == mem_info->ip_sg )
     {
-        print_error("Mem alloc failed for input sg \n");
+        print_error("Mem alloc failed for input sg\n");
         return -1;
     }
 
@@ -244,7 +241,7 @@ static uint32_t prep_dma_tx_sg(crypto_mem_info_t *mem_info)
 
     if( NULL == mem_info->op_sg )
     {
-        print_error("Mem alloc failed for output sg \n");
+        print_error("Mem alloc failed for output sg\n");
         return -1;
     }
 	
@@ -286,13 +283,12 @@ int init_rc_dma(void)
 {
 	int ret;
 
-	print_debug("Init RC DMA \n");
+	print_debug("Init RC DMA\n");
 
 	if (cpu_mask_count != NR_CPUS) {
-		print_info("Config for all CPUs are not provided.."
-			   "Provided : %d, available: %d,"
-			   "Hence using default - one channel for all"
-			   "CPUs... \n", cpu_mask_count, NR_CPUS);
+		print_info("Config for all CPUs are not provided...\n");
+		print_info("Provided: %d, available: %d\n", cpu_mask_count, NR_CPUS);
+		print_info("Hence using default - one channel for all CPUs...\n");
 		dma_channel_count = 1;
 		{
 			int i = 0;
@@ -304,7 +300,7 @@ int init_rc_dma(void)
 	hostdma.dma_channels =
 	    kzalloc(sizeof(chnl_info_t) * dma_channel_count, GFP_KERNEL);
 	if (!hostdma.dma_channels) {
-		print_error("Mem allocation failed \n");
+		print_error("Mem allocation failed\n");
 		return -1;
 	}
 
@@ -329,12 +325,12 @@ int init_rc_dma(void)
 #endif
 
 	if (-1 == ret) {
-		print_error("Acquiring DMA channels failed \n");
+		print_error("Acquiring DMA channels failed\n");
 		return -1;
 	}
 
 	if (distribute_dma_channels()) {
-		print_error("Distribute channel failed... \n");
+		print_error("Distribute channel failed...\n");
 		goto free_channels;
 	}
 
@@ -378,7 +374,7 @@ chnl_info_t *get_dma_chnl(void)
 	chnl_info_t *cursor = per_cpu_dma[cpu].cursor;
 	per_cpu_dma[cpu].cursor = per_cpu_dma[cpu].cursor->next;
 	if (!cursor)
-		print_error("NULL DMA channel for cpu... :%d \n", cpu);
+		print_error("NULL DMA channel for cpu...: %d\n", cpu);
 	return cursor;
 }
 
@@ -434,7 +430,7 @@ int32_t dma_to_dev(chnl_info_t *dma_chnl, crypto_mem_info_t *mem,
 	int32_t ret = 0;
 
 	if ((NULL == dma_chnl) || (NULL == mem)) {
-		print_error("NULL input parameters.....\n");
+		print_error("NULL input parameters...\n");
 		return -1;
 	}
 
@@ -506,7 +502,7 @@ int32_t dma_to_dev(chnl_info_t *dma_chnl, crypto_mem_info_t *mem,
 
 	dma_cookie = dma_desc->tx_submit(dma_desc);
 	if (dma_submit_error(dma_cookie)) {
-		print_error("DMA submit error....\n");
+		print_error("DMA submit error...\n");
 		goto error;
 	}
 

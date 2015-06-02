@@ -85,17 +85,17 @@ void dh_done(struct pkc_request *req, int32_t sec_result)
 }
 void dh_keygen_done(struct pkc_request *req, int32_t sec_result)
 {
-#if 0    
+#if 0
     int i = 0;
     printk(KERN_ERR "Result... :%d \n", sec_result);
     for(i=0; i<req->req_u.dh_keygenreq.pubkey_len; i++)
         printk(KERN_ERR "%0x",req->req_u.dh_keygenreq.pubkey[i]);
-    printk(KERN_ERR "\n\n");        
+    printk(KERN_ERR "\n\n");
     for(i=0; i<req->req_u.dh_keygenreq.prvkey_len; i++)
         printk(KERN_ERR "%0x",req->req_u.dh_keygenreq.prvkey[i]);
-                
-    printk(KERN_ERR "\n\n");        
-#endif    
+
+    printk(KERN_ERR "\n\n");
+#endif
 #ifdef SEC_DMA
     kfree(req->req_u.dh_keygenreq.q);
     kfree(req->req_u.dh_keygenreq.r);

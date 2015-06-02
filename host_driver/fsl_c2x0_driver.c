@@ -289,9 +289,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 
 			c_dev = get_crypto_dev(usr_cmd_desc.dev_id);
 			if (NULL == c_dev) {
-				print_debug
-				    ("Invalid device number		:%d\n",
-				     (usr_cmd_desc.dev_id));
+				print_debug("Invalid device number: %d\n", usr_cmd_desc.dev_id);
 				return -1;
 			}
 			return process_cmd_req(c_dev, &usr_cmd_desc);
@@ -312,9 +310,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			}
 			c_dev = get_crypto_dev(usr_cmd_desc.dev_id);
 			if (NULL == c_dev) {
-				print_debug
-					("Invalid device number     :%d\n",
-					(usr_cmd_desc.dev_id));
+				print_debug("Invalid device number: %d\n", usr_cmd_desc.dev_id);
 				return -1;
 			}
 			return validate_cmd_args(c_dev, &usr_cmd_desc); 
@@ -331,20 +327,16 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			    kzalloc(sizeof(struct virtio_c2x0_job_ctx),
 				    GFP_KERNEL);
 			if (!virtio_job) {
-				print_error
-				    ("Alloc failed for virtio_job: %p\n",
-				     virtio_job);
+				print_error("Alloc failed for virtio_job: %p\n",
+						virtio_job);
 				return -1;
 			}
 
 			qemu_cmd = &(virtio_job->qemu_cmd);
 
-			print_debug
-			    ("Allocation succeed %p,\
-				 coping data from user space\n",
-			     qemu_cmd);
-			ret =
-			    copy_from_user(qemu_cmd,
+			print_debug("Allocation succeed %p, coping data from user space\n",
+					qemu_cmd);
+			ret = copy_from_user(qemu_cmd,
 					   (struct virtio_c2x0_qemu_cmd *)arg,
 					   sizeof(struct virtio_c2x0_qemu_cmd));
 			if (ret != 0) {
@@ -354,9 +346,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 
 			ret = process_virtio_app_req(virtio_job);
 			if (ret < 0) {
-				print_error
-				    ("Virtio Job,op[%d],cmd_index[%d],\
-					 guest_id[%d] failed with ret %d\n",
+				print_error("Virtio Job,op[%d],cmd_index[%d], guest_id[%d] failed with ret %d\n",
 				     qemu_cmd->op, qemu_cmd->cmd_index,
 				     qemu_cmd->guest_id, ret);
 				if (virtio_job->ctx)
@@ -368,9 +358,8 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			}
 			if (NONBLOCKING == qemu_cmd->block_type) {
 				/*  Adding job to pending job list  */
-				print_debug
-			    ("Adding index %u to pending list\n",
-				     qemu_cmd->cmd_index);
+				print_debug("Adding index %u to pending list\n",
+						qemu_cmd->cmd_index);
 				spin_lock(&cmd_list_lock);
 				list_add_tail(&virtio_job->list_entry,
 					      &virtio_c2x0_cmd_list);
@@ -387,9 +376,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 				kfree(virtio_job);
 			}
 
-			print_debug
-			("VIRTIOIOERATION returninig with ret %d\n",
-			ret);
+			print_debug("VIRTIOIOERATION returninig with ret %d\n", ret);
 
 			return ret;
 		}
@@ -412,8 +399,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 								qemu_cmd.u.pkc.
 								pkc_req.type) {
 							case RSA_PUB:
-								print_debug
-							    ("RSA_PUB completion\n");
+								print_debug("RSA_PUB completion\n");
 								ret =
 								    copy_to_user
 								    ((void
@@ -436,28 +422,16 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 								    pkc->req_u.
 								    rsa_pub_req.
 								    g_len);
-								print_debug
-							    ("return value for RSA\
-								 PUB of ouput copy_to_user = %d\n",
-								 ret);
+								print_debug("return value for RSA PUB of ouput copy_to_user = %d\n", ret);
 								break;
 							case RSA_PRIV_FORM1:
 							case RSA_PRIV_FORM2:
 							case RSA_PRIV_FORM3:
 								{
-									int i =
-									    0;
+									int i = 0;
 
-									print_debug
-								    ("RSA_FORM3 completion :\
-									  Output f_len = %d\n",
-								     virtio_job->
-								     ctx->
-								     req.
-								     pkc->
-								     req_u.
-								     rsa_priv_f3.
-								     f_len);
+									print_debug("RSA_FORM3 completion: Output f_len = %d\n",
+											virtio_job->ctx->req.pkc->req_u.rsa_priv_f3.f_len);
 
 									for (i =
 									     0;
@@ -493,10 +467,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 										virtio_job->ctx->req.pkc->
 										req_u.rsa_priv_f3.f_len);
 
-									print_debug
-								    ("return value for RSA\
-									 FORM 3 of ouput copy_to_user = %d\n",
-									 ret);
+									print_debug("return value for RSA FORM 3 of ouput copy_to_user = %d\n", ret);
 									break;
 								}
 							default:
@@ -520,10 +491,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 										virtio_job->ctx->req.pkc->
 										req_u.dsa_sign.d_len);
 
-									print_debug
-								    ("return value DSA\
-									SIGN 'c' of ouput copy_to_user = %d\n",
-									ret);
+									print_debug("return value DSA SIGN 'c' of ouput copy_to_user = %d\n", ret);
 									ret =
 									    copy_to_user
 									    ((void __user *)
@@ -546,16 +514,12 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 						}
 					default:
 						{
-							print_error
-							    ("OP NOT handled\n");
+							print_error("OP NOT handled\n");
 							break;
 						}
 					}
-					print_debug
-					    ("Status from Device : 0x%08x\n",
-					     virtio_job->ctx->card_status);
-					ret =
-					    copy_to_user((void __user *)
+					print_debug("Status from Device : 0x%08x\n", virtio_job->ctx->card_status);
+					ret = copy_to_user((void __user *)
 							 virtio_job->qemu_cmd.
 							 host_status,
 							 (void *)&virtio_job->
@@ -563,15 +527,11 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 							 sizeof(virtio_job->
 								ctx->
 								card_status));
-					print_debug
-					    ("return value of status copy_to_user = %d\n",
-					     ret);
+					print_debug("return value of status copy_to_user = %d\n", ret);
 					/* count++; */
 					ret = 0;
-					print_debug
-					    ("Job finished : ret =  %d\n", ret);
-					print_debug
-					    ("VIRTIOOPSTATUS returninig succesfuly\n");
+					print_debug("Job finished : ret =  %d\n", ret);
+					print_debug("VIRTIOOPSTATUS returninig succesfuly\n");
 
 					/* Clean up */
 					kfree(virtio_job->ctx);
@@ -595,8 +555,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			    kzalloc(sizeof(struct virtio_c2x0_cmd_status),
 				    GFP_KERNEL);
 			if (!resp) {
-				print_error("Alloc failed for resp: %p\n",
-					    resp);
+				print_error("Alloc failed for resp: %p\n", resp);
 				return -1;
 			}
 
@@ -621,13 +580,10 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 					resp->guest_id)) {
 
 					if (NULL == virtio_job->ctx) {
-						print_error
-						    ("NULL ctx in virtio_job for %d OP, cmd_index %d, %d guest_id",
+						print_error("NULL ctx in virtio_job for %d OP, cmd_index %d, %d guest_id",
 						     virtio_job->qemu_cmd.op,
-						     virtio_job->qemu_cmd.
-						     cmd_index,
-						     virtio_job->qemu_cmd.
-						     guest_id);
+						     virtio_job->qemu_cmd.cmd_index,
+						     virtio_job->qemu_cmd.guest_id);
 						/* No completion to check; Free up the buffers and return success */
 						list_del(&virtio_job->
 							 list_entry);
@@ -645,9 +601,8 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 						return -1;
 					}
 
-					print_debug
-					    ("Status from Device : 0x%08x\n",
-					     virtio_job->ctx->card_status);
+					print_debug("Status from Device: 0x%08x\n",
+							virtio_job->ctx->card_status);
 					resp->status =
 					    virtio_job->ctx->card_status;
 
@@ -657,8 +612,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 							 sizeof(struct
 								virtio_c2x0_cmd_status));
 					if (ret != 0) {
-						print_error
-						    ("Status copytouser=%d for Cmd index[%d],qemuid[%d]\n",
+						print_error("Status copytouser=%d for Cmd index[%d],qemuid[%d]\n",
 						     ret, resp->cmd_index,
 						     resp->guest_id);
 						spin_unlock(&cmd_list_lock);
@@ -688,9 +642,8 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 
 			spin_unlock(&cmd_list_lock);
 
-			print_error
-			    ("Cmd with index[%d],qemuid[%d] NOT found in list\n",
-			     resp->cmd_index, resp->guest_id);
+			print_error("Cmd with index[%d],qemuid[%d] NOT found in list\n",
+					resp->cmd_index, resp->guest_id);
 			/* No completion to check; Free up the buffers and return success */
 			kfree(resp);
 			return 0;
@@ -708,17 +661,14 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			    kzalloc(sizeof(struct virtio_c2x0_job_ctx),
 				    GFP_KERNEL);
 			if (!virtio_job) {
-				print_error
-				    ("Alloc failed for virtio_job: %p\n",
-				     virtio_job);
+				print_error("Alloc failed for virtio_job: %p\n", virtio_job);
 				return -1;
 			}
 
 			qemu_cmd = &(virtio_job->qemu_cmd);
 
-			print_debug
-			    ("Allocation succeed %p, coping data from user space %p\n",
-			     qemu_cmd, (struct virtio_c2x0_qemu_cmd *)arg);
+			print_debug("Allocation succeed %p, coping data from user space %p\n",
+					qemu_cmd, (struct virtio_c2x0_qemu_cmd *)arg);
 			ret =
 			    copy_from_user(qemu_cmd,
 					   (struct virtio_c2x0_qemu_cmd *)arg,
@@ -730,9 +680,8 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			}
 
 			ret = virtio_c2x0_hash_cra_init(virtio_job);
-			print_debug
-			    ("%s: VIRTIO_HASHCRAINIT returning with %d return vallue for id [%8x]\n",
-			     __func__, ret, qemu_cmd->u.hash.init.sess_id);
+			print_debug("VIRTIO_HASHCRAINIT returning with %d return vallue for id [%8x]\n",
+					ret, qemu_cmd->u.hash.init.sess_id);
 
 			kfree(virtio_job);
 
@@ -770,9 +719,8 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			}
 
 			ret = virtio_c2x0_hash_cra_exit(qemu_cmd);
-			print_debug
-			    ("%s: VIRTIO_HASHCRAEXIT returning with %d return vallue for id[%8X]\n",
-			     __func__, ret, qemu_cmd->u.hash.exit.sess_id);
+			print_debug("VIRTIO_HASHCRAEXIT returning with %d return vallue for id[%8X]\n",
+					ret, qemu_cmd->u.hash.exit.sess_id);
 #if 0
 			/*
 			 * Verify if sess_id is still present in list
@@ -785,8 +733,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 				    qemu_cmd->u.hash.exit.sess_id
 				    && hash_sess->guest_id ==
 				    qemu_cmd->guest_id) {
-					print_error
-					    ("hash sess_id[%x],guest[%d] still in list\n",
+					print_error("hash sess_id[%x],guest[%d] still in list\n",
 					     qemu_cmd->u.hash.exit.sess_id,
 					     qemu_cmd->guest_id);
 				}
@@ -813,19 +760,15 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			    kzalloc(sizeof(struct virtio_c2x0_job_ctx),
 				    GFP_KERNEL);
 			if (!virtio_job) {
-				print_error
-				    ("Alloc failed for virtio_job: %p\n",
-				     virtio_job);
+				print_error("Alloc failed for virtio_job: %p\n", virtio_job);
 				return -1;
 			}
 
 			qemu_cmd = &(virtio_job->qemu_cmd);
 
-			print_debug
-			    ("Allocation succeed %p, coping data from user space %p\n",
-			     qemu_cmd, (struct virtio_c2x0_qemu_cmd *)arg);
-			ret =
-			    copy_from_user(qemu_cmd,
+			print_debug("Allocation succeed %p, coping data from user space %p\n",
+					qemu_cmd, (struct virtio_c2x0_qemu_cmd *)arg);
+			ret = copy_from_user(qemu_cmd,
 					   (struct virtio_c2x0_qemu_cmd *)arg,
 					   sizeof(struct virtio_c2x0_qemu_cmd));
 			if (ret != 0) {
@@ -835,9 +778,8 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			}
 
 			ret = virtio_c2x0_symm_cra_init(virtio_job);
-			print_debug
-			    ("%s: VIRTIO_SYMMCRAINIT returninig with %d return vallue for id [%8x]\n",
-			     __func__, ret, qemu_cmd->u.symm.init.sess_id);
+			print_debug("VIRTIO_SYMMCRAINIT returninig with %d return vallue for id [%8x]\n",
+					ret, qemu_cmd->u.symm.init.sess_id);
 
 			kfree(virtio_job);
 
@@ -849,7 +791,6 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 	case VIRTIO_SYMMCRAEXIT:
 		{
 			int ret = 0;
-
 			struct virtio_c2x0_qemu_cmd *qemu_cmd = NULL;
 
 			print_debug("VIRTIO_SYMMCRAEXIT:\n");
@@ -872,9 +813,8 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			}
 
 			ret = virtio_c2x0_symm_cra_exit(qemu_cmd);
-			print_debug
-			    ("%s: VIRTIO_SYMMCRAEXIT returninig with %d return vallue for id [%8x]\n",
-			     __func__, ret, qemu_cmd->u.symm.exit.sess_id);
+			print_debug("VIRTIO_SYMMCRAEXIT returninig with %d return vallue for id [%8x]\n",
+					ret, qemu_cmd->u.symm.exit.sess_id);
 			kfree(qemu_cmd);
 			if (ret < 0)
 				return -1;
@@ -1299,7 +1239,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	crypto_dev_config_t *config = NULL;
 	isr_ctx_t *isr_context = NULL;
 
-	print_debug("\n\n ========== PROBE FUNCTION ==========\n");
+	print_debug("========== PROBE FUNCTION ==========\n");
 
 	if (!dev) {
 		print_error("PCI device with VendorId:%0x DeviceId:%0x is not found\n",
@@ -1326,7 +1266,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	snprintf(fsl_pci_dev->dev_name, FSL_PCI_DEV_NAME_MAX_LEN, "%s%d",
 		 FSL_PCI_DEV_NAME, dev_no);
 
-	DEV_PRINT_DEBUG("Found PCI Device: ");
+	DEV_PRINT_DEBUG("Found C29x Device");
 
 	/* TODO :- We may need to remove the following code */
 	/* The following code is generally not required -
@@ -1419,8 +1359,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	if (unlikely(NULL == config)) {
 		/* FIX: IF NO CONFIGURATION IS SPECIFIED THEN
 		 * TAKE THE DEFAULT CONFIGURATION */
-		print_debug
-		    ("NO CONFIG FOUND, CREATING DEFAULT CONFIGURATION\n");
+		print_debug("NO CONFIG FOUND, CREATING DEFAULT CONFIGURATION\n");
 		config = kzalloc(sizeof(crypto_dev_config_t), GFP_KERNEL);
 		if (unlikely(NULL == config)) {
 			print_error("Mem allocation failed\n");
@@ -1429,8 +1368,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		}
 
 		list_add(&(config->list), &(crypto_dev_config_list));
-		print_debug
-		    ("\t\t\t===== DEFAULT CONFIGURATION DETAILS ======\n");
+		print_debug("===== DEFAULT CONFIGURATION DETAILS ======\n");
 		config->dev_no = fsl_pci_dev->dev_no;
 		strcpy(config->fw_file_path, FIRMWARE_FILE_DEFAULT_PATH);
 		print_debug("Firmware Path : %s\n", config->fw_file_path);
@@ -1735,20 +1673,20 @@ static void create_default_config(crypto_dev_config_t *config,
 			config->ring[from_ring].depth = 16;
 		else
 			config->ring[from_ring].depth = 1024;
-		/* DEFAULT AFFINITY 0 */
+		/* DEFAULT AFFINITY 0
+		 * DEFAULT PRIORITY 1
+		 * DEFAULT ORDER 0
+		 */
 		config->ring[from_ring].flags |=
-		    (uint8_t) (0) << APP_RING_PROP_AFFINE_SHIFT;
-		/* DEFAULT PRIORITY 1 */
-		config->ring[from_ring].flags |=
-		    (uint8_t) (1) << APP_RING_PROP_PRIO_SHIFT;
-		/* DEFAULT ORDER 0 */
-		config->ring[from_ring].flags |=
-		    (uint8_t) (0) << APP_RING_PROP_ORDER_SHIFT;
-		print_debug("Ring [%d] default Depth : %d\n",
+		    (uint8_t) 0 << APP_RING_PROP_AFFINE_SHIFT |
+		    (uint8_t) 1 << APP_RING_PROP_PRIO_SHIFT |
+		    (uint8_t) 0 << APP_RING_PROP_ORDER_SHIFT;
+
+		print_debug("Ring [%d] default Depth : %d\n", from_ring,
 			    config->ring[from_ring].depth);
-		print_debug("Ring [%d] default Affinity : 0\n");
-		print_debug("Ring [%d] default Priority : 1\n");
-		print_debug("Ring [%d] default Order : 0\n");
+		print_debug("Ring [%d] default Affinity : 0\n", from_ring);
+		print_debug("Ring [%d] default Priority : 1\n", from_ring);
+		print_debug("Ring [%d] default Order : 0\n", from_ring);
 
 	}
 	config->num_of_rings = max_ring;
@@ -2257,13 +2195,11 @@ static void __exit fsl_crypto_drv_exit(void)
 
 	list_for_each_entry(dev_cursor, &pci_dev_list, list) {
 		print_debug("**** RESETTING THE DEVICE ****\n");
-		print_debug("BAR0 V ADDR	:%0x\n",
-			    dev_cursor->bars[PCI_BAR_NUM_0].v_addr);
+		print_debug("BAR0 V ADDR: %p\n", dev_cursor->bars[PCI_BAR_NUM_0].v_addr);
 		/* FSL_DEVICE_WRITE32_BAR0_REG(dev_cursor->bars[PCI_BAR_NUM_0].
 		   v_addr, 0x0e00b0, 0x2); */
-		FSL_DEVICE_WRITE32_BAR0_REG(dev_cursor->
-					    bars[PCI_BAR_NUM_0].v_addr, PIC_PIR,
-					    0x1);
+		FSL_DEVICE_WRITE32_BAR0_REG(
+			dev_cursor->bars[PCI_BAR_NUM_0].v_addr, PIC_PIR, 0x1);
 		smp_wmb();
 	}
 #ifdef USE_HOST_DMA

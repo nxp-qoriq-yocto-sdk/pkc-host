@@ -147,7 +147,7 @@ static int dh_key_cp_req(struct dh_key_req_s *req, crypto_mem_info_t *mem_info,
 	dh_key_init_len(req, mem_info, ecdh);
 
 	/* Alloc mem requrd for crypto operation */
-	print_debug("\t \t Calling alloc_crypto_mem\n");
+	print_debug("Calling alloc_crypto_mem\n");
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA
@@ -179,7 +179,7 @@ static int dh_keygen_cp_req(struct dh_keygen_req_s *req, crypto_mem_info_t *mem_
     dh_keygen_init_len(req, mem_info, ecdh);
 
     /* Alloc mem requrd for crypto operation */
-    print_debug("\t \t Calling alloc_crypto_mem \n \n");
+    print_debug("Calling alloc_crypto_mem\n");
     if(-ENOMEM == alloc_crypto_mem(mem_info))
         return -ENOMEM;
 #ifdef USE_HOST_DMA
@@ -245,20 +245,17 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 
 #ifdef DUMP_DEBUG_V_INFO
 
-	print_debug("Q DMA			:%0llx\n",
-		    mem->q_buff.dev_buffer.d_p_addr);
-	print_debug("W DMA			:%0llx\n",
-		    mem->w_buff.dev_buffer.d_p_addr);
-	print_debug("S DMA			:%0llx\n",
-		    mem->s_buff.dev_buffer.d_p_addr);
-	print_debug("Z DMA          :%0llx\n", mem->z_buff.dev_buffer.d_p_addr);
+	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
+	print_debug("W DMA: %llx\n", (uint64_t)mem->w_buff.dev_buffer.d_p_addr);
+	print_debug("S DMA: %llx\n", (uint64_t)mem->s_buff.dev_buffer.d_p_addr);
+	print_debug("Z DMA: %llx\n", (uint64_t)mem->z_buff.dev_buffer.d_p_addr);
 
-	print_debug("[DH]	Descriptor words\n");
+	print_debug("[DH] Descriptor words\n");
 	{
 		uint32_t *words = (uint32_t *) desc_buff;
 		uint32_t i = 0;
 		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d	:	%0x\n", i, words[i]);
+			print_debug("Word %d: %x\n", i, words[i]);
 	}
 #endif
 }
@@ -308,20 +305,18 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 			  OP_PCL_PKPROT_ECC));
 
 #ifdef DUMP_DEBUG_V_INFO
+	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
+	print_debug("W DMA: %llx\n", (uint64_t)mem->w_buff.dev_buffer.d_p_addr);
+	print_debug("S DMA: %llx\n", (uint64_t)mem->s_buff.dev_buffer.d_p_addr);
+	print_debug("Z DMA: %llx\n", (uint64_t)mem->z_buff.dev_buffer.d_p_addr);
+	print_debug("AB DMA: %llx\n", (uint64_t)mem->ab_buff.dev_buffer.d_p_addr);
 
-	print_debug("Q DMA          :%0llx\n", mem->q_buff.dev_buffer.d_p_addr);
-	print_debug("W DMA          :%0llx\n", mem->w_buff.dev_buffer.d_p_addr);
-	print_debug("S DMA          :%0llx\n", mem->s_buff.dev_buffer.d_p_addr);
-	print_debug("Z DMA          :%0llx\n", mem->z_buff.dev_buffer.d_p_addr);
-	print_debug("AB DMA          :%0llx\n",
-		    mem->ab_buff.dev_buffer.d_p_addr);
-
-	print_debug("\n [ECDH]  Descriptor words\n");
+	print_debug("[ECDH] Descriptor words\n");
 	{
 		uint32_t *words = (uint32_t *) desc_buff;
 		uint32_t i = 0;
 		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d    :   %0x\n", i, words[i]);
+			print_debug("Word %d: %x\n", i, words[i]);
 	}
 #endif
 }
@@ -370,18 +365,18 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 #ifdef DUMP_DEBUG_V_INFO
 
-    print_debug("Q DMA          :%0llx \n", mem->q_buff.dev_buffer.d_p_addr);
-    print_debug("R DMA          :%0llx \n", mem->r_buff.dev_buffer.d_p_addr);
-    print_debug("G DMA          :%0llx \n", mem->g_buff.dev_buffer.d_p_addr);
-    print_debug("PUBKEY DMA     :%0llx \n", mem->pubkey_buff.dev_buffer.d_p_addr);
-    print_debug("PRVKEY DMA     :%0llx \n", mem->prvkey_buff.dev_buffer.d_p_addr);
-    print_debug("AB DMA          :%0llx \n", mem->ab_buff.dev_buffer.d_p_addr);
-    print_debug("\n [ECDH]  Descriptor words \n");
+    print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
+    print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
+    print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
+    print_debug("PUBKEY DMA: %llx\n", (uint64_t)mem->pubkey_buff.dev_buffer.d_p_addr);
+    print_debug("PRVKEY DMA: %llx\n",(uint64_t) mem->prvkey_buff.dev_buffer.d_p_addr);
+    print_debug("AB DMA: %llx\n", (uint64_t)mem->ab_buff.dev_buffer.d_p_addr);
+    print_debug("[ECDH] Descriptor words\n");
     {
         uint32_t    *words = (uint32_t *)desc_buff;
         uint32_t    i   =   0;
         for(i=0; i<desc_size; i++)
-            print_debug("Word %d    :   %0x \n", i, words[i]);
+            print_debug("Word %d: %x\n", i, words[i]);
     }
 #endif
 }
@@ -419,19 +414,18 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
 
 #ifdef DUMP_DEBUG_V_INFO
 
-    print_debug("Q DMA          :%0llx \n", mem->q_buff.dev_buffer.d_p_addr);
-    print_debug("R DMA          :%0llx \n", mem->r_buff.dev_buffer.d_p_addr);
-    print_debug("G DMA          :%0llx \n", mem->g_buff.dev_buffer.d_p_addr);
-    print_debug("PUBKEY DMA     :%0llx \n", mem->pubkey_buff.dev_buffer.d_p_addr);
-    print_debug("PRVKEY DMA     :%0llx \n", mem->prvkey_buff.dev_buffer.d_p_addr);
+    print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
+    print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
+    print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
+    print_debug("PUBKEY DMA: %llx\n", (uint64_t)mem->pubkey_buff.dev_buffer.d_p_addr);
+    print_debug("PRVKEY DMA: %llx\n", (uint64_t)mem->prvkey_buff.dev_buffer.d_p_addr);
 
-
-    print_debug("\n [DH]    Descriptor words \n");
+    print_debug("[DH] Descriptor words\n");
     {
         uint32_t    *words = (uint32_t *)desc_buff;
         uint32_t    i   =   0;
         for(i=0; i<desc_size; i++)
-            print_debug("Word %d    :   %0x \n", i, IO_BE_READ32(&words[i]));
+            print_debug("Word %d: %x\n", i, IO_BE_READ32(&words[i]));
     }
 #endif
 }
@@ -543,8 +537,7 @@ int dh_op(struct pkc_request *req)
 #endif
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
-	print_debug("\t crypto_ctx addr :			:%0llx\n",
-		    crypto_ctx);
+	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
@@ -552,12 +545,11 @@ int dh_op(struct pkc_request *req)
 		goto error;
 	}
 
-	print_debug("\t Ring selected			:%d\n", r_id);
+	print_debug("Ring selected: %d\n", r_id);
 	crypto_ctx->ctx_pool = c_dev->ctx_pool;
 	crypto_ctx->crypto_mem.dev = c_dev;
 	crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-	print_debug("\t IP Buffer pool address		:%0x\n",
-		    crypto_ctx->crypto_mem.pool);
+	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 	if (ECDH_COMPUTE_KEY == req->type || ECDH_KEYGEN == req->type) {
 		ecdh = true;
@@ -576,12 +568,12 @@ int dh_op(struct pkc_request *req)
 				ret = -ENOMEM;
                 goto error;
 			}
-            print_debug("\t \t \t DH init mem complete..... \n");
+            print_debug("DH init mem complete..... \n");
 
             /* Convert the buffers to dev */
             host_to_dev(&crypto_ctx->crypto_mem);
 
-            print_debug("\t \t \t Host to dev convert complete.... \n");
+            print_debug("Host to dev convert complete.... \n");
 
 #ifdef SEC_DMA
             map_crypto_mem(&(crypto_ctx->crypto_mem));
@@ -592,7 +584,7 @@ int dh_op(struct pkc_request *req)
                 constr_ecdh_keygen_desc(&crypto_ctx->crypto_mem, ecc_bin);
             else
                 constr_dh_keygen_desc(&crypto_ctx->crypto_mem);
-            print_debug("\t \t \t Desc constr complete... \n");
+            print_debug("Desc constr complete... \n");
 
 #ifdef SEC_DMA
             sec_dma = dh_keygen_buffs->desc_buff.dev_buffer.h_p_addr + offset;
@@ -601,14 +593,14 @@ int dh_op(struct pkc_request *req)
 #endif
 
             /* Store the context */
-            print_debug(KERN_ERR "[Enq] Desc addr   :%0llx Hbuffer addr     :%0x    Crypto ctx      :%0x \n",
-                                                dh_keygen_buffs->desc_buff.dev_buffer.d_p_addr,
-                                                dh_keygen_buffs->desc_buff.v_mem, crypto_ctx);
+            print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p    Crypto ctx: %p \n",
+		(uint64_t)dh_keygen_buffs->desc_buff.dev_buffer.d_p_addr,
+		dh_keygen_buffs->desc_buff.v_mem, crypto_ctx);
 
             store_priv_data(crypto_ctx->crypto_mem.pool, dh_keygen_buffs->desc_buff.v_mem, (unsigned long)crypto_ctx);
 
             break;
-                
+
 	case DH_COMPUTE_KEY:
 	case ECDH_COMPUTE_KEY:
 		dh_key_init_crypto_mem(&crypto_ctx->crypto_mem, ecdh);
@@ -621,12 +613,12 @@ int dh_op(struct pkc_request *req)
 			ret = -ENOMEM;
 			goto error;
 		}
-		print_debug("\t \t \t DH init mem complete.....\n");
+		print_debug("DH init mem complete.....\n");
 
 		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
 
-		print_debug("\t \t \t Host to dev convert complete....\n");
+		print_debug("Host to dev convert complete....\n");
 
 #ifdef SEC_DMA
             map_crypto_mem(&(crypto_ctx->crypto_mem));
@@ -637,7 +629,7 @@ int dh_op(struct pkc_request *req)
 			constr_ecdh_key_desc(&crypto_ctx->crypto_mem, ecc_bin);
 		else
 			constr_dh_key_desc(&crypto_ctx->crypto_mem);
-		print_debug("\t \t \t Desc constr complete...\n");
+		print_debug("Desc constr complete...\n");
 
 #ifdef SEC_DMA
                 sec_dma = dh_key_buffs->desc_buff.dev_buffer.h_p_addr + offset;
@@ -646,9 +638,8 @@ int dh_op(struct pkc_request *req)
 #endif
 
 		/* Store the context */
-		print_debug(KERN_ERR
-			    "[Enq] Desc addr :%0llx Hbuffer addr :%0x	Crypto ctx :%0x\n",
-			    dh_key_buffs->desc_buff.dev_buffer.d_p_addr,
+		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p	Crypto ctx: %p\n",
+			    (uint64_t)dh_key_buffs->desc_buff.dev_buffer.d_p_addr,
 			    dh_key_buffs->desc_buff.v_mem, crypto_ctx);
 
 		store_priv_data(crypto_ctx->crypto_mem.pool,
@@ -702,7 +693,7 @@ int dh_op(struct pkc_request *req)
 		goto error;
 	}
 #else
-	print_debug(KERN_ERR "Before app_ring_enqueue\n");
+	print_debug("Before app_ring_enqueue\n");
 
 	sec_dma = set_sec_affinity(c_dev, r_id, sec_dma);
 #ifndef HIGH_PERF

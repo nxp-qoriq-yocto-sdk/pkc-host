@@ -354,12 +354,12 @@ int exe_debug_command()
                         for (i=0; i<DEBUG_COL_COUNT; ++i){
 				ASSIGN32(cmd.op_buffer->debug_op[k], cmd.op_buffer->debug_op[k]);
                             if(!i)
-                                printf("\n%08x  :\t",(unsigned int)((unsigned int *)cmd.rsrc.dgb.address + 4*j));
+                                printf("%08x  :\t",(unsigned int)((unsigned int *)cmd.rsrc.dgb.address + 4*j));
                             else
                                 printf("%08x\t", cmd.op_buffer->debug_op[k++]);
                         }
                     }
-                    printf("\n\n");
+                    printf("\n");
                 }
 				break;
 
@@ -432,9 +432,9 @@ int exe_command()
 				ret = ioctl(fd, CHECKCMD, &cmd);
 
 				if( -1 == ret)
-					printf("\nOOPS ... invalid dev_id \n\n");
+					printf("OOPS ... invalid dev_id \n\n");
 				else if (EACCES == ret)
-					printf("\nCLI is disabled.. HIGH PERF mode is defined \n\n");
+					printf("CLI is disabled.. HIGH PERF mode is defined \n\n");
 				else
 					debug(cmd.dev_id);
 
@@ -448,9 +448,9 @@ int exe_command()
 				ret = ioctl(fd, CMDOPERATION , &cmd);
 
                 if (-1 == ret)
-                    printf("\nOOPS ... invalid dev_id \n\n");
+                    printf("OOPS ... invalid dev_id \n\n");
 				else if (EACCES == ret)
-					printf("\nCLI is disabled.. HIGH PERF mode is defined \n\n");
+					printf("CLI is disabled.. HIGH PERF mode is defined \n\n");
 				else
                     if (!*(cmd.result))
                     {
@@ -467,7 +467,7 @@ int exe_command()
 
 						fwversion = cmd.op_buffer->dev_stat_op.fwversion;
 
-						printf("\nDEVICE STATISTICS\n");
+						printf("DEVICE STATISTICS\n");
 						printf("DEVICE ID                   :%d\n",cmd.dev_id);
 						printf("FIRMWARE VERSION            :%u/%u/20%u -- V %u.%u\n",(fwversion & DATE_MASK)>>DATE_SHIFT,
                                                                                       (fwversion & MONTH_MASK)>>MONTH_SHIFT,
@@ -486,7 +486,7 @@ int exe_command()
 	                                                         cmd.op_buffer->dev_stat_op.total_jobs_pending );
                     }
                     else
-						printf("\nOOPS ... something went wrong\n\n");
+						printf("OOPS ... something went wrong\n\n");
 
 				free(cmd.result);
                 free(cmd.op_buffer);
@@ -500,19 +500,19 @@ int exe_command()
 				ret = ioctl(fd, CHECKCMD, &cmd);
 
 				if (-1 == ret)
-					printf("\nOOPS ... invalid parameters \n\n");
+					printf("OOPS ... invalid parameters \n\n");
 				else if (EACCES == ret)
-					printf("\nCLI is disabled.. HIGH PERF mode is defined \n\n");
+					printf("CLI is disabled.. HIGH PERF mode is defined \n\n");
 				else
 				{
-					printf("\nDOING HANDSHAKE FOR DEVICE :%d WITH CONFIG FILE :%s \n",cmd.dev_id,cmd.rsrc.config);
+					printf("DOING HANDSHAKE FOR DEVICE :%d WITH CONFIG FILE :%s \n",cmd.dev_id,cmd.rsrc.config);
 					if (-1 == ioctl(fd, CMDOPERATION , &cmd))
 						printf("OOPS ... invalid dev_id \n\n");
 					else
 						if (!*(cmd.result))
-							printf("\nHANDSHAKE SUCCESSFULL\n\n");
+							printf("HANDSHAKE SUCCESSFULL\n\n");
 						else
-							printf("\nOOPS ... something went wrong... Device is Down\n\n");
+							printf("OOPS ... something went wrong... Device is Down\n\n");
 				}
 				free(cmd.result);
 				return 0;
@@ -525,16 +525,16 @@ int exe_command()
 				ret = ioctl(fd, CMDOPERATION , &cmd);
 
                 if (-1 == ret)
-					printf("\nOOPS ... invalid dev_id \n\n");
+					printf("OOPS ... invalid dev_id \n\n");
 				else if (EACCES == ret)
-					printf("\nCLI is disabled.. HIGH PERF mode is defined \n\n");
+					printf("CLI is disabled.. HIGH PERF mode is defined \n\n");
 				else
 				{
 					ASSIGN32(cmd.op_buffer->ping_op.resp, cmd.op_buffer->ping_op.resp);
 	                if (ALIVE == cmd.op_buffer->ping_op.resp)
-	                printf("\nDEVICE IS ALIVE\n\n");
+	                printf("DEVICE IS ALIVE\n\n");
 		        else
-					    printf("\nDEVICE IS DEAD\n\n");
+					    printf("DEVICE IS DEAD\n\n");
 				}
 				free(cmd.result);
                 free(cmd.op_buffer);
@@ -547,14 +547,14 @@ int exe_command()
 				ret = ioctl(fd, CMDOPERATION , &cmd);
 
                 if (-1 == ret)
-                    printf("\nOOPS ... invalid dev_id \n\n");
+                    printf("OOPS ... invalid dev_id \n\n");
 				else if (EACCES == ret)
-					printf("\nCLI is disabled.. HIGH PERF mode is defined \n\n");
+					printf("CLI is disabled.. HIGH PERF mode is defined \n\n");
 				else
 					if (!*(cmd.result))
-	                printf("\nDEVICE HAS BEEN RESET\n\n");
+	                printf("DEVICE HAS BEEN RESET\n\n");
 		        else
-		        printf("\nOOPS ... something went wrong\n\n");
+		        printf("OOPS ... something went wrong\n\n");
 
 	            free(cmd.result);
 				return 0;
@@ -566,14 +566,14 @@ int exe_command()
 				ret = ioctl(fd, CMDOPERATION , &cmd);
 
                 if (-1 == ret)
-                    printf("\nOOPS ... invalid dev_id/sec_id \n\n");
+                    printf("OOPS ... invalid dev_id/sec_id \n\n");
 				else if (EACCES == ret)
-					printf("\nCLI is disabled.. HIGH PERF mode is defined \n\n");
+					printf("CLI is disabled.. HIGH PERF mode is defined \n\n");
 				else
 					if (!*(cmd.result))
-	                printf("\nSEC ENGINE HAS BEEN RESET\n\n");
+	                printf("SEC ENGINE HAS BEEN RESET\n\n");
 		        else
-		        printf("\nOOPS ... something went wrong\n\n");
+		        printf("OOPS ... something went wrong\n\n");
 
 				free(cmd.result);
                 return 0;
@@ -587,9 +587,9 @@ int exe_command()
 				ret = ioctl(fd, CMDOPERATION , &cmd);
 
                 if (-1 == ret)
-                    printf("\nOOPS ... invalid dev_id/ring_id \n\n");
+                    printf("OOPS ... invalid dev_id/ring_id \n\n");
 				else if (EACCES == ret)
-					printf("\nCLI is disabled.. HIGH PERF mode is defined \n\n");
+					printf("CLI is disabled.. HIGH PERF mode is defined \n\n");
 				else
 	                if (!*(cmd.result))
 	                {
@@ -602,7 +602,7 @@ int exe_command()
 						ASSIGN32(cmd.op_buffer->ring_stat_op.jobs_processed, cmd.op_buffer->ring_stat_op.jobs_processed);
 						ASSIGN32(cmd.op_buffer->ring_stat_op.jobs_pending, cmd.op_buffer->ring_stat_op.jobs_pending);
 
-						printf("\nRING STATISTICS\n");
+						printf("RING STATISTICS\n");
 						printf("DEVICE ID                   :%d\n",cmd.dev_id);
 						printf("RING ID                     :%d\n",cmd.rsrc.ring_id);
 						printf("RING SIZE                   :%u\n",cmd.op_buffer->ring_stat_op.tot_size);
@@ -615,7 +615,7 @@ int exe_command()
 						printf("JOBS PENDING                :%u\n\n",cmd.op_buffer->ring_stat_op.jobs_pending);
 		        }
 		    else
-			    printf("\nOOPS ... something went wrong\n\n");
+			    printf("OOPS ... something went wrong\n\n");
 
                 free(cmd.op_buffer);
 				free(cmd.result);
@@ -630,9 +630,9 @@ int exe_command()
 				ret = ioctl(fd, CMDOPERATION , &cmd);
 
                 if (-1 == ret)
-                    printf("\nOOPS ... invalid dev_id\n\n");
+                    printf("OOPS ... invalid dev_id\n\n");
 				else if (EACCES == ret)
-					printf("\nCLI is disabled.. HIGH PERF mode is defined \n\n");
+					printf("CLI is disabled.. HIGH PERF mode is defined \n\n");
                 else
 			if (!*(cmd.result))
                     {
@@ -640,7 +640,7 @@ int exe_command()
 						ASSIGN32(cmd.op_buffer->sec_op.sec_ver, cmd.op_buffer->sec_op.sec_ver);
 						ASSIGN32(cmd.op_buffer->sec_op.no_of_sec_engines, cmd.op_buffer->sec_op.no_of_sec_engines);
 						ASSIGN32(cmd.op_buffer->sec_op.no_of_sec_jr, cmd.op_buffer->sec_op.no_of_sec_jr);
-                        printf("\nSEC STATISTICS\n");
+                        printf("SEC STATISTICS\n");
                         printf("SEC VERSION                 :%x.%x\n",(cmd.op_buffer->sec_op.sec_ver & 0x0000ff00)>>8,
                                                                       (cmd.op_buffer->sec_op.sec_ver & 0x000000ff));
                         printf("NO OF SEC ENGINES           :%d\n",cmd.op_buffer->sec_op.no_of_sec_engines);
@@ -653,10 +653,10 @@ int exe_command()
 				printf("\tSEC JOBS ADDED      :%u\n",cmd.op_buffer->sec_op.sec[i].sec_tot_req_jobs);
 				printf("\tSEC JOBS PROCESSED  :%u\n",cmd.op_buffer->sec_op.sec[i].sec_tot_resp_jobs);
 			}
-			printf("\n");
+			printf("");
 			}
                     else
-                        printf("\nOOPS ... something went wrong\n\n");
+                        printf("OOPS ... something went wrong\n\n");
 
                 free(cmd.op_buffer);
                 free(cmd.result);

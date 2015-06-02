@@ -178,7 +178,7 @@ static int dsa_sign_cp_req(struct dsa_sign_req_s *req,
 	dsa_sign_init_len(req, mem_info, ecdsa);
 
 	/* Alloc mem requrd for crypto operation */
-	print_debug("\t \t Calling alloc_crypto_mem\n");
+	print_debug("Calling alloc_crypto_mem\n");
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA
@@ -219,7 +219,7 @@ static int dsa_verify_cp_req(struct dsa_verify_req_s *req,
 	dsa_verify_init_len(req, mem_info, ecdsa);
 
 	/* Alloc mem requrd for crypto operation */
-	print_debug("\t \t Calling alloc_crypto_mem\n");
+	print_debug("Calling alloc_crypto_mem\n");
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
@@ -263,7 +263,7 @@ static int dsa_keygen_cp_req(struct dsa_keygen_req_s *req,
 	dsa_keygen_init_len(req, mem_info, ecdsa);
 
 	/* Alloc mem requrd for crypto operation */
-	print_debug("\t \t Calling alloc_crypto_mem\n\n");
+	print_debug("Calling alloc_crypto_mem\n");
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA
@@ -350,25 +350,20 @@ static void constr_dsa_sign_desc(crypto_mem_info_t *mem_info)
 	ASSIGN64(dsa_sign_desc->op[10], mem->d_buff.dev_buffer.d_p_addr);
 
 #ifdef DUMP_DEBUG_V_INFO
-
-	print_debug("Q DMA			:%0llx\n",
-		    mem->q_buff.dev_buffer.d_p_addr);
-	print_debug("R DMA			:%0llx\n",
-		    mem->r_buff.dev_buffer.d_p_addr);
-	print_debug("G DMA			:%0llx\n",
-		    mem->g_buff.dev_buffer.d_p_addr);
-	print_debug("S DMA			:%0llx\n",
-		    mem->priv_key_buff.dev_buffer.d_p_addr);
-	print_debug("F DMA          :%0llx\n", mem->m_buff.dev_buffer.d_p_addr);
-	print_debug("C DMA          :%0llx\n", mem->c_buff.dev_buffer.d_p_addr);
-	print_debug("D DMA          :%0llx\n", mem->d_buff.dev_buffer.d_p_addr);
+	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
+	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
+	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
+	print_debug("S DMA: %llx\n", (uint64_t)mem->priv_key_buff.dev_buffer.d_p_addr);
+	print_debug("F DMA: %llx\n", (uint64_t)mem->m_buff.dev_buffer.d_p_addr);
+	print_debug("C DMA: %llx\n", (uint64_t)mem->c_buff.dev_buffer.d_p_addr);
+	print_debug("D DMA: %llx\n", (uint64_t)mem->d_buff.dev_buffer.d_p_addr);
 
 	print_debug("[DSA_SIGN]	Descriptor words\n");
 	{
 		uint32_t *words = (uint32_t *) desc_buff;
 		uint32_t i = 0;
 		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d	:	%0x\n", i, words[i]);
+			print_debug("Word %d: %x\n", i, words[i]);
 	}
 #endif
 }
@@ -421,23 +416,21 @@ static void constr_dsa_verify_desc(crypto_mem_info_t *mem_info)
 
 #ifdef DUMP_DEBUG_V_INFO
 
-	print_debug("Q DMA          :%0llx\n", mem->q_buff.dev_buffer.d_p_addr);
-	print_debug("R DMA          :%0llx\n", mem->r_buff.dev_buffer.d_p_addr);
-	print_debug("G DMA          :%0llx\n", mem->g_buff.dev_buffer.d_p_addr);
-	print_debug("W DMA          :%0llx\n",
-		    mem->pub_key_buff.dev_buffer.d_p_addr);
-	print_debug("F DMA          :%0llx\n", mem->m_buff.dev_buffer.d_p_addr);
-	print_debug("C DMA          :%0llx\n", mem->c_buff.dev_buffer.d_p_addr);
-	print_debug("D DMA          :%0llx\n", mem->d_buff.dev_buffer.d_p_addr);
-	print_debug("TMP DMA          :%0llx\n",
-		    mem->tmp_buff.dev_buffer.d_p_addr);
+	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
+	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
+	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
+	print_debug("W DMA: %llx\n", (uint64_t)mem->pub_key_buff.dev_buffer.d_p_addr);
+	print_debug("F DMA: %llx\n", (uint64_t)mem->m_buff.dev_buffer.d_p_addr);
+	print_debug("C DMA: %llx\n", (uint64_t)mem->c_buff.dev_buffer.d_p_addr);
+	print_debug("D DMA: %llx\n", (uint64_t)mem->d_buff.dev_buffer.d_p_addr);
+	print_debug("TMP DMA: %llx\n", (uint64_t)mem->tmp_buff.dev_buffer.d_p_addr);
 
-	print_debug("[DSA_VERIFY]  Descriptor words\n");
+	print_debug("[DSA_VERIFY] Descriptor words\n");
 	{
 		uint32_t *words = (uint32_t *) desc_buff;
 		uint32_t i = 0;
 		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d    :   %0x\n", i, words[i]);
+			print_debug("Word %d: %x\n", i, words[i]);
 	}
 #endif
 }
@@ -456,7 +449,9 @@ static void constr_dsa_keygen_desc(crypto_mem_info_t *mem_info)
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
-
+#ifdef DUMP_DEBUG_V_INFO
+	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
+#endif
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&dsa_keygen_desc->desc_hdr,
 		      (start_idx << HDR_START_IDX_SHIFT) |
@@ -481,24 +476,18 @@ static void constr_dsa_keygen_desc(crypto_mem_info_t *mem_info)
 		  OP_PCLID_PUBLICKEYPAIR));
 
 #ifdef DUMP_DEBUG_V_INFO
-	{
-		struct dsa_keygen_req_s dsa_keygen;
-		printk("Q DMA	:%0llx\n", mem->q_buff.dev_buffer.d_p_addr);
-		printk("R DMA       :%0llx\n",
-		       mem->r_buff.dev_buffer.d_p_addr);
-		printk("G DMA	:%0llx\n", mem->g_buff.dev_buffer.d_p_addr);
-		printk("S DMA	:%0llx\n",
-		       mem->prvkey_buff.dev_buffer.d_p_addr);
-		printk("W DMA	:%0llx\n",
-		       mem->pubkey_buff.dev_buffer.d_p_addr);
+	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
+	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
+	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
+	print_debug("S DMA: %llx\n", (uint64_t)mem->prvkey_buff.dev_buffer.d_p_addr);
+	print_debug("W DMA: %llx\n", (uint64_t)mem->pubkey_buff.dev_buffer.d_p_addr);
 
-		print_debug("\n [DSA_KEYGEN]  Descriptor words\n");
-		{
-			uint32_t *words = (uint32_t *) desc_buff;
-			uint32_t i = 0;
-			for (i = 0; i < desc_size; i++)
-				printk("Word %d    :   %0x\n", i, words[i]);
-		}
+	print_debug("[DSA_KEYGEN] Descriptor words\n");
+	{
+		uint32_t *words = (uint32_t *) desc_buff;
+		uint32_t i = 0;
+		for (i = 0; i < desc_size; i++)
+			print_debug("Word %d: %x\n", i, words[i]);
 	}
 #endif
 }
@@ -574,23 +563,21 @@ static void constr_ecdsa_sign_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 #ifdef DUMP_DEBUG_V_INFO
 
-	print_debug("Q DMA          :%0llx\n", mem->q_buff.dev_buffer.d_p_addr);
-	print_debug("R DMA          :%0llx\n", mem->r_buff.dev_buffer.d_p_addr);
-	print_debug("G DMA          :%0llx\n", mem->g_buff.dev_buffer.d_p_addr);
-	print_debug("S DMA          :%0llx\n",
-		    mem->priv_key_buff.dev_buffer.d_p_addr);
-	print_debug("F DMA          :%0llx\n", mem->m_buff.dev_buffer.d_p_addr);
-	print_debug("C DMA          :%0llx\n", mem->c_buff.dev_buffer.d_p_addr);
-	print_debug("D DMA          :%0llx\n", mem->d_buff.dev_buffer.d_p_addr);
-	print_debug("AB DMA          :%0llx\n",
-		    mem->ab_buff.dev_buffer.d_p_addr);
+	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
+	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
+	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
+	print_debug("S DMA: %llx\n", (uint64_t)mem->priv_key_buff.dev_buffer.d_p_addr);
+	print_debug("F DMA: %llx\n", (uint64_t)mem->m_buff.dev_buffer.d_p_addr);
+	print_debug("C DMA: %llx\n", (uint64_t)mem->c_buff.dev_buffer.d_p_addr);
+	print_debug("D DMA: %llx\n", (uint64_t)mem->d_buff.dev_buffer.d_p_addr);
+	print_debug("AB DMA: %llx\n", (uint64_t)mem->ab_buff.dev_buffer.d_p_addr);
 
-	print_debug("[ECDSA_SIGN]  Descriptor words\n");
+	print_debug("[ECDSA_SIGN] Descriptor words\n");
 	{
 		uint32_t *words = (uint32_t *) desc_buff;
 		uint32_t i = 0;
 		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d    :   %0x\n", i, words[i]);
+			print_debug("Word %d: %x\n", i, words[i]);
 	}
 #endif
 }
@@ -654,25 +641,22 @@ static void constr_ecdsa_verify_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 #ifdef DUMP_DEBUG_V_INFO
 
-	print_debug("Q DMA          :%0llx\n", mem->q_buff.dev_buffer.d_p_addr);
-	print_debug("R DMA          :%0llx\n", mem->r_buff.dev_buffer.d_p_addr);
-	print_debug("G DMA          :%0llx\n", mem->g_buff.dev_buffer.d_p_addr);
-	print_debug("W DMA          :%0llx\n",
-		    mem->pub_key_buff.dev_buffer.d_p_addr);
-	print_debug("F DMA          :%0llx\n", mem->m_buff.dev_buffer.d_p_addr);
-	print_debug("C DMA          :%0llx\n", mem->c_buff.dev_buffer.d_p_addr);
-	print_debug("D DMA          :%0llx\n", mem->d_buff.dev_buffer.d_p_addr);
-	print_debug("TMP DMA        :%0llx\n",
-		    mem->tmp_buff.dev_buffer.d_p_addr);
-	print_debug("AB DMA         :%0llx\n",
-		    mem->ab_buff.dev_buffer.d_p_addr);
+	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
+	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
+	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
+	print_debug("W DMA: %llx\n", (uint64_t)mem->pub_key_buff.dev_buffer.d_p_addr);
+	print_debug("F DMA: %llx\n", (uint64_t)mem->m_buff.dev_buffer.d_p_addr);
+	print_debug("C DMA: %llx\n", (uint64_t)mem->c_buff.dev_buffer.d_p_addr);
+	print_debug("D DMA: %llx\n", (uint64_t)mem->d_buff.dev_buffer.d_p_addr);
+	print_debug("TMP DMA: %llx\n", (uint64_t)mem->tmp_buff.dev_buffer.d_p_addr);
+	print_debug("AB DMA: %llx\n", (uint64_t)mem->ab_buff.dev_buffer.d_p_addr);
 
 	print_debug("[ECDSA_VERIFY]  Descriptor words\n");
 	{
 		uint32_t *words = (uint32_t *) desc_buff;
 		uint32_t i = 0;
 		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d    :   %0x\n", i, words[i]);
+			print_debug("Word %d: %x\n", i, words[i]);
 	}
 #endif
 }
@@ -731,25 +715,19 @@ static void constr_ecdsa_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	{
 		uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 
-		printk(KERN_ERR "Q DMA :%0llx\n",
-		       mem->q_buff.dev_buffer.d_p_addr);
-		printk(KERN_ERR "R DMA :%0llx\n",
-		       mem->r_buff.dev_buffer.d_p_addr);
-		printk(KERN_ERR "G DMA :%0llx\n",
-		       mem->g_buff.dev_buffer.d_p_addr);
-		printk(KERN_ERR "S DMA :%0llx\n",
-		       mem->prvkey_buff.dev_buffer.d_p_addr);
-		printk(KERN_ERR "W DMA :%0llx\n",
-		       mem->pubkey_buff.dev_buffer.d_p_addr);
-		printk(KERN_ERR "AB DMA:%0llx\n",
-		       mem->ab_buff.dev_buffer.d_p_addr);
+		print_debug("Q DMA :%llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
+		print_debug("R DMA :%llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
+		print_debug("G DMA :%llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
+		print_debug("S DMA :%llx\n", (uint64_t)mem->prvkey_buff.dev_buffer.d_p_addr);
+		print_debug("W DMA :%llx\n", (uint64_t)mem->pubkey_buff.dev_buffer.d_p_addr);
+		print_debug("AB DMA:%llx\n", (uint64_t)mem->ab_buff.dev_buffer.d_p_addr);
 
-		print_debug("\n [ECDSA_KEYGEN]  Descriptor words\n");
+		print_debug("[DSA_KEYGEN] Descriptor words\n");
 		{
 			uint32_t *words = (uint32_t *) desc_buff;
 			uint32_t i = 0;
 			for (i = 0; i < desc_size; i++)
-				printk(KERN_ERR "Word %d    :   %0x\n", i,
+				print_debug("Word %d: %x\n", i,
 				       words[i]);
 		}
 	}
@@ -891,8 +869,7 @@ int dsa_op(struct pkc_request *req)
         offset = c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
-	print_debug("\t crypto_ctx addr :			:%0llx\n",
-		    crypto_ctx);
+	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
@@ -900,12 +877,11 @@ int dsa_op(struct pkc_request *req)
 		goto error;
 	}
 
-	print_debug("\t Ring selected			:%d\n", r_id);
+	print_debug("Ring selected: %d\n", r_id);
 	crypto_ctx->ctx_pool = c_dev->ctx_pool;
 	crypto_ctx->crypto_mem.dev = c_dev;
 	crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-	print_debug("\t IP Buffer pool address		:%0x\n",
-		    crypto_ctx->crypto_mem.pool);
+	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 	if ((ECDSA_KEYGEN == req->type) ||
 	    (ECDSA_SIGN == req->type) || (ECDSA_VERIFY == req->type)) {
@@ -929,12 +905,12 @@ int dsa_op(struct pkc_request *req)
 			goto error;
 		}
 
-		print_debug("\t \t \t DSA keygen init mem complete.....\n");
+		print_debug("DSA keygen init mem complete.....\n");
 
 		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
 
-		print_debug("\t \t \t Host to dev convert complete....\n");
+		print_debug("Host to dev convert complete....\n");
 
 #ifdef SEC_DMA
                 map_crypto_mem(&(crypto_ctx->crypto_mem));
@@ -946,7 +922,7 @@ int dsa_op(struct pkc_request *req)
 						 ecc_bin);
 		else
 			constr_dsa_keygen_desc(&crypto_ctx->crypto_mem);
-		print_debug("\t \t \t Desc constr complete...\n");
+		print_debug("Desc constr complete...\n");
 
 #ifdef SEC_DMA
                 sec_dma = dsa_keygen_buffs->desc_buff.dev_buffer.h_p_addr + offset;
@@ -954,10 +930,8 @@ int dsa_op(struct pkc_request *req)
 		sec_dma = dsa_keygen_buffs->desc_buff.dev_buffer.d_p_addr;
 #endif
 		/* Store the context */
-		print_debug(KERN_ERR "[Enq] Desc addr   :%0llx"
-			    "Hbuffer addr     :%0x"
-			    "Crypto ctx      :%0x\n",
-			    dsa_keygen_buffs->desc_buff.dev_buffer.d_p_addr,
+		print_debug("[Enq] Desc addr: %llx Hbuffer addr:%p Crypto ctx: %p\n",
+			    (uint64_t)dsa_keygen_buffs->desc_buff.dev_buffer.d_p_addr,
 			    dsa_keygen_buffs->desc_buff.v_mem, crypto_ctx);
 		store_priv_data(crypto_ctx->crypto_mem.pool,
 				dsa_keygen_buffs->desc_buff.v_mem,
@@ -976,7 +950,7 @@ int dsa_op(struct pkc_request *req)
 			ret = -ENOMEM;
 			goto error;
 		}
-		print_debug("\t \t \t DSA Sign init mem complete.....\n");
+		print_debug("DSA Sign init mem complete.....\n");
 
 		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
@@ -984,7 +958,7 @@ int dsa_op(struct pkc_request *req)
                 map_crypto_mem(&(crypto_ctx->crypto_mem));
 #endif
 
-		print_debug("\t \t \t Host to dev convert complete....\n");
+		print_debug("Host to dev convert complete....\n");
 
 		/* Constr the hw desc */
 		if (ecdsa)
@@ -992,7 +966,7 @@ int dsa_op(struct pkc_request *req)
 					       ecc_bin);
 		else
 			constr_dsa_sign_desc(&crypto_ctx->crypto_mem);
-		print_debug("\t \t \t Desc constr complete...\n");
+		print_debug("Desc constr complete...\n");
 
 #ifdef SEC_DMA
 		sec_dma = dsa_sign_buffs->desc_buff.dev_buffer.h_p_addr + offset;
@@ -1001,10 +975,8 @@ int dsa_op(struct pkc_request *req)
 #endif
 
 		/* Store the context */
-		print_debug(KERN_ERR
-			    "[Enq] Desc addr	:%0llx Hbuffer addr		:%0x	Crypto ctx		:%0x\n",
-			    dsa_sign_buffs->desc_buff.
-			    dev_buffer.d_p_addr,
+		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p	Crypto ctx: %p\n",
+			    (uint64_t)dsa_sign_buffs->desc_buff.dev_buffer.d_p_addr,
 			    dsa_sign_buffs->desc_buff.v_mem, crypto_ctx);
 
 		store_priv_data(crypto_ctx->crypto_mem.pool,
@@ -1023,7 +995,7 @@ int dsa_op(struct pkc_request *req)
 			ret = -ENOMEM;
 			goto error;
 		}
-		print_debug("\t \t \t DSA Verify init mem complete.....\n");
+		print_debug("DSA Verify init mem complete.....\n");
 
 		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
@@ -1031,7 +1003,7 @@ int dsa_op(struct pkc_request *req)
                 map_crypto_mem(&(crypto_ctx->crypto_mem));
 #endif
 
-		print_debug("\t \t \t Host to dev convert complete....\n");
+		print_debug("Host to dev convert complete....\n");
 
 		/* Constr the hw desc */
 		if (ecdsa)
@@ -1040,7 +1012,7 @@ int dsa_op(struct pkc_request *req)
 		else
 			constr_dsa_verify_desc(&crypto_ctx->crypto_mem);
 
-		print_debug("\t \t \t Desc constr complete...\n");
+		print_debug("Desc constr complete...\n");
 
 #ifdef SEC_DMA
 		sec_dma = dsa_verify_buffs->desc_buff.dev_buffer.h_p_addr + offset;
@@ -1049,11 +1021,8 @@ int dsa_op(struct pkc_request *req)
 #endif
 
 		/* Store the context */
-		print_debug
-		    ("[Enq] Desc addr :%0llx \
-			 Hbuffer addr :%0x \
-			 Crypto ctx :%0x\n",
-		     dsa_verify_buffs->desc_buff.dev_buffer.d_p_addr,
+		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p Crypto ctx :%p\n",
+		     (uint64_t)dsa_verify_buffs->desc_buff.dev_buffer.d_p_addr,
 		     dsa_verify_buffs->desc_buff.v_mem, crypto_ctx);
 
 		store_priv_data(crypto_ctx->crypto_mem.pool,
@@ -1108,7 +1077,7 @@ int dsa_op(struct pkc_request *req)
 	}
 #else
 
-	print_debug(KERN_ERR "Before app_ring_enqueue\n");
+	print_debug("Before app_ring_enqueue\n");
 
 	sec_dma = set_sec_affinity(c_dev, r_id, sec_dma);
 #ifndef HIGH_PERF
