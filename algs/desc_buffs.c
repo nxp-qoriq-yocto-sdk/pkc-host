@@ -333,10 +333,10 @@ int32_t memcpy_to_dev(crypto_mem_info_t *mem)
 		dst = &buffers[i].dev_buffer;
 		switch (src->bt) {
 		case BT_DESC:
-			memcpy((void *)dst->d_v_addr, src->v_mem, src->len);
+			memcpy(dst->d_v_addr, src->v_mem, src->len);
 			break;
 		case BT_IP:
-			memcpy((void *)dst->d_v_addr, src->req_ptr, src->len);
+			memcpy(dst->d_v_addr, src->req_ptr, src->len);
 		case BT_OP:
 			break;
 		}
