@@ -1199,6 +1199,7 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 #ifdef SEC_DMA
                 } else {
                     h_desc = c_dev->ip_pool.fw_pool.host_map_v_addr + (ctx_desc - offset -  c_dev->ip_pool.drv_map_pool.p_addr);
+		}
 #endif
 
 		if (rp->info.flags & APP_RING_PROP_ORDER_MASK >>
