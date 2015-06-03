@@ -724,18 +724,20 @@ error:
 
 int dsa_keygen_test(void)
 {
-	int ret = 0;
-	struct pkc_request *genreq =
-	    kzalloc(sizeof(struct pkc_request), GFP_KERNEL);
-	struct pkc_request *signreq =
-	    kzalloc(sizeof(struct pkc_request), GFP_KERNEL);
-	struct pkc_request *verifyreq =
-	    kzalloc(sizeof(struct pkc_request), GFP_KERNEL);
+	int ret = -ENOMEM;
+	struct pkc_request *genreq, *signreq, *verifyreq;
 
-	if (!genreq || !signreq || !verifyreq) {
-		print_error("mem alloc failed!\n");
-		return -1;
-	}
+	genreq = kzalloc(sizeof(struct pkc_request), GFP_KERNEL);
+	if (!genreq)
+		return ret;
+
+	signreq = kzalloc(sizeof(struct pkc_request), GFP_KERNEL);
+	if (!signreq)
+		goto signreq_fail;
+
+	verifyreq = kzalloc(sizeof(struct pkc_request), GFP_KERNEL);
+	if (!verifyreq)
+		goto verifyreq_fail;
 
 	init_completion(&serialize_keygen);
 
@@ -799,6 +801,7 @@ int dsa_keygen_test(void)
 
 	common_dec_count();
 
+/*FIXME: proper clean-up */
 error:
 	if (genreq) {
 #ifdef SEC_DMA
@@ -876,6 +879,12 @@ error:
 		kfree(verifyreq);
 	}
 
+	return ret;
+
+verifyreq_fail:
+	kfree(signreq);
+signreq_fail:
+	kfree(genreq);
 	return ret;
 }
 
