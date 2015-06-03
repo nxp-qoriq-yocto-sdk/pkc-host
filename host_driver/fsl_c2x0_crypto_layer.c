@@ -1539,16 +1539,6 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 
 }
 
-static inline uint64_t readtb1(void)
-{
-	uint32_t l = 0, h = 0;
-
-	asm volatile ("mfspr %0, 526" : "=r" (l));
-	asm volatile ("mfspr %0, 527" : "=r" (h));
-
-	return ((uint64_t) h << 32) | l;
-}
-
 #ifndef MULTIPLE_RESP_RINGS
 void demux_fw_responses(fsl_crypto_dev_t *dev)
 {
