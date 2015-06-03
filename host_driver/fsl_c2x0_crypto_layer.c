@@ -57,10 +57,10 @@
 #define ALIGN_LEN_TO_PAGE_SIZE(x)	\
 	(((x) + (PAGE_SIZE-1)) & ~(PAGE_SIZE-1))
 
+#ifndef HIGH_PERF
 #ifdef PRINT_DEBUG
 static int32_t total_resp;
 #endif
-#ifndef HIGH_PERF
 #ifdef MULTIPLE_RESP_RINGS
 static void store_dev_ctx(void *, uint8_t, uint32_t);
 #endif
