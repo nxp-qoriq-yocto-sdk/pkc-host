@@ -852,6 +852,11 @@ int dsa_op(struct pkc_request *req)
 			return -1;
 #else
 		c_dev = get_crypto_dev(1);
+		if (!c_dev) {
+			print_error("Could not retrieve the device structure.\n");
+			return -1;
+		}
+
 #endif
 #ifndef HIGH_PERF	
 		if(0 == (r_id = get_ring_rr(c_dev)))

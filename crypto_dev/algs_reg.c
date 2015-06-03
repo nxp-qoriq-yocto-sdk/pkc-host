@@ -332,7 +332,11 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 		return -1;
 	}
 #else
-    ctx->c_dev = get_crypto_dev(1);
+	ctx->c_dev = get_crypto_dev(1);
+	if (!ctx->c_dev) {
+		print_error("Could not retrieve the device structure.\n");
+		return -1;
+	}
 #endif
 
 	no_of_app_rings = ctx->c_dev->num_of_rings - 1;

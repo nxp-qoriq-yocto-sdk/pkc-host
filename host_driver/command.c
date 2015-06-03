@@ -212,6 +212,11 @@ int32_t rehandshake(int8_t *config_file, fsl_crypto_dev_t *dev)
 	}
     
 	crypto_dev = get_crypto_dev(curr_config->dev_no);
+	if (!crypto_dev) {
+		print_error("Could not retrieve the device structure.\n");
+		return -1;
+	}
+
 
 	/* SEARCH FOR MAX DEVICES */
 	for (; new_dev_no <= dev_count; ++new_dev_no) {
