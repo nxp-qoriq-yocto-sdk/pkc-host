@@ -58,13 +58,22 @@
 	(((x) + (PAGE_SIZE-1)) & ~(PAGE_SIZE-1))
 
 #ifndef HIGH_PERF
+
 #ifdef PRINT_DEBUG
 static int32_t total_resp;
 #endif
+
 #ifdef MULTIPLE_RESP_RINGS
-static void store_dev_ctx(void *, uint8_t, uint32_t);
+static void store_dev_ctx(void *buffer, uint8_t rid, uint32_t wi)
+{
+	dev_ctx_t *ctx = (dev_ctx_t *) (buffer - 32);
+	ctx->rid = rid;
+	ASSIGN32(ctx->wi, wi);
+}
 #endif
+
 #endif
+
 /* For debugging purpose */
 static volatile uint32_t enqueue_counter;
 static volatile uint32_t dequeue_counter;
@@ -1786,17 +1795,6 @@ void put_buffer(fsl_crypto_dev_t *c_dev, void *id, void *addr)
 		c_dev->ip_pool.fw_pool.host_map_v_addr;
 	free_buffer(id, addr);
 }
-
-#ifndef HIGH_PERF
-#ifdef MULTIPLE_RESP_RINGS
-static void store_dev_ctx(void *buffer, uint8_t rid, uint32_t wi)
-{
-	dev_ctx_t *ctx = (dev_ctx_t *) (buffer - 32);
-	ctx->rid = rid;
-	ASSIGN32(ctx->wi, wi);
-}
-#endif
-#endif
 
 #ifdef VIRTIO_C2X0
 /* For debug purpose */
