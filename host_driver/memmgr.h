@@ -82,18 +82,17 @@ typedef struct buffer_pool {
 
 typedef struct cmd_ring_entry_desc cmd_ring_entry_desc_t;
 
-void *create_pool(void *mem, uint32_t size);
-void destroy_pool(void *pool);
-cmd_ring_entry_desc_t *get_buffer(fsl_crypto_dev_t *c_dev, void *pool,
-		uint32_t size, unsigned long flags);
-void put_buffer(fsl_crypto_dev_t *c_dev, void *pool, void *buffer);
-void *alloc_buffer(void *pool, uint32_t size, unsigned long flags);
-void free_buffer(void *pool, void *buffer);
-void reset_pool(void *pool);
+void *create_pool(void *, uint32_t);
+void destroy_pool(void *);
+cmd_ring_entry_desc_t *get_buffer(fsl_crypto_dev_t *, void *, uint32_t, unsigned long);
+void put_buffer(fsl_crypto_dev_t *, void *, void *);
+void *alloc_buffer(void *, uint32_t, unsigned long);
+void free_buffer(void *, void *);
+void reset_pool(void *);
 
-unsigned long get_priv_data(void *pool, void *buffer);
-unsigned long get_flag(void *id, void *buffer);
-void set_flag(void *id, void *buffer, unsigned long flag);
-void store_priv_data(void *pool, void *buffer, unsigned long priv);
+unsigned long get_priv_data(void *, void *);
+unsigned long get_flag(void *, void *);
+void set_flag(void *id, void *, unsigned long);
+void store_priv_data(void *, void *, unsigned long);
 
 #endif
