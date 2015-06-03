@@ -213,16 +213,16 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 	return 0;
 }
 
-static inline dev_dma_addr_t desc_d_p_addr(ip_pool_info_t *ip_pool, void *h_v_addr)
+static inline dev_dma_addr_t desc_d_p_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
-	unsigned long offset = h_v_addr - ip_pool->drv_map_pool.v_addr;
-	return ip_pool->fw_pool.dev_p_addr + offset;
+	unsigned long offset = h_v_addr - dev->ip_pool.drv_map_pool.v_addr;
+	return dev->ip_pool.fw_pool.dev_p_addr + offset;
 }
 
-static inline void *desc_d_v_addr(ip_pool_info_t *ip_pool, void *h_v_addr)
+static inline void *desc_d_v_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
-	unsigned long offset = h_v_addr - ip_pool->drv_map_pool.v_addr;
-	return ip_pool->fw_pool.host_map_v_addr + offset;
+	unsigned long offset = h_v_addr - dev->ip_pool.drv_map_pool.v_addr;
+	return dev->ip_pool.fw_pool.host_map_v_addr + offset;
 }
 
 static inline dma_addr_t
@@ -239,10 +239,10 @@ static inline dev_dma_addr_t op_buf_d_dma_addr(fsl_crypto_dev_t *dev,
 	return d_dma + dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 }
 
-static phys_addr_t h_map_p_addr(ip_pool_info_t *ip_pool, void *h_v_addr)
+static phys_addr_t h_map_p_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
-	unsigned long offset = h_v_addr - ip_pool->drv_map_pool.v_addr;
-	return ip_pool->fw_pool.host_map_p_addr + offset;
+	unsigned long offset = h_v_addr - dev->ip_pool.drv_map_pool.v_addr;
+	return dev->ip_pool.fw_pool.host_map_p_addr + offset;
 }
 
 /******************************************************************************
@@ -268,10 +268,10 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 		case BT_DESC:
 		case BT_IP:
 			buffers[i].dev_buffer.h_dma_addr = buffers[i].dev_buffer.h_p_addr;
-			buffers[i].dev_buffer.h_map_p_addr = h_map_p_addr(mem_info->pool, buffers[i].v_mem);
+			buffers[i].dev_buffer.h_map_p_addr = h_map_p_addr(mem_info->dev, buffers[i].v_mem);
 
-			buffers[i].dev_buffer.d_v_addr = desc_d_v_addr(mem_info->pool, buffers[i].v_mem);
-			buffers[i].dev_buffer.d_p_addr = desc_d_p_addr(mem_info->pool, buffers[i].v_mem);
+			buffers[i].dev_buffer.d_v_addr = desc_d_v_addr(mem_info->dev, buffers[i].v_mem);
+			buffers[i].dev_buffer.d_p_addr = desc_d_p_addr(mem_info->dev, buffers[i].v_mem);
 			break;
 
 		case BT_OP:
@@ -282,8 +282,8 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 					      buffers[i].dev_buffer.h_dma_addr);
 #else
 			buffers[i].dev_buffer.h_dma_addr = buffers[i].dev_buffer.h_p_addr;
-			buffers[i].dev_buffer.d_v_addr = desc_d_v_addr(mem_info->pool, buffers[i].v_mem);
-			buffers[i].dev_buffer.d_p_addr = desc_d_p_addr(mem_info->pool, buffers[i].v_mem);
+			buffers[i].dev_buffer.d_v_addr = desc_d_v_addr(mem_info->dev, buffers[i].v_mem);
+			buffers[i].dev_buffer.d_p_addr = desc_d_p_addr(mem_info->dev, buffers[i].v_mem);
 #endif
 			break;
 
