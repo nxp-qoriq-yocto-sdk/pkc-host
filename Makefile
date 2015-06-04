@@ -34,8 +34,6 @@ VIRTIO_C2X0=n
 #Specify whether build cryptoapi pkc-related into host driver on x86
 EXTRA_PKC=y
 
-DEBUG_PRINT=n
-
 KERNEL_DIR ?=/lib/modules/$(shell uname -r)/build
 ifneq (${ARCH},)
 KERNEL_MAKE_OPTS += ARCH=${ARCH}
