@@ -57,46 +57,42 @@
 /* Print related macros */
 #ifdef PRINT_DEBUG
 #define print_debug(msg, ...) \
-pr_err("[FSL-CRYPTO-DRV: %s:%d]\tDEBUG: " msg, __func__, __LINE__, ##__VA_ARGS__)
+pr_err("FSL-CRYPTO-DRV [%s:%d] DEBUG:\t" msg, __func__, __LINE__, ##__VA_ARGS__)
 #else
 #define print_debug(msg, ...)
 #endif
 
 #ifdef PRINT_ERROR
 #define print_error(msg, ...) \
-pr_err("[FSL-CRYPTO-DRV: %s:%d]\tERROR: " msg, __func__, __LINE__, ##__VA_ARGS__)
+pr_err("FSL-CRYPTO-DRV [%s:%d] ERROR:\t" msg, __func__, __LINE__, ##__VA_ARGS__)
 #else
 #define print_error(msg, ...)
 #endif
 
 #ifdef PRINT_INFO
 #define print_info(msg, ...) \
-pr_info("[FSL-CRYPTO-DRV: %s:%d]\tINFO: " msg, __func__, __LINE__, ##__VA_ARGS__)
+pr_info("FSL-CRYPTO-DRV [%s:%d] INFO:\t" msg, __func__, __LINE__, ##__VA_ARGS__)
 #else
 #define print_info(msg, ...)
 #endif
 
 #ifdef DEV_PRINT_DBG
 #define dev_print_dbg(fdev, msg, ...) {	\
-	dev_err(&(fdev->dev->dev), \
-		"[FSL-CRYPTO-DRV: %s:%d] Devcnt:%d, DevId:%d,"\
-		"VendorId:%d, Bus:%d, Msg: ", __func__, __LINE__, \
-		fdev->dev_no, fdev->id->device, fdev->id->vendor, \
-		fdev->dev->bus->number); \
-	dev_err(&(fdev->dev->dev), msg, ##__VA_ARGS__); \
-	}
+dev_err(&(fdev->dev->dev), "[%s:%d] Devcnt:%d, DevId:0x%x, VendorId:0x%x, Bus:%d\n", \
+	__func__, __LINE__, fdev->dev_no, fdev->id->device, fdev->id->vendor, \
+	fdev->dev->bus->number); \
+dev_err(&(fdev->dev->dev), msg, ##__VA_ARGS__);\
+}
 #else
 #define dev_print_dbg(fdev, msg, ...)
 #endif
 
 #ifdef DEV_PRINT_ERR
 #define dev_print_err(fdev, msg, ...) {	\
-	dev_err(&(fdev->dev->dev), \
-		"[FSL-CRYPTO-DRV: %s:%d] Devcnt:%d, DevId:%d,"\
-		"VendorId:%d, Bus:%d, Msg: ", __func__, __LINE__, \
-		fdev->dev_no, fdev->id->device, fdev->id->vendor, \
-		fdev->dev->bus->number); \
-	dev_err(&(fdev->dev->dev), msg, ##__VA_ARGS__); \
+dev_err(&(fdev->dev->dev), "[%s:%d] Devcnt:%d, DevId:%x, VendorId:%x, Bus:%d\n", \
+	__func__, __LINE__, fdev->dev_no, fdev->id->device, fdev->id->vendor, \
+	fdev->dev->bus->number); \
+dev_err(&(fdev->dev->dev), msg, ##__VA_ARGS__);\
 }
 #else
 #define dev_print_err(fdev, msg, ...)
