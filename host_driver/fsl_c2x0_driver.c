@@ -1084,14 +1084,14 @@ int request_and_map_pci_resource(pci_bar_info_t *bar)
 
 	/* Request resource region */
 	if (!request_mem_region(bar->phy_addr, bar->len, "FSL-CRYPTO")) {
-		DEV_PRINT_ERROR("Bar: Request mem region failed\n");
+		print_error("Bar: Request mem region failed\n");
 		return err;
 	}
 
 	/* Map the MEM to the kernel address space */
 	bar->v_addr = ioremap(bar->phy_addr, bar->len);
 	if (!bar->v_addr) {
-		DEV_PRINT_ERROR("Bar: Mapping to kernel address failed\n");
+		print_error("Bar: Mapping to kernel address failed\n");
 		goto out_free;
 	}
 
