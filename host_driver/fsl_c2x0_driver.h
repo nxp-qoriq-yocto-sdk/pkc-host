@@ -56,28 +56,22 @@
 
 /* Print related macros */
 #ifdef PRINT_DEBUG
-#define print_debug(msg, ...) { \
-printk(KERN_ERR "[FSL-CRYPTO-DRV:%s:%d] DEBUG:", __func__, __LINE__); \
-printk(KERN_ERR msg, ##__VA_ARGS__); \
-}
+#define print_debug(msg, ...) \
+pr_err("[FSL-CRYPTO-DRV: %s:%d]\tDEBUG: " msg, __func__, __LINE__, ##__VA_ARGS__)
 #else
 #define print_debug(msg, ...)
 #endif
 
 #ifdef PRINT_ERROR
-#define print_error(msg, ...) { \
-printk(KERN_ERR "[FSL-CRYPTO-DRV:%s:%d] Error:", __func__, __LINE__); \
-printk(KERN_ERR msg, ##__VA_ARGS__); \
-}
+#define print_error(msg, ...) \
+pr_err("[FSL-CRYPTO-DRV: %s:%d]\tERROR: " msg, __func__, __LINE__, ##__VA_ARGS__)
 #else
 #define print_error(msg, ...)
 #endif
 
 #ifdef PRINT_INFO
-#define print_info(msg, ...) { \
-printk(KERN_INFO "[FSL-CRYPTO-DRV:%s:%d] Info:", __func__, __LINE__); \
-printk(KERN_INFO msg, ##__VA_ARGS__); \
-}
+#define print_info(msg, ...) \
+pr_info("[FSL-CRYPTO-DRV: %s:%d]\tINFO: " msg, __func__, __LINE__, ##__VA_ARGS__)
 #else
 #define print_info(msg, ...)
 #endif
@@ -85,7 +79,7 @@ printk(KERN_INFO msg, ##__VA_ARGS__); \
 #ifdef DEV_PRINT_DBG
 #define dev_print_dbg(fdev, msg, ...) {	\
 	dev_err(&(fdev->dev->dev), \
-		"[FSL-CRYPTO-DRV:%s:%d] Devcnt:%d, DevId:%d,"\
+		"[FSL-CRYPTO-DRV: %s:%d] Devcnt:%d, DevId:%d,"\
 		"VendorId:%d, Bus:%d, Msg: ", __func__, __LINE__, \
 		fdev->dev_no, fdev->id->device, fdev->id->vendor, \
 		fdev->dev->bus->number); \
@@ -98,7 +92,7 @@ printk(KERN_INFO msg, ##__VA_ARGS__); \
 #ifdef DEV_PRINT_ERR
 #define dev_print_err(fdev, msg, ...) {	\
 	dev_err(&(fdev->dev->dev), \
-		"[FSL-CRYPTO-DRV:%s:%d] Devcnt:%d, DevId:%d,"\
+		"[FSL-CRYPTO-DRV: %s:%d] Devcnt:%d, DevId:%d,"\
 		"VendorId:%d, Bus:%d, Msg: ", __func__, __LINE__, \
 		fdev->dev_no, fdev->id->device, fdev->id->vendor, \
 		fdev->dev->bus->number); \
@@ -106,7 +100,6 @@ printk(KERN_INFO msg, ##__VA_ARGS__); \
 }
 #else
 #define dev_print_err(fdev, msg, ...)
-
 #endif
 
 /* PCI subsystem API related macros */
