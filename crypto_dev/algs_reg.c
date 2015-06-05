@@ -751,14 +751,12 @@ int32_t fsl_algapi_init(void)
 	int loop = 0, err = 0;
 	char *driver_alg_name;
 	struct fsl_crypto_alg *f_alg = NULL;
-	bool reg = false, done = false;
+	bool reg = false;
 
 	INIT_LIST_HEAD(&alg_list);
 
 	for (loop = 0; loop < ARRAY_SIZE(driver_algs); loop++) {
-		done = false;
 		reg = false;
-/* authencesn:	*/
 		f_alg = fsl_alg_alloc(&driver_algs[loop], false);
 
 l_start:
@@ -793,24 +791,6 @@ l_start:
 			print_debug("%s alg registration successful\n",
 				    driver_alg_name);
 			list_add_tail(&f_alg->entry, &alg_list);
-#if 0
-			if (driver_algs[loop].type == CRYPTO_ALG_TYPE_AEAD &&
-			    !memcmp(driver_algs[loop].name, "authenc", 7) &&
-			    !done) {
-				char *name;
-
-				name = driver_algs[loop].name;
-				memmove(name + 10, name + 7, strlen(name) - 7);
-				memcpy(name + 7, "esn", 3);
-
-				name = driver_algs[loop].driver_name;
-				memmove(name + 10, name + 7, strlen(name) - 7);
-				memcpy(name + 7, "esn", 3);
-
-				done = true;
-				goto authencesn;
-			}
-#endif
 		}
 
 		if (f_alg->ahash && !reg) {
