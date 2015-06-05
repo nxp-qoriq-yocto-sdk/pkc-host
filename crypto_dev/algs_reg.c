@@ -748,10 +748,10 @@ static struct fsl_crypto_alg *fsl_alg_alloc(struct alg_template *template,
 
 int32_t fsl_algapi_init(void)
 {
-	int loop = 0, err = 0;
+	int loop, err;
 	char *driver_alg_name;
-	struct fsl_crypto_alg *f_alg = NULL;
-	bool reg = false;
+	struct fsl_crypto_alg *f_alg;
+	bool reg;
 
 	INIT_LIST_HEAD(&alg_list);
 
