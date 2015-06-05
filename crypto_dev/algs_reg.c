@@ -757,9 +757,9 @@ int32_t fsl_algapi_init(void)
 
 	for (loop = 0; loop < ARRAY_SIZE(driver_algs); loop++) {
 		reg = false;
-		f_alg = fsl_alg_alloc(&driver_algs[loop], false);
-
 l_start:
+		f_alg = fsl_alg_alloc(&driver_algs[loop], reg);
+
 		if (!f_alg) {
 			err = -ENOMEM;
 			print_error("%s alg allocation failed\n",
@@ -795,9 +795,10 @@ l_start:
 			list_add_tail(&f_alg->entry, &alg_list);
 		}
 
+		/* after registering a digest algorithm, loop again to register
+		 * the hashed (keyed) version of the same algorithm */
 		if (f_alg->ahash && !reg) {
 			reg = true;
-			f_alg = fsl_alg_alloc(&driver_algs[loop], true);
 			goto l_start;
 		}
 
