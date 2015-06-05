@@ -765,15 +765,14 @@ l_start:
 			print_error("%s alg allocation failed\n",
 				    driver_algs[loop].driver_name);
 			goto out_err;
-		} else {
-			if (reg) {
-				print_debug("%s alg allocation successful\n",
-					    driver_algs[loop].hmac_driver_name);
-			} else {
-				print_debug("%s alg allocation successful\n",
-					    driver_algs[loop].driver_name);
-			}
 		}
+
+		if (reg)
+			print_debug("%s alg allocation successful\n",
+					driver_algs[loop].hmac_driver_name);
+		else
+			print_debug("%s alg allocation successful\n",
+					driver_algs[loop].driver_name);
 
 		if (f_alg->ahash) {
 			err = crypto_register_ahash(&f_alg->u.ahash_alg);
@@ -789,11 +788,10 @@ l_start:
 				    driver_alg_name);
 			kfree(f_alg);
 			goto out_err;
-		} else {
-			print_debug("%s alg registration successful\n",
-				    driver_alg_name);
-			list_add_tail(&f_alg->entry, &alg_list);
 		}
+
+		print_debug("%s alg registration successful\n", driver_alg_name);
+		list_add_tail(&f_alg->entry, &alg_list);
 
 		/* after registering a digest algorithm, loop again to register
 		 * the hashed (keyed) version of the same algorithm */
