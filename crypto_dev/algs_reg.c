@@ -751,14 +751,16 @@ int32_t fsl_algapi_init(void)
 	int loop, err;
 	char *driver_alg_name;
 	struct fsl_crypto_alg *f_alg;
-	bool reg;
+	/* keyed == false: base algorithm, cipher or digest
+	 * keyed == true : hashed digest */
+	bool keyed;
 
 	INIT_LIST_HEAD(&alg_list);
 
 	for (loop = 0; loop < ARRAY_SIZE(driver_algs); loop++) {
-		reg = false;
+		keyed = false;
 l_start:
-		f_alg = fsl_alg_alloc(&driver_algs[loop], reg);
+		f_alg = fsl_alg_alloc(&driver_algs[loop], keyed);
 
 		if (!f_alg) {
 			err = -ENOMEM;
@@ -767,7 +769,7 @@ l_start:
 			goto out_err;
 		}
 
-		if (reg)
+		if (keyed)
 			print_debug("%s alg allocation successful\n",
 					driver_algs[loop].hmac_driver_name);
 		else
@@ -795,8 +797,8 @@ l_start:
 
 		/* after registering a digest algorithm, loop again to register
 		 * the hashed (keyed) version of the same algorithm */
-		if (f_alg->ahash && !reg) {
-			reg = true;
+		if (f_alg->ahash && !keyed) {
+			keyed = true;
 			goto l_start;
 		}
 
