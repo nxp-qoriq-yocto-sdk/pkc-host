@@ -761,10 +761,10 @@ int32_t fsl_algapi_init(void)
 
 l_start:
 		if (!f_alg) {
-			err = -1;
+			err = -ENOMEM;
 			print_error("%s alg allocation failed\n",
 				    driver_algs[loop].driver_name);
-			continue;
+			goto out_err;
 		} else {
 			if (reg) {
 				print_debug("%s alg allocation successful\n",
@@ -774,6 +774,7 @@ l_start:
 					    driver_algs[loop].driver_name);
 			}
 		}
+
 		if (f_alg->ahash) {
 			err = crypto_register_ahash(&f_alg->u.ahash_alg);
 			driver_alg_name =
@@ -787,6 +788,7 @@ l_start:
 			print_error("%s alg registration failed\n",
 				    driver_alg_name);
 			kfree(f_alg);
+			goto out_err;
 		} else {
 			print_debug("%s alg registration successful\n",
 				    driver_alg_name);
@@ -801,6 +803,10 @@ l_start:
 
 	}
 
+	return 0;
+
+out_err:
+	fsl_algapi_exit();
 	return err;
 }
 
