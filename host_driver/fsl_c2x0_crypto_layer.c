@@ -1599,7 +1599,9 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 {
 #define MAX_ERROR_STRING 400
 	uint64_t desc;
+#ifndef HIGH_PERF
 	uint32_t r_id;
+#endif
 	uint32_t resp_cnt = 0;
 	uint32_t ri;
 	int32_t res = 0;
@@ -1627,7 +1629,9 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 				continue;
 
 			dev = ring_cursor->dev;
+#ifndef HIGH_PERF
 			r_id = ring_cursor->info.ring_id;
+#endif
 			ri = ring_cursor->indexes->r_index;
 			print_debug("RING ID: %d\n", ring_cursor->info.ring_id);
 			print_debug("GOT INTERRUPT FROM DEV: %d\n", dev->config->dev_no);
