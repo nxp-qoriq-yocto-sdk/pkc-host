@@ -1227,7 +1227,6 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 	uint8_t is_msix_cap = 0;
 	uint8_t is_msi_cap = 0;
-	uint8_t is_intr_cap = 0;
 
 	uint32_t num_of_vectors = 0;
 	uint32_t irq;
@@ -1324,7 +1323,6 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		is_msi_cap = true;
 	} else {
 		DEV_PRINT_DEBUG("INTR Support\n");
-		is_intr_cap = true;
 	}
 
 	/* Wake up the device if it is in suspended state */
