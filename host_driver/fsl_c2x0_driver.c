@@ -1029,7 +1029,7 @@ int request_and_map_pci_resource(pci_bar_info_t *bar)
 	}
 
 	/* Map the MEM to the kernel address space */
-	bar->v_addr = ioremap(bar->phy_addr, bar->len);
+	bar->v_addr = ioremap(bar->phy_addr, (unsigned long)bar->len);
 	if (!bar->v_addr) {
 		print_error("Bar: Mapping to kernel address failed\n");
 		goto out_free;
@@ -1200,7 +1200,7 @@ void get_msi_config_data(fsl_pci_dev_t *fsl_pci_dev, isr_ctx_t *isr_context)
 	if (sizeof(phys_addr_t) == HOST_64_BIT_ADDR_SIZE)
 		bar->phy_addr |= ((u64) isr_context->msi_addr_high) << 32;
 
-	bar->v_addr = (void *) phys_to_virt(bar->phy_addr);
+	bar->v_addr = (void *) phys_to_virt((unsigned long)bar->phy_addr);
 }
 
 /*******************************************************************************
