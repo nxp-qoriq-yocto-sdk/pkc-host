@@ -363,8 +363,8 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 #define NO_SEC_ENGINE_ASSIGNED          -1
 
 	if (SYMMETRIC == op_type) {
-		rp = (&ctx->c_dev->ring_pairs[ctx->r_id]);
 		if (ctx->sec_eng == NO_SEC_ENGINE_ASSIGNED) {
+			rp = &ctx->c_dev->ring_pairs[ctx->r_id];
 			ctx->sec_eng =
 			    atomic_inc_return(&(rp->sec_eng_sel)) &
 			    (rp->num_of_sec_engines);
