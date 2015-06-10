@@ -141,7 +141,7 @@ struct k_sysfs_file {
 	uint8_t str_flag;
 	uint8_t buf[MAX_SYSFS_BUFFER];
 	uint32_t num;
-	uint32_t buf_len;
+	size_t buf_len;
 	void (*cb) (char *, char *, int, char);
 };
 
@@ -162,7 +162,7 @@ extern void set_device(char *, char *, int, char);
 extern void c2x0_test_func(char *fname, char *test_name, int len, char flag);
 
 void set_sysfs_value(fsl_pci_dev_t_1 *fsl_pci_dev, sys_files_id_t id,
-		     uint8_t *value, uint8_t len);
+		     uint8_t *value, size_t len);
 
 int32_t init_sysfs(fsl_pci_dev_t_1 *fsl_pci_dev);
 int32_t init_common_sysfs(void);

@@ -83,7 +83,7 @@ ssize_t common_sysfs_show(struct kobject *kobj, struct attribute *attr,
 	    container_of(attr, struct k_obj_attribute, attr);
 	struct k_sysfs_file *sysfs_file =
 	    container_of(pci_attr, struct k_sysfs_file, attr);
-	uint32_t buf_len = 0;
+	size_t buf_len;
 	if (sysfs_file->str_flag) {
 		sprintf(buf, "%s\n", sysfs_file->buf);
 		buf_len = sysfs_file->buf_len;
@@ -419,7 +419,7 @@ struct k_sysfs_file *get_sys_file(fsl_pci_dev_t *fsl_pci_dev, sys_files_id_t id)
 }
 
 void set_sysfs_value(fsl_pci_dev_t *fsl_pci_dev, sys_files_id_t id,
-		     uint8_t *value, uint8_t len)
+		     uint8_t *value, size_t len)
 {
 	struct k_sysfs_file *file = get_sys_file(fsl_pci_dev, id);
 
