@@ -180,7 +180,7 @@ Fields	   :	intr_vectors_cnt: Number of intr vectors alloc for this device
 		isr_ctx_list_head: Head of the linked list of isr contexts
 *******************************************************************************/
 typedef struct pci_intr_info {
-	uint32_t intr_vectors_cnt;
+	u16 intr_vectors_cnt;
 
 	/* Kernel DS :- Required for MSIx support */
 	struct msix_entry *msix_entries;

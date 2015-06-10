@@ -1083,9 +1083,10 @@ error:
  * should be equal to the number of application
  * rings + command ring.
  */
-int get_msix_iv_cnt(fsl_pci_dev_t *fsl_pci_dev, uint8_t num_of_vectors)
+int get_msix_iv_cnt(fsl_pci_dev_t *fsl_pci_dev, u16 num_of_vectors)
 {
-	int err, i;
+	int err;
+	u16 i;
 
 	fsl_pci_dev->intr_info.msix_entries = kzalloc(
 		num_of_vectors * sizeof(struct msix_entry), GFP_KERNEL);
