@@ -84,15 +84,15 @@ typedef struct cmd_ring_entry_desc cmd_ring_entry_desc_t;
 
 void *create_pool(void *, uint32_t);
 void destroy_pool(void *);
-cmd_ring_entry_desc_t *get_buffer(fsl_crypto_dev_t *, void *, uint32_t, unsigned long);
+cmd_ring_entry_desc_t *get_buffer(fsl_crypto_dev_t *, void *, uint32_t, uint8_t);
 void put_buffer(fsl_crypto_dev_t *, void *, void *);
-void *alloc_buffer(void *, uint32_t, unsigned long);
+void *alloc_buffer(void *, uint32_t, uint8_t);
 void free_buffer(void *, void *);
 void reset_pool(void *);
 
 unsigned long get_priv_data(void *, void *);
-unsigned long get_flag(void *, void *);
-void set_flag(void *id, void *, unsigned long);
+uint8_t get_flag(void *, void *);
+void set_flag(void *id, void *, uint8_t);
 void store_priv_data(void *, void *, unsigned long);
 
 #endif

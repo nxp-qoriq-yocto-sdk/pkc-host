@@ -148,7 +148,7 @@ Fields      :
 Return		:	None.
 ******************************************************************************/
 
-void *alloc_buffer(void *id, uint32_t len, unsigned long flag)
+void *alloc_buffer(void *id, uint32_t len, uint8_t flag)
 {
 	bp *pool = id;
 	bh *f_node = pool->free_list;
@@ -321,11 +321,11 @@ Fields      :
 Returns		:	The flag
 ******************************************************************************/
 
-unsigned long get_flag(void *id, void *buffer)
+uint8_t get_flag(void *id, void *buffer)
 {
 	bh *header = NULL;
 	bp *pool = id;
-	unsigned long flag = 0;
+	uint8_t flag;
 
 	spin_lock_bh(&(pool->mem_lock));
 	header = (buffer - sizeof(bh));
@@ -344,7 +344,7 @@ Fields      :
 Returns		:	None.
 ******************************************************************************/
 
-void set_flag(void *id, void *buffer, unsigned long flag)
+void set_flag(void *id, void *buffer, uint8_t flag)
 {
 	bh *header = NULL;
 	bp *pool = id;
@@ -353,7 +353,6 @@ void set_flag(void *id, void *buffer, unsigned long flag)
 	header = (buffer - sizeof(bh));
 	header->flag = flag;
 	spin_unlock_bh(&(pool->mem_lock));
-
 }
 
 #if 0

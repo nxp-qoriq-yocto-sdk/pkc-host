@@ -1762,7 +1762,7 @@ static inline void *ip_buf_d_v_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 }
 
 cmd_ring_entry_desc_t *get_buffer(fsl_crypto_dev_t *c_dev, void *id, uint32_t len,
-		 unsigned long flag)
+		 uint8_t flag)
 {
 	void *addr;
 
