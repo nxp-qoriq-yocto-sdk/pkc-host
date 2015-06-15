@@ -885,7 +885,7 @@ out_err:
 	dealloc_crypto_mem(&crypto_ctx->crypto_mem);
 	/*kfree(crypto_ctx->crypto_mem.buffers); */
 
-	free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
+	free_crypto_ctx(crypto_ctx->ctx_pool, crypto_ctx);
 	/*kfree(crypto_ctx); */
 out_no_ctx:
 #ifndef HIGH_PERF
