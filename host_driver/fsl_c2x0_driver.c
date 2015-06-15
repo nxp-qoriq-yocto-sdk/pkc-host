@@ -1724,7 +1724,9 @@ int32_t process_label(int8_t *label, int8_t *value)
 
 		dev_start = true;
 	} else if (!strcmp(label, "firmware")) {
-		strcpy(config->fw_file_path, value);
+		strncpy(config->fw_file_path, value,
+				FIRMWARE_FILE_PATH_LEN - 1);
+		config->fw_file_path[FIRMWARE_FILE_PATH_LEN - 1] = '\0';
 	} else if (!strcmp(label, "rings")) {
 		conv_value = str_to_int(value);
 		if (FSL_CRYPTO_MAX_RING_PAIRS < conv_value || 0 > conv_value)

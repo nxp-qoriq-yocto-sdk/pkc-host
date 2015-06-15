@@ -105,6 +105,8 @@ ssize_t common_sysfs_store(struct kobject *kobj, struct attribute *attr,
 	    container_of(pci_attr, struct k_sysfs_file, attr);
 
 	if (sysfs_file->str_flag) {
+		size = min_t(size_t, size, MAX_SYSFS_BUFFER);
+
 		strncpy(sysfs_file->buf, buf, (size - 1));
 		sysfs_file->buf[size - 1] = '\0';
 		sysfs_file->buf_len = size;
@@ -130,7 +132,8 @@ struct k_sysfs_file *create_sysfs_file(int8_t *name, struct sysfs_dir *parent,
 	if (!newfile)
 		return NULL;
 
-	strcpy(newfile->name, name);
+	strncpy(newfile->name, name, K_SYSFS_FILE_NAME_LEN - 1);
+	newfile->name[K_SYSFS_FILE_NAME_LEN - 1] = '\0';
 
 	sysfs_attr_init(&newfile->attr.attr);
 	newfile->str_flag = str_flag;
@@ -162,7 +165,8 @@ struct sysfs_dir *create_sysfs_dir(char *name, struct sysfs_dir *parent)
 	newdir = kzalloc(sizeof(struct sysfs_dir), GFP_KERNEL);
 	if(!newdir)
 		return NULL;
-	strcpy(newdir->name, name);
+	strncpy(newdir->name, name, SYSFS_DIR_NAME_LEN - 1);
+	newdir->name[SYSFS_DIR_NAME_LEN - 1] = '\0';
 
 	KOBJECT_INIT_AND_ADD((&(newdir->kobj)), &sysfs_entry_type,
 			     ((parent == NULL) ? NULL : &(parent->kobj)),

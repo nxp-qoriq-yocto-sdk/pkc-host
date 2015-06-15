@@ -130,14 +130,16 @@ struct k_obj_attribute {
 			  const char *buf, size_t count);
 };
 
+#define SYSFS_DIR_NAME_LEN 16
 struct sysfs_dir {
 	struct kobject kobj;
-	uint8_t name[16];
+	uint8_t name[SYSFS_DIR_NAME_LEN];
 };
 
+#define K_SYSFS_FILE_NAME_LEN 16
 struct k_sysfs_file {
 	struct k_obj_attribute attr;
-	uint8_t name[16];
+	uint8_t name[K_SYSFS_FILE_NAME_LEN];
 	uint8_t str_flag;
 	uint8_t buf[MAX_SYSFS_BUFFER];
 	uint32_t num;
