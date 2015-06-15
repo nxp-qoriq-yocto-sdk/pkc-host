@@ -89,10 +89,10 @@ Returns		:	SUCCESS/FAILURE
 
 int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 {
-	uint32_t i = 0;
+	uint32_t i;
 	uint32_t tot_mem = 0;
 	uint32_t aligned_len;
-	uint8_t *mem = NULL;
+	uint8_t *mem;
 	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
 
 	/* The structure will have all the memory requirements */
@@ -124,25 +124,27 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 		}
 	}
 
-	if (tot_mem)
-		mem_info->sg_cnt++;
-
-/* FIXME: Fix clean-up on error path (see second note below) */
 	mem = alloc_buffer(mem_info->pool, tot_mem, 1);
-	if (NULL == mem) {
-		return -ENOMEM;
-	}
+	if (!mem)
+		goto no_mem;
+
+	mem_info->sg_cnt++;
 	mem_info->src_buff = mem;
 	mem_info->alloc_len = tot_mem;
 	distribute_buffers(mem_info, mem);
 
 	return 0;
 
+no_mem:
+	if (!mem_info->split_ip)
+		return -ENOMEM;
 error:
-	/* FIXME: fix error path deallocation (kind reminder) */
-	/* Deallocate the prev allocated buffers */
-	free_buffer(mem_info->pool, mem);
-
+	while (i--) {
+		if (buffers[i].bt == BT_IP) {
+			free_buffer(mem_info->pool, buffers[i].v_mem);
+			mem_info->sg_cnt--;
+		}
+	}
 	return -ENOMEM;
 }
 
