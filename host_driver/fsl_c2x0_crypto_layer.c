@@ -80,16 +80,15 @@ static volatile uint32_t dequeue_counter;
 
 void distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 {
-	fsl_h_rsrc_ring_pair_t *rp = NULL;
-
+	fsl_h_rsrc_ring_pair_t *rp;
 	uint32_t core_no = 0;
 	uint16_t isr_count = 0;
-	uint32_t i = 0;
+	uint32_t i;
 	struct list_head *isr_ctx_list_head;
 	uint32_t total_cores = 0;
 	uint16_t total_isrs = dev->priv_dev->intr_info.intr_vectors_cnt;
 	per_core_struct_t *instance;
-	isr_ctx_t *isr_ctx = NULL;
+	isr_ctx_t *isr_ctx;
 
 	isr_ctx_list_head = &(dev->priv_dev->intr_info.isr_ctx_list_head);
 
