@@ -1260,6 +1260,7 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	uint32_t i;
 	uint8_t crypto_info_str[200];
 	fsl_crypto_dev_t *c_dev;
+	int err;
 
 	/* some fields are assumed to be null when they are first used */
 	c_dev = kzalloc(sizeof(fsl_crypto_dev_t), GFP_KERNEL);
@@ -1268,10 +1269,9 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 
 	c_dev->ring_pairs = kzalloc(sizeof(fsl_h_rsrc_ring_pair_t) *
 				    config->num_of_rings, GFP_KERNEL);
-	if (!c_dev->ring_pairs) {
-		kfree(c_dev);
-		return NULL;
-	}
+	if (!c_dev->ring_pairs)
+		goto rp_fail;
+
 	c_dev->priv_dev = fsl_pci_dev;
 	c_dev->config = config;
 
@@ -1298,15 +1298,29 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	rearrange_rings(c_dev, config);
 	print_debug("Rearrange complete....\n");
 
-	/* Alloc ob mem */
-	if (unlikely(alloc_ob_mem(c_dev, config))) {
+	err = alloc_ob_mem(c_dev, config);
+	if (err) {
 		print_error("Ob mem alloc failed....\n");
-		goto error;
+		goto ob_mem_fail;
 	}
 
-	init_ip_pool(c_dev);
-	init_op_pool(c_dev);
-	init_crypto_ctx_pool(c_dev);
+	err = init_ip_pool(c_dev);
+	if (err) {
+		print_error("Failed to create device input pool\n");
+		goto ip_pool_fail;
+	}
+
+	err = init_op_pool(c_dev);
+	if (err) {
+		print_error("Failed to create device output pool\n");
+		goto op_pool_fail;
+	}
+
+	err = init_crypto_ctx_pool(c_dev);
+	if (err) {
+		print_error("Failed to allocate context pool\n");
+		goto ctx_pool_fail;
+	}
 
 	print_debug("Init fw resp ring....\n");
 	/* Initialise fw resp ring info */
@@ -1334,7 +1348,8 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	init_handshake(c_dev);
 	print_debug("Init Handshake complete...\n");
 
-	if (unlikely(boot_device(c_dev, config->fw_file_path))) {
+	err = boot_device(c_dev, config->fw_file_path);
+	if (err) {
 		print_error("Firmware download failed\n");
 		goto error;
 	}
@@ -1350,7 +1365,8 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	atomic_set(&(c_dev->active_jobs), 0);
 
 	/* Do the handshake */
-	if (unlikely(handshake(c_dev, config))) {
+	err = handshake(c_dev, config);
+	if (err) {
 		print_error("Handshake failed\n");
 		goto error;
 	}
@@ -1370,9 +1386,21 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 
 	return c_dev;
 
-/* FIXME: this is not proper clean-up */
 error:
-	cleanup_crypto_device(c_dev);
+	kfree(c_dev->ctx_pool);
+ctx_pool_fail:
+	kfree(c_dev->op_pool.pool);
+op_pool_fail:
+	kfree(c_dev->ip_pool.drv_map_pool.pool);
+ip_pool_fail:
+	pci_free_consistent(c_dev->priv_dev->dev,
+			    c_dev->mem[MEM_TYPE_DRIVER].len,
+			    c_dev->mem[MEM_TYPE_DRIVER].host_v_addr,
+			    c_dev->mem[MEM_TYPE_DRIVER].host_dma_addr);
+ob_mem_fail:
+	kfree(c_dev->ring_pairs);
+rp_fail:
+	kfree(c_dev);
 	return NULL;
 }
 
