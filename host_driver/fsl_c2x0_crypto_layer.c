@@ -1307,7 +1307,7 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	print_debug("IB mem addr: %p\n", c_dev->mem[MEM_TYPE_SRAM].host_v_addr);
 	print_debug("Device hs mem addr: %p\n", c_dev->c_hs_mem);
 
-	/* Rearrange rings acc to their priority */
+	/* Rearrange rings according to their priority */
 	print_debug("Rearrange rings.....\n");
 	rearrange_rings(c_dev, config);
 	print_debug("Rearrange complete....\n");
@@ -1337,13 +1337,11 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	}
 
 	print_debug("Init fw resp ring....\n");
-	/* Initialise fw resp ring info */
 	init_fw_resp_ring(c_dev);
 	make_fw_resp_ring_circ_list(c_dev);
 	print_debug("Init fw resp ring complete...\n");
 
 	print_debug("Init ring  pair....\n");
-	/* Init rp struct */
 	init_ring_pairs(c_dev);
 	print_debug("Init ring pair complete...\n");
 
@@ -1358,7 +1356,6 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 #endif
 
 	print_debug("Init Handshake....\n");
-	/* Initialise hs mem */
 	init_handshake(c_dev);
 	print_debug("Init Handshake complete...\n");
 
@@ -1378,7 +1375,6 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	set_device_status_per_cpu(c_dev, 1);
 	atomic_set(&(c_dev->active_jobs), 0);
 
-	/* Do the handshake */
 	err = handshake(c_dev, config);
 	if (err) {
 		print_error("Handshake failed\n");
