@@ -164,16 +164,38 @@ static void pow2_rp_len(crypto_dev_config_t *config)
 	}
 }
 
-/* utilities to get/set ring priority from ring flags */
+/* utilities to get/set ring flags */
 uint8_t f_get_p(uint8_t flags)
 {
 	return (flags & APP_RING_PROP_PRIO_MASK) >> APP_RING_PROP_PRIO_SHIFT;
+}
+
+uint8_t f_get_a(uint8_t flags)
+{
+	return (flags & APP_RING_PROP_AFFINE_MASK) >> APP_RING_PROP_AFFINE_SHIFT;
+}
+
+uint8_t f_get_o(uint8_t flags)
+{
+	return (flags & APP_RING_PROP_ORDER_MASK) >> APP_RING_PROP_ORDER_SHIFT;
 }
 
 void f_set_p(uint8_t *flags, uint8_t priority)
 {
 	*flags &= ~APP_RING_PROP_PRIO_MASK;
 	*flags |= priority << APP_RING_PROP_PRIO_SHIFT;
+}
+
+void f_set_a(uint8_t *flags, uint8_t affinity)
+{
+	*flags &= ~APP_RING_PROP_AFFINE_MASK;
+	*flags |= affinity << APP_RING_PROP_AFFINE_SHIFT;
+}
+
+void f_set_o(uint8_t *flags, uint8_t order)
+{
+	*flags &= ~APP_RING_PROP_ORDER_MASK;
+	*flags |= order << APP_RING_PROP_ORDER_SHIFT;
 }
 
 static void rearrange_config(crypto_dev_config_t *config)
