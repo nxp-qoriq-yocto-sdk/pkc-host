@@ -87,7 +87,7 @@ int32_t distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	uint32_t i = 0;
 	struct list_head *isr_ctx_list_head;
 	uint32_t total_cores = 0;
-	per_core_struct_t *instance = NULL;
+	per_core_struct_t *instance;
 	isr_ctx_t *isr_ctx = NULL;
 
 	isr_ctx_list_head = &(dev->priv_dev->intr_info.isr_ctx_list_head);
@@ -101,14 +101,6 @@ int32_t distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 
 	INIT_LIST_HEAD(&(isr_ctx->ring_list_head));
 
-	for_each_online_cpu(i) {
-		instance = per_cpu_ptr(per_core, i);
-#if 0
-		INIT_LIST_HEAD(&(instance->ring_list_head));
-#endif
-	}
-
-	instance = NULL;
 	/* Affine the ring to CPU & ISR */
 	for (i = 0; i < config->num_of_rings; i++) {
 		while (!(wt_cpu_mask & (1 << core_no)))
