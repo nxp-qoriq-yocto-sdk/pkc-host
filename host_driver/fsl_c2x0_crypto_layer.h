@@ -42,8 +42,9 @@ extern int napi_poll_count;
 #define DRIVER_HS_MEM_SIZE DEVICE_CACHE_LINE_SIZE
 
 /* the number of context pools is arbitrary and NR_CPUS is a good default
- * considering that worker threads using the contexts are local to a CPU */
-#define NR_CTX_POOLS NR_CPUS
+ * considering that worker threads using the contexts are local to a CPU.
+ * However we set a conservative default until we fix malloc issues for x86 */
+#define NR_CTX_POOLS 2
 
 /* Identifies different states of the device */
 typedef enum handshake_state {
