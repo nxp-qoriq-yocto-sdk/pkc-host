@@ -1260,22 +1260,19 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	uint32_t i;
 	uint8_t crypto_info_str[200];
 	fsl_crypto_dev_t *c_dev;
-	fsl_h_rsrc_ring_pair_t *rp;
 
 	/* some fields are assumed to be null when they are first used */
 	c_dev = kzalloc(sizeof(fsl_crypto_dev_t), GFP_KERNEL);
 	if (!c_dev)
 		return NULL;
 
-	rp = kzalloc(sizeof(fsl_h_rsrc_ring_pair_t) * config->num_of_rings,
-			GFP_KERNEL);
-	if (!rp) {
+	c_dev->ring_pairs = kzalloc(sizeof(fsl_h_rsrc_ring_pair_t) *
+				    config->num_of_rings, GFP_KERNEL);
+	if (!c_dev->ring_pairs) {
 		kfree(c_dev);
 		return NULL;
 	}
-
 	c_dev->priv_dev = fsl_pci_dev;
-	c_dev->ring_pairs = rp;
 	c_dev->config = config;
 
 	/* HACK */
