@@ -1047,32 +1047,43 @@ static int32_t boot_device(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 	return 0;
 }
 
-void init_op_pool(fsl_crypto_dev_t *dev)
+int init_op_pool(fsl_crypto_dev_t *dev)
 {
+	void *pool;
+
+	pool = create_pool(dev->h_mem->op_pool, DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
+	if (!pool)
+		return -ENOMEM;
+
 	dev->op_pool.v_addr = dev->h_mem->op_pool;
 	dev->op_pool.p_addr = __pa(dev->h_mem->op_pool);
-
-	dev->op_pool.pool =
-	    create_pool(dev->h_mem->op_pool, DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
+	dev->op_pool.pool = pool;
+	return 0;
 }
 
-void init_ip_pool(fsl_crypto_dev_t *dev)
+int init_ip_pool(fsl_crypto_dev_t *dev)
 {
+	void *pool;
+
+	pool = create_pool(dev->h_mem->ip_pool, FIRMWARE_IP_BUFFER_POOL_SIZE);
+	if (!pool)
+		return -ENOMEM;
+
 	dev->ip_pool.drv_map_pool.v_addr = dev->h_mem->ip_pool;
 	dev->ip_pool.drv_map_pool.p_addr = __pa(dev->h_mem->ip_pool);
-
-	dev->ip_pool.drv_map_pool.pool =
-	    create_pool(dev->h_mem->ip_pool, FIRMWARE_IP_BUFFER_POOL_SIZE);
-	print_debug("Registered Pool Address: %p\n", dev->ip_pool.drv_map_pool.pool);
+	dev->ip_pool.drv_map_pool.pool = pool;
+	print_debug("Registered Pool Address: %p\n", pool);
+	return 0;
 }
 
-void init_crypto_ctx_pool(fsl_crypto_dev_t *dev)
+int init_crypto_ctx_pool(fsl_crypto_dev_t *dev)
 {
 	int i, id;
 	ctx_pool_t *pool;
 
-	/* FIXME: clean-up on error path */
 	pool = kzalloc(sizeof(ctx_pool_t) * NR_CTX_POOLS, GFP_KERNEL);
+	if (!pool)
+		return -ENOMEM;
 
 	/* save the address of the first context pool */
 	dev->ctx_pool = pool;
@@ -1087,6 +1098,7 @@ void init_crypto_ctx_pool(fsl_crypto_dev_t *dev)
 
 		pool += 1;
 	}
+	return 0;
 }
 
 static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
