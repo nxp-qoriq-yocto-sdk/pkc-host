@@ -78,7 +78,7 @@ static void store_dev_ctx(void *buffer, uint8_t rid, uint32_t wi)
 static volatile uint32_t enqueue_counter;
 static volatile uint32_t dequeue_counter;
 
-int32_t distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
+void distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 {
 	fsl_h_rsrc_ring_pair_t *rp = NULL;
 
@@ -132,8 +132,6 @@ int32_t distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 
 		core_no = (core_no + 1) % total_cores;
 	}
-
-	return 0;
 }
 
 uint32_t round_to_power2(uint32_t n)

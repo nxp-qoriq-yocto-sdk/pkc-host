@@ -548,7 +548,7 @@ void demux_fw_responses(fsl_crypto_dev_t *dev);
 void cleanup_crypto_device(fsl_crypto_dev_t *dev);
 int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);
 void rearrange_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);
-int32_t distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);
+void distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);
 int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);
 int init_ip_pool(fsl_crypto_dev_t *dev);
 int init_op_pool(fsl_crypto_dev_t *dev);
