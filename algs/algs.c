@@ -343,9 +343,7 @@ dev_dma_addr_t set_sec_affinity(fsl_crypto_dev_t *c_dev, uint32_t rid,
 								dev_dma_addr_t desc)
 {
 	uint32_t sec_no = 0;
-	sec_no = ((c_dev->ring_pairs[rid].info.flags &
-				APP_RING_PROP_AFFINE_MASK) >>
-				APP_RING_PROP_AFFINE_SHIFT);
+	sec_no = f_get_a(c_dev->ring_pairs[rid].info.flags);
 	return (desc | (uint64_t) sec_no);
 }
 #endif

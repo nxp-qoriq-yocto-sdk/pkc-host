@@ -796,9 +796,8 @@ int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 					strlen(str_state));
 			dev->h_mem->hs_mem.state = DEFAULT;
 
-			if(((config->ring[rid].flags & APP_RING_PROP_AFFINE_MASK)
-				>> APP_RING_PROP_AFFINE_SHIFT) >
-				(dev->h_mem->hs_mem.data.device.no_secs)){
+			if (f_get_a(config->ring[rid].flags) >
+					dev->h_mem->hs_mem.data.device.no_secs){
 				print_error("Wrong Affinity for the ring: %d\n", rid);
 				print_error("No of SECs are %d\n", dev->h_mem->hs_mem.data.device.no_secs);
 				goto error;
@@ -1179,8 +1178,7 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 		}
 #endif
 
-		if (rp->info.flags & APP_RING_PROP_ORDER_MASK >>
-		    APP_RING_PROP_ORDER_SHIFT) {
+		if (f_get_o(rp->info.flags)) {
 			print_debug("Order bit is set: %d, Desc: %llx\n", rp->indexes->w_index, sec_desc);
 			store_dev_ctx(h_desc, jr_id, rp->indexes->w_index + 1);
 		} else{
@@ -1239,19 +1237,16 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 
 void prepare_crypto_cfg_info_string( crypto_dev_config_t *config, uint8_t *cryp_cfg_str )
 {
-	uint32_t i = 0;
-	uint8_t ring_str[100];
+	uint32_t i;
+	uint8_t ring_str[100], flags;
 
 	sprintf(cryp_cfg_str, "Tot rings:%d\n", config->num_of_rings);
 	sprintf(ring_str, "rid,dpth,affin,prio,ord\n");
 	strcat(cryp_cfg_str, ring_str);
 	for (i = 0; i < config->num_of_rings; i++) {
+		flags = config->ring[i].flags;
 		sprintf(ring_str, " %d,%4d,%d,%d,%d\n", i, config->ring[i].depth,
-			(((config->ring[i].flags) & APP_RING_PROP_AFFINE_MASK) >>
-			APP_RING_PROP_AFFINE_SHIFT),
-			f_get_p(config->ring[i].flags),
-			(((config->ring[i].flags) & APP_RING_PROP_ORDER_MASK) >>
-			APP_RING_PROP_ORDER_SHIFT));
+			f_get_a(flags), f_get_p(flags), f_get_o(flags));
 		strcat(cryp_cfg_str, ring_str);
 	}
 	return;
