@@ -1217,21 +1217,22 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 
 void prepare_crypto_cfg_info_string( crypto_dev_config_t *config, uint8_t *cryp_cfg_str )
 {
-    uint32_t    i = 0;
-    uint8_t     ring_str[100];
+	uint32_t i = 0;
+	uint8_t ring_str[100];
 
-    sprintf(cryp_cfg_str, "Tot rings:%d\n", config->num_of_rings);
-    sprintf(ring_str, "rid,dpth,affin,prio,ord\n");
-    strcat(cryp_cfg_str, ring_str);
-    for (i = 0; i < config->num_of_rings; i++) {
-        sprintf(ring_str, " %d,%4d,%d,%d,%d\n", i, config->ring[i].depth,
-            (((config->ring[i].flags) & APP_RING_PROP_AFFINE_MASK) >>
-             APP_RING_PROP_AFFINE_SHIFT), f_get_p(config->ring[i].flags),
-            (((config->ring[i].flags) & APP_RING_PROP_ORDER_MASK) >>
-             APP_RING_PROP_ORDER_SHIFT));
-        strcat(cryp_cfg_str, ring_str);
-    }
-    return;
+	sprintf(cryp_cfg_str, "Tot rings:%d\n", config->num_of_rings);
+	sprintf(ring_str, "rid,dpth,affin,prio,ord\n");
+	strcat(cryp_cfg_str, ring_str);
+	for (i = 0; i < config->num_of_rings; i++) {
+		sprintf(ring_str, " %d,%4d,%d,%d,%d\n", i, config->ring[i].depth,
+			(((config->ring[i].flags) & APP_RING_PROP_AFFINE_MASK) >>
+			APP_RING_PROP_AFFINE_SHIFT),
+			f_get_p(config->ring[i].flags),
+			(((config->ring[i].flags) & APP_RING_PROP_ORDER_MASK) >>
+			APP_RING_PROP_ORDER_SHIFT));
+		strcat(cryp_cfg_str, ring_str);
+	}
+	return;
 }
 
 
