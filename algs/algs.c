@@ -332,7 +332,13 @@ uint32_t get_ring_rr(fsl_crypto_dev_t *c_dev)
 	return r_id;
 }
 
-#ifndef HIGH_PERF
+#ifdef HIGH_PERF
+dev_dma_addr_t set_sec_affinity(fsl_crypto_dev_t *c_dev, uint32_t rid,
+                                dev_dma_addr_t desc)
+{
+	return desc;
+}
+#else
 dev_dma_addr_t set_sec_affinity(fsl_crypto_dev_t *c_dev, uint32_t rid,
 								dev_dma_addr_t desc)
 {
@@ -342,13 +348,6 @@ dev_dma_addr_t set_sec_affinity(fsl_crypto_dev_t *c_dev, uint32_t rid,
 				APP_RING_PROP_AFFINE_SHIFT);
 	return (desc | (uint64_t) sec_no);
 }
-#else
-dev_dma_addr_t set_sec_affinity(fsl_crypto_dev_t *c_dev, uint32_t rid,
-                                dev_dma_addr_t desc)
-{
-    return desc;
-}
-
 #endif
 
 void dma_tx_complete_cb(void *ctx)
