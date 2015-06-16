@@ -83,10 +83,11 @@ void distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	fsl_h_rsrc_ring_pair_t *rp = NULL;
 
 	uint32_t core_no = 0;
-	uint32_t isr_count = 0;
+	uint16_t isr_count = 0;
 	uint32_t i = 0;
 	struct list_head *isr_ctx_list_head;
 	uint32_t total_cores = 0;
+	uint16_t total_isrs = dev->priv_dev->intr_info.intr_vectors_cnt;
 	per_core_struct_t *instance;
 	isr_ctx_t *isr_ctx = NULL;
 
@@ -96,7 +97,6 @@ void distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	    ++total_cores;
 
 	print_debug("Total cores: %d\n", total_cores);
-#define TOTAL_NUM_OF_ISRS  dev->priv_dev->intr_info.intr_vectors_cnt
 	isr_ctx = list_entry(isr_ctx_list_head->next, isr_ctx_t, list);
 
 	INIT_LIST_HEAD(&(isr_ctx->ring_list_head));
@@ -110,7 +110,6 @@ void distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 		instance = per_cpu_ptr(per_core, core_no);
 
 		rp = &(dev->ring_pairs[i]);
-
 		rp->core_no = core_no;
 
 		config->ring[i].msi_addr_l = isr_ctx->msi_addr_low;
@@ -121,14 +120,14 @@ void distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 		list_add(&(rp->isr_ctx_list_node), &(isr_ctx->ring_list_head));
 		list_add(&(rp->bh_ctx_list_node), &(instance->ring_list_head));
 
-		if ((++isr_count) % TOTAL_NUM_OF_ISRS)
+		if ((++isr_count) % total_isrs)
 			isr_ctx = list_entry(isr_ctx->list.next, isr_ctx_t, list);
 		else
 			isr_ctx = list_entry(isr_ctx_list_head->next, isr_ctx_t,
 						list);
 
 		print_debug("ISR COUNT: %d total num of isrs: %d\n",
-			    isr_count, TOTAL_NUM_OF_ISRS);
+			    isr_count, total_isrs);
 
 		core_no = (core_no + 1) % total_cores;
 	}
