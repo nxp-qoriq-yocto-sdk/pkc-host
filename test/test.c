@@ -561,13 +561,13 @@ inline void check_test_done_test(void)
 	cpu_freq = ppc_proc_freq / 1000000;
 #endif
 	print_debug("Cpu Freq: %d\n", cpu_freq);
-	sprintf(cpu_freq_s, "%d", cpu_freq);
+	snprintf(cpu_freq_s, sizeof(cpu_freq_s), "%d", cpu_freq);
 	print_debug("Cpu Freq_s: %s\n", cpu_freq_s);
 	print_debug("Diff: %llx\n", cycle_diff);
 	print_debug("total_jobs_s: %0x\n", total_succ_jobs);
 	/* Write to the sysfs file entry */
 
-	sprintf(cycle_diff_s, "%0llx", cycle_diff);
+	snprintf(cycle_diff_s, sizeof(cycle_diff_s), "%0llx", cycle_diff);
 	print_debug("cycle_diff_s: %s\n", cycle_diff_s);
 
 	strcpy(sysfs_val, cycle_diff_s);
