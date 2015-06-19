@@ -50,7 +50,8 @@
 #define MAX_TEST_THREAD_SUPPORT 200
 typedef void (*cb) (struct pkc_request *req, int32_t sec_result);
 
-static char g_test_name[100];
+#define TEST_NAME_LENGTH 100
+static char g_test_name[TEST_NAME_LENGTH];
 static struct task_struct *task[MAX_TEST_THREAD_SUPPORT];
 static int32_t no_thread;
 static int32_t no_cpu;
@@ -382,49 +383,49 @@ int test(void *data)
 
 int parsing_test_command(char *test_name)
 {
-	char g_test_name_tmp[100];
 	int i = 0;
-	int j = 0;
-	int slen = 0;
 
-	strcpy(g_test_name_tmp, test_name);
-	slen = strlen(g_test_name_tmp);
-	g_test_name[0] = '\0';
-	while ((g_test_name_tmp[i] != ' ') && (i < slen)) {
-		g_test_name[j++] = g_test_name_tmp[i++];
+	while ((i < (TEST_NAME_LENGTH - 1)) && (test_name[i] != '\0') &&
+			(test_name[i] != ' ')) {
+		g_test_name[i] = test_name[i];
+		i++;
 	}
-	i++;			/* Skiping the space */
-	g_test_name[j] = '\0';
-	if (!valid_test())
+
+	g_test_name[i] = '\0';
+	if (!valid_test() || (test_name[i] == '\0'))
 		return -1;
-	j = 10;
+
+	i++;
 	cpu_mask = 0;
-	while ((g_test_name_tmp[i] != ' ') && (i < slen)) {
-		cpu_mask = (cpu_mask * j) + (g_test_name_tmp[i++] - '0');
-	}
+	while ((test_name[i] != '\0') && (test_name[i] != ' '))
+		cpu_mask = (cpu_mask * 10) + (test_name[i++] - '0');
+
+	if (test_name[i] == '\0')
+		return -1;
+
 	i++;			/* skiping the space */
 	threads_per_cpu = 0;
-	j = 10;
-	while ((g_test_name_tmp[i] != ' ') && (i < slen)) {
+	while ((test_name[i] != '\0') && (test_name[i] != ' '))
 		threads_per_cpu =
-		    (threads_per_cpu * j) + (g_test_name_tmp[i++] - '0');
-	}
+		    (threads_per_cpu * 10) + (test_name[i++] - '0');
+
+	if (test_name[i] == '\0')
+		return -1;
 
 	i++;			/* skiping the space */
 	time_duration = 0;
-	j = 10;
-	while ((g_test_name_tmp[i] != ' ') && (i < slen)) {
+	while ((test_name[i] != '\0') && (test_name[i] != ' '))
 		time_duration =
-		    (time_duration * j) + (g_test_name_tmp[i++] - '0');
-	}
+		    (time_duration * 10) + (test_name[i++] - '0');
+
+	if (test_name[i] == '\0')
+		return -1;
 
 	i++;			/* Skiping the space */
 	total_enq_req = 0;
-	j = 10;
-	while ((g_test_name_tmp[i] != '\0') && (i < slen)) {
+	while ((test_name[i] != '\0') && (test_name[i] != ' '))
 		total_enq_req =
-		    (total_enq_req * j) + (g_test_name_tmp[i++] - '0');
-	}
+		    (total_enq_req * 10) + (test_name[i++] - '0');
 
 	if (0 == total_enq_req)
 		total_enq_req = 0xffffffff;
