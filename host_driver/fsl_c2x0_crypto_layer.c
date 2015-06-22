@@ -1225,21 +1225,36 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 	return 0;
 }
 
-void prepare_crypto_cfg_info_string( crypto_dev_config_t *config, uint8_t *cryp_cfg_str )
+#define CRYPTO_INFO_STR_LENGTH 200
+int prepare_crypto_cfg_info_string(crypto_dev_config_t *config,
+		uint8_t *cryp_cfg_str)
 {
 	uint32_t i;
-	uint8_t ring_str[100], flags;
+	uint8_t flags;
+	int rem_len = CRYPTO_INFO_STR_LENGTH;
+	int ret;
 
-	sprintf(cryp_cfg_str, "Tot rings:%d\n", config->num_of_rings);
-	sprintf(ring_str, "rid,dpth,affin,prio,ord\n");
-	strcat(cryp_cfg_str, ring_str);
+	ret = snprintf(cryp_cfg_str, rem_len,
+			"Tot rings:%d\nrid,dpth,affin,prio,ord\n",
+			config->num_of_rings);
+
+	if ((ret < 0) || (ret >= rem_len))
+		return ret;
+	rem_len -= ret;
+	cryp_cfg_str += ret;
+
 	for (i = 0; i < config->num_of_rings; i++) {
 		flags = config->ring[i].flags;
-		sprintf(ring_str, " %d,%4d,%d,%d,%d\n", i, config->ring[i].depth,
-			f_get_a(flags), f_get_p(flags), f_get_o(flags));
-		strcat(cryp_cfg_str, ring_str);
+		ret = snprintf(cryp_cfg_str, rem_len, " %d,%4d,%d,%d,%d\n",
+				i, config->ring[i].depth, f_get_a(flags),
+				f_get_p(flags), f_get_o(flags));
+
+		if ((ret < 0) || (ret >= rem_len))
+			return ret;
+		rem_len -= ret;
+		cryp_cfg_str += ret;
 	}
-	return;
+	return 0;
 }
 
 
@@ -1258,7 +1273,7 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 				  crypto_dev_config_t *config)
 {
 	uint32_t i;
-	uint8_t crypto_info_str[200];
+	uint8_t crypto_info_str[CRYPTO_INFO_STR_LENGTH];
 	fsl_crypto_dev_t *c_dev;
 	int err;
 
@@ -1377,7 +1392,11 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	set_sysfs_value(fsl_pci_dev, DEVICE_STATE_SYSFILE, (uint8_t *) "DRIVER READY\n",
 			strlen("DRIVER READY\n"));
 
-	prepare_crypto_cfg_info_string(config, crypto_info_str);
+	err = prepare_crypto_cfg_info_string(config, crypto_info_str);
+	if (err) {
+		print_error("Preparing crypto config info string failed\n");
+		goto error;
+	}
 	set_sysfs_value(fsl_pci_dev, CRYPTO_INFO_SYS_FILE, (uint8_t *)crypto_info_str,
 			strlen(crypto_info_str));
 
