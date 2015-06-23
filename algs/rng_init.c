@@ -484,18 +484,17 @@ error:
 
 int32_t rng_instantiation(fsl_crypto_dev_t *c_dev)
 {
-	int no_of_secs, i, ret;
+	int no_of_secs, i, err;
 
 	no_of_secs = c_dev->h_mem->hs_mem.data.device.no_secs;
 
 	for (i = 1; i <= no_of_secs; i++) {
-		ret = rng_op(c_dev, i, 1);
-		if (!ret) {
-			rng_op(c_dev, i, 0);
-			if (ret)
-				break;
-		} else
+		err = rng_op(c_dev, i, 1);
+		if (err)
+			break;
+		err = rng_op(c_dev, i, 0);
+		if (err)
 			break;
 	}
-	return ret;
+	return err;
 }
