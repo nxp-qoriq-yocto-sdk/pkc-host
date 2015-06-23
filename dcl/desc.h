@@ -37,6 +37,13 @@
 #define DESC_H
 #include "common.h"
 
+/* Format of SGT table entry
+w0: Reserved [24 bits] (must be 0) Address Pointer [MS 8 bits]
+w1: Address Pointer [LS 32 bits]
+w2: E [1b] F [1b] Length [30 bits]
+w3: Reserved [8 bits] (must be 0) BPID [8 bits] Reserved [3 bits] (must be 0) Offset [13 bits]
+*/
+
 struct sec4_sg_entry {
 	u64 ptr;
 #define SEC4_SG_LEN_FIN 0x40000000

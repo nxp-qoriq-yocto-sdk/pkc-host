@@ -64,7 +64,7 @@ static inline void sg_map_copy(u8 *dest, struct scatterlist *sg,
  */
 static inline void dev_dma_to_sec4_sg_one(struct sec4_sg_entry *sec4_sg_ptr,
 					  dev_dma_addr_t dma, u32 len,
-					  u32 offset)
+					  u16 offset)
 {
 	ASSIGN64(sec4_sg_ptr->ptr, dma);
 	ASSIGN32(sec4_sg_ptr->len, len);
