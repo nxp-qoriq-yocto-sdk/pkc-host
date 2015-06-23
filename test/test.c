@@ -566,9 +566,6 @@ inline void check_test_done_test(void)
 			print_debug("total_jobs_s: %0x\n", total_succ_jobs);
 			/* Write to the sysfs file entry */
 
-			if (timer_set)
-				cycle_diff = time_duration;
-
 			sprintf(cycle_diff_s, "%0llx", cycle_diff);
 			print_debug("cycle_diff_s: %s\n", cycle_diff_s);
 
