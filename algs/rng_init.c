@@ -323,6 +323,8 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 	int32_t ret = 0;
 	struct rng_init_compl r_init;
 
+	init_completion(&r_init.completion);
+
 	/* at least two rings must be configured */
 	if (c_dev->num_of_rings > 1) {
 		r_id = 1;
@@ -443,8 +445,6 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		ret = -1;
 		goto error;
 	}
-
-	init_completion(&r_init.completion);
 	wait_for_completion_interruptible(&r_init.completion);
 
 	if (crypto_ctx->oprn == RNG_SELF_TEST) {
