@@ -828,7 +828,7 @@ int rsa_op(struct pkc_request *req)
 		break;
 	default:
 		ret = -EINVAL;
-		break;
+		goto out_nop;
 	}
 
 #ifdef USE_HOST_DMA
@@ -884,7 +884,7 @@ int rsa_op(struct pkc_request *req)
 out_err:
 	dealloc_crypto_mem(&crypto_ctx->crypto_mem);
 	/*kfree(crypto_ctx->crypto_mem.buffers); */
-
+out_nop:
 	free_crypto_ctx(crypto_ctx->ctx_pool, crypto_ctx);
 	/*kfree(crypto_ctx); */
 out_no_ctx:
