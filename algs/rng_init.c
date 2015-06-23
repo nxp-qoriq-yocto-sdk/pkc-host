@@ -318,8 +318,7 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, rng_ops_t op)
 	crypto_op_ctx_t *crypto_ctx = NULL;
 
 	dev_dma_addr_t sec_dma = 0;
-	uint32_t r_id = 0;
-	uint32_t no_of_app_rings = 0;
+	uint32_t r_id;
 
 	rng_init_buffers_t *rng_init_buffs = NULL;
 	rng_self_test_buffers_t *rng_self_test_buffs = NULL;
@@ -329,11 +328,10 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, rng_ops_t op)
 	int32_t ret = 0;
 	struct rng_init_compl r_init;
 
-	no_of_app_rings = c_dev->num_of_rings - 1;
-
-	if (0 < no_of_app_rings)
+	/* at least two rings must be configured */
+	if (c_dev->num_of_rings > 1) {
 		r_id = 1;
-	else {
+	} else {
 		print_error("No application ring configured\n");
 		return -1;
 	}
