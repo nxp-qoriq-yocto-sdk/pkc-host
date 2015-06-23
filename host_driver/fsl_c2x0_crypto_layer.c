@@ -471,7 +471,7 @@ void make_fw_resp_ring_circ_list(fsl_crypto_dev_t *dev)
 
 	for (i = 1; i < NUM_OF_RESP_RINGS; i++)
 		dev->fw_resp_rings[i - 1].next = &(dev->fw_resp_rings[i]);
-	dev->fw_resp_rings[i - 1].next = dev->fw_resp_rings[0].next;
+	dev->fw_resp_rings[i - 1].next = &(dev->fw_resp_rings[0]);
 }
 
 void init_ring_pairs(fsl_crypto_dev_t *dev)
