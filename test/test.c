@@ -439,9 +439,9 @@ int parsing_test_command(char *test_name)
 
 void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 {
-	int loop = 0;
-	print_debug("Test name: %s\n", test_name);
+	int loop;
 
+	print_debug("Test name: %s\n", test_name);
 	if (strcmp(fname, "test_name")) {
 		print_debug("Returning from here...\n");
 		return;
@@ -472,7 +472,6 @@ void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 		return;
 	}
 
-	loop = 0;
 	no_cpu = 0;
 	for_each_online_cpu(loop)
 	    no_cpu++;
