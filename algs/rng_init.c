@@ -454,7 +454,7 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, rng_ops_t op)
 	init_completion(&r_init.completion);
 	wait_for_completion_interruptible(&r_init.completion);
 
-	if (R_SELF_TEST == (rng_ops_t) crypto_ctx->oprn) {
+	if (crypto_ctx->oprn == RNG_SELF_TEST) {
 		if (r_init.result) {
 			print_error("RNG SELF TEST Failed\n");
 			ret = r_init.result;
