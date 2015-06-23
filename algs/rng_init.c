@@ -484,7 +484,8 @@ error:
 
 int32_t rng_instantiation(fsl_crypto_dev_t *c_dev)
 {
-	int no_of_secs, i, err;
+	int no_of_secs, i;
+	int err = -ENODEV;
 
 	no_of_secs = c_dev->h_mem->hs_mem.data.device.no_secs;
 
