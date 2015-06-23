@@ -130,6 +130,8 @@ void process_cmd_response(fsl_crypto_dev_t *c_dev, dev_dma_addr_t desc,
 *				 it sets the device again
 *				 which was reset previously
 *
+* FIXME: This function fails for a whole lot of reasons. Is it OK for it to
+* 	return void?
 *******************************************************************************/
 void set_device(char *fname, char *device, int32_t size, char flag)
 {
@@ -176,6 +178,10 @@ void set_device(char *fname, char *device, int32_t size, char flag)
 
 	/* GET THE OLD DEVICE CONFIG */
 	config = get_dev_config(fsl_pci_dev);
+	if (!config) {
+		print_error("Config not found!\n");
+		return;
+	}
 
 	fsl_pci_dev->crypto_dev = fsl_crypto_layer_add_device(fsl_pci_dev, config);
 	if (!fsl_pci_dev->crypto_dev) {
