@@ -49,11 +49,6 @@
 #define DUMP_DEBUG_V_INFO
 */
 
-typedef enum rng_ops {
-	R_INIT,
-	R_SELF_TEST
-} rng_ops_t;
-
 struct rng_init_compl {
 	struct completion completion;
 	int result;
@@ -313,7 +308,7 @@ static void constr_personalization_str(uint32_t *pers_str, uint32_t length,
 
 }
 
-int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, rng_ops_t op)
+int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 {
 	crypto_op_ctx_t *crypto_ctx = NULL;
 
@@ -351,7 +346,7 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, rng_ops_t op)
 	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 	switch (op) {
-	case R_INIT:
+	case RNG_INIT:
 		rng_init_init_crypto_mem(&crypto_ctx->crypto_mem);
 		rng_init_buffs =
 		    (rng_init_buffers_t *) crypto_ctx->crypto_mem.buffers;
@@ -387,9 +382,8 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, rng_ops_t op)
 		store_priv_data(crypto_ctx->crypto_mem.pool,
 				rng_init_buffs->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
-		crypto_ctx->oprn = RNG_INIT;
 		break;
-	case R_SELF_TEST:
+	case RNG_SELF_TEST:
 		rng_self_test_init_crypto_mem(&crypto_ctx->crypto_mem);
 		rng_self_test_buffs =
 		    (rng_self_test_buffers_t *) crypto_ctx->crypto_mem.buffers;
@@ -428,20 +422,19 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, rng_ops_t op)
 		store_priv_data(crypto_ctx->crypto_mem.pool,
 				rng_self_test_buffs->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
-		crypto_ctx->oprn = RNG_SELF_TEST;
 		break;
 	default:
 		ret = -EINVAL;
-		break;
+		goto error;
 	}
 
 	memcpy_to_dev(&crypto_ctx->crypto_mem);
 
+	crypto_ctx->oprn = op;
 	crypto_ctx->req.rng_init = &r_init;
 	crypto_ctx->rid = r_id;
 	crypto_ctx->desc = sec_dma;
 	crypto_ctx->c_dev = c_dev;
-
 	crypto_ctx->op_done = rng_init_done;
 
 	sec_dma = sec_dma | (uint64_t) sec_no;
@@ -490,10 +483,10 @@ int32_t rng_instantiation(fsl_crypto_dev_t *c_dev)
 	no_of_secs = c_dev->h_mem->hs_mem.data.device.no_secs;
 
 	for (i = 1; i <= no_of_secs; i++) {
-		err = rng_op(c_dev, i, 1);
+		err = rng_op(c_dev, i, RNG_SELF_TEST);
 		if (err)
 			break;
-		err = rng_op(c_dev, i, 0);
+		err = rng_op(c_dev, i, RNG_INIT);
 		if (err)
 			break;
 	}
