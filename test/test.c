@@ -547,17 +547,18 @@ inline void check_test_done_test(void)
 		atomic_read(&total_enq_cnt), atomic_read(&total_deq_cnt));
 	print_debug("s_time: %llx, e_time: %llx\n", s_time, e_time);
 	print_debug("*** Test Complete ***\n");
+
 	{
 	uint8_t sysfs_val[30];
 	uint8_t cycle_diff_s[16];
 	uint8_t cpu_freq_s[10];
-	uint64_t cycle_diff = (e_time - s_time);
+	uint64_t cycle_diff = e_time - s_time;
+	uint32_t cpu_freq;
+
 #ifndef P4080_BUILD
-	uint32_t cpu_freq = cpu_khz;
-	cpu_freq = cpu_freq / 1000;
+	cpu_freq = cpu_khz / 1000;
 #else
-	uint32_t cpu_freq = ppc_proc_freq;
-	cpu_freq = cpu_freq / 1000000;
+	cpu_freq = ppc_proc_freq / 1000000;
 #endif
 	print_debug("Cpu Freq: %d\n", cpu_freq);
 	sprintf(cpu_freq_s, "%d", cpu_freq);
