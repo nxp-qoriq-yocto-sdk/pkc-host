@@ -1708,7 +1708,7 @@ int32_t process_label(int8_t *label, int8_t *value)
 	int32_t conv_value = 0;
 	static crypto_dev_config_t *config;
 	static uint32_t rings_spec;
-	static uint32_t ring_count;
+	static uint8_t ring_count;
 	static uint32_t ring_start;
 	static uint32_t dev_start;
 
@@ -1746,6 +1746,8 @@ int32_t process_label(int8_t *label, int8_t *value)
 			create_default_config(config, 0, 2);
 			return 0;
 		}
+		if (ring_count >= FSL_CRYPTO_MAX_RING_PAIRS)
+			return -1;
 		config->ring[ring_count].ring_id = ring_count;
 	} else if (!strcmp(label, "depth") && (ring_start == true)) {
 		config->ring[ring_count].depth = str_to_int(value);
