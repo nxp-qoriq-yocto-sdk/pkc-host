@@ -285,7 +285,6 @@ static struct alg_template driver_algs[] = {
 
 int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 {
-	fsl_h_rsrc_ring_pair_t *rp = NULL;
 	uint32_t no_of_app_rings = 0;
 	uint32_t no_of_devices = 0;
 #ifndef HIGH_PERF
@@ -360,16 +359,18 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 	 * for the ring pair. This sec engine selection will be passed
 	 * to firmware and firmware will enqueue the job to selected sec engine
 	 */
+/*
 #define NO_SEC_ENGINE_ASSIGNED          -1
-
 	if (SYMMETRIC == op_type) {
 		if (ctx->sec_eng == NO_SEC_ENGINE_ASSIGNED) {
+			fsl_h_rsrc_ring_pair_t *rp;
 			rp = &ctx->c_dev->ring_pairs[ctx->r_id];
 			ctx->sec_eng =
 			    atomic_inc_return(&(rp->sec_eng_sel)) &
 			    (rp->num_of_sec_engines);
 		}
 	}
+*/
 	return 0;
 }
 
