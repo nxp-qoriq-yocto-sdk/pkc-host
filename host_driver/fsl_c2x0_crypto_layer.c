@@ -442,7 +442,7 @@ void init_handshake(fsl_crypto_dev_t *dev)
 void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 {
 	fw_resp_ring_t *fw_ring;
-	int i;
+	uint8_t i;
 	/*int offset = 0;*/
 
 	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {

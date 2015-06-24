@@ -55,7 +55,7 @@
 #include "test.h"
 #include "dma.h"
 
-static void create_default_config(crypto_dev_config_t *, int32_t, int32_t);
+static void create_default_config(crypto_dev_config_t *, uint8_t, uint8_t);
 /*********************************************************
  *                  MACRO DEFINITIONS                    *
  *********************************************************/
@@ -1663,8 +1663,10 @@ int8_t *get_label(int8_t *line)
  *
  ******************************************************************************/
 static void create_default_config(crypto_dev_config_t *config,
-				  int32_t from_ring, int32_t max_ring)
+				  uint8_t from_ring, uint8_t max_ring)
 {
+	if (max_ring > FSL_CRYPTO_MAX_RING_PAIRS)
+		max_ring = FSL_CRYPTO_MAX_RING_PAIRS;
 	print_debug("Total no of Rings : %d\n", max_ring);
 	for (; from_ring < max_ring; ++from_ring) {
 		config->ring[from_ring].ring_id = from_ring;
