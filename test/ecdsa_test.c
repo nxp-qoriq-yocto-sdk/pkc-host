@@ -410,36 +410,45 @@ int ecdsa_keygen_sign_test(struct pkc_request *genreq, struct pkc_request *req)
 
 int ecdsa_keygen_test(void)
 {
-	int ret = 0;
-	struct pkc_request *genreq =
-	    kzalloc(sizeof(struct pkc_request), GFP_KERNEL);
-	struct pkc_request *signreq =
-	    kzalloc(sizeof(struct pkc_request), GFP_KERNEL);
-	struct pkc_request *verifyreq =
-	    kzalloc(sizeof(struct pkc_request), GFP_KERNEL);
+	int ret = -ENOMEM;
+	struct pkc_request *genreq, *signreq, *verifyreq;
+	void *tmp;
 
-	genreq->type = ECDSA_KEYGEN;
+	genreq = kzalloc(sizeof(*genreq), GFP_KERNEL);
+	if (!genreq)
+		return ret;
+
+	signreq = kzalloc(sizeof(*signreq), GFP_KERNEL);
+	if (!signreq)
+		goto no_signreq;
+
+	verifyreq = kzalloc(sizeof(*verifyreq), GFP_KERNEL);
+	if (!verifyreq)
+		goto no_verifyreq;
+
+	tmp = kzalloc(sizeof(PUB_KEY), GFP_KERNEL | GFP_DMA);
+	if (!tmp)
+		goto no_pubkey;
+	genreq->req_u.dsa_keygen.pubkey = tmp;
+
+	tmp = kzalloc(sizeof(PRIV_KEY), GFP_KERNEL | GFP_DMA);
+	if (!tmp)
+		goto no_prvkey;
+	genreq->req_u.dsa_keygen.prvkey = tmp;
+
 	init_completion(&keygen_control_completion_var);
 
+	genreq->type = ECDSA_KEYGEN;
+	genreq->req_u.dsa_keygen.pubkey_len = pub_key_len;
+	genreq->req_u.dsa_keygen.prvkey_len = priv_key_len;
 	genreq->req_u.dsa_keygen.q = Q;
 	genreq->req_u.dsa_keygen.q_len = (q_len);
-
 	genreq->req_u.dsa_keygen.r = R;
 	genreq->req_u.dsa_keygen.r_len = (r_len);
-
 	genreq->req_u.dsa_keygen.g = G;
 	genreq->req_u.dsa_keygen.g_len = (g_len);
-
 	genreq->req_u.dsa_keygen.ab = AB;
 	genreq->req_u.dsa_keygen.ab_len = (ab_len);
-
-	genreq->req_u.dsa_keygen.pubkey =
-	    kzalloc(sizeof(PUB_KEY), GFP_KERNEL | GFP_DMA);
-	genreq->req_u.dsa_keygen.pubkey_len = (pub_key_len);
-
-	genreq->req_u.dsa_keygen.prvkey =
-	    kzalloc(sizeof(PRIV_KEY), GFP_KERNEL | GFP_DMA);
-	genreq->req_u.dsa_keygen.prvkey_len = (priv_key_len);
 
 	ret = test_dsa_op(genreq, ecdsa_keygen_done);
 	if (-1 == ret)
@@ -462,35 +471,23 @@ int ecdsa_keygen_test(void)
 	common_dec_count();
 
 error:
-	if (genreq) {
-		if (genreq->req_u.dsa_keygen.pubkey)
-			kfree(genreq->req_u.dsa_keygen.pubkey);
-		if (genreq->req_u.dsa_keygen.prvkey)
-			kfree(genreq->req_u.dsa_keygen.prvkey);
-		kfree(genreq);
-	}
+	kfree(signreq->req_u.dsa_sign.c);
+	kfree(signreq->req_u.dsa_sign.d);
+	kfree(signreq->req_u.dsa_sign.priv_key);
 
-	if (signreq) {
-		if (signreq->req_u.dsa_sign.c)
-			kfree(signreq->req_u.dsa_sign.c);
-		if (signreq->req_u.dsa_sign.d)
-			kfree(signreq->req_u.dsa_sign.d);
-		if (signreq->req_u.dsa_sign.priv_key)
-			kfree(signreq->req_u.dsa_sign.priv_key);
+	kfree(verifyreq->req_u.dsa_verify.c);
+	kfree(verifyreq->req_u.dsa_verify.d);
+	kfree(verifyreq->req_u.dsa_verify.pub_key);
 
-		kfree(signreq);
-	}
-	if (verifyreq) {
-		if (verifyreq->req_u.dsa_verify.c)
-			kfree(verifyreq->req_u.dsa_verify.c);
-		if (verifyreq->req_u.dsa_verify.d)
-			kfree(verifyreq->req_u.dsa_verify.d);
-		if (verifyreq->req_u.dsa_verify.pub_key)
-			kfree(verifyreq->req_u.dsa_verify.pub_key);
-
-		kfree(verifyreq);
-	}
-
+	kfree(genreq->req_u.dsa_keygen.prvkey);
+no_prvkey:
+	kfree(genreq->req_u.dsa_keygen.pubkey);
+no_pubkey:
+	kfree(verifyreq);
+no_verifyreq:
+	kfree(signreq);
+no_signreq:
+	kfree(genreq);
 	return ret;
 }
 
