@@ -442,7 +442,8 @@ void init_handshake(fsl_crypto_dev_t *dev)
 void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 {
 	fw_resp_ring_t *fw_ring;
-	int i, offset;
+	int i;
+	/*int offset = 0;*/
 
 	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
 		fw_ring = &dev->fw_resp_rings[i];
@@ -459,9 +460,9 @@ void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 		fw_ring->s_cntrs = NULL;
 
 		/* FIXME: clean-up leftovers. It probably makes sense to actually
-		 * use offset variable when NUM_OF_RESP_RINGS != 1 */
+		 * use offset variable when NUM_OF_RESP_RINGS != 1
 		offset += (DEFAULT_FIRMWARE_RESP_RING_DEPTH *
-			   sizeof(resp_ring_entry_t));
+			   sizeof(resp_ring_entry_t));*/
 	}
 }
 
