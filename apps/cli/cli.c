@@ -653,7 +653,7 @@ int exe_command()
 				printf("\tSEC JOBS ADDED      :%u\n",cmd.op_buffer->sec_op.sec[i].sec_tot_req_jobs);
 				printf("\tSEC JOBS PROCESSED  :%u\n",cmd.op_buffer->sec_op.sec[i].sec_tot_resp_jobs);
 			}
-			printf("");
+			printf("\n");
 			}
                     else
                         printf("OOPS ... something went wrong\n\n");
