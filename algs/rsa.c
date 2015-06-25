@@ -646,11 +646,12 @@ int rsa_op(struct pkc_request *req)
 	/* By default using first device --
 	 * Logic here will be replaced with LB */
 #ifdef VIRTIO_C2X0
-	if(NULL == (c_dev = get_device_rr()))
-		return -1;
+	c_dev = get_device_rr();
 #else
 	c_dev = get_crypto_dev(1);
 #endif
+	if (!c_dev)
+		return -1;
 
 	/* Choose ring id with round robin. Start ring counter from 1 since
 	 * ring 0 is used for commands */
