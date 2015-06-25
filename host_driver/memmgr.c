@@ -475,27 +475,25 @@ static void link_add(bp *pool, bh *node)
 	}
 }
 
-static void link_after(bp *pool, bh *node, bh *after)
+static void link_after(bp *pool, bh *node, bh *prev)
 {
 	void *n_buff = NULL;
-	bh *prev = NULL;
 	bh *next = NULL;
 
 	print_debug("Link After  .........\n");
 
 	/* First create the link */
-	if (after->next_link)
-		after->next_link->prev_link = node;
+	if (prev->next_link)
+		prev->next_link->prev_link = node;
 
-	node->next_link = after->next_link;
+	node->next_link = prev->next_link;
 
-	after->next_link = node;
-	node->prev_link = after;
+	prev->next_link = node;
+	node->prev_link = prev;
 
 	/* Now see if we can merge with prev and next */
 
 	/* Check if we can merge with the prev node */
-	prev = node->prev_link;
 	n_buff = (uint8_t *) node;
 
 	if (prev)
