@@ -496,12 +496,10 @@ static void link_after(bp *pool, bh *node, bh *prev)
 	/* Check if we can merge with the prev node */
 	n_buff = (uint8_t *) node;
 
-	if (prev)
-		print_debug("Prev buff: %p    Node buff: %p\n",
-			    ((uint8_t *) prev + prev->len + sizeof(bh)),
-			    n_buff);
+	print_debug("Prev buff: %p    Node buff: %p\n",
+			((uint8_t *) prev + prev->len + sizeof(bh)), n_buff);
 
-	if (prev && (((uint8_t *) prev + prev->len + sizeof(bh)) == n_buff)) {
+	if (((uint8_t *) prev + prev->len + sizeof(bh)) == n_buff) {
 		print_debug("Merging with previous node ........\n");
 		prev->len += node->len + sizeof(bh);
 		prev->in_use = 0;
