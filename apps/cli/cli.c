@@ -354,12 +354,12 @@ int exe_debug_command()
                         for (i=0; i<DEBUG_COL_COUNT; ++i){
 				ASSIGN32(cmd.op_buffer->debug_op[k], cmd.op_buffer->debug_op[k]);
                             if(!i)
-                                printf("%08x  :\t",(unsigned int)((unsigned int *)cmd.rsrc.dgb.address + 4*j));
+                                printf("%08x  :\t", cmd.rsrc.dgb.address + (DEBUG_COL_COUNT - 1) * 4 * j);
                             else
                                 printf("%08x\t", cmd.op_buffer->debug_op[k++]);
                         }
+                        printf("\n");
                     }
-                    printf("\n");
                 }
 				break;
 
