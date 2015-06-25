@@ -42,7 +42,6 @@
 
 /* FIXME: code depending on OP_BUFFER_IN_DEV_MEM is wrapped by #if 0 */
 #undef OP_BUFFER_IN_DEV_MEM
-/* #define RETRY_FOR_BUFFERS */
 
 #ifdef SEC_DMA
 extern fsl_pci_dev_t *g_fsl_pci_dev;
@@ -96,14 +95,6 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 	uint8_t *mem = NULL;
 	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
 
-#ifdef PRINT_DEBUG
-#ifndef SPLIT_BUFFERS
-#ifdef RETRY_FOR_BUFFERS
-	uint32_t retry_cnt = 0;
-#endif
-#endif
-#endif
-
 	/* The structure will have all the memory requirements */
 	for (i = 0; i < mem_info->count; i++) {
 		aligned_len = ALIGN_LEN_TO_DMA(buffers[i].len);
@@ -137,21 +128,9 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 		mem_info->sg_cnt++;
 
 /* FIXME: Fix clean-up on error path (see second note below) */
-
-#ifdef RETRY_FOR_BUFFERS
-RETRY:
-#endif
 	mem = alloc_buffer(mem_info->pool, tot_mem, 1);
 	if (NULL == mem) {
-#ifdef RETRY_FOR_BUFFERS
-		set_current_state(TASK_INTERRUPTIBLE);
-		schedule_timeout(msecs_to_jiffies(100));
-		print_debug("No mem... retrying... :%d\n", ++retry_cnt);
-		goto RETRY;
-#else
 		return -ENOMEM;
-#endif
-
 	}
 	mem_info->src_buff = mem;
 	mem_info->alloc_len = tot_mem;
