@@ -196,9 +196,7 @@ endif
 
 build:
 	make -C $(KERNEL_DIR) SUBDIRS=`pwd` modules
-ifeq ($(X86_BUILD),y)
 	$(CROSS_COMPILE)gcc  -Wall apps/cli/cli.c -o apps/cli/cli -static
-endif
 
 modules_install:
 	make -C $(KERNEL_DIR) SUBDIRS=`pwd` modules_install
