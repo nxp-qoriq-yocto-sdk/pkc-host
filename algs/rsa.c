@@ -102,6 +102,7 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 	rsa_pub_op_init_len(pub_req, mem);
 	/* Alloc mem requrd for crypto operation */
 	print_debug("Calling alloc_crypto_mem\n");
+	mem_info->buffers = (buffer_info_t *)mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA
@@ -284,6 +285,7 @@ static int rsa_priv1_op_cp_req(struct rsa_priv_frm1_req_s *priv1_req,
 
 	/* Alloc mem requrd for crypto operation */
 	print_debug("Calling alloc_crypto_mem\n");
+	mem_info->buffers = (buffer_info_t *)mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA
@@ -386,6 +388,7 @@ static int rsa_priv2_op_cp_req(struct rsa_priv_frm2_req_s *priv2_req,
 
 	/* Alloc mem requrd for crypto operation */
 	print_debug("Calling alloc_crypto_mem\n");
+	mem_info->buffers = (buffer_info_t *)mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA
@@ -531,6 +534,7 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 
 	/* Alloc mem requrd for crypto operation */
 	print_debug("Calling alloc_crypto_mem\n");
+	mem_info->buffers = (buffer_info_t *)mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA

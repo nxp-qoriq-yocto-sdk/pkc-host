@@ -50,7 +50,7 @@ extern fsl_pci_dev_t *g_fsl_pci_dev;
 static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 {
 	uint32_t i;
-	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
+	buffer_info_t *buffers = mem_info->buffers;
 
 	for (i = 0; i < mem_info->count; i++) {
 		switch (buffers[i].bt) {
@@ -91,7 +91,7 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 	uint32_t tot_mem = 0;
 	uint32_t aligned_len;
 	uint8_t *mem;
-	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
+	buffer_info_t *buffers = mem_info->buffers;
 
 	/* The structure will have all the memory requirements */
 	for (i = 0; i < mem_info->count; i++) {
@@ -159,7 +159,7 @@ Returns     :	SUCCESS/FAILURE
 int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 {
 	fsl_pci_dev_t *pci_dev = mem_info->dev->priv_dev;
-	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
+	buffer_info_t *buffers = mem_info->buffers;
 	uint32_t i = 0;
 
 	if (buffers[0].v_mem)
@@ -237,7 +237,7 @@ Returns     :	SUCCESS/ FAILURE
 void host_to_dev(crypto_mem_info_t *mem_info)
 {
 	uint32_t i;
-	buffer_info_t *buffers = (buffer_info_t *) &mem_info->c_buffers;
+	buffer_info_t *buffers = mem_info->buffers;
 
 	for (i = 0; i < mem_info->count; i++) {
 		buffers[i].dev_buffer.h_v_addr = buffers[i].v_mem;
@@ -281,7 +281,7 @@ void host_to_dev(crypto_mem_info_t *mem_info)
  */
 int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
 	int32_t i;
-	buffer_info_t *buffers = (buffer_info_t *) &crypto_mem->c_buffers;
+	buffer_info_t *buffers = crypto_mem->buffers;
 
 	if (!crypto_mem)
 		return -1;
@@ -309,7 +309,7 @@ int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
  */
 int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
 	int32_t i;
-	buffer_info_t *buffers = (buffer_info_t *) &crypto_mem->c_buffers;
+	buffer_info_t *buffers = crypto_mem->buffers;
 
 	if (!crypto_mem)
 		return -1;
@@ -340,7 +340,7 @@ int32_t memcpy_to_dev(crypto_mem_info_t *mem)
 {
 	uint32_t i = 0;
 	buffer_info_t *src;
-	buffer_info_t *buffers = (buffer_info_t *) &mem->c_buffers;
+	buffer_info_t *buffers = mem->buffers;
 	dev_buffer_t *dst;
 
 	/* This function will take care of endian conversions across pcie */

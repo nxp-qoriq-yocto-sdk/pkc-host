@@ -212,7 +212,7 @@ typedef union crypto_buffers {
 	dsa_verify_buffers_t dsa_verify;
 	dsa_keygen_buffers_t dsa_keygen;
 	dh_key_buffers_t dh_key;
-    dh_keygen_buffers_t dh_keygen;
+	dh_keygen_buffers_t dh_keygen;
 	rng_init_buffers_t rng_init;
 	rng_self_test_buffers_t rng_self_test;
 	rng_buffers_t rng;
