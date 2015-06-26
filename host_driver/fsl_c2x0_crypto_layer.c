@@ -509,6 +509,40 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 
 }
 
+void send_hs_init_config(fsl_crypto_dev_t *dev)
+{
+	phys_addr_t host_p_addr = dev->mem[MEM_TYPE_DRIVER].host_p_addr;
+	phys_addr_t drv_resp_rings = dev->ob_mem.drv_resp_rings + host_p_addr;
+	phys_addr_t fw_resp_ring   = dev->ob_mem.fw_resp_ring + host_p_addr;
+	phys_addr_t s_cntrs        = dev->ob_mem.s_c_cntrs_mem + host_p_addr;
+	phys_addr_t r_s_cntrs      = dev->ob_mem.s_c_r_cntrs_mem + host_p_addr;
+	volatile struct c_config_data *config = &dev->c_hs_mem->data.config;
+
+	ASSIGN8(dev->c_hs_mem->command, HS_INIT_CONFIG);
+	ASSIGN8(config->num_of_rps, dev->num_of_rings);
+	ASSIGN8(config->max_pri, dev->max_pri_level);
+	ASSIGN8(config->num_of_fwresp_rings, NUM_OF_RESP_RINGS);
+	ASSIGN16(config->req_mem_size, dev->tot_req_mem_size);
+	ASSIGN32(config->drv_resp_ring, drv_resp_rings);
+	ASSIGN32(config->fw_resp_ring, fw_resp_ring);
+	ASSIGN32(config->s_cntrs, s_cntrs);
+	ASSIGN32(config->r_s_cntrs, r_s_cntrs);
+	ASSIGN32(config->fw_resp_ring_depth, DEFAULT_FIRMWARE_RESP_RING_DEPTH);
+
+	print_debug("HS_INIT_CONFIG Details\n");
+	print_debug("Num of rps: %d\n", dev->num_of_rings);
+	print_debug("Max pri: %d\n", dev->max_pri_level);
+	print_debug("Req mem size: %d\n", dev->tot_req_mem_size);
+	print_debug("Drv resp ring: %pa\n", &drv_resp_rings);
+	print_debug("Fw resp ring: %pa\n", &fw_resp_ring);
+	print_debug("S C Counters: %pa\n", &s_cntrs);
+	print_debug("R S C counters: %pa\n", &r_s_cntrs);
+	print_debug("Sending FW_INIT_CONFIG command at addr: %p\n",
+			&(dev->c_hs_mem->state));
+
+	ASSIGN8(dev->c_hs_mem->state, FW_INIT_CONFIG);
+}
+
 static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 {
 	const char *str_state = NULL;
@@ -518,54 +552,8 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 		str_state = "HS_INIT_CONFIG\n";
 		set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
 				(uint8_t *) str_state, strlen(str_state));
-		{
-			phys_addr_t drv_resp_rings =
-			    dev->mem[MEM_TYPE_DRIVER].host_p_addr +
-			    dev->ob_mem.drv_resp_rings;
-			phys_addr_t fw_resp_ring =
-			    dev->mem[MEM_TYPE_DRIVER].host_p_addr +
-			    dev->ob_mem.fw_resp_ring;
-			phys_addr_t s_cntrs =
-			    dev->mem[MEM_TYPE_DRIVER].host_p_addr +
-			    dev->ob_mem.s_c_cntrs_mem;
-			phys_addr_t r_s_cntrs =
-			    dev->mem[MEM_TYPE_DRIVER].host_p_addr +
-			    dev->ob_mem.s_c_r_cntrs_mem;
-
-			ASSIGN8(dev->c_hs_mem->command, HS_INIT_CONFIG);
-			ASSIGN8(dev->c_hs_mem->data.config.num_of_rps,
-				dev->num_of_rings);
-			ASSIGN8(dev->c_hs_mem->data.config.max_pri,
-				dev->max_pri_level);
-			ASSIGN8(dev->c_hs_mem->data.config.num_of_fwresp_rings,
-				NUM_OF_RESP_RINGS);
-
-			ASSIGN16(dev->c_hs_mem->data.config.req_mem_size,
-				 dev->tot_req_mem_size);
-			ASSIGN32(dev->c_hs_mem->data.config.drv_resp_ring,
-				 drv_resp_rings);
-			ASSIGN32(dev->c_hs_mem->data.config.fw_resp_ring,
-				 fw_resp_ring);
-			ASSIGN32(dev->c_hs_mem->data.config.s_cntrs, s_cntrs);
-			ASSIGN32(dev->c_hs_mem->data.config.r_s_cntrs,
-				 r_s_cntrs);
-			ASSIGN32(dev->c_hs_mem->data.config.fw_resp_ring_depth,
-				 DEFAULT_FIRMWARE_RESP_RING_DEPTH);
-
-			print_debug("HS_INIT_CONFIG Details\n");
-			print_debug("Num of rps: %d\n", dev->num_of_rings);
-			print_debug("Max pri: %d\n", dev->max_pri_level);
-			print_debug("Req mem size: %d\n", dev->tot_req_mem_size);
-			print_debug("Drv resp ring: %pa\n", &(drv_resp_rings));
-			print_debug("Fw resp ring: %pa\n", &(fw_resp_ring));
-			print_debug("S C Counters: %pa\n", &(s_cntrs));
-			print_debug("R S C counters: %pa\n", &(r_s_cntrs));
-		}
-		print_debug("Sending FW_INIT_CONFIG command at addr: %p\n",
-				&(dev->c_hs_mem->state));
-		ASSIGN8(dev->c_hs_mem->state, FW_INIT_CONFIG);
+		send_hs_init_config(dev);
 		break;
-
 	case HS_INIT_RING_PAIR:
 		str_state = "HS_INIT_RING_PAIR\n";
 		set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
