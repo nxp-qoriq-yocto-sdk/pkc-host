@@ -521,7 +521,7 @@ typedef struct fsl_crypto_dev {
 	uint8_t max_pri_level;
 	fsl_priority_queue_t pri_queue[MAX_PRIORITY_LEVELS];
 
-	uint32_t num_of_rings;
+	uint8_t num_of_rings;
 	fsl_h_rsrc_ring_pair_t *ring_pairs;
 
 	/* Holds the count of number of crypto dev sessions */
