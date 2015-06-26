@@ -522,7 +522,13 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	ASSIGN8(config->num_of_rps, dev->num_of_rings);
 	ASSIGN8(config->max_pri, dev->max_pri_level);
 	ASSIGN8(config->num_of_fwresp_rings, NUM_OF_RESP_RINGS);
+	/* Several aspects need to be clarified with the firmware:
+	 * TODO: tot_req_mem_size is below 64K by way of computing it in
+	 * calc_ob_mem_len. Does it make sense to keep the type uint32_t ? */
 	ASSIGN16(config->req_mem_size, dev->tot_req_mem_size);
+	/* TODO: These ASSIGN32 truncate 64bit addresses on 64bit machines.
+	 * The DMA space is indeed limited to 32/36 bit but what about the
+	 * physical addresses on the host? */
 	ASSIGN32(config->drv_resp_ring, drv_resp_rings);
 	ASSIGN32(config->fw_resp_ring, fw_resp_ring);
 	ASSIGN32(config->s_cntrs, s_cntrs);
