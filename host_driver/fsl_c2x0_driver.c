@@ -1218,7 +1218,7 @@ void get_msi_config_data(fsl_pci_dev_t *fsl_pci_dev, isr_ctx_t *isr_context)
 static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 				    const struct pci_device_id *id)
 {
-	int32_t ret = 0;
+	int32_t err = -ENODEV;
 	int32_t i = 0;
 
 #ifndef P4080_BUILD
@@ -1244,7 +1244,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	if (!dev) {
 		print_error("PCI device with VendorId:%0x DeviceId:%0x is not found\n",
 				id->vendor, id->device);
-		return -ENODEV;
+		return err;
 	}
 
 	/* Allocate memory for the new PCI device data structure */
@@ -1309,7 +1309,6 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	/* Check whether the device has PCIE cap */
 	if (unlikely(!pci_find_capability(dev, PCI_CAP_ID_EXP))) {
 		DEV_PRINT_ERROR("Does not have PCIE cap\n");
-		ret = -ENODEV;
 		goto error;
 	}
 
@@ -1329,7 +1328,6 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	/* Wake up the device if it is in suspended state */
 	if (unlikely(pci_enable_device(dev))) {
 		DEV_PRINT_ERROR("Enable Device failed\n");
-		ret = -ENODEV;
 		goto error;
 	}
 
@@ -1338,8 +1336,8 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	/* Set bus master */
 	pci_set_master(dev);
 
-	ret = fsl_get_bar_map(fsl_pci_dev);
-	if (ret)
+	err = fsl_get_bar_map(fsl_pci_dev);
+	if (err)
 		goto error;
 
 	/* RESET THE PIC_PIR */
@@ -1355,14 +1353,14 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	 * to ask = number of application rings.*/
 
 	config = get_dev_config(fsl_pci_dev);
-	if (unlikely(NULL == config)) {
+	if (!config) {
 		/* FIX: IF NO CONFIGURATION IS SPECIFIED THEN
 		 * TAKE THE DEFAULT CONFIGURATION */
 		print_debug("NO CONFIG FOUND, CREATING DEFAULT CONFIGURATION\n");
 		config = kzalloc(sizeof(crypto_dev_config_t), GFP_KERNEL);
-		if (unlikely(NULL == config)) {
+		if (!config) {
 			print_error("Mem allocation failed\n");
-			ret = -ENODEV;
+			err = -ENODEV;
 			goto error;
 		}
 
@@ -1384,17 +1382,17 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	 * data path separation is considered.
 	 */
 	if (is_msix_cap)
-		ret = get_msix_iv_cnt(fsl_pci_dev, config->num_of_rings);
+		err = get_msix_iv_cnt(fsl_pci_dev, config->num_of_rings);
 	else if (is_msi_cap)
 #ifdef MULTIPLE_MSI_SUPPORT
-		ret = get_msi_iv_cnt(fsl_pci_dev, config->num_of_rings);
+		err = get_msi_iv_cnt(fsl_pci_dev, config->num_of_rings);
 #else
-		ret = get_msi_iv(fsl_pci_dev);
+		err = get_msi_iv(fsl_pci_dev);
 #endif
 	else
 		fsl_pci_dev->intr_info.intr_vectors_cnt = 1;
 
-	if (ret)
+	if (err)
 		goto error;
 
 	num_of_vectors = fsl_pci_dev->intr_info.intr_vectors_cnt;
@@ -1404,7 +1402,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	isr_context = kzalloc(num_of_vectors * sizeof(isr_ctx_t), GFP_KERNEL);
 	if (!isr_context) {
 		DEV_PRINT_ERROR("Mem alloc failed\n");
-		ret = -ENOMEM;
+		err = -ENOMEM;
 		goto error;
 	}
 
@@ -1431,11 +1429,10 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 #endif
 
 		/* Register the ISR with kernel for each vector */
-		ret = request_irq(irq, (irq_handler_t) fsl_crypto_isr, 0,
+		err = request_irq(irq, (irq_handler_t) fsl_crypto_isr, 0,
 				fsl_pci_dev->dev_name, isr_context);
-		if (ret) {
+		if (err) {
 			DEV_PRINT_ERROR("Request IRQ failed for vector: %d\n", i);
-			ret = -ENODEV;
 			goto free_isr_context;
 		}
 
@@ -1465,8 +1462,8 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	/* [MAK] TODO: Create the device node with next minor number */
 
 	/** Now create all the SYSFS entries required for this device **/
-	ret = init_sysfs(fsl_pci_dev);
-	if (unlikely(-1 == ret)) {
+	err = init_sysfs(fsl_pci_dev);
+	if (err) {
 		print_error("Sysfs init failed !!\n");
 		goto error;
 	}
@@ -1480,7 +1477,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	fsl_pci_dev->crypto_dev = fsl_crypto_layer_add_device(fsl_pci_dev, config);
 	if (!fsl_pci_dev->crypto_dev) {
 		DEV_PRINT_ERROR("Adding device as crypto dev failed\n");
-		ret = -1;
+		err = -ENODEV;
 		goto error;
 	}
 
@@ -1517,7 +1514,7 @@ error:
 	DEV_PRINT_ERROR("Probe of device [%d] failed\n", fsl_pci_dev->dev_no);
 	dev_no--; /* don't count this device as usable */
 
-	return ret;
+	return err;
 }
 
 /*******************************************************************************
@@ -2078,7 +2075,7 @@ static int32_t __init fsl_crypto_drv_init(void)
 
 	/* If there is no device detected -- goto error */
 	if (!dev_no) {
-		ret = -1;
+		ret = -ENODEV;
 		print_error("NO DEVICE FOUND...\n");
 		goto unreg_drv;
 	}
