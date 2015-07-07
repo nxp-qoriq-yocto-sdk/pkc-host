@@ -281,11 +281,12 @@ void host_to_dev(crypto_mem_info_t *mem_info)
  */
 int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
 	int32_t i;
-	buffer_info_t *buffers = crypto_mem->buffers;
+	buffer_info_t *buffers;
 
 	if (!crypto_mem)
 		return -1;
 
+	buffers = crypto_mem->buffers;
 	for (i = 0; i < crypto_mem->count; i++) {
 		if (buffers[i].bt != BT_IP)
 			continue;
@@ -309,11 +310,12 @@ int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
  */
 int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
 	int32_t i;
-	buffer_info_t *buffers = crypto_mem->buffers;
+	buffer_info_t *buffers;
 
 	if (!crypto_mem)
 		return -1;
 
+	buffers = crypto_mem->buffers;
 	for (i = 0; i < crypto_mem->count; i++) {
 		if (buffers[i].bt != BT_IP)
 			continue;
