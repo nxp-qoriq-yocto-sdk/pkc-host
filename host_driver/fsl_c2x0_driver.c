@@ -1012,10 +1012,16 @@ static void resp_process_tasklet(unsigned long data)
 #endif
 }
 
-void free_and_unmap_pci_resource(pci_bar_info_t *bar)
+/* release up to bar_max entries allocated in *bar array */
+void fsl_free_bar_map(pci_bar_info_t *bar, int bar_max)
 {
-	iounmap(bar->v_addr);
-	release_mem_region(bar->phy_addr, bar->len);
+	int i;
+
+	for (i = 0; i < bar_max; i++) {
+		iounmap(bar->v_addr);
+		release_mem_region(bar->phy_addr, bar->len);
+		bar++;
+	}
 }
 
 int request_and_map_pci_resource(pci_bar_info_t *bar)
@@ -1059,7 +1065,7 @@ int fsl_get_bar_map(fsl_pci_dev_t *fsl_pci_dev)
 		bars[i].phy_addr = pci_resource_start(dev, i);
 		if (!bars[i].phy_addr) {
 			DEV_PRINT_ERROR("BAR %d: failed to get physical address\n", i);
-			goto error;
+			goto error; /* no clean-up required */
 		}
 		DEV_PRINT_DEBUG("Bar %d: physical address %pa\n", i, &bars[i].phy_addr);
 
@@ -1071,10 +1077,9 @@ int fsl_get_bar_map(fsl_pci_dev_t *fsl_pci_dev)
 	return 0;
 
 error:
-	/* current iteration cleaned after itself;
+	/* request_and_map_pci_resource cleans after itself;
 	 * clean-up resources allocated in previous iterations */
-	for (--i; i >= 0; i--)
-		free_and_unmap_pci_resource(&bars[i]);
+	fsl_free_bar_map(bars, i);
 
 	return -ENOMEM;
 }
