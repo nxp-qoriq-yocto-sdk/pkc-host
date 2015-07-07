@@ -139,6 +139,8 @@ static struct pci_device_id fsl_crypto_pci_dev_ids[] = {
 	{0,},
 };
 
+enum int_support {INT_BASIC, INT_MSI, INT_MSIX};
+
 fsl_pci_dev_t *g_fsl_pci_dev;
 
 /*********************************************************
@@ -1230,9 +1232,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	int32_t rsrc_bar_addr = 0;
 	int32_t config_bar_addr = 0;
 #endif
-
-	uint8_t is_msix_cap = 0;
-	uint8_t is_msi_cap = 0;
+	enum int_support int_type;
 
 	uint32_t num_of_vectors = 0;
 	uint32_t irq;
@@ -1320,14 +1320,15 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	DEV_PRINT_DEBUG("Is PCIe Capable\n");
 
 	/* Check whether the device has MSIx cap */
-	if (likely(pci_find_capability(dev, PCI_CAP_ID_MSIX))) {
+	if (pci_find_capability(dev, PCI_CAP_ID_MSIX)) {
 		DEV_PRINT_DEBUG("MSIx Support\n");
-		is_msix_cap = true;
-	} else if (likely(pci_find_capability(dev, PCI_CAP_ID_MSI))) {
+		int_type = INT_MSIX;
+	} else if (pci_find_capability(dev, PCI_CAP_ID_MSI)) {
 		DEV_PRINT_DEBUG("MSI Support\n");
-		is_msi_cap = true;
+		int_type = INT_MSI;
 	} else {
 		DEV_PRINT_DEBUG("INTR Support\n");
+		int_type = INT_BASIC;
 	}
 
 	/* Wake up the device if it is in suspended state */
@@ -1386,9 +1387,9 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	 * For now, with virtualization in mind,
 	 * data path separation is considered.
 	 */
-	if (is_msix_cap)
+	if (int_type == INT_MSIX)
 		err = get_msix_iv_cnt(fsl_pci_dev, config->num_of_rings);
-	else if (is_msi_cap)
+	else if (int_type == INT_MSI)
 #ifdef MULTIPLE_MSI_SUPPORT
 		err = get_msi_iv_cnt(fsl_pci_dev, config->num_of_rings);
 #else
@@ -1424,7 +1425,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		list_add(&(isr_context->list),
 			 &(fsl_pci_dev->intr_info.isr_ctx_list_head));
 
-		if (is_msix_cap)
+		if (int_type == INT_MSIX)
 			irq = fsl_pci_dev->intr_info.msix_entries[i].vector;
 		else
 #ifdef MULTIPLE_MSI_SUPPORT
@@ -1441,14 +1442,14 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 			goto free_isr_context;
 		}
 
-		if (is_msix_cap) {
+		if (int_type == INT_MSIX) {
 			/* [MAK] TODO: For MSIx support, Device will expose an
 			 * another BAR which will have table of MSI
 			 * address and data. To get the MSI address and data a
 			 * look up has to be done with the entry
 			 * number. The exact implementation will depend on the
 			 * MSIx implementation in the device.*/
-		} else if (is_msi_cap) {
+		} else if (int_type == INT_MSI) {
 			get_msi_config_data(fsl_pci_dev, isr_context);
 		}
 		isr_context++;
@@ -1491,9 +1492,9 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	snprintf(pci_info, 60, "VendorId:%0x DeviceId:%0x BusNo:%0x\nCAP:PCIe\n",
 		 id->device, id->vendor, fsl_pci_dev->dev->bus->number);
 	strcpy(sys_pci_info, pci_info);
-	if (is_msix_cap)
+	if (int_type == INT_MSIX)
 		strcat(sys_pci_info, "MSIx CAP\n");
-	else if (is_msi_cap)
+	else if (int_type == INT_MSI)
 		strcat(sys_pci_info, "MSI CAP\n");
 	else
 		strcat(sys_pci_info, "INTR CAP\n");
