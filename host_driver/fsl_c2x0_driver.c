@@ -1254,6 +1254,71 @@ int get_irq_vectors(fsl_pci_dev_t *fsl_pci_dev, uint8_t num_of_rings)
 	return err;
 }
 
+int fsl_request_irqs(fsl_pci_dev_t *fsl_pci_dev)
+{
+	uint16_t i, num_of_vectors;
+	uint32_t irq;
+	isr_ctx_t *isr_context;
+	struct list_head *ctx_list;
+	int err;
+
+	ctx_list = &(fsl_pci_dev->intr_info.isr_ctx_list_head);
+	INIT_LIST_HEAD(ctx_list);
+
+	/* this was set-up earlier by get_irq_vectors */
+	num_of_vectors = fsl_pci_dev->intr_info.intr_vectors_cnt;
+	for (i = 0; i < num_of_vectors; i++) {
+		isr_context = kzalloc(sizeof(*isr_context), GFP_KERNEL);
+		if (!isr_context) {
+			DEV_PRINT_ERROR("Mem alloc failed\n");
+			err = -ENOMEM;
+			goto free_irqs;
+		}
+
+		INIT_LIST_HEAD(&(isr_context->ring_list_head));
+		isr_context->dev = fsl_pci_dev;
+		tasklet_init(&(isr_context->tasklet), resp_process_tasklet,
+                               (unsigned long)isr_context);
+
+		if (fsl_pci_dev->intr_info.type == INT_MSIX)
+			irq = fsl_pci_dev->intr_info.msix_entries[i].vector;
+		else
+#ifdef MULTIPLE_MSI_SUPPORT
+			irq = fsl_pci_dev->dev->irq + i;
+#else
+			irq = fsl_pci_dev->dev->irq;
+#endif
+		/* Register the ISR with kernel for each vector */
+		err = request_irq(irq, (irq_handler_t) fsl_crypto_isr, 0,
+				fsl_pci_dev->dev_name, isr_context);
+		if (err) {
+			DEV_PRINT_ERROR("Request IRQ failed for vector: %d\n", i);
+			kfree(isr_context);
+			goto free_irqs;
+		}
+		isr_context->irq = irq;
+
+		if (fsl_pci_dev->intr_info.type == INT_MSIX) {
+			/* [MAK] TODO: For MSIx support, Device will expose an
+			 * another BAR which will have table of MSI
+			 * address and data. To get the MSI address and data a
+			 * look up has to be done with the entry
+			 * number. The exact implementation will depend on the
+			 * MSIx implementation in the device.*/
+		} else if (fsl_pci_dev->intr_info.type == INT_MSI) {
+			get_msi_config_data(fsl_pci_dev, isr_context);
+		}
+
+		/* Add this to the list of ISR contexts */
+		list_add(&(isr_context->list), ctx_list);
+	}
+	return 0;
+
+free_irqs:
+	fsl_release_irqs(fsl_pci_dev);
+	return err;
+}
+
 /*******************************************************************************
  * Function     : fsl_crypto_pci_probe
  *
@@ -1269,23 +1334,17 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 				    const struct pci_device_id *id)
 {
 	int32_t err = -ENODEV;
-	int32_t i = 0;
 
 #ifndef P4080_BUILD
 	int32_t rsrc_bar_addr = 0;
 	int32_t config_bar_addr = 0;
 #endif
 	enum int_type int_type;
-
-	uint32_t num_of_vectors = 0;
-	uint32_t irq;
-
 	int8_t pci_info[60];
 	int8_t sys_pci_info[100];
 
 	fsl_pci_dev_t *fsl_pci_dev = NULL;
 	crypto_dev_config_t *config = NULL;
-	isr_ctx_t *isr_context = NULL;
 
 	print_debug("========== PROBE FUNCTION ==========\n");
 
@@ -1428,66 +1487,9 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	if (err)
 		goto error;
 
-	num_of_vectors = fsl_pci_dev->intr_info.intr_vectors_cnt;
-	INIT_LIST_HEAD(&(fsl_pci_dev->intr_info.isr_ctx_list_head));
-	for (i = 0; i < num_of_vectors; i++) {
-		isr_context = kzalloc(sizeof(isr_ctx_t), GFP_KERNEL);
-		if (!isr_context) {
-			DEV_PRINT_ERROR("Mem alloc failed\n");
-			err = -ENOMEM;
-			goto free_irqs;
-		}
-
-		INIT_LIST_HEAD(&(isr_context->ring_list_head));
-		isr_context->dev = fsl_pci_dev;
-		tasklet_init(&(isr_context->tasklet), resp_process_tasklet,
-			     (unsigned long)isr_context);
-
-		if (int_type == INT_MSIX)
-			irq = fsl_pci_dev->intr_info.msix_entries[i].vector;
-		else
-#ifdef MULTIPLE_MSI_SUPPORT
-			irq = dev->irq + i;
-#else
-			irq = dev->irq;
-#endif
-		/* Register the ISR with kernel for each vector */
-		err = request_irq(irq, (irq_handler_t) fsl_crypto_isr, 0,
-				fsl_pci_dev->dev_name, isr_context);
-		if (err) {
-			DEV_PRINT_ERROR("Request IRQ failed for vector: %d\n", i);
-			kfree(isr_context);
-			goto free_irqs;
-		}
-		isr_context->irq = irq;
-
-		if (int_type == INT_MSIX) {
-			/* [MAK] TODO: For MSIx support, Device will expose an
-			 * another BAR which will have table of MSI
-			 * address and data. To get the MSI address and data a
-			 * look up has to be done with the entry
-			 * number. The exact implementation will depend on the
-			 * MSIx implementation in the device.*/
-		} else if (int_type == INT_MSI) {
-			get_msi_config_data(fsl_pci_dev, isr_context);
-		}
-
-		/* Add this to the list of ISR contexts */
-		list_add(&(isr_context->list),
-			 &(fsl_pci_dev->intr_info.isr_ctx_list_head));
-	}
-
-	/* [MAK] TODO: Loop through each IRQ and distribute them
-	 * to the available cores.  Worst distribution is when
-	 * number of IRQs are more than the number of CPUs, this
-	 * can happen when number of rings are more than the cores.
-
-	isr_context = NULL;
-	list_for_each_entry(isr_context, &(fsl_pci_dev->intr_info.isr_ctx_list_head), list) {
-	}
-	*/
-
-	/* [MAK] TODO: Create the device node with next minor number */
+	err = fsl_request_irqs(fsl_pci_dev);
+	if (err)
+		goto error;
 
 	/** Now create all the SYSFS entries required for this device **/
 	err = init_sysfs(fsl_pci_dev);
@@ -1536,8 +1538,6 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	/* FIXME: check exit logic on normal and error paths */
 	return 0;
 
-free_irqs:
-	fsl_release_irqs(fsl_pci_dev);
 error:
 	DEV_PRINT_ERROR("Probe of device [%d] failed\n", fsl_pci_dev->dev_no);
 	dev_no--; /* don't count this device as usable */
