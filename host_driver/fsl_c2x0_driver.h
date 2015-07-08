@@ -146,7 +146,7 @@ Fields      :	vector_no: vector number of the interrupt
 		list: Required to make the list of this structures.
 *******************************************************************************/
 typedef struct isr_ctx {
-	int intr_no;
+	uint32_t irq;
 	struct fsl_pci_dev *dev;
 	struct tasklet_struct tasklet;
 	/* List of Bhs for this ISR */

@@ -1433,6 +1433,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 #else
 			irq = dev->irq;
 #endif
+		isr_context->irq = irq;
 
 		/* Register the ISR with kernel for each vector */
 		err = request_irq(irq, (irq_handler_t) fsl_crypto_isr, 0,
@@ -1931,7 +1932,7 @@ static void cleanup_pci_device(fsl_pci_dev_t *dev)
 	list_for_each_entry_safe(isr_cursor, isr_n_cursor,
 				 &(dev->intr_info.isr_ctx_list_head), list) {
 		dev_print_dbg(dev, "Freeing Irq\n");
-		free_irq(dev->dev->irq, isr_cursor);
+		free_irq(isr_cursor->irq, isr_cursor);
 		list_del(&(isr_cursor->list));
 		list_del(&(isr_cursor->ring_list_head));
 		kfree(isr_cursor);
