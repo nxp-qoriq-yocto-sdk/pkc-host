@@ -1334,6 +1334,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 				    const struct pci_device_id *id)
 {
 	int32_t err = -ENODEV;
+	int local_cfg; /* clean-up is required on error path */
 
 #ifndef P4080_BUILD
 	int32_t rsrc_bar_addr = 0;
@@ -1411,14 +1412,11 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	pci_set_dma_mask(dev, DMA_32BIT_MASK);
 #endif
 
-	/* Read the different capabilities of the device */
-
 	/* Check whether the device has PCIE cap */
-	if (unlikely(!pci_find_capability(dev, PCI_CAP_ID_EXP))) {
-		DEV_PRINT_ERROR("Does not have PCIE cap\n");
-		goto error;
+	if (!pci_find_capability(dev, PCI_CAP_ID_EXP)) {
+		DEV_PRINT_ERROR("Does not have PCIe cap\n");
+		goto free_dev;
 	}
-
 	DEV_PRINT_DEBUG("Is PCIe Capable\n");
 
 	/* Check whether the device has MSIx cap */
@@ -1437,19 +1435,18 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	fsl_pci_dev->intr_info.type = int_type;
 
 	/* Wake up the device if it is in suspended state */
-	if (unlikely(pci_enable_device(dev))) {
+	err = pci_enable_device(dev);
+	if (err) {
 		DEV_PRINT_ERROR("Enable Device failed\n");
-		goto error;
+		goto free_dev;
 	}
-
-	fsl_pci_dev->enabled = true;
 
 	/* Set bus master */
 	pci_set_master(dev);
 
 	err = fsl_get_bar_map(fsl_pci_dev);
 	if (err)
-		goto error;
+		goto clear_master;
 
 	/* RESET THE PIC_PIR */
 #define PIC_PIR 0x041090
@@ -1464,7 +1461,10 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	 * to ask = number of application rings.*/
 
 	config = get_dev_config(fsl_pci_dev);
-	if (!config) {
+	if (config) {
+		local_cfg = 0;
+	} else {
+		local_cfg = 1;
 		/* FIX: IF NO CONFIGURATION IS SPECIFIED THEN
 		 * TAKE THE DEFAULT CONFIGURATION */
 		print_debug("NO CONFIG FOUND, CREATING DEFAULT CONFIGURATION\n");
@@ -1472,7 +1472,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		if (!config) {
 			print_error("Mem allocation failed\n");
 			err = -ENODEV;
-			goto error;
+			goto free_bar_map;
 		}
 
 		list_add(&(config->list), &(crypto_dev_config_list));
@@ -1485,17 +1485,17 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 	err = get_irq_vectors(fsl_pci_dev, config->num_of_rings);
 	if (err)
-		goto error;
+		goto free_config;
 
 	err = fsl_request_irqs(fsl_pci_dev);
 	if (err)
-		goto error;
+		goto free_irq_vec;
 
-	/** Now create all the SYSFS entries required for this device **/
+	/* Now create all the SYSFS entries required for this device */
 	err = init_sysfs(fsl_pci_dev);
 	if (err) {
 		print_error("Sysfs init failed !!\n");
-		goto error;
+		goto free_req_irq;
 	}
 
 	/* Add the PCI device to the crypto layer --
@@ -1508,7 +1508,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	if (!fsl_pci_dev->crypto_dev) {
 		DEV_PRINT_ERROR("Adding device as crypto dev failed\n");
 		err = -ENODEV;
-		goto error;
+		goto deinit_sysfs;
 	}
 
 	/* Updating the information to sysfs entries */
@@ -1535,13 +1535,28 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	/* Add this node to the pci device's linked list */
 	list_add(&(fsl_pci_dev->list), &pci_dev_list);
 
-	/* FIXME: check exit logic on normal and error paths */
 	return 0;
 
-error:
-	DEV_PRINT_ERROR("Probe of device [%d] failed\n", fsl_pci_dev->dev_no);
+deinit_sysfs:
+	sysfs_cleanup(fsl_pci_dev);
+free_req_irq:
+	fsl_release_irqs(fsl_pci_dev);
+free_irq_vec:
+	free_irq_vectors(fsl_pci_dev);
+free_config:
+	if (local_cfg) {
+		list_del(&(config->list));
+		kfree(config);
+	}
+free_bar_map:
+	fsl_free_bar_map(fsl_pci_dev->bars, PCI_IB_BAR_MAX);
+clear_master:
+	pci_clear_master(dev);
+free_dev:
+	kfree(fsl_pci_dev);
 	dev_no--; /* don't count this device as usable */
 
+	DEV_PRINT_ERROR("Probe of device [%d] failed\n", fsl_pci_dev->dev_no);
 	return err;
 }
 
@@ -1951,8 +1966,7 @@ static void cleanup_pci_device(fsl_pci_dev_t *dev)
 	free_irq_vectors(dev);
 
 disable_dev:
-	if (dev->enabled)
-		pci_disable_device(dev->dev);
+	pci_disable_device(dev->dev);
 }
 
 /*******************************************************************************

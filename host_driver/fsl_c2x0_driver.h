@@ -221,8 +221,6 @@ typedef struct fsl_pci_dev {
 	void *sysfs_dir;
 
 	struct list_head list;
-
-	uint8_t enabled;
 } fsl_pci_dev_t;
 
 /*******************************************************************************
