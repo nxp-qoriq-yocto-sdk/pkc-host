@@ -1223,6 +1223,37 @@ void fsl_release_irqs(fsl_pci_dev_t *fsl_pci_dev)
 	}
 }
 
+void free_irq_vectors(fsl_pci_dev_t *fsl_pci_dev)
+{
+	if (fsl_pci_dev->intr_info.type == INT_MSIX) {
+		pci_disable_msix(fsl_pci_dev->dev);
+		kfree(fsl_pci_dev->intr_info.msix_entries);
+	} else if (fsl_pci_dev->intr_info.type == INT_MSI) {
+		pci_disable_msi(fsl_pci_dev->dev);
+	}
+}
+
+int get_irq_vectors(fsl_pci_dev_t *fsl_pci_dev, uint8_t num_of_rings)
+{
+	int err = 0;
+
+	if (fsl_pci_dev->intr_info.type == INT_MSIX)
+		err = get_msix_iv_cnt(fsl_pci_dev, num_of_rings);
+	else if (fsl_pci_dev->intr_info.type == INT_MSI)
+#ifdef MULTIPLE_MSI_SUPPORT
+		err = get_msi_iv_cnt(fsl_pci_dev, num_of_rings);
+#else
+		err = get_msi_iv(fsl_pci_dev);
+#endif
+	else
+		fsl_pci_dev->intr_info.intr_vectors_cnt = 1;
+
+	if (err)
+		free_irq_vectors(fsl_pci_dev);
+
+	return err;
+}
+
 /*******************************************************************************
  * Function     : fsl_crypto_pci_probe
  *
@@ -1393,26 +1424,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		create_default_config(config, 0, 2);
 	}
 
-	/*** Following code setup the interrupt ***/
-
-	/* [MAK] TODO: Discuss how this would scale in case if there are
-	 * number of cores less than application rings.
-	 * What is the important - Parallel processing or
-	 * data path separation ??
-	 * For now, with virtualization in mind,
-	 * data path separation is considered.
-	 */
-	if (int_type == INT_MSIX)
-		err = get_msix_iv_cnt(fsl_pci_dev, config->num_of_rings);
-	else if (int_type == INT_MSI)
-#ifdef MULTIPLE_MSI_SUPPORT
-		err = get_msi_iv_cnt(fsl_pci_dev, config->num_of_rings);
-#else
-		err = get_msi_iv(fsl_pci_dev);
-#endif
-	else
-		fsl_pci_dev->intr_info.intr_vectors_cnt = 1;
-
+	err = get_irq_vectors(fsl_pci_dev, config->num_of_rings);
 	if (err)
 		goto error;
 
@@ -1936,13 +1948,7 @@ static void cleanup_pci_device(fsl_pci_dev_t *dev)
 	}
 
 	fsl_release_irqs(dev);
-
-	if (dev->intr_info.type == INT_MSIX) {
-		pci_disable_msix(dev->dev);
-		kfree(dev->intr_info.msix_entries);
-	} else if (dev->intr_info.type == INT_MSI) {
-		pci_disable_msi(dev->dev);
-	}
+	free_irq_vectors(dev);
 
 disable_dev:
 	if (dev->enabled)
