@@ -1211,6 +1211,20 @@ void get_msi_config_data(fsl_pci_dev_t *fsl_pci_dev, isr_ctx_t *isr_context)
 	bar->v_addr = (void *) phys_to_virt((unsigned long)bar->phy_addr);
 }
 
+void fsl_release_irqs(fsl_pci_dev_t *fsl_pci_dev)
+{
+	isr_ctx_t *isr_context, *isr_n_context;
+
+	list_for_each_entry_safe(isr_context, isr_n_context,
+			&(fsl_pci_dev->intr_info.isr_ctx_list_head), list) {
+		dev_print_dbg(dev, "Freeing Irq\n");
+		free_irq(isr_context->irq, isr_context);
+		list_del(&(isr_context->list));
+		list_del(&(isr_context->ring_list_head));
+		kfree(isr_context);
+	}
+}
+
 /*******************************************************************************
  * Function     : fsl_crypto_pci_probe
  *
@@ -1402,28 +1416,19 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		goto error;
 
 	num_of_vectors = fsl_pci_dev->intr_info.intr_vectors_cnt;
-
-	/* Number of vectors required are determined in the above logic,
-	 * now allocate memory for the isr contexts */
-	isr_context = kzalloc(num_of_vectors * sizeof(isr_ctx_t), GFP_KERNEL);
-	if (!isr_context) {
-		DEV_PRINT_ERROR("Mem alloc failed\n");
-		err = -ENOMEM;
-		goto error;
-	}
-
-	/* Init the intr list head */
 	INIT_LIST_HEAD(&(fsl_pci_dev->intr_info.isr_ctx_list_head));
 	for (i = 0; i < num_of_vectors; i++) {
+		isr_context = kzalloc(sizeof(isr_ctx_t), GFP_KERNEL);
+		if (!isr_context) {
+			DEV_PRINT_ERROR("Mem alloc failed\n");
+			err = -ENOMEM;
+			goto free_irqs;
+		}
+
+		INIT_LIST_HEAD(&(isr_context->ring_list_head));
 		isr_context->dev = fsl_pci_dev;
 		tasklet_init(&(isr_context->tasklet), resp_process_tasklet,
 			     (unsigned long)isr_context);
-
-		INIT_LIST_HEAD(&(isr_context->ring_list_head));
-
-		/* Add this to the list of ISR contexts */
-		list_add(&(isr_context->list),
-			 &(fsl_pci_dev->intr_info.isr_ctx_list_head));
 
 		if (int_type == INT_MSIX)
 			irq = fsl_pci_dev->intr_info.msix_entries[i].vector;
@@ -1433,15 +1438,15 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 #else
 			irq = dev->irq;
 #endif
-		isr_context->irq = irq;
-
 		/* Register the ISR with kernel for each vector */
 		err = request_irq(irq, (irq_handler_t) fsl_crypto_isr, 0,
 				fsl_pci_dev->dev_name, isr_context);
 		if (err) {
 			DEV_PRINT_ERROR("Request IRQ failed for vector: %d\n", i);
-			goto free_isr_context;
+			kfree(isr_context);
+			goto free_irqs;
 		}
+		isr_context->irq = irq;
 
 		if (int_type == INT_MSIX) {
 			/* [MAK] TODO: For MSIx support, Device will expose an
@@ -1453,7 +1458,10 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		} else if (int_type == INT_MSI) {
 			get_msi_config_data(fsl_pci_dev, isr_context);
 		}
-		isr_context++;
+
+		/* Add this to the list of ISR contexts */
+		list_add(&(isr_context->list),
+			 &(fsl_pci_dev->intr_info.isr_ctx_list_head));
 	}
 
 	/* [MAK] TODO: Loop through each IRQ and distribute them
@@ -1515,8 +1523,8 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	/* FIXME: check exit logic on normal and error paths */
 	return 0;
 
-free_isr_context:
-	kfree(isr_context);
+free_irqs:
+	fsl_release_irqs(fsl_pci_dev);
 error:
 	DEV_PRINT_ERROR("Probe of device [%d] failed\n", fsl_pci_dev->dev_no);
 	dev_no--; /* don't count this device as usable */
@@ -1898,10 +1906,7 @@ out:
  ******************************************************************************/
 static void cleanup_pci_device(fsl_pci_dev_t *dev)
 {
-	isr_ctx_t *isr_cursor = NULL;
-	isr_ctx_t *isr_n_cursor = NULL;
-
-	uint32_t i = 0;
+	uint32_t i;
 
 	if (NULL == dev)
 		return;
@@ -1929,14 +1934,7 @@ static void cleanup_pci_device(fsl_pci_dev_t *dev)
 		goto disable_dev;
 	}
 
-	list_for_each_entry_safe(isr_cursor, isr_n_cursor,
-				 &(dev->intr_info.isr_ctx_list_head), list) {
-		dev_print_dbg(dev, "Freeing Irq\n");
-		free_irq(isr_cursor->irq, isr_cursor);
-		list_del(&(isr_cursor->list));
-		list_del(&(isr_cursor->ring_list_head));
-		kfree(isr_cursor);
-	}
+	fsl_release_irqs(dev);
 
 	/* If the device was MSIx capable -
 	 * free the MSIx related resources */
