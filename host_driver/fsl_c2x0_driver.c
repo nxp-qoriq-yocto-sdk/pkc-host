@@ -139,8 +139,6 @@ static struct pci_device_id fsl_crypto_pci_dev_ids[] = {
 	{0,},
 };
 
-enum int_support {INT_BASIC, INT_MSI, INT_MSIX};
-
 fsl_pci_dev_t *g_fsl_pci_dev;
 
 /*********************************************************
@@ -1246,7 +1244,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	int32_t rsrc_bar_addr = 0;
 	int32_t config_bar_addr = 0;
 #endif
-	enum int_support int_type;
+	enum int_type int_type;
 
 	uint32_t num_of_vectors = 0;
 	uint32_t irq;
@@ -1344,6 +1342,9 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		DEV_PRINT_DEBUG("INTR Support\n");
 		int_type = INT_BASIC;
 	}
+
+	/* save the type to avoid querying again at driver removal */
+	fsl_pci_dev->intr_info.type = int_type;
 
 	/* Wake up the device if it is in suspended state */
 	if (unlikely(pci_enable_device(dev))) {
@@ -1936,18 +1937,10 @@ static void cleanup_pci_device(fsl_pci_dev_t *dev)
 
 	fsl_release_irqs(dev);
 
-	/* If the device was MSIx capable -
-	 * free the MSIx related resources */
-	if (pci_find_capability(dev->dev, PCI_CAP_ID_MSIX)) {
-		if (NULL != dev->intr_info.msix_entries) {
-			pci_disable_msix(dev->dev);
-			kfree(dev->intr_info.msix_entries);
-		}
-	}
-
-	if (pci_find_capability(dev->dev, PCI_CAP_ID_MSI)
-	    && (0 != dev->intr_info.intr_vectors_cnt)) {
-		dev_print_dbg(dev, "Disabling MSI\n");
+	if (dev->intr_info.type == INT_MSIX) {
+		pci_disable_msix(dev->dev);
+		kfree(dev->intr_info.msix_entries);
+	} else if (dev->intr_info.type == INT_MSI) {
 		pci_disable_msi(dev->dev);
 	}
 
