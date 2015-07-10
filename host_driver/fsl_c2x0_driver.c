@@ -1215,7 +1215,7 @@ void fsl_release_irqs(fsl_pci_dev_t *fsl_pci_dev)
 
 	list_for_each_entry_safe(isr_context, isr_n_context,
 			&(fsl_pci_dev->intr_info.isr_ctx_list_head), list) {
-		dev_print_dbg(dev, "Freeing Irq\n");
+		dev_print_dbg(fsl_pci_dev, "Freeing Irq\n");
 		free_irq(isr_context->irq, isr_context);
 		list_del(&(isr_context->list));
 		list_del(&(isr_context->ring_list_head));
