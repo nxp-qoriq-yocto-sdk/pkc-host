@@ -420,6 +420,7 @@ static int hash_cra_init(struct crypto_tfm *tfm)
 		HASH_MSG_LEN + 64,
 		HASH_MSG_LEN + SHA512_DIGEST_SIZE
 	};
+	int err;
 #ifdef VIRTIO_C2X0
 	/*
 	 * Creating a special hash session
@@ -482,24 +483,17 @@ static int hash_cra_init(struct crypto_tfm *tfm)
 				   OP_ALG_ALGSEL_SHIFT];
 
 #ifdef VIRTIO_C2X0
-	if (ahash_set_sh_desc(ctx, qemu_cmd->u.hash.init.digestsize))
-		goto error;
-	print_debug("New hash_sess\
-				with sess_id %x:%x created;\n",
-			    hash_sess->sess_id,
-				qemu_cmd->u.hash.init.sess_id);
+	err = ahash_set_sh_desc(ctx, qemu_cmd->u.hash.init.digestsize);
+	if (!err)
+		print_debug("New hash_sess with sess_id %x:%x created;\n",
+			    hash_sess->sess_id, qemu_cmd->u.hash.init.sess_id);
 #else
 	crypto_ahash_set_reqsize(__crypto_ahash_cast(tfm),
 				 sizeof(struct hash_state));
-
-	if (ahash_set_sh_desc(ahash))
-		goto error;
+	err = ahash_set_sh_desc(ahash);
 #endif
 
-	return 0;
-
-error:
-	return -1;
+	return err;
 }
 
 /*******************************************************************************
