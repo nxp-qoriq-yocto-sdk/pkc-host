@@ -391,9 +391,6 @@ int hash_cra_init(struct virtio_c2x0_job_ctx *virtio_job)
 static int hash_cra_init(struct crypto_tfm *tfm)
 #endif
 {
-	fsl_crypto_dev_t *c_dev = NULL;
-	uint32_t r_id = 0;
-	void *mempool = NULL;
 #ifdef VIRTIO_C2X0
 	struct virtio_c2x0_crypto_sess_ctx *hash_sess = NULL;
 	crypto_dev_sess_t *ctx = NULL;
@@ -420,7 +417,9 @@ static int hash_cra_init(struct crypto_tfm *tfm)
 		HASH_MSG_LEN + 64,
 		HASH_MSG_LEN + SHA512_DIGEST_SIZE
 	};
+	u8 op_id;
 	int err;
+
 #ifdef VIRTIO_C2X0
 	/*
 	 * Creating a special hash session
@@ -466,10 +465,6 @@ static int hash_cra_init(struct crypto_tfm *tfm)
 		return -1;
 #endif
 
-	c_dev = ctx->c_dev;
-	r_id = ctx->r_id;
-	mempool = c_dev->ring_pairs[r_id].ip_pool;
-
 	/* copy descriptor header template value */
 #ifdef VIRTIO_C2X0
 	hctx->alg_type = OP_TYPE_CLASS2_ALG | qemu_cmd->u.hash.init.alg_type;
@@ -479,8 +474,13 @@ static int hash_cra_init(struct crypto_tfm *tfm)
 	hctx->alg_op = OP_TYPE_CLASS2_ALG | fsl_alg->alg_op;
 #endif
 
-	hctx->ctx_len = runninglen[(hctx->alg_op & OP_ALG_ALGSEL_SUBMASK) >>
-				   OP_ALG_ALGSEL_SHIFT];
+	op_id = (hctx->alg_op & OP_ALG_ALGSEL_SUBMASK) >> OP_ALG_ALGSEL_SHIFT;
+	if (op_id >= ARRAY_SIZE(runninglen)) {
+		dev_print_err(ctx->c_dev->priv_dev, "incorrect op_id %d; must be less than %zu\n",
+				op_id, ARRAY_SIZE(runninglen));
+		return -EINVAL;
+	}
+	hctx->ctx_len = runninglen[op_id];
 
 #ifdef VIRTIO_C2X0
 	err = ahash_set_sh_desc(ctx, qemu_cmd->u.hash.init.digestsize);
