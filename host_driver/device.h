@@ -138,12 +138,6 @@
 #define DEV_PHYS_ADDR_64BIT
 #endif
 
-#ifdef DEV_PHYS_ADDR_64BIT
-#define DEV_WORD_SIE    32
-#else
-#define DEV_WORD_SIZE   64
-#endif
-
 #define DEVICE_CACHE_LINE_SIZE                  64
 #define DEVICE_MAX_OUTBOUND_RANGE_ACCESS        0X400000000ull	/* 16G */
 
