@@ -2137,8 +2137,8 @@ static int32_t __init fsl_crypto_drv_init(void)
 free_algapi:
 #ifndef VIRTIO_C2X0
 	fsl_algapi_exit();
-#endif
 unreg_cdev:
+#endif
 	fsl_cryptodev_deregister();
 free_rc_dma:
 	cleanup_rc_dma();

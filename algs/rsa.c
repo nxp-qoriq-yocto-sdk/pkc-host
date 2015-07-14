@@ -604,7 +604,6 @@ int rsa_op(struct pkc_request *req)
 #endif
 {
 	int32_t ret = 0;
-	crypto_dev_sess_t *c_sess = NULL;
 	crypto_op_ctx_t *crypto_ctx = NULL;
 	fsl_crypto_dev_t *c_dev = NULL;
 
@@ -624,6 +623,8 @@ int rsa_op(struct pkc_request *req)
 
 #ifndef VIRTIO_C2X0
 	if (NULL != req->base.tfm) {
+		crypto_dev_sess_t *c_sess;
+
 		rsa_completion_cb = pkc_request_complete;
 		/* Get the session context from input request */
 		c_sess = (crypto_dev_sess_t *) crypto_pkc_ctx(crypto_pkc_reqtfm(req));
