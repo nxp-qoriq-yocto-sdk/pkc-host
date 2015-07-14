@@ -325,7 +325,7 @@ static int32_t gen_split_hash_key(crypto_dev_sess_t *c_sess,
 		return -1;
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
-	print_debug("\t crypto_ctx addr :            :%0llx\n", crypto_ctx);
+	print_debug("crypto_ctx addr : %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
@@ -336,8 +336,7 @@ static int32_t gen_split_hash_key(crypto_dev_sess_t *c_sess,
 	crypto_ctx->ctx_pool = c_dev->ctx_pool;
 	crypto_ctx->crypto_mem.dev = c_dev;
 	crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-	print_debug("\t IP Buffer pool address          :%0x\n",
-		    crypto_ctx->crypto_mem.pool);
+	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 	hash_key_init_crypto_mem(&crypto_ctx->crypto_mem);
 	hash_cp_key(key_in, keylen, ctx->key, ctx->split_key_pad_len,
@@ -437,7 +436,7 @@ static uint32_t hash_digest_key(crypto_dev_sess_t *c_sess,
 		return -1;
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
-	print_debug("\t crypto_ctx addr :            :%0llx\n", crypto_ctx);
+	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
@@ -448,8 +447,7 @@ static uint32_t hash_digest_key(crypto_dev_sess_t *c_sess,
 	crypto_ctx->ctx_pool = c_dev->ctx_pool;
 	crypto_ctx->crypto_mem.dev = c_dev;
 	crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-	print_debug("\t IP Buffer pool address          :%0x\n",
-		    crypto_ctx->crypto_mem.pool);
+	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 	hash_key_init_crypto_mem(&crypto_ctx->crypto_mem);
 	hash_cp_key(key_in, *keylen, key_out, digestsize,
@@ -559,7 +557,7 @@ int ahash_setkey(struct crypto_ahash *ahash, const uint8_t *key,
 			c_sess = &hash_sess->c_sess;
 			ctx = &c_sess->u.hash;
 			flag = 1;
-			print_debug("Hash session FOUND; sess_id = %x\n",
+			print_debug("Hash session FOUND; sess_id = %lx\n",
 				    hash_sess->sess_id);
 			break;
 		}
@@ -656,7 +654,7 @@ int ahash_digest(struct ahash_request *req)
 			c_sess = &(hash_sess->c_sess);
 			ctx = &c_sess->u.hash;
 			flag = 1;
-			print_debug("Hash session FOUND; sess_id = %x\n",
+			print_debug("Hash session FOUND; sess_id = %lx\n",
 				    hash_sess->sess_id);
 			break;
 		}
@@ -680,7 +678,7 @@ int ahash_digest(struct ahash_request *req)
 		return -1;
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
-	print_debug("\t crypto_ctx addr :            :%0llx\n", crypto_ctx);
+	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
@@ -691,8 +689,7 @@ int ahash_digest(struct ahash_request *req)
 	crypto_ctx->ctx_pool = c_dev->ctx_pool;
 	crypto_ctx->crypto_mem.dev = c_dev;
 	crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-	print_debug("\t IP Buffer pool address          :%0x\n",
-		    crypto_ctx->crypto_mem.pool);
+	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 	len.src_nents = sg_count(req->src, req->nbytes, &chained);
 	len.addon_nents = 0;
@@ -848,7 +845,7 @@ int ahash_update_ctx(struct ahash_request *req)
 			c_sess = &(hash_sess->c_sess);
 			ctx = &c_sess->u.hash;
 			flag = 1;
-			print_debug("Hash session FOUND; sess_id = %x\n",
+			print_debug("Hash session FOUND; sess_id = %lx\n",
 				    hash_sess->sess_id);
 			break;
 		}
@@ -884,8 +881,7 @@ int ahash_update_ctx(struct ahash_request *req)
 			return -1;
 
 		crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
-		print_debug("\t crypto_ctx addr :            :%0llx\n",
-			    crypto_ctx);
+		print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 		if (unlikely(!crypto_ctx)) {
 			print_error("Mem alloc failed....\n");
@@ -896,8 +892,7 @@ int ahash_update_ctx(struct ahash_request *req)
 		crypto_ctx->ctx_pool = c_dev->ctx_pool;
 		crypto_ctx->crypto_mem.dev = c_dev;
 		crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-		print_debug("\t IP Buffer pool address          :%0x\n",
-			    crypto_ctx->crypto_mem.pool);
+		print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 		len.src_nents =
 		    __sg_count(req->src, req->nbytes - (*next_buflen),
@@ -1054,7 +1049,7 @@ int ahash_finup_ctx(struct ahash_request *req)
 			c_sess = &(hash_sess->c_sess);
 			ctx = &c_sess->u.hash;
 			flag = 1;
-			print_debug("Hash session FOUND; sess_id = %x\n",
+			print_debug("Hash session FOUND; sess_id = %lx\n",
 				    hash_sess->sess_id);
 			break;
 		}
@@ -1080,7 +1075,7 @@ int ahash_finup_ctx(struct ahash_request *req)
 		return -1;
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
-	print_debug("\t crypto_ctx addr :            :%0llx\n", crypto_ctx);
+	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
@@ -1091,8 +1086,7 @@ int ahash_finup_ctx(struct ahash_request *req)
 	crypto_ctx->ctx_pool = c_dev->ctx_pool;
 	crypto_ctx->crypto_mem.dev = c_dev;
 	crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-	print_debug("\t IP Buffer pool address          :%0x\n",
-		    crypto_ctx->crypto_mem.pool);
+	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 	len.src_nents = __sg_count(req->src, req->nbytes, &chained);
 	len.addon_nents = 1 + (buflen ? 1 : 0);
@@ -1227,7 +1221,7 @@ int ahash_final_ctx(struct ahash_request *req)
 			c_sess = &(hash_sess->c_sess);
 			ctx = &c_sess->u.hash;
 			flag = 1;
-			print_debug("Hash session FOUND; sess_id = %x\n",
+			print_debug("Hash session FOUND; sess_id = %lx\n",
 				    hash_sess->sess_id);
 			break;
 		}
@@ -1252,7 +1246,7 @@ int ahash_final_ctx(struct ahash_request *req)
 		return -1;
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
-	print_debug("\t crypto_ctx addr :            :%0llx\n", crypto_ctx);
+	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
@@ -1263,8 +1257,7 @@ int ahash_final_ctx(struct ahash_request *req)
 	crypto_ctx->ctx_pool = c_dev->ctx_pool;
 	crypto_ctx->crypto_mem.dev = c_dev;
 	crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-	print_debug("\t IP Buffer pool address          :%0x\n",
-		    crypto_ctx->crypto_mem.pool);
+	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 	len.src_nents = 0;
 	len.addon_nents = 0;
@@ -1407,7 +1400,7 @@ int ahash_final_no_ctx(struct ahash_request *req)
 			c_sess = &(hash_sess->c_sess);
 			ctx = &c_sess->u.hash;
 			flag = 1;
-			print_debug("Hash session FOUND; sess_id = %x\n",
+			print_debug("Hash session FOUND; sess_id = %lx\n",
 				    hash_sess->sess_id);
 			break;
 		}
@@ -1432,7 +1425,7 @@ int ahash_final_no_ctx(struct ahash_request *req)
 		return -1;
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
-	print_debug("\t crypto_ctx addr :            :%0llx\n", crypto_ctx);
+	print_debug("crypto_ctx addr : %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
@@ -1443,8 +1436,7 @@ int ahash_final_no_ctx(struct ahash_request *req)
 	crypto_ctx->ctx_pool = c_dev->ctx_pool;
 	crypto_ctx->crypto_mem.dev = c_dev;
 	crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-	print_debug("\t IP Buffer pool address          :%0x\n",
-		    crypto_ctx->crypto_mem.pool);
+	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 	len.src_nents = 0;
 	len.addon_nents = 0;
@@ -1581,7 +1573,7 @@ int ahash_finup_no_ctx(struct ahash_request *req)
 			ctx = &c_sess->u.hash;
 			flag = 1;
 			break;
-			print_debug("Hash session FOUND; sess_id = %x\n",
+			print_debug("Hash session FOUND; sess_id = %lx\n",
 				    hash_sess->sess_id);
 		}
 	}
@@ -1605,7 +1597,7 @@ int ahash_finup_no_ctx(struct ahash_request *req)
 		return -1;
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
-	print_debug("\t crypto_ctx addr :            :%0llx\n", crypto_ctx);
+	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
@@ -1616,8 +1608,7 @@ int ahash_finup_no_ctx(struct ahash_request *req)
 	crypto_ctx->ctx_pool = c_dev->ctx_pool;
 	crypto_ctx->crypto_mem.dev = c_dev;
 	crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-	print_debug("\t IP Buffer pool address          :%0x\n",
-		    crypto_ctx->crypto_mem.pool);
+	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 	len.src_nents = __sg_count(req->src, req->nbytes, &chained);
 	len.addon_nents = 1;
@@ -1759,7 +1750,7 @@ int ahash_update_no_ctx(struct ahash_request *req)
 			c_sess = &(hash_sess->c_sess);
 			ctx = &c_sess->u.hash;
 			flag = 1;
-			print_debug("Hash session FOUND; sess_id = %x\n",
+			print_debug("Hash session FOUND; sess_id = %lx\n",
 				    hash_sess->sess_id);
 			break;
 		}
@@ -1790,8 +1781,7 @@ int ahash_update_no_ctx(struct ahash_request *req)
 			return -1;
 
 		crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
-		print_debug("\t crypto_ctx addr :            :%0llx\n",
-			    crypto_ctx);
+		print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 		if (unlikely(!crypto_ctx)) {
 			print_error("Mem alloc failed....\n");
@@ -1802,8 +1792,7 @@ int ahash_update_no_ctx(struct ahash_request *req)
 		crypto_ctx->ctx_pool = c_dev->ctx_pool;
 		crypto_ctx->crypto_mem.dev = c_dev;
 		crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-		print_debug("\t IP Buffer pool address          :%0x\n",
-			    crypto_ctx->crypto_mem.pool);
+		print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 		len.src_nents =
 		    __sg_count(req->src, req->nbytes - (*next_buflen),
@@ -1966,7 +1955,7 @@ int ahash_update_first(struct ahash_request *req)
 			c_sess = &(hash_sess->c_sess);
 			ctx = &c_sess->u.hash;
 			flag = 1;
-			print_debug("Hash session FOUND; sess_id = %x\n",
+			print_debug("Hash session FOUND; sess_id = %lx\n",
 				    hash_sess->sess_id);
 			break;
 		}
@@ -1996,8 +1985,7 @@ int ahash_update_first(struct ahash_request *req)
 			return -1;
 
 		crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
-		print_debug("\t crypto_ctx addr :            :%0llx\n",
-			    crypto_ctx);
+		print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 		if (unlikely(!crypto_ctx)) {
 			print_error("Mem alloc failed....\n");
@@ -2008,8 +1996,7 @@ int ahash_update_first(struct ahash_request *req)
 		crypto_ctx->ctx_pool = c_dev->ctx_pool;
 		crypto_ctx->crypto_mem.dev = c_dev;
 		crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-		print_debug("\t IP Buffer pool address          :%0x\n",
-			    crypto_ctx->crypto_mem.pool);
+		print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
 
 		len.src_nents =
 		    sg_count(req->src, req->nbytes - (*next_buflen), &chained);

@@ -3858,7 +3858,7 @@ int virtio_c2x0_hash_cra_exit(struct virtio_c2x0_qemu_cmd *qemu_cmd)
 			c_sess = &(hash_sess->c_sess);
 			ctx = &c_sess->u.hash;
 			flag = 1;
-			print_debug("Hash session FOUND; sess_id = %x\n",
+			print_debug("Hash session FOUND; sess_id = %lx\n",
 				    hash_sess->sess_id);
 			break;
 		}
@@ -3926,7 +3926,7 @@ int virtio_c2x0_symm_cra_exit(struct virtio_c2x0_qemu_cmd *qemu_cmd)
 		    && vc_sess->guest_id == qemu_cmd->guest_id) {
 			ctx = &(vc_sess->c_sess);
 			flag = 1;
-			print_debug("Symm session FOUND; sess_id = %x\n",
+			print_debug("Symm session FOUND; sess_id = %lx\n",
 				    vc_sess->sess_id);
 			break;
 		}

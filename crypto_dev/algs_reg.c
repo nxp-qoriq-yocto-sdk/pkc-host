@@ -485,7 +485,7 @@ static int hash_cra_init(struct crypto_tfm *tfm)
 #ifdef VIRTIO_C2X0
 	err = ahash_set_sh_desc(ctx, qemu_cmd->u.hash.init.digestsize);
 	if (!err)
-		print_debug("New hash_sess with sess_id %x:%x created;\n",
+		print_debug("New hash_sess with sess_id %lx:%lx created;\n",
 			    hash_sess->sess_id, qemu_cmd->u.hash.init.sess_id);
 #else
 	crypto_ahash_set_reqsize(__crypto_ahash_cast(tfm),
@@ -612,7 +612,7 @@ static int sym_cra_init(struct crypto_tfm *tfm)
 	vc_sess->guest_id = qemu_cmd->guest_id;
 	ctx = &vc_sess->c_sess;
 	sym_ctx = &(ctx->u.symm);
-	print_debug("****** SYMMETRIC CONTEXT ADDRESS FOR OPERATION : %0lx\n",
+	print_debug("****** SYMMETRIC CONTEXT ADDRESS FOR OPERATION : %p\n",
 		    sym_ctx);
 
 	init = &(qemu_cmd->u.symm.init);

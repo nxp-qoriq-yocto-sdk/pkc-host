@@ -676,7 +676,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			}
 
 			ret = virtio_c2x0_hash_cra_init(virtio_job);
-			print_debug("VIRTIO_HASHCRAINIT returning with %d return vallue for id [%8x]\n",
+			print_debug("VIRTIO_HASHCRAINIT returning with %d return vallue for id [%lx]\n",
 					ret, qemu_cmd->u.hash.init.sess_id);
 
 			kfree(virtio_job);
@@ -715,7 +715,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			}
 
 			ret = virtio_c2x0_hash_cra_exit(qemu_cmd);
-			print_debug("VIRTIO_HASHCRAEXIT returning with %d return vallue for id[%8X]\n",
+			print_debug("VIRTIO_HASHCRAEXIT returning with %d return vallue for id[%lx]\n",
 					ret, qemu_cmd->u.hash.exit.sess_id);
 #if 0
 			/*
@@ -774,7 +774,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			}
 
 			ret = virtio_c2x0_symm_cra_init(virtio_job);
-			print_debug("VIRTIO_SYMMCRAINIT returninig with %d return vallue for id [%8x]\n",
+			print_debug("VIRTIO_SYMMCRAINIT returninig with %d return vallue for id [%lx]\n",
 					ret, qemu_cmd->u.symm.init.sess_id);
 
 			kfree(virtio_job);
@@ -809,7 +809,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 			}
 
 			ret = virtio_c2x0_symm_cra_exit(qemu_cmd);
-			print_debug("VIRTIO_SYMMCRAEXIT returninig with %d return vallue for id [%8x]\n",
+			print_debug("VIRTIO_SYMMCRAEXIT returninig with %d return vallue for id [%lx]\n",
 					ret, qemu_cmd->u.symm.exit.sess_id);
 			kfree(qemu_cmd);
 			if (ret < 0)

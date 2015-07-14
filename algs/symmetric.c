@@ -242,7 +242,7 @@ int32_t fsl_ablkcipher_setkey(struct crypto_ablkcipher *ablkcipher,
             sess  = &(vc_sess->c_sess);
             ctx     = &sess->u.symm;
             flag    = 1;
-            print_debug("Crypto session FOUND; sess_id = %x\n", 
+            print_debug("Crypto session FOUND; sess_id = %lx\n",
                     vc_sess->sess_id);
             break;
         }
@@ -444,7 +444,7 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 			c_sess = &(vc_sess->c_sess);
 			ctx = &c_sess->u.symm;
 			flag = 1;
-			print_debug("Crypto session FOUND; sess_id = %x\n",
+			print_debug("Crypto session FOUND; sess_id = %lx\n",
 				    vc_sess->sess_id);
 			break;
 		}
