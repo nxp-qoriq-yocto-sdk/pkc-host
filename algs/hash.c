@@ -46,6 +46,75 @@
 #endif
 #include "dma.h"
 
+#ifdef VIRTIO_C2X0
+/***********************************************************************
+ * Function     : virtio_c2x0_hash_cra_init
+ *
+ * Arguments    : tfm
+ *
+ * Return Value : Error code
+ *
+ * Description  : cra_init for crypto_alg to setup the context.
+ *
+ ***********************************************************************/
+int virtio_c2x0_hash_cra_init(struct virtio_c2x0_job_ctx *virtio_job)
+{
+	return hash_cra_init(virtio_job);
+}
+
+/***********************************************************************
+ * Function     : virtio_c2x0_hash_cra_exit
+ *
+ * Arguments    : tfm
+ *
+ * Return Value : void
+ *
+ * Description  : cra_exit for crypto_alg.
+ *
+ ***********************************************************************/
+int virtio_c2x0_hash_cra_exit(struct virtio_c2x0_qemu_cmd *qemu_cmd)
+{
+	crypto_dev_sess_t *c_sess = NULL;
+	struct hash_ctx *ctx = NULL;
+
+	struct virtio_c2x0_crypto_sess_ctx *hash_sess = NULL, *next_sess = NULL;
+	int flag = 0;
+
+	spin_lock(&hash_sess_list_lock);
+	list_for_each_entry_safe(hash_sess, next_sess,
+				 &virtio_c2x0_hash_sess_list, list_entry) {
+		if (hash_sess->sess_id == qemu_cmd->u.hash.exit.sess_id
+		    && hash_sess->guest_id == qemu_cmd->guest_id) {
+			c_sess = &(hash_sess->c_sess);
+			ctx = &c_sess->u.hash;
+			flag = 1;
+			print_debug("Hash session FOUND; sess_id = %lx\n",
+				    hash_sess->sess_id);
+			break;
+		}
+	}
+	if (0 == flag) {
+		print_error("Hash session[%lx] for guest [%d] NOT found\n",
+			    qemu_cmd->u.hash.exit.sess_id, qemu_cmd->guest_id);
+		/* print_sess_list(); */
+
+		spin_unlock(&hash_sess_list_lock);
+		return -1;
+	}
+	/*
+	 * Delete the session id entry from hash Session list
+	 */
+	list_del(&hash_sess->list_entry);
+	spin_unlock(&hash_sess_list_lock);
+
+	hash_cra_exit(c_sess);
+
+	kfree(hash_sess);
+
+	return 0;
+}
+#endif
+
 static void hash_op_done(void *ctx, int32_t res)
 {
 	crypto_op_ctx_t *crypto_ctx = ctx;
