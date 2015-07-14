@@ -33,10 +33,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <linux/crypto.h>
+
 #include "common.h"
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
-#include "algs.h"
+#include "dh.h"
 #include "pkc_desc.h"
 #include "desc.h"
 #include "memmgr.h"

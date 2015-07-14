@@ -36,14 +36,14 @@
 #include "common.h"
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
-#include "algs.h"
+#include "desc_cnstr.h"
+#include "hash.h"
 #include "memmgr.h"
 #include "crypto_ctx.h"
 #include "sg_sw_sec4.h"
 #ifdef VIRTIO_C2X0
 #include "fsl_c2x0_virtio.h"
 #endif
-
 #include "dma.h"
 
 static void hash_op_done(void *ctx, int32_t res)
