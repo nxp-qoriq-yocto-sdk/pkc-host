@@ -46,21 +46,10 @@
 #endif
 #include "dma.h"
 
-/*
-#define DUMP_DESC_WORDS
-#define PERFORMANCE_BUILD
-#define DUMP_DEBUG_V_INFO
-*/
-
 /* Callback test functions */
 typedef void (*dh_op_cb) (struct pkc_request *, int32_t result);
-/* #ifdef KCAPI_INTEG_BUILD
-dh_op_cb dh_completion_cb = pkc_request_complete;
-dh_op_cb ecdh_completion_cb = pkc_request_complete;
-#else  */
 dh_op_cb dh_completion_cb;
 dh_op_cb ecdh_completion_cb;
-/* #endif */
 
 static void dh_op_done(void *ctx, int32_t res)
 {

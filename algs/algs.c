@@ -38,9 +38,7 @@
 #include "fsl_c2x0_driver.h"
 #include "algs.h"
 #include "memmgr.h"
-/* #ifdef KCAPI_INTEG_BUILD */
 #include "sg_sw_sec4.h"
-/* #endif */
 
 #define MAX_ERROR_STRING 302
 
@@ -239,11 +237,6 @@ void crypto_op_done(fsl_crypto_dev_t *c_dev, crypto_job_ctx_t *ctx,
 		break;
 
 	case RNG:
-#if 0
-#ifdef KCAPI_INTEG_BUILD
-		rng_done(ctx->dev_mem.rng);
-#endif
-#endif
 		break;
 
 		/* AVOID WARNINGS */

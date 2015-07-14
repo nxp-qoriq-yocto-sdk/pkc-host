@@ -46,19 +46,9 @@
 #endif
 #include "dma.h"
 
-/*
-#define DUMP_DESC_WORDS
-#define PERFORMANCE_BUILD
-#define DUMP_DEBUG_V_INFO
-*/
-
 /* Callback test functions */
 typedef void (*rsa_op_cb) (struct pkc_request *, int32_t result);
-/* #ifdef KCAPI_INTEG_BUILD
-rsa_op_cb rsa_completion_cb = pkc_request_complete;
-#else */
 rsa_op_cb rsa_completion_cb;
-/* #endif */
 
 static void rsa_op_done(void *ctx, int32_t res)
 {
@@ -630,7 +620,6 @@ int rsa_op(struct pkc_request *req)
 	dev_p_addr_t offset;
 #endif
 
-	/* #ifdef KCAPI_INTEG_BUILD */
 #ifndef VIRTIO_C2X0
 	if (NULL != req->base.tfm) {
 		rsa_completion_cb = pkc_request_complete;

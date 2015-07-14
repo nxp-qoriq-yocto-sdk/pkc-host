@@ -47,11 +47,7 @@
 #include "fsl_c2x0_virtio.h"
 #endif
 #include "algs.h"
-
-/* #ifdef KCAPI_INTEG_BUILD */
 #include "algs_reg.h"
-/* #endif */
-
 #include "test.h"
 #include "dma.h"
 
@@ -2111,7 +2107,6 @@ static int32_t __init fsl_crypto_drv_init(void)
 		goto free_rc_dma;
 	}
 
-/* #ifdef KCAPI_INTEG_BUILD */
 #ifndef VIRTIO_C2X0
 	ret = fsl_algapi_init();
 	if (ret) {

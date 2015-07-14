@@ -43,12 +43,6 @@
 #include "command.h"
 #include "crypto_ctx.h"
 
-/*
-#define DUMP_DESC_WORDS
-#define PERFORMANCE_BUILD
-#define DUMP_DEBUG_V_INFO
-*/
-
 struct rng_init_compl {
 	struct completion completion;
 	int result;
