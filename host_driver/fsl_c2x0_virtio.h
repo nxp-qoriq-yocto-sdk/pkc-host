@@ -265,8 +265,6 @@ int32_t process_virtio_rng_job(struct virtio_c2x0_job_ctx *virtio_job);
 
 extern int virtio_c2x0_hash_cra_init(struct virtio_c2x0_job_ctx *virtio_job);
 extern int virtio_c2x0_hash_cra_exit(struct virtio_c2x0_qemu_cmd *qemu_cmd);
-int hash_cra_init(struct virtio_c2x0_job_ctx *virtio_job);
-void hash_cra_exit(crypto_dev_sess_t *c_sess);
 
 int virtio_c2x0_symm_cra_init(struct virtio_c2x0_job_ctx *virtio_job);
 int virtio_c2x0_symm_cra_exit(struct virtio_c2x0_qemu_cmd *qemu_cmd);
