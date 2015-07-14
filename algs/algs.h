@@ -90,6 +90,24 @@ typedef enum crypto_op {
 #endif
 } crypto_op_t;
 
+
+/*struct list_head alg_list;*/
+
+struct fsl_crypto_alg {
+	struct list_head entry;
+	int op_type;
+	int alg_type;
+	int alg_op;
+	int class1_alg_type;
+	int class2_alg_type;
+	bool ahash;
+	union {
+		struct crypto_alg crypto_alg;
+		struct ahash_alg ahash_alg;
+	} u;
+};
+
+
 /*******************************************************************************
 Description :   Defines the crypto dev session context. This context is created
 		at the time of new crypto dev session.

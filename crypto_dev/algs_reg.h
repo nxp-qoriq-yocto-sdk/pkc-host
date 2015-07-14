@@ -65,22 +65,6 @@ extern int fsl_ablkcipher_decrypt(struct ablkcipher_request *req);
 extern int fsl_ablkcipher_encrypt(struct ablkcipher_request *req);
 #endif
 
-/*struct list_head alg_list;*/
-
-struct fsl_crypto_alg {
-	struct list_head entry;
-	int op_type;
-	int alg_type;
-	int alg_op;
-	int class1_alg_type;
-	int class2_alg_type;
-	bool ahash;
-	union {
-		struct crypto_alg crypto_alg;
-		struct ahash_alg ahash_alg;
-	} u;
-};
-
 struct alg_template {
 	char name[CRYPTO_MAX_ALG_NAME];
 	char driver_name[CRYPTO_MAX_ALG_NAME];
