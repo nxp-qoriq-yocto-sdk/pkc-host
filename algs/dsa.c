@@ -292,7 +292,7 @@ static void constr_dsa_sign_desc(crypto_mem_info_t *mem_info)
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 #endif
 	start_idx &= HDR_START_IDX_MASK;
@@ -338,7 +338,7 @@ static void constr_dsa_sign_desc(crypto_mem_info_t *mem_info)
 		 (CMD_FIFO_STORE | FIFOST_TYPE_MESSAGE_DATA | mem->r_buff.len));
 	ASSIGN64(dsa_sign_desc->op[10], mem->d_buff.dev_buffer.d_p_addr);
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
 	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
 	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
@@ -370,7 +370,7 @@ static void constr_dsa_verify_desc(crypto_mem_info_t *mem_info)
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 #endif
 	start_idx &= HDR_START_IDX_MASK;
@@ -403,7 +403,7 @@ static void constr_dsa_verify_desc(crypto_mem_info_t *mem_info)
 	ASSIGN32(dsa_verify_desc->op,
 		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DSAVERIFY));
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
 	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
@@ -438,7 +438,7 @@ static void constr_dsa_keygen_desc(crypto_mem_info_t *mem_info)
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 #endif
 	start_idx &= HDR_START_IDX_MASK;
@@ -464,7 +464,7 @@ static void constr_dsa_keygen_desc(crypto_mem_info_t *mem_info)
 		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
 		  OP_PCLID_PUBLICKEYPAIR));
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
 	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
 	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
@@ -493,7 +493,7 @@ static void constr_ecdsa_sign_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 #endif
 	start_idx &= HDR_START_IDX_MASK;
@@ -550,7 +550,7 @@ static void constr_ecdsa_sign_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 		 (CMD_FIFO_STORE | FIFOST_TYPE_MESSAGE_DATA | mem->r_buff.len));
 	ASSIGN64(ecdsa_sign_desc->op[10], mem->d_buff.dev_buffer.d_p_addr);
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
 	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
@@ -584,7 +584,7 @@ static void constr_ecdsa_verify_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 #endif
 	start_idx &= HDR_START_IDX_MASK;
@@ -628,7 +628,7 @@ static void constr_ecdsa_verify_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 			 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
 			  OP_PCLID_DSAVERIFY | OP_PCL_PKPROT_ECC));
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
 	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
@@ -700,7 +700,7 @@ static void constr_ecdsa_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 			  OP_PCLID_PUBLICKEYPAIR | OP_PCL_PKPROT_ECC));
 	}
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	{
 		uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 

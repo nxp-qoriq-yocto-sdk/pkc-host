@@ -209,7 +209,7 @@ static void constr_rng_self_test_desc(crypto_mem_info_t *mem_info)
 	desc_size = desc_len(l_desc);
 	change_desc_endianness(desc_buff, l_desc, desc_size);
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("OUTPUT DMA: %llx\n", (uint64_t)mem->output_buff.dev_buffer.d_p_addr);
 	print_debug("[RNG INIT] Descriptor words\n");
 	{
@@ -248,7 +248,7 @@ static void constr_rng_init_desc(crypto_mem_info_t *mem_info)
 	desc_size = desc_len(desc);
 	change_desc_endianness(desc_buff, desc, desc_size);
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("PERS_STR DMA: %llx\n", (uint64_t)mem->pers_str_buff.dev_buffer.d_p_addr);
 	print_debug("[RNG INIT] Descriptor words\n");
 	{

@@ -85,7 +85,7 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 			     crypto_mem_info_t *mem_info)
 {
 	rsa_pub_op_buffers_t *mem = &(mem_info->c_buffers.rsa_pub_op);
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	int i;
 #endif
 
@@ -107,7 +107,7 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 
 	mem->g_buff.v_mem = pub_req->g;
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("[RSA PUB OP] Request details:\n");
 	print_debug("N Len: %d\n", mem->n_buff.len);
 	print_debug("E Len: %d\n", mem->e_buff.len);
@@ -161,7 +161,7 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
         dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 #endif
 
@@ -189,7 +189,7 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
 		  OP_PCLID_RSAENC_PUBKEY));
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 
 	print_debug("N DMA			:%llx\n",
 		    mem->n_buff.dev_buffer.d_p_addr);
@@ -289,7 +289,7 @@ static int rsa_priv1_op_cp_req(struct rsa_priv_frm1_req_s *priv1_req,
 #endif
 
 	mem->f_buff.v_mem = priv1_req->f;
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("[RSA PUB OP] Request details:\n");
 	print_debug("N Len: %d\n", mem->n_buff.len);
 	print_debug("D Len: %d\n", mem->d_buff.len);
@@ -371,7 +371,7 @@ static int rsa_priv2_op_cp_req(struct rsa_priv_frm2_req_s *priv2_req,
 			       crypto_mem_info_t *mem_info)
 {
 	rsa_priv2_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv2_op);
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	rsa_priv2_op_buffers_t *priv2_op_buffs = mem;
 #endif
 	rsa_priv2_op_init_len(priv2_req, mem_info);
@@ -394,7 +394,7 @@ static int rsa_priv2_op_cp_req(struct rsa_priv_frm2_req_s *priv2_req,
 #endif
 	mem->f_buff.v_mem = priv2_req->f;
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("[RSA PRIV2 OP] Request details:\n");
 	print_debug("P Len: %d\n", mem->p_buff.len);
 	print_debug("Q Len: %d\n", mem->q_buff.len);
@@ -484,7 +484,7 @@ static void constr_rsa_priv3_op_desc(crypto_mem_info_t *mem_info)
 		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_RSADEC_PRVKEY
 		  | RSA_PRIV_KEY_FRM_3));
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("[RSA_PRV3_OP]   Descriptor words\n");
 	{
 		uint32_t *words = (uint32_t *) desc_buff;
@@ -517,7 +517,7 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 			       crypto_mem_info_t *mem_info)
 {
 	rsa_priv3_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv3_op);
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	rsa_priv3_op_buffers_t *priv3_op_buffs = mem;
 #endif
 	rsa_priv3_op_init_len(priv3_req, mem_info);
@@ -547,7 +547,7 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 
 	mem->f_buff.v_mem = priv3_req->f;
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("[RSA PRIV3 OP] Request details:\n");
 	print_debug("P Len: %d\n", mem->p_buff.len);
 	print_debug("Q Len: %d\n", mem->q_buff.len);
