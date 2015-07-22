@@ -33,10 +33,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <linux/crypto.h>
+
 #include "common.h"
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
-#include "algs.h"
+#include "rsa.h"
 #include "pkc_desc.h"
 #include "desc.h"
 #include "memmgr.h"
@@ -46,19 +48,9 @@
 #endif
 #include "dma.h"
 
-/*
-#define DUMP_DESC_WORDS
-#define PERFORMANCE_BUILD
-#define DUMP_DEBUG_V_INFO
-*/
-
 /* Callback test functions */
 typedef void (*rsa_op_cb) (struct pkc_request *, int32_t result);
-/* #ifdef KCAPI_INTEG_BUILD
-rsa_op_cb rsa_completion_cb = pkc_request_complete;
-#else */
 rsa_op_cb rsa_completion_cb;
-/* #endif */
 
 static void rsa_op_done(void *ctx, int32_t res)
 {
@@ -95,7 +87,7 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 			     crypto_mem_info_t *mem_info)
 {
 	rsa_pub_op_buffers_t *mem = &(mem_info->c_buffers.rsa_pub_op);
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	int i;
 #endif
 
@@ -117,7 +109,7 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 
 	mem->g_buff.v_mem = pub_req->g;
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("[RSA PUB OP] Request details:\n");
 	print_debug("N Len: %d\n", mem->n_buff.len);
 	print_debug("E Len: %d\n", mem->e_buff.len);
@@ -171,7 +163,7 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
         dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 #endif
 
@@ -199,7 +191,7 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
 		  OP_PCLID_RSAENC_PUBKEY));
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 
 	print_debug("N DMA			:%llx\n",
 		    mem->n_buff.dev_buffer.d_p_addr);
@@ -299,7 +291,7 @@ static int rsa_priv1_op_cp_req(struct rsa_priv_frm1_req_s *priv1_req,
 #endif
 
 	mem->f_buff.v_mem = priv1_req->f;
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("[RSA PUB OP] Request details:\n");
 	print_debug("N Len: %d\n", mem->n_buff.len);
 	print_debug("D Len: %d\n", mem->d_buff.len);
@@ -381,7 +373,7 @@ static int rsa_priv2_op_cp_req(struct rsa_priv_frm2_req_s *priv2_req,
 			       crypto_mem_info_t *mem_info)
 {
 	rsa_priv2_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv2_op);
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	rsa_priv2_op_buffers_t *priv2_op_buffs = mem;
 #endif
 	rsa_priv2_op_init_len(priv2_req, mem_info);
@@ -404,7 +396,7 @@ static int rsa_priv2_op_cp_req(struct rsa_priv_frm2_req_s *priv2_req,
 #endif
 	mem->f_buff.v_mem = priv2_req->f;
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("[RSA PRIV2 OP] Request details:\n");
 	print_debug("P Len: %d\n", mem->p_buff.len);
 	print_debug("Q Len: %d\n", mem->q_buff.len);
@@ -494,7 +486,7 @@ static void constr_rsa_priv3_op_desc(crypto_mem_info_t *mem_info)
 		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_RSADEC_PRVKEY
 		  | RSA_PRIV_KEY_FRM_3));
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("[RSA_PRV3_OP]   Descriptor words\n");
 	{
 		uint32_t *words = (uint32_t *) desc_buff;
@@ -527,7 +519,7 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 			       crypto_mem_info_t *mem_info)
 {
 	rsa_priv3_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv3_op);
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	rsa_priv3_op_buffers_t *priv3_op_buffs = mem;
 #endif
 	rsa_priv3_op_init_len(priv3_req, mem_info);
@@ -557,7 +549,7 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 
 	mem->f_buff.v_mem = priv3_req->f;
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("[RSA PRIV3 OP] Request details:\n");
 	print_debug("P Len: %d\n", mem->p_buff.len);
 	print_debug("Q Len: %d\n", mem->q_buff.len);
@@ -612,7 +604,6 @@ int rsa_op(struct pkc_request *req)
 #endif
 {
 	int32_t ret = 0;
-	crypto_dev_sess_t *c_sess = NULL;
 	crypto_op_ctx_t *crypto_ctx = NULL;
 	fsl_crypto_dev_t *c_dev = NULL;
 
@@ -630,9 +621,10 @@ int rsa_op(struct pkc_request *req)
 	dev_p_addr_t offset;
 #endif
 
-	/* #ifdef KCAPI_INTEG_BUILD */
 #ifndef VIRTIO_C2X0
 	if (NULL != req->base.tfm) {
+		crypto_dev_sess_t *c_sess;
+
 		rsa_completion_cb = pkc_request_complete;
 		/* Get the session context from input request */
 		c_sess = (crypto_dev_sess_t *) crypto_pkc_ctx(crypto_pkc_reqtfm(req));

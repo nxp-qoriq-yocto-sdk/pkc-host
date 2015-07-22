@@ -37,10 +37,6 @@
 #define _ALG_H_
 
 #include "desc_cnstr.h"
-/* #ifdef KCAPI_STUB
-#include "crypto.h"
-#else
-*/
 #include <linux/crypto.h>
 #include <crypto/algapi.h>
 #ifdef VIRTIO_C2X0
@@ -48,9 +44,6 @@
 #endif
 #include "hash.h"
 #include "rng.h"
-
-/* #endif */
-
 #include "common.h"
 #include "desc_constr.h"
 #include "rsa.h"
@@ -97,6 +90,24 @@ typedef enum crypto_op {
 #endif
 } crypto_op_t;
 
+
+/*struct list_head alg_list;*/
+
+struct fsl_crypto_alg {
+	struct list_head entry;
+	int op_type;
+	int alg_type;
+	int alg_op;
+	int class1_alg_type;
+	int class2_alg_type;
+	bool ahash;
+	union {
+		struct crypto_alg crypto_alg;
+		struct ahash_alg ahash_alg;
+	} u;
+};
+
+
 /*******************************************************************************
 Description :   Defines the crypto dev session context. This context is created
 		at the time of new crypto dev session.
@@ -109,12 +120,10 @@ typedef struct crypto_dev_sess {
 	fsl_crypto_dev_t *c_dev;
 	uint32_t r_id;
 	uint8_t sec_eng;
-/* #ifndef KCAPI_STUB */
 	union {
 		struct hash_ctx hash;
 		struct sym_ctx symm;
 	} u;
-/* #endif */
 } crypto_dev_sess_t;
 
 #ifdef VIRTIO_C2X0
@@ -164,11 +173,9 @@ typedef struct crypto_job_ctx {
 		dsa_dev_mem_t *dsa;
 		dh_key_dev_mem_t *dh;
 		struct instantiate_result *rng_init;
-/* #ifndef KCAPI_STUB */
 		/* ahash_dev_mem_t *ahash; */
 		ablkcipher_dev_mem_t *ablk;
 		struct buf_data *rng;
-/* #endif */
 	} dev_mem;
 	struct split_key_result *result;
 	void (*done) (struct pkc_request *req, int32_t result);

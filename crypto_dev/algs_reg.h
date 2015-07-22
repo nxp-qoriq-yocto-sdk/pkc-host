@@ -41,7 +41,15 @@
 
 #define FSL_CRA_PRIORITY 4000
 
-#ifndef VIRTIO_C2X0
+#ifdef VIRTIO_C2X0
+/* forward definitions */
+struct virtio_c2x0_job_ctx;
+struct virtio_c2x0_qemu_cmd;
+typedef struct crypto_dev_sess crypto_dev_sess_t;
+
+extern int hash_cra_init(struct virtio_c2x0_job_ctx *);
+extern int hash_cra_exit(crypto_dev_sess_t *);
+#else
 extern int32_t fsl_algapi_init(void);
 extern void fsl_algapi_exit(void);
 
@@ -49,6 +57,8 @@ extern int rsa_op(struct pkc_request *req);
 extern int dsa_op(struct pkc_request *req);
 extern int dh_op(struct pkc_request *req);
 
+extern int hash_cra_init(struct crypto_tfm *tfm);
+extern void hash_cra_exit(struct crypto_tfm *tfm);
 extern int ahash_import(struct ahash_request *req, const void *in);
 extern int ahash_export(struct ahash_request *req, void *out);
 extern int ahash_final(struct ahash_request *req);
@@ -64,22 +74,6 @@ extern int fsl_ablkcipher_setkey(struct crypto_ablkcipher *ablkcipher,
 extern int fsl_ablkcipher_decrypt(struct ablkcipher_request *req);
 extern int fsl_ablkcipher_encrypt(struct ablkcipher_request *req);
 #endif
-
-/*struct list_head alg_list;*/
-
-struct fsl_crypto_alg {
-	struct list_head entry;
-	int op_type;
-	int alg_type;
-	int alg_op;
-	int class1_alg_type;
-	int class2_alg_type;
-	bool ahash;
-	union {
-		struct crypto_alg crypto_alg;
-		struct ahash_alg ahash_alg;
-	} u;
-};
 
 struct alg_template {
 	char name[CRYPTO_MAX_ALG_NAME];

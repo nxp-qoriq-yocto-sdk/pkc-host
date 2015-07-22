@@ -33,10 +33,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <linux/crypto.h>
+
 #include "common.h"
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
-#include "algs.h"
+#include "dh.h"
 #include "pkc_desc.h"
 #include "desc.h"
 #include "memmgr.h"
@@ -46,21 +48,10 @@
 #endif
 #include "dma.h"
 
-/*
-#define DUMP_DESC_WORDS
-#define PERFORMANCE_BUILD
-#define DUMP_DEBUG_V_INFO
-*/
-
 /* Callback test functions */
 typedef void (*dh_op_cb) (struct pkc_request *, int32_t result);
-/* #ifdef KCAPI_INTEG_BUILD
-dh_op_cb dh_completion_cb = pkc_request_complete;
-dh_op_cb ecdh_completion_cb = pkc_request_complete;
-#else  */
 dh_op_cb dh_completion_cb;
 dh_op_cb ecdh_completion_cb;
-/* #endif */
 
 static void dh_op_done(void *ctx, int32_t res)
 {
@@ -218,7 +209,7 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 #endif
 	start_idx &= HDR_START_IDX_MASK;
@@ -243,7 +234,7 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 	ASSIGN32(dh_key_desc->op,
 		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH));
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
 	print_debug("W DMA: %llx\n", (uint64_t)mem->w_buff.dev_buffer.d_p_addr);
@@ -271,7 +262,7 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 #endif
 	start_idx &= HDR_START_IDX_MASK;
@@ -304,7 +295,7 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 			 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH |
 			  OP_PCL_PKPROT_ECC));
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
 	print_debug("W DMA: %llx\n", (uint64_t)mem->w_buff.dev_buffer.d_p_addr);
 	print_debug("S DMA: %llx\n", (uint64_t)mem->s_buff.dev_buffer.d_p_addr);
@@ -331,7 +322,7 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 #ifdef SEC_DMA
     dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
-#ifdef DUMP_DEBUG_V_INFO    
+#ifdef PRINT_DEBUG
     uint32_t                *desc_buff      =   (uint32_t *)mem->desc_buff.v_mem;
 #endif
     start_idx   &=  HDR_START_IDX_MASK;
@@ -363,7 +354,7 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
                         OP_PCL_PKPROT_ECC));
     }
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 
     print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
     print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
@@ -391,7 +382,7 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
 #ifdef SEC_DMA
     dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
-#ifdef DUMP_DEBUG_V_INFO    
+#ifdef PRINT_DEBUG
     uint32_t                *desc_buff      =   (uint32_t *)mem->desc_buff.v_mem;
 #endif
     start_idx   &=  HDR_START_IDX_MASK;
@@ -412,7 +403,7 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
     ASSIGN32(dh_keygen_desc->sgf_ln, ((mem->q_buff.len<<7) | mem->r_buff.len));
     ASSIGN32(dh_keygen_desc->op, (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR));
 
-#ifdef DUMP_DEBUG_V_INFO
+#ifdef PRINT_DEBUG
 
     print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
     print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
