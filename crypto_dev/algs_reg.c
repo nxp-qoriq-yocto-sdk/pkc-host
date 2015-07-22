@@ -619,7 +619,9 @@ int32_t fsl_algapi_init(void)
 
 	for (loop = 0; loop < ARRAY_SIZE(driver_algs); loop++) {
 		keyed = false;
+#ifdef HMAC_OFFLOAD
 l_start:
+#endif
 		f_alg = fsl_alg_alloc(&driver_algs[loop], keyed);
 
 		if (!f_alg) {
@@ -655,13 +657,14 @@ l_start:
 		print_debug("%s alg registration successful\n", driver_alg_name);
 		list_add_tail(&f_alg->entry, &alg_list);
 
+#ifdef HMAC_OFFLOAD
 		/* after registering a digest algorithm, loop again to register
 		 * the hashed (keyed) version of the same algorithm */
 		if (f_alg->ahash && !keyed) {
 			keyed = true;
 			goto l_start;
 		}
-
+#endif
 	}
 
 	return 0;
