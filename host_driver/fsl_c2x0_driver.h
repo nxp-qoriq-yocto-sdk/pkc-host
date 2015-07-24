@@ -98,17 +98,6 @@ dev_err(&(fdev->dev->dev), msg, ##__VA_ARGS__);\
 #define dev_print_err(fdev, msg, ...)
 #endif
 
-/* PCI subsystem API related macros */
-#define dev_pci_cfg_write_word32(dev, offset, data)	\
-	pci_write_config_dword(dev, offset, data)
-#define dev_pci_cfg_write_word16(dev, offset, data)	\
-	pci_write_config_word(dev, offset, data)
-
-#define dev_pci_cfg_read_word32(dev, offset, data)	\
-	pci_read_config_dword(dev, offset, data)
-#define dev_pci_cfg_read_word16(dev, offset, data)	\
-	pci_read_config_word(dev, offset, data)
-
 /* PCI Config space fields related macros */
 #define MSI_CTRL_WORD_MMC_MASK	0xE	/* 1-3 bits */
 #define MSI_CTRL_WORD_MMC_SHIFT	1

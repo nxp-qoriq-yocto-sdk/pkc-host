@@ -1138,7 +1138,7 @@ int get_msi_iv_cnt(fsl_pci_dev_t *fsl_pci_dev, uint8_t num_of_vectors)
 	uint32_t mmc_count, mme_count;
 
 	/* Check whether the device supports multiple MSI interrupts */
-	dev_pci_cfg_read_word16(fsl_pci_dev->dev, PCI_MSI_CTRL_REGISTER,
+	pci_read_config_word(fsl_pci_dev->dev, PCI_MSI_CTRL_REGISTER,
 				&msi_ctrl_word);
 
 	/* Check the MMC field to see how many MSIs are supported */
@@ -1188,11 +1188,11 @@ void get_msi_config_data(fsl_pci_dev_t *fsl_pci_dev, isr_ctx_t *isr_context)
 {
 	pci_bar_info_t *bar = &fsl_pci_dev->bars[PCI_BAR_NUM_3];
 
-	dev_pci_cfg_read_word32(fsl_pci_dev->dev, PCI_MSI_ADDR_LOW,
+	pci_read_config_dword(fsl_pci_dev->dev, PCI_MSI_ADDR_LOW,
 			&(isr_context->msi_addr_low));
-	dev_pci_cfg_read_word32(fsl_pci_dev->dev, PCI_MSI_ADDR_HIGH,
+	pci_read_config_dword(fsl_pci_dev->dev, PCI_MSI_ADDR_HIGH,
 			&(isr_context->msi_addr_high));
-	dev_pci_cfg_read_word16(fsl_pci_dev->dev, PCI_MSI_ADDR_DATA,
+	pci_read_config_word(fsl_pci_dev->dev, PCI_MSI_ADDR_DATA,
 			&(isr_context->msi_data));
 
 	DEV_PRINT_DEBUG("MSI addr low [%0X] MSI addr high [%0X] MSI data [%0X]\n",
@@ -1200,7 +1200,7 @@ void get_msi_config_data(fsl_pci_dev_t *fsl_pci_dev, isr_ctx_t *isr_context)
 			isr_context->msi_data);
 
 	bar->phy_addr = isr_context->msi_addr_low;
-	if (sizeof(phys_addr_t) == HOST_64_BIT_ADDR_SIZE)
+	if (sizeof(phys_addr_t) == sizeof(u64))
 		bar->phy_addr |= ((u64) isr_context->msi_addr_high) << 32;
 
 	bar->v_addr = (void *) phys_to_virt((unsigned long)bar->phy_addr);
@@ -1389,13 +1389,13 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	rsrc_bar_addr = pci_resource_start(dev, PCI_BAR_NUM_0);
 
 	if ((rsrc_bar_addr & 0xfffffe00) != (config_bar_addr & 0xfffffe00))
-		dev_pci_cfg_write_word32(dev, PCI_BAR0_REGISTER, rsrc_bar_addr);
+		pci_write_config_dword(dev, PCI_BAR0_REGISTER, rsrc_bar_addr);
 
 	pci_read_config_dword(dev, PCI_BAR1_REGISTER, &config_bar_addr);
 	rsrc_bar_addr = pci_resource_start(dev, PCI_BAR_NUM_1);
 
 	if ((rsrc_bar_addr & 0xfffffe00) != (config_bar_addr & 0xfffffe00))
-		dev_pci_cfg_write_word32(dev, PCI_BAR1_REGISTER, rsrc_bar_addr);
+		pci_write_config_dword(dev, PCI_BAR1_REGISTER, rsrc_bar_addr);
 	}
 #endif
 

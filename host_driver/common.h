@@ -239,8 +239,6 @@
  * Only two bits from higher address is sufficient */
 #define PHYS_ADDR_H_32_BIT_MASK       0x300000000ull
 
-#define HOST_64_BIT_ADDR_SIZE         sizeof(u64)
-
 /* Typedefs */
 #ifdef DEV_VIRT_ADDR_32BIT
 typedef uint32_t dev_v_addr_t;
