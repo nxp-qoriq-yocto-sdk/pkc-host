@@ -69,14 +69,6 @@
 #include<linux/kthread.h>
 #include <linux/cpumask.h>
 
-#ifndef __WORDSIZE
-#if defined(__x86_64__)
-#define __WORDSIZE 64
-#else
-#define __WORDSIZE 32
-#endif
-#endif
-
 /* Endian conversion macro's */
 
 #define IO_BE_WRITE64(val, addr)        { \

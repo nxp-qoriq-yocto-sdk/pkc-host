@@ -36,38 +36,14 @@
 #ifndef __MEMMGR_H__
 #define __MEMMGR_H__
 
-#if (__WORDSIZE == 64)
-/* Making sure that metadata is min 32 bytes -
- * so that actual buf mem will be aligned to 32 bytes
- * for better performance.
- */
 struct buffer_header {
 	struct buffer_header *prev_link;
 	struct buffer_header *next_link;
-
 	uint32_t len;
 	uint8_t in_use;
 	uint8_t flag;
-	uint8_t pad[2];
-
 	unsigned long priv;
-} __packed;
-#endif
-
-#if (__WORDSIZE == 32)
-struct buffer_header {
-	struct buffer_header *prev_link;
-	struct buffer_header *next_link;
-
-	uint32_t len;
-	uint8_t in_use;
-	uint8_t flag;
-	uint8_t pad1[2];
-
-	unsigned long priv;
-	uint32_t pad[3];
-} __packed;
-#endif
+};
 
 typedef struct buffer_header bh;
 
