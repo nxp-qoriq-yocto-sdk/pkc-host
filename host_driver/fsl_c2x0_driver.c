@@ -2210,6 +2210,8 @@ static void __exit fsl_crypto_drv_exit(void)
 		   v_addr, 0x0e00b0, 0x2); */
 		FSL_DEVICE_WRITE32_BAR0_REG(
 			dev_cursor->bars[PCI_BAR_NUM_0].v_addr, PIC_PIR, 0x1);
+		FSL_DEVICE_WRITE32_BAR0_REG(
+			dev_cursor->bars[PCI_BAR_NUM_0].v_addr, BRR_OFFSET, 0);
 		smp_wmb();
 	}
 #ifdef USE_HOST_DMA
