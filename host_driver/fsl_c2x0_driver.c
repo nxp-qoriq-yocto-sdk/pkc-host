@@ -1332,11 +1332,6 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 {
 	int32_t err = -ENODEV;
 	int local_cfg; /* clean-up is required on error path */
-
-#ifndef P4080_BUILD
-	int32_t rsrc_bar_addr = 0;
-	int32_t config_bar_addr = 0;
-#endif
 	enum int_type int_type;
 	int8_t pci_info[60];
 	int8_t sys_pci_info[100];
@@ -1385,8 +1380,11 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	 * Currently leaving this code as such. We can figure out
 	 * later whether do we need this.
 	 */
-
 #ifndef P4080_BUILD
+	{
+	int32_t rsrc_bar_addr = 0;
+	int32_t config_bar_addr = 0;
+
 	pci_read_config_dword(dev, PCI_BAR0_REGISTER, &config_bar_addr);
 	rsrc_bar_addr = pci_resource_start(dev, PCI_BAR_NUM_0);
 
@@ -1398,7 +1396,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 	if ((rsrc_bar_addr & 0xfffffe00) != (config_bar_addr & 0xfffffe00))
 		dev_pci_cfg_write_word32(dev, PCI_BAR1_REGISTER, rsrc_bar_addr);
-
+	}
 #endif
 
 	/* Set the DMA mask for the device. This helps the PCI subsystem
