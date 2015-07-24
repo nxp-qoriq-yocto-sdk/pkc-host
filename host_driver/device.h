@@ -78,7 +78,6 @@
 
 /*** Register Offsets ***/
 
-#if defined P4080_EP || C293_EP
 /* Enabling 36bit DMA support - This helps in setting the DMA mask */
 #define SEC_ENGINE_DMA_36BIT
 
@@ -127,8 +126,6 @@
 #define DEVICE_RESET_CONTROL_REGISTER_OFFSET        \
 	(DEVICE_CONFIG_AND_PIN_CNTRL_BLK_OFFSET | 0x00B0)
 #define DEVICE_RESET_REG_VALUE                      0X02
-
-#endif
 
 #ifdef EP_VIRT_ADDR_32BIT
 #define DEV_VIRT_ADDR_32BIT
