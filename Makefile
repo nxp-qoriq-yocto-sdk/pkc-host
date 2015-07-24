@@ -32,9 +32,6 @@ ENHANCE_KERNEL_TEST=n
 #Specify building host-driver to support Virtualization
 VIRTIO_C2X0=n
 
-#Specify whether build cryptoapi pkc-related into host driver on x86
-EXTRA_PKC=y
-
 KERNEL_DIR ?=/lib/modules/$(shell uname -r)/build
 ifneq (${ARCH},)
 KERNEL_MAKE_OPTS += ARCH=${ARCH}
@@ -163,10 +160,8 @@ $(DRIVER_KOBJ)-objs += host_driver/fsl_c2x0_crypto_layer.o
 $(DRIVER_KOBJ)-objs += host_driver/memmgr.o
 $(DRIVER_KOBJ)-objs += host_driver/command.o
 $(DRIVER_KOBJ)-objs += host_driver/sysfs.o
-ifeq ($(X86_BUILD),y)
-ifeq ($(EXTRA_PKC),y)
+ifneq ("$(ARCH)","powerpc")
 $(DRIVER_KOBJ)-objs += crypto/pkc.o
-endif
 endif
 $(DRIVER_KOBJ)-objs += host_driver/dma.o
 $(DRIVER_KOBJ)-objs += algs/algs.o
