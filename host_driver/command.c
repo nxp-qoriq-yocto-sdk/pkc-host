@@ -173,7 +173,7 @@ void set_device(char *fname, char *device, int32_t size, char flag)
 
 	/* PUT DEVICE IN SET MODE */
 #define PIC_PIR 0x041090
-	FSL_DEVICE_WRITE32_BAR0_REG(fsl_pci_dev->bars[PCI_BAR_NUM_0].v_addr,
+	FSL_DEVICE_WRITE32_BAR0_REG(fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr,
 				    PIC_PIR, 0x0);
 
 	/* GET THE OLD DEVICE CONFIG */

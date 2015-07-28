@@ -105,18 +105,6 @@ dev_err(&(fdev->dev->dev), msg, ##__VA_ARGS__);\
 #define MSI_CTRL_WORD_MME_MASK	0x70	/* 4-6 bits */
 #define MSI_CTRL_WORD_MME_SHIFT	4
 
-/* PCI bar types */
-typedef enum pci_bars {
-	PCI_BAR_NUM_0 = MEM_TYPE_CONFIG,
-	PCI_BAR_NUM_1 = MEM_TYPE_SRAM,
-	PCI_BAR_NUM_2 = MEM_TYPE_DRIVER,
-	PCI_BAR_NUM_3 = MEM_TYPE_MSI,
-
-	/* This is deliberate as logic is dependent on this */
-	PCI_IB_BAR_MAX = PCI_BAR_NUM_2,
-	PCI_BAR_MAX = MEM_TYPE_MAX
-} pci_bars_t;
-
 /* PCI CONFIG SPACE REGISTERS OFFSET */
 typedef enum pci_config_space_regs {
 	PCI_BAR0_REGISTER = 0X10,
@@ -203,7 +191,7 @@ typedef struct fsl_pci_dev {
 	char dev_node_path[FSL_PCI_DEV_NODE_STD_PATH_LEN +
 			   FSL_PCI_DEV_NAME_MAX_LEN];
 
-	pci_bar_info_t bars[PCI_BAR_MAX];
+	pci_bar_info_t bars[MEM_TYPE_MAX];
 	pci_intr_info_t intr_info;
 
 	dev_sysfs_entries_t sysfs;

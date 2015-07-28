@@ -1056,7 +1056,7 @@ int fsl_get_bar_map(fsl_pci_dev_t *fsl_pci_dev)
 	pci_bar_info_t *bars = fsl_pci_dev->bars;
 
 	/* Get the BAR resources and remap them into the driver memory */
-	for (i = 0; i < PCI_IB_BAR_MAX; i++) {
+	for (i = 0; i < MEM_TYPE_DRIVER; i++) {
 		/* Read the hardware address and length*/
 		bars[i].len = pci_resource_len(dev, i);
 		bars[i].phy_addr = pci_resource_start(dev, i);
@@ -1186,7 +1186,7 @@ int get_msi_iv(fsl_pci_dev_t *fsl_pci_dev)
 /* Get the MSI address and MSI data from the configuration space */
 void get_msi_config_data(fsl_pci_dev_t *fsl_pci_dev, isr_ctx_t *isr_context)
 {
-	pci_bar_info_t *bar = &fsl_pci_dev->bars[PCI_BAR_NUM_3];
+	pci_bar_info_t *bar = &fsl_pci_dev->bars[MEM_TYPE_MSI];
 
 	pci_read_config_dword(fsl_pci_dev->dev, PCI_MSI_ADDR_LOW,
 			&(isr_context->msi_addr_low));
@@ -1386,13 +1386,13 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	int32_t config_bar_addr = 0;
 
 	pci_read_config_dword(dev, PCI_BAR0_REGISTER, &config_bar_addr);
-	rsrc_bar_addr = pci_resource_start(dev, PCI_BAR_NUM_0);
+	rsrc_bar_addr = pci_resource_start(dev, MEM_TYPE_CONFIG);
 
 	if ((rsrc_bar_addr & 0xfffffe00) != (config_bar_addr & 0xfffffe00))
 		pci_write_config_dword(dev, PCI_BAR0_REGISTER, rsrc_bar_addr);
 
 	pci_read_config_dword(dev, PCI_BAR1_REGISTER, &config_bar_addr);
-	rsrc_bar_addr = pci_resource_start(dev, PCI_BAR_NUM_1);
+	rsrc_bar_addr = pci_resource_start(dev, MEM_TYPE_SRAM);
 
 	if ((rsrc_bar_addr & 0xfffffe00) != (config_bar_addr & 0xfffffe00))
 		pci_write_config_dword(dev, PCI_BAR1_REGISTER, rsrc_bar_addr);
@@ -1445,7 +1445,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 	/* RESET THE PIC_PIR */
 #define PIC_PIR 0x041090
-	FSL_DEVICE_WRITE32_BAR0_REG(fsl_pci_dev->bars[PCI_BAR_NUM_0].v_addr,
+	FSL_DEVICE_WRITE32_BAR0_REG(fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr,
 				    PIC_PIR, 0x0);
 
 	/* Call to the following function gets the number of
@@ -1544,7 +1544,7 @@ free_config:
 		kfree(config);
 	}
 free_bar_map:
-	fsl_free_bar_map(fsl_pci_dev->bars, PCI_IB_BAR_MAX);
+	fsl_free_bar_map(fsl_pci_dev->bars, MEM_TYPE_DRIVER);
 clear_master:
 	pci_clear_master(dev);
 free_dev:
@@ -1937,7 +1937,7 @@ static void cleanup_pci_device(fsl_pci_dev_t *dev)
 	sysfs_cleanup(dev);
 
 	/* Free the BAR related resources */
-	for (i = 0; i < PCI_IB_BAR_MAX; i++) {
+	for (i = 0; i < MEM_TYPE_DRIVER; i++) {
 		if (NULL != dev->bars[i].v_addr) {
 			dev_print_dbg(dev, "IOunmap\n");
 			/* io unmap */
@@ -2204,13 +2204,13 @@ static void __exit fsl_crypto_drv_exit(void)
 
 	list_for_each_entry(dev_cursor, &pci_dev_list, list) {
 		print_debug("**** RESETTING THE DEVICE ****\n");
-		print_debug("BAR0 V ADDR: %p\n", dev_cursor->bars[PCI_BAR_NUM_0].v_addr);
-		/* FSL_DEVICE_WRITE32_BAR0_REG(dev_cursor->bars[PCI_BAR_NUM_0].
+		print_debug("BAR0 V ADDR: %p\n", dev_cursor->bars[MEM_TYPE_CONFIG].v_addr);
+		/* FSL_DEVICE_WRITE32_BAR0_REG(dev_cursor->bars[MEM_TYPE_CONFIG].
 		   v_addr, 0x0e00b0, 0x2); */
 		FSL_DEVICE_WRITE32_BAR0_REG(
-			dev_cursor->bars[PCI_BAR_NUM_0].v_addr, PIC_PIR, 0x1);
+			dev_cursor->bars[MEM_TYPE_CONFIG].v_addr, PIC_PIR, 0x1);
 		FSL_DEVICE_WRITE32_BAR0_REG(
-			dev_cursor->bars[PCI_BAR_NUM_0].v_addr, BRR_OFFSET, 0);
+			dev_cursor->bars[MEM_TYPE_CONFIG].v_addr, BRR_OFFSET, 0);
 		smp_wmb();
 	}
 #ifdef USE_HOST_DMA
