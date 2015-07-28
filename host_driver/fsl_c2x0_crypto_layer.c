@@ -930,53 +930,21 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	/* set the law for BP140 sram */
 	HELP_MACRO(0xc08, p_sram_start >> 12);
 	HELP_MACRO(0xc10, 0x80a00012);
-#if 0
-	/* set the law for PCIe OB - 1GB - O to 1G */
-/*	HELP_MACRO(0xc28, 0x00000); */
-	HELP_MACRO(0xc28, 0x80000);
-	HELP_MACRO(0xc30, 0x8020001d);
 
-	/* set the law for PCIe OB - 1MB */
-	HELP_MACRO(0xc48, 0x90000);
-	HELP_MACRO(0xc50, 0x80200013);
-#else
 	/* Set law for PCIe OB - 16G */
 	HELP_MACRO(0xc28, 0x800000);
 	HELP_MACRO(0xc30, 0x80200021);
-#endif
 
 	/* set inbound 1 attribute and enable it */
 	HELP_MACRO(0xadc0, l2_sram_start >> 12);
 	HELP_MACRO(0xadd0, 0xa0a55013);
 
-#if 0
-	/* Set the OB base address for ob mem - 1G */
-	/* Get the 1G aligned address for ob_mem */
-#define OB_MEM_1G_ALIGNED_MASK		((~(0)) << 30)
-	ob_mem = (ob_mem & OB_MEM_1G_ALIGNED_MASK);
-	HELP_MACRO(0xac20, ob_mem >> 12);
-	HELP_MACRO(0xac24, 0);
-	HELP_MACRO(0xac28, 0x80000);
-	HELP_MACRO(0xac30, 0x8004401d);
-
-/*	HELP_MACRO(0xac28, 0x80000); */
-/*	HELP_MACRO(0xac30, 0x80044013); */
-
-	/* Set the OB base address for MSI */
-	HELP_MACRO(0xac40, (msi_mem & 0xfff00000) >> 12);
-	HELP_MACRO(0xac44, 0);
-	HELP_MACRO(0xac48, 0xc1000);
-	HELP_MACRO(0xac50, 0x80044013);
-#else
 	/* Set the OB base address for ob mem */
 	HELP_MACRO(0xac20, 0);
 	HELP_MACRO(0xac24, 0);
 	HELP_MACRO(0xac28, 0x800000);
 	HELP_MACRO(0xac30, 0x80044021);
-#endif
 
-#define BOOTUP_REG_DUMP
-#ifdef BOOTUP_REG_DUMP
 	/* Dumping the registers set */
 	print_debug(" ==== EP REGISTERS ====\n");
 	print_debug("0X20100 :- %0x\n", BAR1_R_MACRO(ccsr_bar + 0x20100));
@@ -1003,7 +971,6 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	print_debug("0xac50 :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xac50));
 
 	print_debug("=======================\n");
-#endif
 }
 
 static int32_t boot_device(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
