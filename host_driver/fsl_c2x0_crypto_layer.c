@@ -902,15 +902,8 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	unsigned int p_sram_start = 0xfff80000;
 	unsigned int val = 0;
 #ifdef PRINT_DEBUG
-	phys_addr_t msi_mem = dev->mem[MEM_TYPE_MSI].host_p_addr;
 	char ccsr_bar = 0;
 #endif
-	print_debug("======= setup_ep =======\n");
-	print_debug("Ob mem dma addr	:%pa , len: %d\n",
-		    &(dev->mem[MEM_TYPE_DRIVER].host_p_addr),
-		    dev->mem[MEM_TYPE_DRIVER].len);
-	print_debug("BAR0 V Addr	: %p\n", dev->mem[MEM_TYPE_CONFIG].host_v_addr);
-	print_debug("MSI mem		: %pa\n", &msi_mem);
 
 #define HELP_MACRO(x, y)	\
 	FSL_DEVICE_WRITE32_BAR0_REG(dev->mem[MEM_TYPE_CONFIG].host_v_addr, x, y)
@@ -944,6 +937,12 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	HELP_MACRO(0xac24, 0);
 	HELP_MACRO(0xac28, 0x800000);
 	HELP_MACRO(0xac30, 0x80044021);
+
+	print_debug("======= setup_ep =======\n");
+	print_debug("Ob mem dma_addr: %pa\n", &(dev->mem[MEM_TYPE_DRIVER].host_p_addr));
+	print_debug("Ob mem len: %d\n", dev->mem[MEM_TYPE_DRIVER].len);
+	print_debug("BAR0 V Addr: %p\n", dev->mem[MEM_TYPE_CONFIG].host_v_addr);
+	print_debug("MSI mem: %pa\n", &(dev->mem[MEM_TYPE_MSI].host_p_addr));
 
 	/* Dumping the registers set */
 	print_debug(" ==== EP REGISTERS ====\n");
