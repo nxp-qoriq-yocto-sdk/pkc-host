@@ -1027,14 +1027,14 @@ int request_and_map_pci_resource(pci_bar_info_t *bar)
 
 	/* Request resource region */
 	if (!request_mem_region(bar->phy_addr, bar->len, "FSL-CRYPTO")) {
-		print_error("Bar: Request mem region failed\n");
+		print_error("BAR: Request mem region failed\n");
 		return err;
 	}
 
 	/* Map the MEM to the kernel address space */
 	bar->v_addr = ioremap(bar->phy_addr, (unsigned long)bar->len);
 	if (!bar->v_addr) {
-		print_error("Bar: Mapping to kernel address failed\n");
+		print_error("BAR: Mapping to kernel address failed\n");
 		goto out_free;
 	}
 
@@ -1064,11 +1064,11 @@ int fsl_get_bar_map(fsl_pci_dev_t *fsl_pci_dev)
 			DEV_PRINT_ERROR("BAR %d: failed to get physical address\n", i);
 			goto error; /* no clean-up required */
 		}
-		DEV_PRINT_DEBUG("Bar %d: physical address %pa\n", i, &bars[i].phy_addr);
+		DEV_PRINT_DEBUG("BAR %d: physical address %pa\n", i, &bars[i].phy_addr);
 
 		if (request_and_map_pci_resource(&bars[i]) != 0)
 			goto error;
-		DEV_PRINT_DEBUG("Bar %d: virtual address %p, length %pa\n", i,
+		DEV_PRINT_DEBUG("BAR %d: virtual address %p, length %pa\n", i,
 				bars[i].v_addr, &bars[i].len);
 	}
 	return 0;
