@@ -601,7 +601,7 @@ static cmd_op_t *get_cmd_op_ctx(fsl_crypto_dev_t *c_dev,
 	print_debug("host_p_addr: %pa\n", &(c_dev->mem[MEM_TYPE_DRIVER].host_p_addr));
 	print_debug("host_v_addr: %p\n", c_dev->mem[MEM_TYPE_DRIVER].host_v_addr);
 	print_debug("get_cmd_op_ctx: cmd_op adr: %p\n", cmd_op);
-	print_debug("cmd_trace_ctx_t size: %d\n", sizeof(cmd_trace_ctx_t));
+	print_debug("cmd_trace_ctx_t size: %zu\n", sizeof(cmd_trace_ctx_t));
 
 	op_dev_addr = (dev_dma_addr_t)
 	    (c_dev->mem[MEM_TYPE_DRIVER].host_p_addr) +

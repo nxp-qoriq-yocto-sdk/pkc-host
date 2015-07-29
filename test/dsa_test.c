@@ -741,7 +741,7 @@ int dsa_keygen_test(void)
 
 	init_completion(&serialize_keygen);
 
-	print_debug("pkc_request size: %d req ptr: %p \n",
+	print_debug("pkc_request size: %zu req ptr: %p \n",
 			sizeof(struct pkc_request), genreq);
 
 	genreq->type = DSA_KEYGEN;

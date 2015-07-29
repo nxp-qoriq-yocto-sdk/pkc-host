@@ -246,7 +246,7 @@ int test(void *data)
 	char *test_name = g_test_name;
 	int8_t run = 1;
 
-	print_debug("*** Thread  %d is invoked ***\n", (int)data);
+	print_debug("*** Thread  %p is invoked ***\n", data);
 	/* This need to call once to initialize all the test */
 	if (!strcmp(test_name, "RSA_PUB_OP_1K")) {
 		print_debug("RSA_PUB_OP_1K invoking\n");

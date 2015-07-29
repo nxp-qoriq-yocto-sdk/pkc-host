@@ -266,7 +266,8 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 				unsigned long arg)
 {
 	print_debug("fsl_cryptodev_ioctl\n");
-	print_debug("COMMAND :%u\nCMDOPERATION:%u\n", cmd, CMDOPERATION);
+	print_debug("COMMAND: %u\n", cmd);
+	print_debug("CMDOPERATION: %llx\n", (uint64_t)CMDOPERATION);
 	switch (cmd) {
 	case CMDOPERATION:
 		{
