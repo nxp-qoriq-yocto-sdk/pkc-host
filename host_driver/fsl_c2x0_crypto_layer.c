@@ -900,74 +900,68 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	/* This function boots EP from BP140 - Platform SRAM */
 	unsigned int l2_sram_start = 0xfff00000;
 	unsigned int p_sram_start = 0xfff80000;
-	unsigned int val = 0;
-#ifdef PRINT_DEBUG
-	char ccsr_bar = 0;
-#endif
+	unsigned int val;
 
-#define HELP_MACRO(x, y)	\
-	FSL_DEVICE_WRITE32_BAR0_REG(dev->mem[MEM_TYPE_CONFIG].host_v_addr, x, y)
-#define BAR1_R_MACRO(x) \
-	FSL_DEVICE_READ32_BAR1_REG(dev->mem[MEM_TYPE_CONFIG].host_v_addr, x, 0)
+	/* CCSR base address is obtained from BAR0 device register */
+	void *ccsr = dev->mem[MEM_TYPE_CONFIG].host_v_addr;
+
 	/* disable L2 SRAM ECC error */
-	val =
-	    FSL_DEVICE_READ32_BAR0_REG(dev->mem[MEM_TYPE_CONFIG].host_v_addr,
-				       0x20e44, 0);
-	HELP_MACRO(0x20e44, val | 0x0c);
+	val = ioread32be(ccsr + 0x20e44);
+	iowrite32be(val | 0x0c,		ccsr + 0x20e44);
 
 	/* set L2 SRAM memory-mapped address and enable it */
-	HELP_MACRO(0x20100, l2_sram_start);
-	HELP_MACRO(0x20104, 0x0);
-	HELP_MACRO(0x20000, 0x80010000);
+	iowrite32be(l2_sram_start,	ccsr + 0x20100);
+	iowrite32be(0,			ccsr + 0x20104);
+	iowrite32be(0x80010000,		ccsr + 0x20000);
 
 	/* set the law for BP140 sram */
-	HELP_MACRO(0xc08, p_sram_start >> 12);
-	HELP_MACRO(0xc10, 0x80a00012);
+	iowrite32be(p_sram_start >> 12,	ccsr + 0xc08);
+	iowrite32be(0x80a00012,		ccsr + 0xc10);
 
 	/* Set law for PCIe OB - 16G */
-	HELP_MACRO(0xc28, 0x800000);
-	HELP_MACRO(0xc30, 0x80200021);
+	iowrite32be(0x800000,		ccsr + 0xc28);
+	iowrite32be(0x80200021,		ccsr + 0xc30);
 
 	/* set inbound 1 attribute and enable it */
-	HELP_MACRO(0xadc0, l2_sram_start >> 12);
-	HELP_MACRO(0xadd0, 0xa0a55013);
+	iowrite32be(l2_sram_start >> 12, ccsr + 0xadc0);
+	iowrite32be(0xa0a55013,		ccsr + 0xadd0);
 
 	/* Set the OB base address for ob mem */
-	HELP_MACRO(0xac20, 0);
-	HELP_MACRO(0xac24, 0);
-	HELP_MACRO(0xac28, 0x800000);
-	HELP_MACRO(0xac30, 0x80044021);
+	iowrite32be(0,			ccsr + 0xac20);
+	iowrite32be(0,			ccsr + 0xac24);
+	iowrite32be(0x800000,		ccsr + 0xac28);
+	iowrite32be(0x80044021,		ccsr + 0xac30);
 
 	print_debug("======= setup_ep =======\n");
 	print_debug("Ob mem dma_addr: %pa\n", &(dev->mem[MEM_TYPE_DRIVER].host_p_addr));
 	print_debug("Ob mem len: %d\n", dev->mem[MEM_TYPE_DRIVER].len);
-	print_debug("BAR0 V Addr: %p\n", dev->mem[MEM_TYPE_CONFIG].host_v_addr);
+	print_debug("BAR0 V Addr: %p\n", ccsr);
 	print_debug("MSI mem: %pa\n", &(dev->mem[MEM_TYPE_MSI].host_p_addr));
 
 	/* Dumping the registers set */
 	print_debug(" ==== EP REGISTERS ====\n");
-	print_debug("0X20100 :- %0x\n", BAR1_R_MACRO(ccsr_bar + 0x20100));
-	print_debug("0X20104 :- %0x\n", BAR1_R_MACRO(ccsr_bar + 0x20104));
-	print_debug("0X20000 :- %0x\n", BAR1_R_MACRO(ccsr_bar + 0x20000));
+	print_debug("0X20100 :- %0x\n", ioread32be(ccsr + 0x20100));
+	print_debug("0X20104 :- %0x\n", ioread32be(ccsr + 0x20104));
+	print_debug("0X20000 :- %0x\n", ioread32be(ccsr + 0x20000));
 
-	print_debug("0xc08  :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xc08));
-	print_debug("0xc10  :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xc10));
+	print_debug("0xc08  :- :%0x\n", ioread32be(ccsr + 0xc08));
+	print_debug("0xc10  :- :%0x\n", ioread32be(ccsr + 0xc10));
 
-	print_debug("0xc28  :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xc28));
-	print_debug("0xc30  :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xc30));
+	print_debug("0xc28  :- :%0x\n", ioread32be(ccsr + 0xc28));
+	print_debug("0xc30  :- :%0x\n", ioread32be(ccsr + 0xc30));
 
-	print_debug("0xadd0 :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xadd0));
-	print_debug("0xadc0 :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xadc0));
+	print_debug("0xadd0 :- :%0x\n", ioread32be(ccsr + 0xadd0));
+	print_debug("0xadc0 :- :%0x\n", ioread32be(ccsr + 0xadc0));
 
-	print_debug("0xac20 :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xac20));
-	print_debug("0xac24 :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xac24));
-	print_debug("0xac28 :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xac28));
-	print_debug("0xac30 :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xac30));
+	print_debug("0xac20 :- :%0x\n", ioread32be(ccsr + 0xac20));
+	print_debug("0xac24 :- :%0x\n", ioread32be(ccsr + 0xac24));
+	print_debug("0xac28 :- :%0x\n", ioread32be(ccsr + 0xac28));
+	print_debug("0xac30 :- :%0x\n", ioread32be(ccsr + 0xac30));
 
-	print_debug("0xac40 :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xac40));
-	print_debug("0xac44 :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xac44));
-	print_debug("0xac48 :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xac48));
-	print_debug("0xac50 :- :%0x\n", BAR1_R_MACRO(ccsr_bar + 0xac50));
+	print_debug("0xac40 :- :%0x\n", ioread32be(ccsr + 0xac40));
+	print_debug("0xac44 :- :%0x\n", ioread32be(ccsr + 0xac44));
+	print_debug("0xac48 :- :%0x\n", ioread32be(ccsr + 0xac48));
+	print_debug("0xac50 :- :%0x\n", ioread32be(ccsr + 0xac50));
 
 	print_debug("=======================\n");
 }
