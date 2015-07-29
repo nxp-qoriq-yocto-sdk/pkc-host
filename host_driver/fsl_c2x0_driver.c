@@ -924,23 +924,6 @@ crypto_dev_config_t *get_dev_config(fsl_pci_dev_t *fsl_pci_dev)
 	return NULL;
 }
 
-/*******************************************************************************
- * Function     : fsl_drv_get_mem
- *
- * Arguments    : dev : PCI device structure instance.
- *                mem : Structure identifying the mem info
- *
- * Return Value : none
- *
- * Description  : API to get the addresses of the device (ib memory)
- *
- ******************************************************************************/
-void fsl_drv_get_mem(fsl_pci_dev_t *dev, crypto_dev_mem_info_t *mem)
-{
-	mem->host_v_addr = dev->bars[mem->type].v_addr;
-	mem->host_p_addr = dev->bars[mem->type].phy_addr;
-}
-
 #if 0
 static uint64_t readtb(void)
 {

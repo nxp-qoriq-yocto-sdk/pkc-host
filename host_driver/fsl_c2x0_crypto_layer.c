@@ -1289,7 +1289,8 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	/* Get the inbound memory addresses from the PCI driver */
 	for (i = 0; i < MEM_TYPE_MAX; i++) {
 		c_dev->mem[i].type = i;
-		fsl_drv_get_mem(fsl_pci_dev, &c_dev->mem[i]);
+		c_dev->mem[i].host_v_addr = fsl_pci_dev->bars[i].v_addr;
+		c_dev->mem[i].host_p_addr = fsl_pci_dev->bars[i].phy_addr;
 	}
 
 	atomic_set(&(c_dev->crypto_dev_sess_cnt), 0);
