@@ -897,9 +897,13 @@ static void check_ep_bootup(fsl_crypto_dev_t *dev)
 
 static void setup_ep(fsl_crypto_dev_t *dev)
 {
-	/* This function boots EP from BP140 - Platform SRAM */
+	/* Note: reserved bits are written with zeros as per reference manual
+	 *
+	 * These are the addresses where L2 SRAM and platform cache will be
+	 * mapped on the device. We configure them as a contiguous 1MB region
+	 * which will hold the firmware and operand data */
 	unsigned int l2_sram_start = 0xfff00000;
-	unsigned int p_sram_start = 0xfff80000;
+	unsigned int p_sram_start  = 0xfff80000;
 	unsigned int val;
 
 	/* CCSR base address is obtained from BAR0 device register */
@@ -909,28 +913,39 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	val = ioread32be(ccsr + 0x20e44);
 	iowrite32be(val | 0x0c,		ccsr + 0x20e44);
 
-	/* set L2 SRAM memory-mapped address and enable it */
-	iowrite32be(l2_sram_start,	ccsr + 0x20100);
-	iowrite32be(0,			ccsr + 0x20104);
-	iowrite32be(0x80010000,		ccsr + 0x20000);
+	/* Set L2 SRAM memory-mapped address and enable the whole 512KB block */
+	iowrite32be(l2_sram_start,	ccsr + 0x20100); /* L2_Cache_L2SRBAR0 */
+	iowrite32be(0,			ccsr + 0x20104); /* L2_Cache_L2SRBAREA0 */
+	iowrite32be(0x80010000,		ccsr + 0x20000); /* L2_Cache_L2CTL */
 
-	/* set the law for BP140 sram */
-	iowrite32be(p_sram_start >> 12,	ccsr + 0xc08);
-	iowrite32be(0x80a00012,		ccsr + 0xc10);
+	/* Set memory map for platform SRAM and PCIe. The window addresses are
+	 * specified right shifted by 12 bits (the minimum window size is 4K)
+	 *
+	 * Set LAW for target platform SRAM, size 2^0x13 = 512KB */
+	iowrite32be(p_sram_start >> 12,	ccsr + 0xc08); /* LAW_LAWBAR0 */
+	iowrite32be(0x80a00012,		ccsr + 0xc10); /* LAW_LAWAR0 */
 
-	/* Set law for PCIe OB - 16G */
-	iowrite32be(0x800000,		ccsr + 0xc28);
-	iowrite32be(0x80200021,		ccsr + 0xc30);
+	/* Set LAW for target PCIe, size 2^0x22 = 16G, starting address 32G */
+	iowrite32be(0x800000000 >> 12,	ccsr + 0xc28); /* LAW_LAWBAR1 */
+	iowrite32be(0x80200021,		ccsr + 0xc30); /* LAW_LAWAR1 */
 
-	/* set inbound 1 attribute and enable it */
-	iowrite32be(l2_sram_start >> 12, ccsr + 0xadc0);
-	iowrite32be(0xa0f55013,		ccsr + 0xadd0);
+	/* Set PEX inbound and outbound window translations. These must match
+	 * the LAWs defined earlier
+	 *
+	 * Set PEX inbound transactions to local memory
+	 * Addresses in the window of size 2^0x14 = 1MB starting at 0 are
+	 * translated with an offset of l2_sram_start in device space */
+	iowrite32be(l2_sram_start >> 12, ccsr + 0xadc0); /* PEX_PEXITAR1 */
+	iowrite32be(0,			ccsr + 0xadc8);  /* PEX_PEXIWBAR1 */
+	iowrite32be(0xa0f55013,		ccsr + 0xadd0);  /* PEX_PEXIWAR1 */
 
-	/* Set the OB base address for ob mem */
-	iowrite32be(0,			ccsr + 0xac20);
-	iowrite32be(0,			ccsr + 0xac24);
-	iowrite32be(0x800000,		ccsr + 0xac28);
-	iowrite32be(0x80044021,		ccsr + 0xac30);
+	/* Set PEX outbound transactions from device to host
+	 * Addresses in the window of size 2^0x22 = 16G starting at 32G
+	 * go to host untranslated */
+	iowrite32be(0,			ccsr + 0xac20); /* PEX_PEXOTAR1 */
+	iowrite32be(0,			ccsr + 0xac24); /* PEX_PEXOTEAR1 */
+	iowrite32be(0x800000000 >> 12,	ccsr + 0xac28); /* PEX_PEXOWBAR1 */
+	iowrite32be(0x80044021,		ccsr + 0xac30); /* PEX_PEXOWAR1 */
 
 	print_debug("======= setup_ep =======\n");
 	print_debug("Ob mem dma_addr: %pa\n", &(dev->mem[MEM_TYPE_DRIVER].host_p_addr));
