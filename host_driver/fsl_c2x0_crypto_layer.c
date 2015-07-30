@@ -924,7 +924,7 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 
 	/* set inbound 1 attribute and enable it */
 	iowrite32be(l2_sram_start >> 12, ccsr + 0xadc0);
-	iowrite32be(0xa0a55013,		ccsr + 0xadd0);
+	iowrite32be(0xa0f55013,		ccsr + 0xadd0);
 
 	/* Set the OB base address for ob mem */
 	iowrite32be(0,			ccsr + 0xac20);
