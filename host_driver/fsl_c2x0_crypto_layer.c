@@ -909,7 +909,8 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	/* CCSR base address is obtained from BAR0 device register */
 	void *ccsr = dev->mem[MEM_TYPE_CONFIG].host_v_addr;
 
-	/* disable L2 SRAM ECC error */
+	/* disable L2 SRAM ECC error
+	 * TODO: enable ECC by default for normal operation */
 	val = ioread32be(ccsr + 0x20e44);
 	iowrite32be(val | 0x0c,		ccsr + 0x20e44);
 
