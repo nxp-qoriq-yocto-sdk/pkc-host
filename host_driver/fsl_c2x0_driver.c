@@ -1295,6 +1295,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	enum int_type int_type;
 	int8_t pci_info[60];
 	int8_t sys_pci_info[100];
+	void *ccsr;
 
 	fsl_pci_dev_t *fsl_pci_dev = NULL;
 	struct crypto_dev_config *config = NULL;
@@ -1403,10 +1404,9 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	if (err)
 		goto clear_master;
 
-	/* RESET THE PIC_PIR */
-#define PIC_PIR 0x041090
-	FSL_DEVICE_WRITE32_BAR0_REG(fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr,
-				    PIC_PIR, 0x0);
+	/* clear reset for CORE 0: clear PIC_PIR register */
+	ccsr = fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr;
+	iowrite32be(0, ccsr + 0x41090);  /* PIC_PIR */
 
 	/* Call to the following function gets the number of
 	 * application rings to be created for the device.
@@ -2149,6 +2149,7 @@ static void fsl_crypto_pci_remove(struct pci_dev *dev)
 static void __exit fsl_crypto_drv_exit(void)
 {
 	fsl_pci_dev_t *dev_cursor = NULL;
+	void *ccsr;
 
 #ifdef RNG_OFFLOAD 
 	rng_exit();
@@ -2158,12 +2159,13 @@ static void __exit fsl_crypto_drv_exit(void)
 #endif
 
 	list_for_each_entry(dev_cursor, &pci_dev_list, list) {
+		ccsr = dev_cursor->bars[MEM_TYPE_CONFIG].v_addr;
 		print_debug("**** RESETTING THE DEVICE ****\n");
-		print_debug("BAR0 V ADDR: %p\n", dev_cursor->bars[MEM_TYPE_CONFIG].v_addr);
+		print_debug("BAR0 V ADDR: %p\n", ccsr);
 		/* FSL_DEVICE_WRITE32_BAR0_REG(dev_cursor->bars[MEM_TYPE_CONFIG].
 		   v_addr, 0x0e00b0, 0x2); */
-		FSL_DEVICE_WRITE32_BAR0_REG(
-			dev_cursor->bars[MEM_TYPE_CONFIG].v_addr, PIC_PIR, 0x1);
+		/* reset CORE 0: set P0 bit on PIC_PIR register */
+		iowrite32be(1, ccsr + 0x41090);  /* PIC_PIR */
 		FSL_DEVICE_WRITE32_BAR0_REG(
 			dev_cursor->bars[MEM_TYPE_CONFIG].v_addr, BRR_OFFSET, 0);
 		smp_wmb();

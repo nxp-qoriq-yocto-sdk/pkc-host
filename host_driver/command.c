@@ -141,6 +141,7 @@ void set_device(char *fname, char *device, int32_t size, char flag)
 	fsl_crypto_dev_t *c_dev = NULL;
 	struct crypto_dev_config *config = NULL;
 	unsigned long dev_no;
+	void *ccsr;
 
 	print_debug("INSIDE DEVICE SET FUNCTION\n");
 	if (strict_strtol(device, 0, &dev_no)) {
@@ -172,9 +173,8 @@ void set_device(char *fname, char *device, int32_t size, char flag)
 	cleanup_crypto_device(c_dev);
 
 	/* PUT DEVICE IN SET MODE */
-#define PIC_PIR 0x041090
-	FSL_DEVICE_WRITE32_BAR0_REG(fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr,
-				    PIC_PIR, 0x0);
+	ccsr = fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr;
+	iowrite32be(0, ccsr + 0x41090);  /* PIC_PIR */
 
 	/* GET THE OLD DEVICE CONFIG */
 	config = get_dev_config(fsl_pci_dev);
