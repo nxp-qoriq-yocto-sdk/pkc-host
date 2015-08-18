@@ -365,11 +365,18 @@ RETRY:
 	}
 }
 
+/* FIXME: this function should not be necessary at all.
+ *	In fact it is incorrect since it ignores endianness for 64 bit pointers
+ *	used in descriptors and even messes up IMM-ediate byte arrays!
+ *	The descriptors should probably be written directly to device memory
+ *	in device endianness (big) to avoid memcopy. Either way, we should look
+ *	for ways to remove, improve or fix it.
+ */
 void change_desc_endianness(uint32_t *dev_mem,
 			    uint32_t *host_mem, int32_t words)
 {
 	while (words) {
-		ASSIGN32_PTR(dev_mem, (*host_mem));
+		iowrite32be(*host_mem, dev_mem);
 		dev_mem++;
 		host_mem++;
 		words--;

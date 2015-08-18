@@ -83,7 +83,7 @@ static inline void *sh_desc_pdb(u32 *desc)
 
 static inline void init_desc(u32 *desc, u32 options)
 {
-	ASSIGN32_PTR(desc, ((options | HDR_ONE)));
+	iowrite32be(options | HDR_ONE, desc);
 }
 
 static inline void init_job_desc(u32 *desc, u32 options)
