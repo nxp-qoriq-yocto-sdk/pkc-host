@@ -2162,12 +2162,10 @@ static void __exit fsl_crypto_drv_exit(void)
 		ccsr = dev_cursor->bars[MEM_TYPE_CONFIG].v_addr;
 		print_debug("**** RESETTING THE DEVICE ****\n");
 		print_debug("BAR0 V ADDR: %p\n", ccsr);
-		/* FSL_DEVICE_WRITE32_BAR0_REG(dev_cursor->bars[MEM_TYPE_CONFIG].
-		   v_addr, 0x0e00b0, 0x2); */
+		/* iowrite32be(2, ccsr + 0x0e00b0); */
 		/* reset CORE 0: set P0 bit on PIC_PIR register */
 		iowrite32be(1, ccsr + 0x41090);  /* PIC_PIR */
-		FSL_DEVICE_WRITE32_BAR0_REG(
-			dev_cursor->bars[MEM_TYPE_CONFIG].v_addr, BRR_OFFSET, 0);
+		iowrite32be(0, ccsr + BRR_OFFSET);
 		smp_wmb();
 	}
 #ifdef USE_HOST_DMA

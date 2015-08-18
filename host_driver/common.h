@@ -131,16 +131,6 @@
 #if (DEVICE_ENDIAN == BIG_ENDIAN)
 
 /* Macros to read-write from BARs */
-#define FSL_DEVICE_WRITE32_BAR0_REG(base, offset, value)      \
-	IO_BE_WRITE32(value, (base+offset))
-#define FSL_DEVICE_READ32_BAR0_REG(base, offset, value)       \
-	IO_BE_READ32(base+offset)
-
-#define FSL_DEVICE_WRITE32_BAR1_REG(base, offset, value)      \
-	IO_BE_WRITE32(value, (base+offset))
-#define FSL_DEVICE_READ32_BAR1_REG(base, offset, value)       \
-	IO_BE_READ32(base+offset)
-
 #define FSL_DEVICE_WRITE16_BAR1_REG(base, offset, value)      \
 	IO_BE_WRITE16(value, (base+offset))
 #define FSL_DEVICE_READ16_BAR1_REG(base, offset, value)       \
@@ -155,8 +145,6 @@
 	IO_BE_WRITE8(value, addr)
 #define FSL_DEVICE_WRITE16_BAR1_REG_DIRECT(addr, value)		\
 	IO_BE_WRITE16(value, addr)
-#define FSL_DEVICE_WRITE32_BAR1_REG_DIRECT(addr, value)		\
-	IO_BE_WRITE32(value, addr)
 #define FSL_DEVICE_WRITE64_BAR1_REG_DIRECT(addr, value)		\
 	IO_BE_WRITE64(value, addr)
 
@@ -173,16 +161,6 @@
 
 #elif (DEVICE_ENDIAN == LITTLE_ENDIAN)
 /* Macros to read-write from BARs */
-#define FSL_DEVICE_WRITE32_BAR0_REG(base, offset, value)      \
-	IO_LE_WRITE32(value, (base+offset))
-#define FSL_DEVICE_READ32_BAR0_REG(base, offset, value)       \
-	IO_LE_READ32(base+offset)
-
-#define FSL_DEVICE_WRITE32_BAR1_REG(base, offset, value)      \
-	IO_LE_WRITE32(value, (base+offset))
-#define FSL_DEVICE_READ32_BAR1_REG(base, offset, value)       \
-	IO_LE_READ32(base+offset)
-
 #define FSL_DEVICE_WRITE16_BAR1_REG(base, offset, value)      \
 	IO_LE_WRITE16(value, (base+offset))
 #define FSL_DEVICE_READ16_BAR1_REG(base, offset, value)       \
@@ -197,8 +175,6 @@
 	IO_LE_WRITE8(value, addr)
 #define FSL_DEVICE_WRITE16_BAR1_REG_DIRECT(addr, value)     \
 	IO_LE_WRITE16(value, addr)
-#define FSL_DEVICE_WRITE32_BAR1_REG_DIRECT(addr, value)     \
-	IO_LE_WRITE32(value, addr)
 #define FSL_DEVICE_WRITE64_BAR1_REG_DIRECT(addr, value)     \
 	IO_LE_WRITE64(value, addr)
 

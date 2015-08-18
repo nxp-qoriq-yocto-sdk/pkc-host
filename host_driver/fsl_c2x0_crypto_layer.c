@@ -985,6 +985,7 @@ static int32_t boot_device(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 	uint8_t byte = 0X00;
 	uint32_t offset = FIRMWARE_IMAGE_START_OFFSET;
 	uint32_t size = 0;
+	void *ccsr = dev->mem[MEM_TYPE_CONFIG].host_v_addr;
 
 	loff_t pos = 0;
 	struct file *file = NULL;
@@ -1019,8 +1020,7 @@ static int32_t boot_device(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 	set_fs(old_fs);
 
 	/* Release the core 0 */
-	FSL_DEVICE_WRITE32_BAR0_REG(dev->mem[MEM_TYPE_CONFIG].host_v_addr,
-				    BRR_OFFSET, BRR_VALUE);
+	iowrite32be(BRR_VALUE, ccsr + BRR_OFFSET);
 
 	return 0;
 }
