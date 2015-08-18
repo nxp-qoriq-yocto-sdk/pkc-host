@@ -982,19 +982,17 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 
 static int32_t boot_device(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 {
-	uint8_t byte = 0X00;
-	uint32_t offset = FIRMWARE_IMAGE_START_OFFSET;
-	uint32_t size = 0;
+	uint8_t byte;
+	uint32_t i;
 	void *ccsr = dev->mem[MEM_TYPE_CONFIG].host_v_addr;
-
+	void *fw_addr = dev->mem[MEM_TYPE_SRAM].host_v_addr +
+				FIRMWARE_IMAGE_START_OFFSET;
 	loff_t pos = 0;
 	struct file *file = NULL;
 	mm_segment_t old_fs;
 
 	old_fs = get_fs();
-
 	set_fs(KERNEL_DS);
-
 	if (unlikely(NULL == fw_file_path)) {
 		print_error("NULL arg\n");
 		return -1;
@@ -1009,11 +1007,10 @@ static int32_t boot_device(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 		return -1;
 	}
 
-	for (size = 0; size < FSL_FIRMWARE_SIZE; size++) {
-		/* Read byte from the file */
+	/* Read each byte from the file and write it to the SRAM fw area*/
+	for (i = 0; i < FSL_FIRMWARE_SIZE; i++) {
 		vfs_read(file, &byte, 1, &pos);
-		FSL_DEVICE_WRITE8_BAR1_REG(dev->mem[MEM_TYPE_SRAM].host_v_addr,
-					   (offset + size), byte);
+		iowrite8(byte, fw_addr + i);
 	}
 
 	filp_close(file, 0);

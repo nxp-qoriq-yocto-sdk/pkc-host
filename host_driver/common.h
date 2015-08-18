@@ -98,13 +98,8 @@
 	};
 
 #define IO_BE_WRITE32(val, addr)    iowrite32(__cpu_to_be32(val), (void *)addr)
-#define IO_BE_READ32(addr)          __cpu_to_be32(ioread32(addr))
-
 #define IO_BE_WRITE16(val, addr)    iowrite16(__cpu_to_be16(val), (void *)addr)
-#define IO_BE_READ16(addr)          __cpu_to_be16(ioread16(addr))
-
 #define IO_BE_WRITE8(val, addr)     iowrite8(val, (void *)addr)
-#define IO_BE_READ8(addr)			ioread8((void *)addr)
 
 #define IO_LE_WRITE64(val, addr) { \
 	iowrite32(__cpu_to_le32((uint32_t)(val>>32)), (void *)addr); \
@@ -112,81 +107,28 @@
 		((uint8_t *)addr + sizeof(uint32_t)));\
 	};
 
-#define IO_LE_WRITE32(val, addr)	\
-	iowrite32(__cpu_to_le32(val), (void *)addr)
-#define IO_LE_READ32(addr)	\
-	__cpu_to_le32(ioread32(addr))
-
-#define IO_LE_WRITE16(val, addr)	\
-	iowrite16(__cpu_to_le16(val), (void *)addr)
-#define IO_LE_READ16(addr)	\
-	__cpu_to_le16(ioread16(addr))
-
-#define IO_LE_WRITE8(val, addr)	\
-	iowrite8(val, (void *)addr)
-#define IO_LE_READ8(addr)	\
-	ioread8((void *)addr)
+#define IO_LE_WRITE32(val, addr) iowrite32(__cpu_to_le32(val), (void *)addr)
+#define IO_LE_WRITE16(val, addr)  iowrite16(__cpu_to_le16(val), (void *)addr)
+#define IO_LE_WRITE8(val, addr)	iowrite8(val, (void *)addr)
 
 #if (DEVICE_ENDIAN != HOST_ENDIAN)
 #if (DEVICE_ENDIAN == BIG_ENDIAN)
-
-/* Macros to read-write from BARs */
-#define FSL_DEVICE_WRITE16_BAR1_REG(base, offset, value)      \
-	IO_BE_WRITE16(value, (base+offset))
-#define FSL_DEVICE_READ16_BAR1_REG(base, offset, value)       \
-	IO_BE_READ16(base+offset)
-
-#define FSL_DEVICE_WRITE8_BAR1_REG(base, offset, value)       \
-	IO_BE_WRITE8(value, (base+offset))
-#define FSL_DEVICE_READ8_BAR1_REG(base, offset, value)        \
-	IO_BE_READ8(base+offset)
-
-#define FSL_DEVICE_WRITE8_BAR1_REG_DIRECT(addr, value)		\
-	IO_BE_WRITE8(value, addr)
-#define FSL_DEVICE_WRITE16_BAR1_REG_DIRECT(addr, value)		\
-	IO_BE_WRITE16(value, addr)
-#define FSL_DEVICE_WRITE64_BAR1_REG_DIRECT(addr, value)		\
-	IO_BE_WRITE64(value, addr)
 
 /* Macros used during value assignment to the device memory */
 #define ASSIGN8(l, r)        IO_BE_WRITE8(r, &l)
 #define ASSIGN16(l, r)       IO_BE_WRITE16(r, &l)
 #define ASSIGN32(l, r)       IO_BE_WRITE32(r, &l)
 #define ASSIGN64(l, r)       IO_BE_WRITE64(r, &l)
-
-#define ASSIGN64_PTR(l, r)   IO_BE_WRITE64(r, l)
 #define ASSIGN32_PTR(l, r)   IO_BE_WRITE32(r, l)
-/*#define ASSIGN64_PTR(l, r)   IO_BE_WRITE32(r, l)*/
-#define ASSIGN8_PTR(l, r)    IO_BE_WRITE8(r,  l)
 
 #elif (DEVICE_ENDIAN == LITTLE_ENDIAN)
-/* Macros to read-write from BARs */
-#define FSL_DEVICE_WRITE16_BAR1_REG(base, offset, value)      \
-	IO_LE_WRITE16(value, (base+offset))
-#define FSL_DEVICE_READ16_BAR1_REG(base, offset, value)       \
-	IO_LE_READ16(base+offset)
-
-#define FSL_DEVICE_WRITE8_BAR1_REG(base, offset, value)       \
-	IO_LE_WRITE8(value, (base+offset))
-#define FSL_DEVICE_READ8_BAR1_REG(base, offset, value)        \
-	IO_LE_READ8(base+offset)
-
-#define FSL_DEVICE_WRITE8_BAR1_REG_DIRECT(addr, value)      \
-	IO_LE_WRITE8(value, addr)
-#define FSL_DEVICE_WRITE16_BAR1_REG_DIRECT(addr, value)     \
-	IO_LE_WRITE16(value, addr)
-#define FSL_DEVICE_WRITE64_BAR1_REG_DIRECT(addr, value)     \
-	IO_LE_WRITE64(value, addr)
 
 /* Macros used during value assignment to the device memory */
 #define ASSIGN8(l, r)        IO_LE_WRITE8(r, &l)
 #define ASSIGN16(l, r)       IO_LE_WRITE16(r, &l)
 #define ASSIGN32(l, r)       IO_LE_WRITE32(r, &l)
 #define ASSIGN64(l, r)       IO_LE_WRITE64(r, &l)
-
-/*#define ASSIGN64_PTR(l,r)       IO_LE_WRITE64_PTR(r, l)*/
 #define ASSIGN32_PTR(l, r)   IO_LE_WRITE32(r, l)
-#define ASSIGN8_PTR(l, r)    IO_LE_WRITE8(r,  l)
 
 #endif
 
