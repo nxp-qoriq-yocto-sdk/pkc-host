@@ -654,35 +654,34 @@ int32_t send_command_to_fw(fsl_crypto_dev_t *c_dev, commands_t command,
 		goto exit;
 	}
 	cmd_op->cmd_ctx->cmd_type = command;
-	ASSIGN32(pci_cmd_desc->cmd_type, command);
+	iowrite32be(command, &pci_cmd_desc->cmd_type);
 
 	if (NULL != usr_cmd) {
 		if (SECSTAT == usr_cmd->cmd_type) {
-			ASSIGN32(pci_cmd_desc->ip_info.sec_id,
-				 usr_cmd->rsrc.sec_id);
+			iowrite32be(usr_cmd->rsrc.sec_id, &pci_cmd_desc->ip_info.sec_id);
 			user_op_buff = usr_cmd->op_buffer;
 		}
 		if (DEBUG == usr_cmd->cmd_type) {
-			ASSIGN32(pci_cmd_desc->ip_info.dgb.cmd_id,
-				 usr_cmd->rsrc.dgb.cmd_id);
-			ASSIGN32(pci_cmd_desc->ip_info.dgb.address,
-				 usr_cmd->rsrc.dgb.address);
-			ASSIGN32(pci_cmd_desc->ip_info.dgb.val,
-				 usr_cmd->rsrc.dgb.val);
+			iowrite32be(usr_cmd->rsrc.dgb.cmd_id,
+				&pci_cmd_desc->ip_info.dgb.cmd_id);
+			iowrite32be(usr_cmd->rsrc.dgb.address,
+				&pci_cmd_desc->ip_info.dgb.address);
+			iowrite32be(usr_cmd->rsrc.dgb.val,
+				&pci_cmd_desc->ip_info.dgb.val);
 			user_op_buff = usr_cmd->op_buffer;
 		}
 		if (RESETSEC == usr_cmd->cmd_type)
-			ASSIGN32(pci_cmd_desc->ip_info.sec_id,
-				 usr_cmd->rsrc.sec_id);
+			iowrite32be(usr_cmd->rsrc.sec_id,
+				&pci_cmd_desc->ip_info.sec_id);
 		if (DEVSTAT == usr_cmd->cmd_type)
 			user_op_buff = usr_cmd->op_buffer;
 		if (RINGSTAT == usr_cmd->cmd_type) {
-			ASSIGN32(pci_cmd_desc->ip_info.ring_id,
-				 usr_cmd->rsrc.ring_id);
+			iowrite32be(usr_cmd->rsrc.ring_id,
+				&pci_cmd_desc->ip_info.ring_id);
 			user_op_buff = usr_cmd->op_buffer;
 		}
 		if (PINGDEV == usr_cmd->cmd_type) {
-			ASSIGN32(pci_cmd_desc->ip_info.count, 555);
+			iowrite32be(555, &pci_cmd_desc->ip_info.count);
 			user_op_buff = usr_cmd->op_buffer;
 		}
 	}

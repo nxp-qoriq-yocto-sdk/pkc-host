@@ -67,7 +67,7 @@ static inline void dev_dma_to_sec4_sg_one(struct sec4_sg_entry *sec4_sg_ptr,
 					  u16 offset)
 {
 	ASSIGN64(sec4_sg_ptr->ptr, dma);
-	ASSIGN32(sec4_sg_ptr->len, len);
+	iowrite32be(len, &sec4_sg_ptr->len);
 	iowrite8(0, &sec4_sg_ptr->reserved);
 	iowrite8(0, &sec4_sg_ptr->buf_pool_id);
 	iowrite16be(offset, &sec4_sg_ptr->offset);

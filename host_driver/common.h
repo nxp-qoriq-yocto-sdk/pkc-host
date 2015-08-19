@@ -111,13 +111,11 @@
 #if (DEVICE_ENDIAN == BIG_ENDIAN)
 
 /* Macros used during value assignment to the device memory */
-#define ASSIGN32(l, r)       IO_BE_WRITE32(r, &l)
 #define ASSIGN64(l, r)       IO_BE_WRITE64(r, &l)
 
 #elif (DEVICE_ENDIAN == LITTLE_ENDIAN)
 
 /* Macros used during value assignment to the device memory */
-#define ASSIGN32(l, r)       IO_LE_WRITE32(r, &l)
 #define ASSIGN64(l, r)       IO_LE_WRITE64(r, &l)
 
 #endif

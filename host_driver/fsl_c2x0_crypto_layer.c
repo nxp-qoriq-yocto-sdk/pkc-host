@@ -66,7 +66,7 @@ static void store_dev_ctx(void *buffer, uint8_t rid, uint32_t wi)
 {
 	dev_ctx_t *ctx = (dev_ctx_t *) (buffer - 32);
 	ctx->rid = rid;
-	ASSIGN32(ctx->wi, wi);
+	iowrite32be(wi, (void *) &ctx->wi);
 }
 #endif
 
@@ -516,14 +516,14 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	 * TODO: tot_req_mem_size is below 64K by way of computing it in
 	 * calc_ob_mem_len. Does it make sense to keep the type uint32_t ? */
 	iowrite16be(dev->tot_req_mem_size, (void *) &config->req_mem_size);
-	/* TODO: These ASSIGN32 truncate 64bit addresses on 64bit machines.
+	/* TODO: These iowrite32be truncate 64bit addresses on 64bit machines.
 	 * The DMA space is indeed limited to 32/36 bit but what about the
 	 * physical addresses on the host? */
-	ASSIGN32(config->drv_resp_ring, drv_resp_rings);
-	ASSIGN32(config->fw_resp_ring, fw_resp_ring);
-	ASSIGN32(config->s_cntrs, s_cntrs);
-	ASSIGN32(config->r_s_cntrs, r_s_cntrs);
-	ASSIGN32(config->fw_resp_ring_depth, DEFAULT_FIRMWARE_RESP_RING_DEPTH);
+	iowrite32be(drv_resp_rings, (void *) &config->drv_resp_ring);
+	iowrite32be(fw_resp_ring, (void *) &config->fw_resp_ring);
+	iowrite32be(s_cntrs, (void *) &config->s_cntrs);
+	iowrite32be(r_s_cntrs, (void *) &config->r_s_cntrs);
+	iowrite32be(DEFAULT_FIRMWARE_RESP_RING_DEPTH, (void *) &config->fw_resp_ring_depth);
 
 	print_debug("HS_INIT_CONFIG Details\n");
 	print_debug("Num of rps: %d\n", dev->num_of_rings);
@@ -565,13 +565,11 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 			iowrite8(ring->ring_id, (void *) &dev->c_hs_mem->data.ring.rid);
 			iowrite8(ring->flags, (void *) &dev->c_hs_mem->data.ring.props);
 			iowrite16be(ring->msi_data, (void *) &dev->c_hs_mem->data.ring.msi_data);
-			ASSIGN32(dev->c_hs_mem->data.ring.depth, ring->depth);
-			ASSIGN32(dev->c_hs_mem->data.ring.resp_ring, resp_r);
-			ASSIGN32(dev->c_hs_mem->data.ring.msi_addr_l,
-				 ring->msi_addr_l);
-			ASSIGN32(dev->c_hs_mem->data.ring.msi_addr_h,
-				 ring->msi_addr_h);
-			ASSIGN32(dev->c_hs_mem->data.ring.s_r_cntrs, s_r_cntrs);
+			iowrite32be(ring->depth, (void *) &dev->c_hs_mem->data.ring.depth);
+			iowrite32be(resp_r, (void *) &dev->c_hs_mem->data.ring.resp_ring);
+			iowrite32be(ring->msi_addr_l, (void *) &dev->c_hs_mem->data.ring.msi_addr_l);
+			iowrite32be(ring->msi_addr_h, (void *) &dev->c_hs_mem->data.ring.msi_addr_h);
+			iowrite32be(s_r_cntrs, (void *) &dev->c_hs_mem->data.ring.s_r_cntrs);
 
 			print_debug("HS_INIT_RING_PAIR Details\n");
 			print_debug("Rid: %d\n", ring->ring_id);
@@ -645,20 +643,16 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 
 			dev->h_mem->hs_mem.state = DEFAULT;
 
-			ASSIGN32(dev->h_mem->hs_mem.data.device.p_ib_mem_base_l,
-				 dev->h_mem->hs_mem.data.
-				 device.p_ib_mem_base_l);
-			ASSIGN32(dev->h_mem->hs_mem.data.device.p_ib_mem_base_h,
-				 dev->h_mem->hs_mem.data.
-				 device.p_ib_mem_base_h);
-			ASSIGN32(dev->h_mem->hs_mem.data.device.p_ob_mem_base_l,
-				 dev->h_mem->hs_mem.data.
-				 device.p_ob_mem_base_l);
-			ASSIGN32(dev->h_mem->hs_mem.data.device.p_ob_mem_base_h,
-				 dev->h_mem->hs_mem.data.
-				 device.p_ob_mem_base_h);
-			ASSIGN32(dev->h_mem->hs_mem.data.device.no_secs,
-				 dev->h_mem->hs_mem.data.device.no_secs);
+			iowrite32be(dev->h_mem->hs_mem.data.device.p_ib_mem_base_l,
+				 &dev->h_mem->hs_mem.data.device.p_ib_mem_base_l);
+			iowrite32be(dev->h_mem->hs_mem.data.device.p_ib_mem_base_h,
+				 &dev->h_mem->hs_mem.data.device.p_ib_mem_base_h);
+			iowrite32be(dev->h_mem->hs_mem.data.device.p_ob_mem_base_l,
+				 &dev->h_mem->hs_mem.data.device.p_ob_mem_base_l);
+			iowrite32be(dev->h_mem->hs_mem.data.device.p_ob_mem_base_h,
+				 &dev->h_mem->hs_mem.data.device.p_ob_mem_base_h);
+			iowrite32be(dev->h_mem->hs_mem.data.device.no_secs,
+				 &dev->h_mem->hs_mem.data.device.no_secs);
 
 			print_debug("Device Shared Details\n");
 			print_debug("Ib mem PhyAddr L: %0x, H: %0x\n",
@@ -698,22 +692,22 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 
 			dev->h_mem->hs_mem.state = DEFAULT;
 
-			ASSIGN32(dev->h_mem->hs_mem.data.config.s_r_cntrs,
-				 dev->h_mem->hs_mem.data.config.s_r_cntrs);
+			iowrite32be(dev->h_mem->hs_mem.data.config.s_r_cntrs,
+				 &dev->h_mem->hs_mem.data.config.s_r_cntrs);
 
 			dev->s_mem.s_r_cntrs =
 			    ((dev->mem[MEM_TYPE_SRAM].host_v_addr) +
 			     dev->h_mem->hs_mem.data.config.s_r_cntrs);
 
-			ASSIGN32(dev->h_mem->hs_mem.data.config.s_cntrs,
-				 dev->h_mem->hs_mem.data.config.s_cntrs);
+			iowrite32be(dev->h_mem->hs_mem.data.config.s_cntrs,
+				 &dev->h_mem->hs_mem.data.config.s_cntrs);
 
 			dev->s_mem.s_cntrs =
 			    ((dev->mem[MEM_TYPE_SRAM].host_v_addr) +
 			     dev->h_mem->hs_mem.data.config.s_cntrs);
 
-			ASSIGN32(dev->h_mem->hs_mem.data.config.ip_pool,
-				 dev->h_mem->hs_mem.data.config.ip_pool);
+			iowrite32be(dev->h_mem->hs_mem.data.config.ip_pool,
+				 &dev->h_mem->hs_mem.data.config.ip_pool);
 
 			dev->ip_pool.fw_pool.dev_p_addr =
 			    ((dev->mem[MEM_TYPE_SRAM].dev_p_addr) +
@@ -725,10 +719,8 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 			    ((dev->mem[MEM_TYPE_SRAM].host_v_addr) +
 			     dev->h_mem->hs_mem.data.config.ip_pool);
 
-			ASSIGN32(dev->h_mem->hs_mem.data.
-				 config.resp_intr_ctrl_flag,
-				 dev->h_mem->hs_mem.data.
-				 config.resp_intr_ctrl_flag);
+			iowrite32be(dev->h_mem->hs_mem.data.config.resp_intr_ctrl_flag,
+				 &dev->h_mem->hs_mem.data.config.resp_intr_ctrl_flag);
 
 			{
 				int i = 0;
@@ -774,10 +766,10 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 				print_error("No of SECs are %d\n", dev->h_mem->hs_mem.data.device.no_secs);
 				goto error;
 			}
-			ASSIGN32(dev->h_mem->hs_mem.data.ring.req_r,
-				 dev->h_mem->hs_mem.data.ring.req_r);
-			ASSIGN32(dev->h_mem->hs_mem.data.ring.intr_ctrl_flag,
-				 dev->h_mem->hs_mem.data.ring.intr_ctrl_flag);
+			iowrite32be(dev->h_mem->hs_mem.data.ring.req_r,
+				 &dev->h_mem->hs_mem.data.ring.req_r);
+			iowrite32be(dev->h_mem->hs_mem.data.ring.intr_ctrl_flag,
+				 &dev->h_mem->hs_mem.data.ring.intr_ctrl_flag);
 
 			dev->ring_pairs[rid].shadow_counters =
 			    &(dev->s_mem.s_r_cntrs[rid]);
@@ -1164,8 +1156,8 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 	c_dev->h_mem->cntrs_mem->tot_jobs_added += 1;
 	print_debug("Tot jobs added	:%d\n",
 	c_dev->h_mem->cntrs_mem->tot_jobs_added);
-	ASSIGN32(c_dev->s_mem.s_cntrs->tot_jobs_added,	\
-	c_dev->h_mem->cntrs_mem->tot_jobs_added);
+	iowrite32be(c_dev->h_mem->cntrs_mem->tot_jobs_added,
+		&c_dev->s_mem.s_cntrs->tot_jobs_added);
 */
 
 	spin_unlock_bh(&(rp->ring_lock));
@@ -1536,8 +1528,8 @@ void demux_fw_responses(fsl_crypto_dev_t *dev)
 	}
 
 	dev->fw_resp_ring.idxs->r_index = be32_to_cpu(ri);
-	ASSIGN32(dev->fw_resp_ring.s_cntrs->resp_jobs_processed,
-		 dev->fw_resp_ring.cntrs->jobs_processed);
+	iowrite32be(dev->fw_resp_ring.cntrs->jobs_processed,
+		&dev->fw_resp_ring.s_cntrs->resp_jobs_processed);
 
 	*(dev->fw_resp_ring.intr_ctrl_flag) = 0;
 
@@ -1563,9 +1555,8 @@ CMD_RING_RESP:
 			dev->ring_pairs[0].indexes->r_index = be32_to_cpu(ri);
 			dev->ring_pairs[0].counters->jobs_processed += 1;
 
-			ASSIGN32(dev->ring_pairs[0].
-				 shadow_counters->resp_jobs_processed,
-				 dev->ring_pairs[0].counters->jobs_processed);
+			iowrite32be(dev->ring_pairs[0].counters->jobs_processed,
+				&dev->ring_pairs[0].shadow_counters->resp_jobs_processed);
 		}
 	}
 	return;
@@ -1640,8 +1631,8 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 #endif
 				}
 				ring_cursor->counters->jobs_processed += 1;
-				ASSIGN32(ring_cursor->shadow_counters->resp_jobs_processed,
-					ring_cursor->counters->jobs_processed);
+				iowrite32be(ring_cursor->counters->jobs_processed,
+					&ring_cursor->shadow_counters->resp_jobs_processed);
 
 				--resp_cnt;
 			}
