@@ -1329,37 +1329,6 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 	DEV_PRINT_DEBUG("Found C29x Device");
 
-	/* TODO :- We may need to remove the following code */
-	/* The following code is generally not required -
-	 * But it is seen that u-boot of the
-	 * firmware is over-riding the PCI bar addresses.
-	 * Hence we need this code to correct them
-	 * 1) This will not be issue, as we will not have
-	 * u-boot in the final code.
-	 * 2) For the first release even if the u-boot is present,
-	 * we can modify the u-boot code.
-	 * Currently leaving this code as such. We can figure out
-	 * later whether do we need this.
-	 */
-#ifndef P4080_BUILD
-	{
-	int32_t rsrc_bar_addr = 0;
-	int32_t config_bar_addr = 0;
-
-	pci_read_config_dword(dev, PCI_BAR0_REGISTER, &config_bar_addr);
-	rsrc_bar_addr = pci_resource_start(dev, MEM_TYPE_CONFIG);
-
-	if ((rsrc_bar_addr & 0xfffffe00) != (config_bar_addr & 0xfffffe00))
-		pci_write_config_dword(dev, PCI_BAR0_REGISTER, rsrc_bar_addr);
-
-	pci_read_config_dword(dev, PCI_BAR1_REGISTER, &config_bar_addr);
-	rsrc_bar_addr = pci_resource_start(dev, MEM_TYPE_SRAM);
-
-	if ((rsrc_bar_addr & 0xfffffe00) != (config_bar_addr & 0xfffffe00))
-		pci_write_config_dword(dev, PCI_BAR1_REGISTER, rsrc_bar_addr);
-	}
-#endif
-
 	/* Set the DMA mask for the device. This helps the PCI subsystem
 	 * for proper dma mappings */
 #ifdef SEC_ENGINE_DMA_36BIT
