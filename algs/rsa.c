@@ -184,12 +184,10 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 #endif
 	ASSIGN64(rsa_pub_desc->g_dma, mem->g_buff.dev_buffer.d_p_addr);
 
-	ASSIGN32(rsa_pub_desc->sgf_flg,
-		 ((mem->e_buff.len << 12) | mem->n_buff.len));
-	ASSIGN32(rsa_pub_desc->msg_len, mem->f_buff.len);
-	ASSIGN32(rsa_pub_desc->op,
-		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
-		  OP_PCLID_RSAENC_PUBKEY));
+	iowrite32be((mem->e_buff.len << 12) | mem->n_buff.len, &rsa_pub_desc->sgf_flg);
+	iowrite32be(mem->f_buff.len, &rsa_pub_desc->msg_len);
+	iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_RSAENC_PUBKEY,
+			&rsa_pub_desc->op);
 
 #ifdef PRINT_DEBUG
 
@@ -249,11 +247,9 @@ static void constr_rsa_priv1_op_desc(crypto_mem_info_t *mem_info)
 	ASSIGN64(rsa_priv_desc->g_dma, mem->g_buff.dev_buffer.d_p_addr);
 	ASSIGN64(rsa_priv_desc->f_dma, mem->f_buff.dev_buffer.d_p_addr);
 
-	ASSIGN32(rsa_priv_desc->sgf_flg,
-		 ((mem->d_buff.len << 12) | mem->n_buff.len));
-	ASSIGN32(rsa_priv_desc->op,
-		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_RSADEC_PRVKEY
-		  | RSA_PRIV_KEY_FRM_1));
+	iowrite32be((mem->d_buff.len << 12) | mem->n_buff.len, &rsa_priv_desc->sgf_flg);
+	iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_RSADEC_PRVKEY
+		  | RSA_PRIV_KEY_FRM_1, &rsa_priv_desc->op);
 }
 
 static void rsa_priv1_op_init_len(struct rsa_priv_frm1_req_s *priv1_req,
@@ -344,13 +340,10 @@ static void constr_rsa_priv2_op_desc(crypto_mem_info_t *mem_info)
 	ASSIGN64(rsa_priv_desc->tmp1_dma, mem->tmp1_buff.dev_buffer.d_p_addr);
 	ASSIGN64(rsa_priv_desc->tmp2_dma, mem->tmp2_buff.dev_buffer.d_p_addr);
 
-	ASSIGN32(rsa_priv_desc->sgf_flg,
-		 ((mem->d_buff.len << 12) | mem->f_buff.len));
-	ASSIGN32(rsa_priv_desc->p_q_len,
-		 ((mem->q_buff.len << 12) | (mem->p_buff.len)));
-	ASSIGN32(rsa_priv_desc->op,
-		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_RSADEC_PRVKEY
-		  | RSA_PRIV_KEY_FRM_2));
+	iowrite32be((mem->d_buff.len << 12) | mem->f_buff.len, &rsa_priv_desc->sgf_flg);
+	iowrite32be((mem->q_buff.len << 12) | mem->p_buff.len, &rsa_priv_desc->p_q_len);
+	iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_RSADEC_PRVKEY
+		  | RSA_PRIV_KEY_FRM_2, &rsa_priv_desc->op);
 }
 
 static void rsa_priv2_op_init_len(struct rsa_priv_frm2_req_s *priv2_req,
@@ -479,12 +472,10 @@ static void constr_rsa_priv3_op_desc(crypto_mem_info_t *mem_info)
 	ASSIGN64(rsa_priv_desc->tmp2_dma, mem->tmp2_buff.dev_buffer.d_p_addr);
 	ASSIGN64(rsa_priv_desc->f_dma, mem->f_buff.dev_buffer.d_p_addr);
 
-	ASSIGN32(rsa_priv_desc->sgf_flg, mem->f_buff.len);
-	ASSIGN32(rsa_priv_desc->p_q_len,
-		 ((mem->q_buff.len << 12) | (mem->p_buff.len)));
-	ASSIGN32(rsa_priv_desc->op,
-		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_RSADEC_PRVKEY
-		  | RSA_PRIV_KEY_FRM_3));
+	iowrite32be(mem->f_buff.len, &rsa_priv_desc->sgf_flg);
+	iowrite32be((mem->q_buff.len << 12) | mem->p_buff.len, &rsa_priv_desc->p_q_len);
+	iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_RSADEC_PRVKEY
+		  | RSA_PRIV_KEY_FRM_3, &rsa_priv_desc->op);
 
 #ifdef PRINT_DEBUG
 	print_debug("[RSA_PRV3_OP]   Descriptor words\n");
