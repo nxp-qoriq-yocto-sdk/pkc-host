@@ -412,25 +412,17 @@ void init_handshake(fsl_crypto_dev_t *dev)
 
 	print_debug("C HS mem addr: %p\n", &(dev->c_hs_mem->h_ob_mem_l));
 	print_debug("Host ob mem addr	L: %0x	H: %0x\n", l_val, h_val);
-#ifdef P4080_BUILD
-	IO_LE_WRITE32(l_val, &(dev->c_hs_mem->h_ob_mem_l));
-	IO_LE_WRITE32(h_val, &(dev->c_hs_mem->h_ob_mem_h));
-#else
-	IO_BE_WRITE32(l_val, &(dev->c_hs_mem->h_ob_mem_l));
-	IO_BE_WRITE32(h_val, &(dev->c_hs_mem->h_ob_mem_h));
-#endif
+
+	iowrite32be(l_val, (void *) &dev->c_hs_mem->h_ob_mem_l);
+	iowrite32be(h_val, (void *) &dev->c_hs_mem->h_ob_mem_h);
 
 	/* Write MSI info the device */
 	l_val = (uint32_t) (msi_mem & PHYS_ADDR_L_32_BIT_MASK);
 	h_val = (msi_mem & PHYS_ADDR_H_32_BIT_MASK) >> 32;
 	print_debug("MSI mem addr,	L: %0x	H: %x\n", l_val, h_val);
-#ifdef P4080_BUILD
-	IO_LE_WRITE32(l_val, &(dev->c_hs_mem->h_msi_mem_l));
-	IO_LE_WRITE32(h_val, &(dev->c_hs_mem->h_msi_mem_h));
-#else
-	IO_BE_WRITE32(l_val, &(dev->c_hs_mem->h_msi_mem_l));
-	IO_BE_WRITE32(h_val, &(dev->c_hs_mem->h_msi_mem_h));
-#endif
+
+	iowrite32be(l_val, (void *) &dev->c_hs_mem->h_msi_mem_l);
+	iowrite32be(h_val, (void *) &dev->c_hs_mem->h_msi_mem_h);
 }
 
 void init_fw_resp_ring(fsl_crypto_dev_t *dev)
@@ -1104,11 +1096,7 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 	/* Acquire the lock on current ring */
 	spin_lock_bh(&rp->ring_lock);
 
-#ifdef P4080_BUILD
-	jobs_processed = rp->s_c_counters->jobs_processed;
-#else
-	ASSIGN32(jobs_processed, rp->s_c_counters->jobs_processed);
-#endif
+	jobs_processed = be32_to_cpu(rp->s_c_counters->jobs_processed);
 
 #define RING_FULL(rp) \
 	(((rp->counters->jobs_added - jobs_processed) >= rp->depth) ? 1 : 0)
@@ -1169,11 +1157,7 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 #endif
 	print_debug("Ring: %d	Shadow counter address	%p\n", jr_id,
 		    &(rp->shadow_counters->req_jobs_added));
-#ifndef P4080_BUILD
-	ASSIGN32(rp->shadow_counters->req_jobs_added, rp->counters->jobs_added);
-#else
-	rp->shadow_counters->req_jobs_added = rp->counters->jobs_added;
-#endif
+	rp->shadow_counters->req_jobs_added = be32_to_cpu(rp->counters->jobs_added);
 
 /*
  * No more need to update total counters ...
@@ -1506,12 +1490,7 @@ void demux_fw_responses(fsl_crypto_dev_t *dev)
 	resp_ring_entry_t *resp_ring =
 	    ((resp_ring_entry_t *) (dev->fw_resp_ring.v_addr));
 
-#ifdef HOST_TYPE_P4080
-	jobs_added = dev->fw_resp_ring.s_c_cntrs->jobs_added;
-#else
-	ASSIGN32(jobs_added, dev->fw_resp_ring.s_c_cntrs->jobs_added);
-#endif
-
+	jobs_added = be32_to_cpu(dev->fw_resp_ring.s_c_cntrs->jobs_added);
 	count = jobs_added - dev->fw_resp_ring.cntrs->jobs_processed;
 
 	if (!count)
@@ -1529,13 +1508,9 @@ void demux_fw_responses(fsl_crypto_dev_t *dev)
 		enqueue_to_dest_ring(dev, resp_ring[ri].sec_desc,
 				     resp_ring[ri].result);
 #endif
-#ifdef HOST_TYPE_P4080
-		desc = resp_ring[ri].sec_desc;
-		res = resp_ring[ri].result;
-#else
-		ASSIGN64(desc, resp_ring[ri].sec_desc);
-		ASSIGN32(res, resp_ring[ri].result);
-#endif
+		res = be32_to_cpu(resp_ring[ri].result);
+		desc = be64_to_cpu(resp_ring[ri].sec_desc);
+
 		sec_jr_strstatus(outstr, res);
 
 		if (res)
@@ -1561,12 +1536,7 @@ void demux_fw_responses(fsl_crypto_dev_t *dev)
 			sizeof(app_resp_cnt));
 	}
 
-#ifdef P4080_BUILD
-	ASSIGN32(dev->fw_resp_ring.idxs->r_index, ri);
-#else
-	dev->fw_resp_ring.idxs->r_index = ri;
-#endif
-
+	dev->fw_resp_ring.idxs->r_index = be32_to_cpu(ri);
 	ASSIGN32(dev->fw_resp_ring.s_cntrs->resp_jobs_processed,
 		 dev->fw_resp_ring.cntrs->jobs_processed);
 
@@ -1582,28 +1552,16 @@ CMD_RING_RESP:
 	    dev->ring_pairs[0].counters->jobs_processed) {
 		ri = dev->ring_pairs[0].indexes->r_index;
 
-#ifdef HOST_TYPE_P4080
-		desc = dev->ring_pairs[0].resp_r[ri].sec_desc;
-#else
-		ASSIGN64(desc, dev->ring_pairs[0].resp_r[ri].sec_desc);
-#endif
+		desc = be64_to_cpu(dev->ring_pairs[0].resp_r[ri].sec_desc);
 
 		print_debug("DEQUEUE RESP AT: %u RESP DESC: %llx  == [%p]",
 		     ri, desc, &(dev->ring_pairs[0].resp_r[ri]));
 
 		if (desc) {
-#ifdef HOST_TYPE_P4080
-			res = dev->ring_pairs[0].resp_r[ri].result;
-#else
-			ASSIGN32(res, dev->ring_pairs[0].resp_r[ri].result);
-#endif
+			res = be32_to_cpu(dev->ring_pairs[0].resp_r[ri].result);
 			process_cmd_response(dev, desc, res);
 			ri = (ri + 1) % (dev->ring_pairs[0].depth);
-#ifdef P4080_BUILD
-			ASSIGN32(dev->ring_pairs[0].indexes->r_index, ri);
-#else
-			dev->ring_pairs[0].indexes->r_index = ri;
-#endif
+			dev->ring_pairs[0].indexes->r_index = be32_to_cpu(ri);
 			dev->ring_pairs[0].counters->jobs_processed += 1;
 
 			ASSIGN32(dev->ring_pairs[0].
@@ -1642,11 +1600,7 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 		pollcount = 0;
 
 		while (pollcount++ < napi_poll_count) {
-#ifdef HOST_TYPE_P4080
-			jobs_added = ring_cursor->s_c_counters->jobs_added;
-#else
-			ASSIGN32(jobs_added, ring_cursor->s_c_counters->jobs_added);
-#endif
+			jobs_added = be32_to_cpu(ring_cursor->s_c_counters->jobs_added);
 			resp_cnt = jobs_added - ring_cursor->counters->jobs_processed;
 			if (!resp_cnt)
 				continue;
@@ -1660,13 +1614,8 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 			print_debug("GOT INTERRUPT FROM DEV: %d\n", dev->config->dev_no);
 
 			while (resp_cnt) {
-#ifdef HOST_TYPE_P4080
-				desc = ring_cursor->resp_r[ri].sec_desc;
-				res = ring_cursor->resp_r[ri].result;
-#else
-				ASSIGN64(desc, ring_cursor->resp_r[ri].sec_desc);
-				ASSIGN32(res, ring_cursor->resp_r[ri].result);
-#endif
+				desc = be64_to_cpu(ring_cursor->resp_r[ri].sec_desc);
+				res = be32_to_cpu(ring_cursor->resp_r[ri].result);
 				ri = (ri + 1) % (ring_cursor->depth);
 				ring_cursor->indexes->r_index = ri;
 #ifndef HIGH_PERF

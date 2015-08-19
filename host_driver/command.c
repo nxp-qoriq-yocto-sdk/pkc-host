@@ -839,13 +839,7 @@ static int32_t flush_app_jobs(fsl_crypto_dev_t *dev)
 	/* Wait if there are pending resps to be handled */
 	while (j < 5) {
 		for (i = 1; i < dev->num_of_rings; i++) {
-#ifdef HOST_TYPE_P4080
-			jobs_added =
-			    dev->ring_pairs[i].s_c_counters->jobs_added;
-#else
-			ASSIGN32(jobs_added,
-				 dev->ring_pairs[i].s_c_counters->jobs_added);
-#endif
+			jobs_added = be32_to_cpu(dev->ring_pairs[i].s_c_counters->jobs_added);
 			while (0 != (jobs_added - dev->ring_pairs[i].counters->jobs_processed)) {
 				print_debug("%d, jobs pending resps on ring: %d\n",
 				     (jobs_added - dev->ring_pairs[i].counters->jobs_processed), i);
