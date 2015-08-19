@@ -58,20 +58,6 @@ typedef enum debug_commands {
 	PRINT1_ERROR,
 } dgb_cmd_type_t;
 
-#if 0
-typedef struct crypto_config {
-	int32_t dev_no;
-	int32_t no_of_rings;
-	struct usr_ring_info {
-		int32_t depth;
-		int32_t affinity;
-		int32_t priority;
-		int32_t order;
-	} ring[FSL_CRYPTO_MAX_RING_PAIRS];
-
-} crypto_config_t;
-#endif
-
 #define MAX_SEC_NO 3
 /* SEC STAT */
 typedef struct fsl_sec_stat {

@@ -422,7 +422,6 @@ int32_t process_cmd_req(fsl_crypto_dev_t *c_dev,
 {
 	int32_t result = 0;
 	int32_t cpu = 0;
-/*    crypto_config_t     rehandshake_config = { };	*/
 
 	per_dev_struct_t *dev_stat = NULL;
 
