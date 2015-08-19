@@ -229,13 +229,12 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 #endif
 	ASSIGN64(dh_key_desc->z_dma, mem->z_buff.dev_buffer.d_p_addr);
 
-	ASSIGN32(dh_key_desc->sgf_ln,
-		 ((mem->q_buff.len << 7) | mem->s_buff.len));
-	ASSIGN32(dh_key_desc->op,
-		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH));
+	iowrite32be((mem->q_buff.len << 7) | mem->s_buff.len,
+			&dh_key_desc->sgf_ln);
+	iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH,
+			&dh_key_desc->op);
 
 #ifdef PRINT_DEBUG
-
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
 	print_debug("W DMA: %llx\n", (uint64_t)mem->w_buff.dev_buffer.d_p_addr);
 	print_debug("S DMA: %llx\n", (uint64_t)mem->s_buff.dev_buffer.d_p_addr);
@@ -284,16 +283,14 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 #endif
 	ASSIGN64(ecdh_key_desc->z_dma, mem->z_buff.dev_buffer.d_p_addr);
 
-	ASSIGN32(ecdh_key_desc->sgf_ln,
-		 ((mem->q_buff.len << 7) | mem->s_buff.len));
+	iowrite32be((mem->q_buff.len << 7) | mem->s_buff.len,
+			&ecdh_key_desc->sgf_ln);
 	if (ecc_bin)
-		ASSIGN32(ecdh_key_desc->op,
-			 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH |
-			  OP_PCL_PKPROT_ECC | OP_PCL_PKPROT_F2M));
+		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH |
+			  OP_PCL_PKPROT_ECC | OP_PCL_PKPROT_F2M, &ecdh_key_desc->op);
 	else
-		ASSIGN32(ecdh_key_desc->op,
-			 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH |
-			  OP_PCL_PKPROT_ECC));
+		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH |
+			  OP_PCL_PKPROT_ECC, &ecdh_key_desc->op);
 
 #ifdef PRINT_DEBUG
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
@@ -342,16 +339,14 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
     ASSIGN64(ecdh_keygen_desc->pubkey_dma, mem->pubkey_buff.dev_buffer.d_p_addr);
     ASSIGN64(ecdh_keygen_desc->prvkey_dma, mem->prvkey_buff.dev_buffer.d_p_addr);
 
-    ASSIGN32(ecdh_keygen_desc->sgf_ln, ((mem->q_buff.len<<7) | mem->r_buff.len));
+    iowrite32be((mem->q_buff.len<<7) | mem->r_buff.len, &ecdh_keygen_desc->sgf_ln);
     if(ecc_bin) {
-        ASSIGN32(ecdh_keygen_desc->op, (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | 
-                                        OP_PCLID_PUBLICKEYPAIR | OP_PCL_PKPROT_ECC | 
-                                        OP_PCL_PKPROT_F2M));
+	    iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR |
+		OP_PCL_PKPROT_ECC | OP_PCL_PKPROT_F2M, &ecdh_keygen_desc->op);
     }
     else {
-        ASSIGN32(ecdh_keygen_desc->op, (CMD_OPERATION | 
-                        OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR | 
-                        OP_PCL_PKPROT_ECC));
+        iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR |
+		OP_PCL_PKPROT_ECC, &ecdh_keygen_desc->op);
     }
 
 #ifdef PRINT_DEBUG
@@ -400,8 +395,8 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
     ASSIGN64(dh_keygen_desc->pubkey_dma, mem->pubkey_buff.dev_buffer.d_p_addr);
     ASSIGN64(dh_keygen_desc->prvkey_dma, mem->prvkey_buff.dev_buffer.d_p_addr);
 
-    ASSIGN32(dh_keygen_desc->sgf_ln, ((mem->q_buff.len<<7) | mem->r_buff.len));
-    ASSIGN32(dh_keygen_desc->op, (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR));
+    iowrite32be((mem->q_buff.len<<7) | mem->r_buff.len, &dh_keygen_desc->sgf_ln);
+    iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR, &dh_keygen_desc->op);
 
 #ifdef PRINT_DEBUG
 
