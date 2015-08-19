@@ -53,32 +53,7 @@ ifeq ($(HIGH_PERF_MODE),y)
 EXTRA_CFLAGS += -DHIGH_PERF
 endif
 
-#Specifies the endianness
-BE=1
-LE=2
-
-ifeq ($(P4080_BUILD),y)
-DEVICE_ENDIAN=$(LE)
-HOST_ENDIAN=$(BE)
-else
-DEVICE_ENDIAN=$(BE)
-HOST_ENDIAN=$(LE)
-endif
-
-# Below code sets the compile time flags
-EXTRA_CFLAGS += -DBIG_ENDIAN=$(BE) -DLITTLE_ENDIAN=$(LE) -g3
-
-ifeq ($(DEVICE_ENDIAN),$(BE))
-EXTRA_CFLAGS += -DDEVICE_ENDIAN=$(BE)
-else
-EXTRA_CFLAGS += -DDEVICE_ENDIAN=$(LE)
-endif
-
-ifeq ($(P4080_BUILD),y)
-EXTRA_CFLAGS += -DHOST_ENDIAN=$(BE)
-else
-EXTRA_CFLAGS += -DHOST_ENDIAN=$(LE)
-endif
+EXTRA_CFLAGS += -g3
 
 ifeq ($(P4080_BUILD),y)
 EXTRA_CFLAGS += -DP4080_BUILD
