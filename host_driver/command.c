@@ -79,11 +79,8 @@ void process_cmd_response(fsl_crypto_dev_t *c_dev, dev_dma_addr_t desc,
 	print_debug("cmd_desc: %p\n", cmd_desc);
 	print_debug("cmd_desc->cmd_op: %llx\n", (uint64_t)cmd_desc->cmd_op);
 
-#ifndef P4080_BUILD
-	IO_BE_READ64(op_buf_addr, &(cmd_desc->cmd_op));
-#else
-	IO_LE_READ64(op_buf_addr, &(cmd_desc->cmd_op));
-#endif
+	IOREAD64BE(op_buf_addr, &(cmd_desc->cmd_op));
+
 	print_debug("Dev domain output buffer address: %llx\n", op_buf_addr);
 
 	if (0 == op_buf_addr) {

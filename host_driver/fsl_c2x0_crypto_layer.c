@@ -1127,11 +1127,7 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 	print_debug("Enqueuing to the req r addr: %p\n", rp->req_r);
 	print_debug("Writing at the addr	: %p\n", &(rp->req_r[wi].sec_desc));
 
-#ifndef P4080_BUILD
-	ASSIGN64(rp->req_r[wi].sec_desc, sec_desc);
-#else
-	rp->req_r[wi].sec_desc = sec_desc;
-#endif
+	IOWRITE64BE(sec_desc, &rp->req_r[wi].sec_desc);
 
 	rp->indexes->w_index = (wi + 1) % rp->depth;
 	print_debug("Update W index: %d\n", rp->indexes->w_index);
