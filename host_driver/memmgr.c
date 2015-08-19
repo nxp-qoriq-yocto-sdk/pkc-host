@@ -151,9 +151,9 @@ Return		:	None.
 void *alloc_buffer(void *id, uint32_t len, uint8_t flag)
 {
 	bp *pool = id;
-	bh *f_node = pool->free_list;
-	bh *a_node = NULL;
-	bh *new_node = NULL;
+	bh *f_node;
+	bh *a_node;
+	bh *new_node;
 
 	print_debug("Allocating buffer\n");
 
