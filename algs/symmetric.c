@@ -313,8 +313,8 @@ static void create_src_sg_table(symm_ablk_buffers_t *ablk_ctx,
 		ASSIGN64(sec4_sg_ptr->ptr,
 			 ablk_ctx->src_sg[i].dev_buffer.d_p_addr);
 		ASSIGN32(sec4_sg_ptr->len, ablk_ctx->src_sg[i].len);
-		ASSIGN8(sec4_sg_ptr->reserved, 0);
-		ASSIGN8(sec4_sg_ptr->buf_pool_id, 0);
+		iowrite8(0, &sec4_sg_ptr->reserved);
+		iowrite8(0, &sec4_sg_ptr->buf_pool_id);
 		ASSIGN16(sec4_sg_ptr->offset, 0);
 		sec4_sg_ptr++;
 
@@ -341,8 +341,8 @@ static void create_dst_sg_table(fsl_crypto_dev_t *c_dev,
 		length = sg_dma_len(sg);
 		ASSIGN64(sec4_sg_ptr->ptr, dma_addr);
 		ASSIGN32(sec4_sg_ptr->len, length);
-		ASSIGN8(sec4_sg_ptr->reserved, 0);
-		ASSIGN8(sec4_sg_ptr->buf_pool_id, 0);
+		iowrite8(0, &sec4_sg_ptr->reserved);
+		iowrite8(0, &sec4_sg_ptr->buf_pool_id);
 		ASSIGN16(sec4_sg_ptr->offset, 0);
 		sec4_sg_ptr++;
 

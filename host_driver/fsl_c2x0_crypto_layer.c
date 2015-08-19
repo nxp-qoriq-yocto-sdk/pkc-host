@@ -508,10 +508,10 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	phys_addr_t r_s_cntrs      = dev->ob_mem.s_c_r_cntrs_mem + host_p_addr;
 	volatile struct c_config_data *config = &dev->c_hs_mem->data.config;
 
-	ASSIGN8(dev->c_hs_mem->command, HS_INIT_CONFIG);
-	ASSIGN8(config->num_of_rps, dev->num_of_rings);
-	ASSIGN8(config->max_pri, dev->max_pri_level);
-	ASSIGN8(config->num_of_fwresp_rings, NUM_OF_RESP_RINGS);
+	iowrite8(HS_INIT_CONFIG, (void *) &dev->c_hs_mem->command);
+	iowrite8(dev->num_of_rings, (void *) &config->num_of_rps);
+	iowrite8(dev->max_pri_level,(void *) &config->max_pri);
+	iowrite8(NUM_OF_RESP_RINGS, (void *) &config->num_of_fwresp_rings);
 	/* Several aspects need to be clarified with the firmware:
 	 * TODO: tot_req_mem_size is below 64K by way of computing it in
 	 * calc_ob_mem_len. Does it make sense to keep the type uint32_t ? */
@@ -536,7 +536,7 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	print_debug("Sending FW_INIT_CONFIG command at addr: %p\n",
 			&(dev->c_hs_mem->state));
 
-	ASSIGN8(dev->c_hs_mem->state, FW_INIT_CONFIG);
+	iowrite8(FW_INIT_CONFIG, (void *) &dev->c_hs_mem->state);
 }
 
 static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
@@ -561,9 +561,9 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 			phys_addr_t s_r_cntrs =
 			    __pa(dev->ring_pairs[ring->ring_id].s_c_counters);
 
-			ASSIGN8(dev->c_hs_mem->command, HS_INIT_RING_PAIR);
-			ASSIGN8(dev->c_hs_mem->data.ring.rid, ring->ring_id);
-			ASSIGN8(dev->c_hs_mem->data.ring.props, ring->flags);
+			iowrite8(HS_INIT_RING_PAIR, (void *) &dev->c_hs_mem->command);
+			iowrite8(ring->ring_id, (void *) &dev->c_hs_mem->data.ring.rid);
+			iowrite8(ring->flags, (void *) &dev->c_hs_mem->data.ring.props);
 			ASSIGN16(dev->c_hs_mem->data.ring.msi_data,
 				 ring->msi_data);
 			ASSIGN32(dev->c_hs_mem->data.ring.depth, ring->depth);
@@ -582,7 +582,7 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 			print_debug("MSI Addr H: %x\n", ring->msi_addr_h);
 			print_debug("Ring counters addr: %pa\n", &(s_r_cntrs));
 		}
-		ASSIGN8(dev->c_hs_mem->state, FW_INIT_RING_PAIR);
+		iowrite8(FW_INIT_RING_PAIR, (void *) &dev->c_hs_mem->state);
 		break;
 	case HS_COMPLETE:
 		str_state = "HS_COMPLETE\n";
@@ -591,8 +591,8 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 		set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
 				(uint8_t *) str_state, strlen(str_state));
 
-		ASSIGN8(dev->c_hs_mem->command, HS_COMPLETE);
-		ASSIGN8(dev->c_hs_mem->state, FW_HS_COMPLETE);
+		iowrite8(HS_COMPLETE, (void *) &dev->c_hs_mem->command);
+		iowrite8(FW_HS_COMPLETE, (void *) &dev->c_hs_mem->state);
 		break;
 	case WAIT_FOR_RNG:
 		str_state = "WAIT_FOR_RNG\n";
@@ -601,8 +601,8 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 		set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
 				(uint8_t *) str_state, strlen(str_state));
 
-		ASSIGN8(dev->c_hs_mem->command, WAIT_FOR_RNG);
-		ASSIGN8(dev->c_hs_mem->state, FW_WAIT_FOR_RNG);
+		iowrite8(WAIT_FOR_RNG, (void *) &dev->c_hs_mem->command);
+		iowrite8(FW_WAIT_FOR_RNG, (void *) &dev->c_hs_mem->state);
 
 		break;
 	case RNG_DONE:
@@ -612,8 +612,8 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 		set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
 				(uint8_t *) str_state, strlen(str_state));
 
-		ASSIGN8(dev->c_hs_mem->command, RNG_DONE);
-		ASSIGN8(dev->c_hs_mem->state, FW_RNG_DONE);
+		iowrite8(RNG_DONE, (void *) &dev->c_hs_mem->command);
+		iowrite8(FW_RNG_DONE, (void *) &dev->c_hs_mem->state);
 
 		break;
 	default:
@@ -635,7 +635,7 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 #define HS_TIMEOUT_IN_MS		(50 * LOOP_BREAK_TIMEOUT_MS)
 
 	while (true) {
-		ASSIGN8(dev->h_mem->hs_mem.state, dev->h_mem->hs_mem.state);
+		iowrite8(dev->h_mem->hs_mem.state, &dev->h_mem->hs_mem.state);
 		switch (dev->h_mem->hs_mem.state) {
 		case FIRMWARE_UP:
 			print_debug(" ----------- FIRMWARE_UP -----------\n");

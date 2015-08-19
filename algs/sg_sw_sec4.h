@@ -68,8 +68,8 @@ static inline void dev_dma_to_sec4_sg_one(struct sec4_sg_entry *sec4_sg_ptr,
 {
 	ASSIGN64(sec4_sg_ptr->ptr, dma);
 	ASSIGN32(sec4_sg_ptr->len, len);
-	ASSIGN8(sec4_sg_ptr->reserved, 0);
-	ASSIGN8(sec4_sg_ptr->buf_pool_id, 0);
+	iowrite8(0, &sec4_sg_ptr->reserved);
+	iowrite8(0, &sec4_sg_ptr->buf_pool_id);
 	ASSIGN16(sec4_sg_ptr->offset, offset);
 }
 
