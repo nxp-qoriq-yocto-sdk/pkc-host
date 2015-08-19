@@ -404,15 +404,14 @@ static void create_sg_table(crypto_mem_info_t *mem_info, uint32_t count)
 	for (i = 0; i < count; i++) {
 		ASSIGN64(sec4_sg_ptr->ptr,
 			 mem->input_buffs[i].dev_buffer.d_p_addr);
-		ASSIGN32(sec4_sg_ptr->len, mem->input_buffs[i].len);
+		iowrite32be(mem->input_buffs[i].len, &sec4_sg_ptr->len);
 		iowrite8(0, &sec4_sg_ptr->reserved);
 		iowrite8(0, &sec4_sg_ptr->buf_pool_id);
 		iowrite16be(0, &sec4_sg_ptr->offset);
 		sec4_sg_ptr++;
 	}
 	sec4_sg_ptr--;
-	ASSIGN32(sec4_sg_ptr->len,
-		 (mem->input_buffs[i - 1].len | SEC4_SG_LEN_FIN));
+	iowrite32be(mem->input_buffs[i - 1].len | SEC4_SG_LEN_FIN, &sec4_sg_ptr->len);
 }
 
 static int hash_cp_req(struct ahash_request *req, struct hash_lengths *len,

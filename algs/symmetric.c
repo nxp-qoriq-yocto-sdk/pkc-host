@@ -312,7 +312,7 @@ static void create_src_sg_table(symm_ablk_buffers_t *ablk_ctx,
 #endif
 		ASSIGN64(sec4_sg_ptr->ptr,
 			 ablk_ctx->src_sg[i].dev_buffer.d_p_addr);
-		ASSIGN32(sec4_sg_ptr->len, ablk_ctx->src_sg[i].len);
+		iowrite32be(ablk_ctx->src_sg[i].len, &sec4_sg_ptr->len);
 		iowrite8(0, &sec4_sg_ptr->reserved);
 		iowrite8(0, &sec4_sg_ptr->buf_pool_id);
 		iowrite16be(0, &sec4_sg_ptr->offset);
@@ -322,8 +322,8 @@ static void create_src_sg_table(symm_ablk_buffers_t *ablk_ctx,
 	}
 
 	sec4_sg_ptr--;
-	ASSIGN32(sec4_sg_ptr->len,
-		 (ablk_ctx->src_sg[i - 1].len | SEC4_SG_LEN_FIN));
+	iowrite32be(ablk_ctx->src_sg[i - 1].len | SEC4_SG_LEN_FIN,
+			&sec4_sg_ptr->len);
 }
 
 static void create_dst_sg_table(fsl_crypto_dev_t *c_dev,
@@ -340,7 +340,7 @@ static void create_dst_sg_table(fsl_crypto_dev_t *c_dev,
 		    c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 		length = sg_dma_len(sg);
 		ASSIGN64(sec4_sg_ptr->ptr, dma_addr);
-		ASSIGN32(sec4_sg_ptr->len, length);
+		iowrite32be(length, &sec4_sg_ptr->len);
 		iowrite8(0, &sec4_sg_ptr->reserved);
 		iowrite8(0, &sec4_sg_ptr->buf_pool_id);
 		iowrite16be(0, &sec4_sg_ptr->offset);
@@ -350,7 +350,7 @@ static void create_dst_sg_table(fsl_crypto_dev_t *c_dev,
 	}
 
 	sec4_sg_ptr--;
-	ASSIGN32(sec4_sg_ptr->len, length | SEC4_SG_LEN_FIN);
+	iowrite32be(length | SEC4_SG_LEN_FIN, &sec4_sg_ptr->len);
 }
 
 static void fill_sg_len(symm_ablk_buffers_t *ablk_ctx, struct scatterlist *sg,
