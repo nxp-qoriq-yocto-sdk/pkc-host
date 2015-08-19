@@ -40,26 +40,17 @@ ifneq (${CROSS_COMPILE},)
 KERNEL_MAKE_OPTS += CROSS_COMPILE=${CROSS_COMPILE}
 endif
 
-
-ifeq ("$(ARCH)","powerpc")
-P4080_BUILD=y
-endif
-
-ifeq ("$(ARCH)","x86")
-X86_BUILD=y
-endif
-
 ifeq ($(HIGH_PERF_MODE),y)
 EXTRA_CFLAGS += -DHIGH_PERF
 endif
 
 EXTRA_CFLAGS += -g3
 
-ifeq ($(P4080_BUILD),y)
+ifeq ("$(ARCH)","powerpc")
 EXTRA_CFLAGS += -DP4080_BUILD
 endif
 
-ifeq ($(X86_BUILD),y)
+ifeq ("$(ARCH)","x86")
 EXTRA_CFLAGS += -DX86_BUILD
 endif
 
