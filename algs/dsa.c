@@ -320,24 +320,19 @@ static void constr_dsa_sign_desc(crypto_mem_info_t *mem_info)
 	ASSIGN64(dsa_sign_desc->d_dma,
 		 (mem->tmp_buff.dev_buffer.d_p_addr + mem->r_buff.len));
 
-	ASSIGN32(dsa_sign_desc->sgf_ln,
-		 ((mem->q_buff.len << 7) | mem->r_buff.len));
-	ASSIGN32(dsa_sign_desc->op[0],
-		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DSASIGN));
-	ASSIGN32(dsa_sign_desc->op[1],
-		 (CMD_MOVE | MOVE_SRC_INFIFO | MOVE_DEST_OUTFIFO |
-		  (2 * mem->r_buff.len)));
-	ASSIGN32(dsa_sign_desc->op[2], (CMD_JUMP | JUMP_COND_NOP | 1));
-	ASSIGN32(dsa_sign_desc->op[3],
-		 (CMD_FIFO_LOAD | FIFOLD_CLASS_CLASS1 | FIFOLD_TYPE_PK_TYPEMASK
-		  | (2 * mem->r_buff.len)));
+	iowrite32be((mem->q_buff.len << 7) | mem->r_buff.len, &dsa_sign_desc->sgf_ln);
+	iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DSASIGN, &dsa_sign_desc->op[0]);
+	iowrite32be(CMD_MOVE | MOVE_SRC_INFIFO | MOVE_DEST_OUTFIFO |
+			(2 * mem->r_buff.len), &dsa_sign_desc->op[1]);
+	iowrite32be(CMD_JUMP | JUMP_COND_NOP | 1, &dsa_sign_desc->op[2]);
+	iowrite32be(CMD_FIFO_LOAD | FIFOLD_CLASS_CLASS1 | FIFOLD_TYPE_PK_TYPEMASK
+		  | (2 * mem->r_buff.len), &dsa_sign_desc->op[3]);
 	ASSIGN64(dsa_sign_desc->op[4], mem->tmp_buff.dev_buffer.d_p_addr);
-	ASSIGN32(dsa_sign_desc->op[6],
-		 (CMD_FIFO_STORE | FIFOST_CONT_MASK | FIFOST_TYPE_MESSAGE_DATA |
-		  mem->r_buff.len));
+	iowrite32be(CMD_FIFO_STORE | FIFOST_CONT_MASK | FIFOST_TYPE_MESSAGE_DATA |
+		  mem->r_buff.len, &dsa_sign_desc->op[6]);
 	ASSIGN64(dsa_sign_desc->op[7], mem->c_buff.dev_buffer.d_p_addr);
-	ASSIGN32(dsa_sign_desc->op[9],
-		 (CMD_FIFO_STORE | FIFOST_TYPE_MESSAGE_DATA | mem->r_buff.len));
+	iowrite32be(CMD_FIFO_STORE | FIFOST_TYPE_MESSAGE_DATA | mem->r_buff.len,
+			&dsa_sign_desc->op[9]);
 	ASSIGN64(dsa_sign_desc->op[10], mem->d_buff.dev_buffer.d_p_addr);
 
 #ifdef PRINT_DEBUG
@@ -400,10 +395,8 @@ static void constr_dsa_verify_desc(crypto_mem_info_t *mem_info)
 #endif
 	ASSIGN64(dsa_verify_desc->tmp_dma, mem->tmp_buff.dev_buffer.d_p_addr);
 
-	ASSIGN32(dsa_verify_desc->sgf_ln,
-		 ((mem->q_buff.len << 7) | mem->r_buff.len));
-	ASSIGN32(dsa_verify_desc->op,
-		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DSAVERIFY));
+	iowrite32be((mem->q_buff.len << 7) | mem->r_buff.len, &dsa_verify_desc->sgf_ln);
+	iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DSAVERIFY, &dsa_verify_desc->op);
 
 #ifdef PRINT_DEBUG
 
@@ -460,11 +453,9 @@ static void constr_dsa_keygen_desc(crypto_mem_info_t *mem_info)
 	ASSIGN64(dsa_keygen_desc->s_dma, mem->prvkey_buff.dev_buffer.d_p_addr);
 	ASSIGN64(dsa_keygen_desc->w_dma, mem->pubkey_buff.dev_buffer.d_p_addr);
 
-	ASSIGN32(dsa_keygen_desc->sgf_ln,
-		 ((mem->q_buff.len << 7) | mem->r_buff.len));
-	ASSIGN32(dsa_keygen_desc->op,
-		 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
-		  OP_PCLID_PUBLICKEYPAIR));
+	iowrite32be((mem->q_buff.len << 7) | mem->r_buff.len, &dsa_keygen_desc->sgf_ln);
+	iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR,
+			&dsa_keygen_desc->op);
 
 #ifdef PRINT_DEBUG
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
@@ -524,32 +515,26 @@ static void constr_ecdsa_sign_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	ASSIGN64(ecdsa_sign_desc->d_dma,
 		 (mem->tmp_buff.dev_buffer.d_p_addr + mem->r_buff.len));
 
-	ASSIGN32(ecdsa_sign_desc->sgf_ln,
-		 ((mem->q_buff.len << 7) | mem->r_buff.len));
+	iowrite32be((mem->q_buff.len << 7) | mem->r_buff.len, &ecdsa_sign_desc->sgf_ln);
 	if (ecc_bin)
-		ASSIGN32(ecdsa_sign_desc->op[0],
-			 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
+		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
 			  OP_PCLID_DSASIGN | OP_PCL_PKPROT_ECC |
-			  OP_PCL_PKPROT_F2M));
+			  OP_PCL_PKPROT_F2M, &ecdsa_sign_desc->op[0]);
 	else
-		ASSIGN32(ecdsa_sign_desc->op[0],
-			 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
-			  OP_PCLID_DSASIGN | OP_PCL_PKPROT_ECC));
+		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
+			  OP_PCLID_DSASIGN | OP_PCL_PKPROT_ECC, &ecdsa_sign_desc->op[0]);
 
-	ASSIGN32(ecdsa_sign_desc->op[1],
-		 (CMD_MOVE | MOVE_SRC_INFIFO | MOVE_DEST_OUTFIFO |
-		  (2 * mem->r_buff.len)));
-	ASSIGN32(ecdsa_sign_desc->op[2], (CMD_JUMP | JUMP_COND_NOP | 1));
-	ASSIGN32(ecdsa_sign_desc->op[3],
-		 (CMD_FIFO_LOAD | FIFOLD_CLASS_CLASS1 | FIFOLD_TYPE_PK_TYPEMASK
-		  | (2 * mem->r_buff.len)));
+	iowrite32be(CMD_MOVE | MOVE_SRC_INFIFO | MOVE_DEST_OUTFIFO |
+		  (2 * mem->r_buff.len), &ecdsa_sign_desc->op[1]);
+	iowrite32be(CMD_JUMP | JUMP_COND_NOP | 1, &ecdsa_sign_desc->op[2]);
+	iowrite32be(CMD_FIFO_LOAD | FIFOLD_CLASS_CLASS1 | FIFOLD_TYPE_PK_TYPEMASK
+		  | (2 * mem->r_buff.len), &ecdsa_sign_desc->op[3]);
 	ASSIGN64(ecdsa_sign_desc->op[4], mem->tmp_buff.dev_buffer.d_p_addr);
-	ASSIGN32(ecdsa_sign_desc->op[6],
-		 (CMD_FIFO_STORE | FIFOST_CONT_MASK | FIFOST_TYPE_MESSAGE_DATA |
-		  mem->r_buff.len));
+	iowrite32be(CMD_FIFO_STORE | FIFOST_CONT_MASK | FIFOST_TYPE_MESSAGE_DATA |
+		  mem->r_buff.len, &ecdsa_sign_desc->op[6]);
 	ASSIGN64(ecdsa_sign_desc->op[7], mem->c_buff.dev_buffer.d_p_addr);
-	ASSIGN32(ecdsa_sign_desc->op[9],
-		 (CMD_FIFO_STORE | FIFOST_TYPE_MESSAGE_DATA | mem->r_buff.len));
+	iowrite32be(CMD_FIFO_STORE | FIFOST_TYPE_MESSAGE_DATA | mem->r_buff.len,
+			&ecdsa_sign_desc->op[9]);
 	ASSIGN64(ecdsa_sign_desc->op[10], mem->d_buff.dev_buffer.d_p_addr);
 
 #ifdef PRINT_DEBUG
@@ -617,18 +602,16 @@ static void constr_ecdsa_verify_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 #endif
 	ASSIGN64(ecdsa_verify_desc->tmp_dma, mem->tmp_buff.dev_buffer.d_p_addr);
 
-	ASSIGN32(ecdsa_verify_desc->sgf_ln,
-		 ((mem->q_buff.len << 7) | mem->r_buff.len));
+	iowrite32be((mem->q_buff.len << 7) | mem->r_buff.len, &ecdsa_verify_desc->sgf_ln);
 
 	if (ecc_bin)
-		ASSIGN32(ecdsa_verify_desc->op,
-			 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
+		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
 			  OP_PCLID_DSAVERIFY | OP_PCL_PKPROT_ECC |
-			  OP_PCL_PKPROT_F2M));
+			  OP_PCL_PKPROT_F2M, &ecdsa_verify_desc->op);
 	else
-		ASSIGN32(ecdsa_verify_desc->op,
-			 (CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
-			  OP_PCLID_DSAVERIFY | OP_PCL_PKPROT_ECC));
+		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
+			  OP_PCLID_DSAVERIFY | OP_PCL_PKPROT_ECC,
+			  &ecdsa_verify_desc->op);
 
 #ifdef PRINT_DEBUG
 
@@ -687,19 +670,13 @@ static void constr_ecdsa_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	ASSIGN64(ecdsa_keygen_desc->w_dma,
 		 mem->pubkey_buff.dev_buffer.d_p_addr);
 
-	ASSIGN32(ecdsa_keygen_desc->sgf_ln,
-		 ((mem->q_buff.len << 7) | mem->r_buff.len));
+	iowrite32be((mem->q_buff.len << 7) | mem->r_buff.len, &ecdsa_keygen_desc->sgf_ln);
 	if (ecc_bin) {
-		ASSIGN32(ecdsa_keygen_desc->op,
-			 (CMD_OPERATION |
-			  OP_TYPE_UNI_PROTOCOL |
-			  OP_PCLID_PUBLICKEYPAIR |
-			  OP_PCL_PKPROT_ECC | OP_PCL_PKPROT_F2M));
+		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR |
+			OP_PCL_PKPROT_ECC | OP_PCL_PKPROT_F2M, &ecdsa_keygen_desc->op);
 	} else {
-		ASSIGN32(ecdsa_keygen_desc->op,
-			 (CMD_OPERATION |
-			  OP_TYPE_UNI_PROTOCOL |
-			  OP_PCLID_PUBLICKEYPAIR | OP_PCL_PKPROT_ECC));
+		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR |
+			OP_PCL_PKPROT_ECC, &ecdsa_keygen_desc->op);
 	}
 
 #ifdef PRINT_DEBUG
