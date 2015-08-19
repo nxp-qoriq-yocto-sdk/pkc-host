@@ -98,7 +98,6 @@
 	};
 
 #define IO_BE_WRITE32(val, addr)    iowrite32(__cpu_to_be32(val), (void *)addr)
-#define IO_BE_WRITE16(val, addr)    iowrite16(__cpu_to_be16(val), (void *)addr)
 
 #define IO_LE_WRITE64(val, addr) { \
 	iowrite32(__cpu_to_le32((uint32_t)(val>>32)), (void *)addr); \
@@ -107,20 +106,17 @@
 	};
 
 #define IO_LE_WRITE32(val, addr) iowrite32(__cpu_to_le32(val), (void *)addr)
-#define IO_LE_WRITE16(val, addr)  iowrite16(__cpu_to_le16(val), (void *)addr)
 
 #if (DEVICE_ENDIAN != HOST_ENDIAN)
 #if (DEVICE_ENDIAN == BIG_ENDIAN)
 
 /* Macros used during value assignment to the device memory */
-#define ASSIGN16(l, r)       IO_BE_WRITE16(r, &l)
 #define ASSIGN32(l, r)       IO_BE_WRITE32(r, &l)
 #define ASSIGN64(l, r)       IO_BE_WRITE64(r, &l)
 
 #elif (DEVICE_ENDIAN == LITTLE_ENDIAN)
 
 /* Macros used during value assignment to the device memory */
-#define ASSIGN16(l, r)       IO_LE_WRITE16(r, &l)
 #define ASSIGN32(l, r)       IO_LE_WRITE32(r, &l)
 #define ASSIGN64(l, r)       IO_LE_WRITE64(r, &l)
 

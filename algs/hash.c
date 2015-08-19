@@ -407,7 +407,7 @@ static void create_sg_table(crypto_mem_info_t *mem_info, uint32_t count)
 		ASSIGN32(sec4_sg_ptr->len, mem->input_buffs[i].len);
 		iowrite8(0, &sec4_sg_ptr->reserved);
 		iowrite8(0, &sec4_sg_ptr->buf_pool_id);
-		ASSIGN16(sec4_sg_ptr->offset, 0);
+		iowrite16be(0, &sec4_sg_ptr->offset);
 		sec4_sg_ptr++;
 	}
 	sec4_sg_ptr--;

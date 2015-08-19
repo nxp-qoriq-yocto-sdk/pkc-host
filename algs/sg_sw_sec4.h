@@ -70,7 +70,7 @@ static inline void dev_dma_to_sec4_sg_one(struct sec4_sg_entry *sec4_sg_ptr,
 	ASSIGN32(sec4_sg_ptr->len, len);
 	iowrite8(0, &sec4_sg_ptr->reserved);
 	iowrite8(0, &sec4_sg_ptr->buf_pool_id);
-	ASSIGN16(sec4_sg_ptr->offset, offset);
+	iowrite16be(offset, &sec4_sg_ptr->offset);
 }
 
 /* count number of elements in scatterlist */

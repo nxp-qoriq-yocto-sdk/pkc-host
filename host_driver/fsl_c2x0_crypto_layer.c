@@ -515,7 +515,7 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	/* Several aspects need to be clarified with the firmware:
 	 * TODO: tot_req_mem_size is below 64K by way of computing it in
 	 * calc_ob_mem_len. Does it make sense to keep the type uint32_t ? */
-	ASSIGN16(config->req_mem_size, dev->tot_req_mem_size);
+	iowrite16be(dev->tot_req_mem_size, (void *) &config->req_mem_size);
 	/* TODO: These ASSIGN32 truncate 64bit addresses on 64bit machines.
 	 * The DMA space is indeed limited to 32/36 bit but what about the
 	 * physical addresses on the host? */
@@ -564,8 +564,7 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 			iowrite8(HS_INIT_RING_PAIR, (void *) &dev->c_hs_mem->command);
 			iowrite8(ring->ring_id, (void *) &dev->c_hs_mem->data.ring.rid);
 			iowrite8(ring->flags, (void *) &dev->c_hs_mem->data.ring.props);
-			ASSIGN16(dev->c_hs_mem->data.ring.msi_data,
-				 ring->msi_data);
+			iowrite16be(ring->msi_data, (void *) &dev->c_hs_mem->data.ring.msi_data);
 			ASSIGN32(dev->c_hs_mem->data.ring.depth, ring->depth);
 			ASSIGN32(dev->c_hs_mem->data.ring.resp_ring, resp_r);
 			ASSIGN32(dev->c_hs_mem->data.ring.msi_addr_l,

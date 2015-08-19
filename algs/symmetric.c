@@ -315,7 +315,7 @@ static void create_src_sg_table(symm_ablk_buffers_t *ablk_ctx,
 		ASSIGN32(sec4_sg_ptr->len, ablk_ctx->src_sg[i].len);
 		iowrite8(0, &sec4_sg_ptr->reserved);
 		iowrite8(0, &sec4_sg_ptr->buf_pool_id);
-		ASSIGN16(sec4_sg_ptr->offset, 0);
+		iowrite16be(0, &sec4_sg_ptr->offset);
 		sec4_sg_ptr++;
 
 		sg = scatterwalk_sg_next(sg);
@@ -343,7 +343,7 @@ static void create_dst_sg_table(fsl_crypto_dev_t *c_dev,
 		ASSIGN32(sec4_sg_ptr->len, length);
 		iowrite8(0, &sec4_sg_ptr->reserved);
 		iowrite8(0, &sec4_sg_ptr->buf_pool_id);
-		ASSIGN16(sec4_sg_ptr->offset, 0);
+		iowrite16be(0, &sec4_sg_ptr->offset);
 		sec4_sg_ptr++;
 
 		sg = scatterwalk_sg_next(sg);
