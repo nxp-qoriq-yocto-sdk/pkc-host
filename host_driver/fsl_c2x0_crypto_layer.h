@@ -441,8 +441,6 @@ typedef struct crypto_h_mem_layout {
 } crypto_h_mem_layout_t;
 
 typedef struct driver_ob_mem {
-	uint32_t h_mem;
-	uint32_t hs_mem;
 	uint32_t drv_resp_rings;
 	uint32_t fw_resp_ring;
 	uint32_t ip_pool;

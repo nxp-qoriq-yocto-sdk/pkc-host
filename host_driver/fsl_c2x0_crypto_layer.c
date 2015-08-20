@@ -273,16 +273,8 @@ static uint32_t calc_rp_mem_len(struct crypto_dev_config *config)
 static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 				struct crypto_dev_config *config)
 {
-	uint32_t ob_mem_len = 0;
+	uint32_t ob_mem_len = sizeof(crypto_h_mem_layout_t);
 	uint32_t rp_len;
-
-	/* One cache line for container structure */
-	dev->ob_mem.h_mem = ob_mem_len;
-	ob_mem_len += DRIVER_HS_MEM_SIZE;
-
-	/* Cache aligned memory for HS */
-	dev->ob_mem.hs_mem = ob_mem_len;
-	ob_mem_len += DRIVER_HS_MEM_SIZE;
 
 	/* Correct the ring depths to power of 2 */
 	rp_len = calc_rp_mem_len(config);
