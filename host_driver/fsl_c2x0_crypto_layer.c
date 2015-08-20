@@ -362,7 +362,9 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	print_debug("OB Mem dma address	: %pad\n", &(mem->host_dma_addr));
 	print_debug("OB Mem physical address: %pa\n", &(mem->host_p_addr));
 
-	/* Assign the diff pointers properly */
+	/* The outbound pointers are locations where the device is supposed to
+	 * write to. We calculate the addresses with the correct offset and
+	 * then communicate them to the device in the handshake operation */
 	dev->h_mem = host_v_addr;
 	dev->h_mem->fw_resp_ring = host_v_addr + dev->ob_mem.fw_resp_ring;
 	dev->h_mem->drv_resp_ring = host_v_addr + dev->ob_mem.drv_resp_rings;
