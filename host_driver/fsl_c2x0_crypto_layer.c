@@ -282,6 +282,9 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	ob_mem_len += rp_len * sizeof(resp_ring_entry_t);
 
 	/* For each rp we need a local memory for indexes */
+	/* FIXME: we should probably allocate
+	 * 		config->num_of_rings + NUM_OF_RESP_RINGS instead of
+	 * 		config->num_of_rings + 1 */
 	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
 	dev->ob_mem.l_idxs_mem = ob_mem_len;
 	ob_mem_len += (config->num_of_rings + 1) * (sizeof(ring_idxs_mem_t));
@@ -434,6 +437,7 @@ void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 {
 	fw_resp_ring_t *fw_ring;
 	uint8_t i;
+	uint8_t id = dev->num_of_rings;
 	/*int offset = 0;*/
 
 	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
@@ -443,11 +447,12 @@ void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 		fw_ring->v_addr = dev->h_mem->fw_resp_ring;
 		fw_ring->p_addr = __pa(fw_ring->v_addr);
 
-		fw_ring->idxs = &(dev->h_mem->l_idxs_mem[dev->num_of_rings]);
-		fw_ring->cntrs =
-		    &(dev->h_mem->l_r_cntrs_mem[dev->num_of_rings]);
-		fw_ring->s_c_cntrs =
-		    &(dev->h_mem->s_c_r_cntrs_mem[dev->num_of_rings]);
+		/* We allocated "config->num_of_rings + 1" in alloc_ob_mem and
+		 * id is the last one in this array of rings. But if
+		 * NUM_OF_RESP_RINGS is not 1, we've got ourself a mess here */
+		fw_ring->idxs = &(dev->h_mem->l_idxs_mem[id]);
+		fw_ring->cntrs = &(dev->h_mem->l_r_cntrs_mem[id]);
+		fw_ring->s_c_cntrs = &(dev->h_mem->s_c_r_cntrs_mem[id]);
 		fw_ring->s_cntrs = NULL;
 
 		/* FIXME: clean-up leftovers. It probably makes sense to actually
