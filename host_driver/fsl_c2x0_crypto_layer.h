@@ -38,9 +38,6 @@
 
 extern int napi_poll_count;
 
-/* handshake memory is the size of a L1 cache line */
-#define DRIVER_HS_MEM_SIZE DEVICE_CACHE_LINE_SIZE
-
 /* the number of context pools is arbitrary and NR_CPUS is a good default
  * considering that worker threads using the contexts are local to a CPU.
  * However we set a conservative default until we fix malloc issues for x86 */
