@@ -274,7 +274,7 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 				struct crypto_dev_config *config)
 {
 	uint32_t ob_mem_len = 0;
-	uint32_t rp_len = 0;
+	uint32_t rp_len;
 
 	/* One cache line for container structure */
 	dev->ob_mem.h_mem = ob_mem_len;
@@ -285,11 +285,10 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	ob_mem_len += DRIVER_HS_MEM_SIZE;
 
 	/* Correct the ring depths to power of 2 */
+	rp_len = calc_rp_mem_len(config);
 	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
 	dev->ob_mem.drv_resp_rings = ob_mem_len;
-	rp_len = calc_rp_mem_len(config);
-	ob_mem_len 	      += rp_len * sizeof(resp_ring_entry_t);
-	dev->tot_req_mem_size += rp_len * sizeof(req_ring_entry_t);
+	ob_mem_len += rp_len * sizeof(resp_ring_entry_t);
 
 	/* For each rp we need a local memory for indexes */
 	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
@@ -335,6 +334,8 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 
 	/* Make the total mem requirement aligned to page size */
 	ob_mem_len = ALIGN_LEN_TO_PAGE_SIZE(ob_mem_len);
+
+	dev->tot_req_mem_size = rp_len * sizeof(req_ring_entry_t);
 
 	return ob_mem_len;
 }
