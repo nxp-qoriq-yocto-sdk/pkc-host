@@ -273,6 +273,7 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 {
 	uint32_t ob_mem_len = sizeof(crypto_h_mem_layout_t);
 	uint32_t rp_len;
+	uint32_t fw_rr_size;
 
 	/* Correct the ring depths to power of 2 */
 	rp_len = calc_rp_mem_len(config);
@@ -307,14 +308,13 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	dev->ob_mem.op_pool = ob_mem_len;
 	ob_mem_len += DEFAULT_HOST_OP_BUFFER_POOL_SIZE;
 
-	/* See if the mem already allocated is occupying a page */
-	if ((PAGE_SIZE - (ob_mem_len % PAGE_SIZE)) <
-	    (DEFAULT_FIRMWARE_RESP_RING_DEPTH * sizeof(resp_ring_entry_t)))
+	/* See if we can fit fw_resp_ring before the end of a page */
+	fw_rr_size = DEFAULT_FIRMWARE_RESP_RING_DEPTH * sizeof(resp_ring_entry_t);
+	if ((PAGE_SIZE - (ob_mem_len % PAGE_SIZE)) < fw_rr_size)
 		ob_mem_len = ALIGN_LEN_TO_PAGE_SIZE(ob_mem_len);
 
 	dev->ob_mem.fw_resp_ring = ob_mem_len;
-	ob_mem_len +=
-	    DEFAULT_FIRMWARE_RESP_RING_DEPTH * sizeof(resp_ring_entry_t);
+	ob_mem_len += fw_rr_size;
 
 	/* For IP Pool we need to make sure that we always
 	 * get 32BYTE aligned address */
