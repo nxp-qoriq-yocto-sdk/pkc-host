@@ -742,8 +742,6 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	uint8_t rid = 0;
 	uint32_t timeoutcntr = 0;
-#define HS_RESULT_OK			1
-#define CHECK_HS_RESULT(x)		if (HS_RESULT_OK != x) return -1;
 #define LOOP_BREAK_TIMEOUT_MS		1000
 #define LOOP_BREAK_TIMEOUT_JIFFIES	msecs_to_jiffies(LOOP_BREAK_TIMEOUT_MS)
 #define HS_TIMEOUT_IN_MS		(50 * LOOP_BREAK_TIMEOUT_MS)
