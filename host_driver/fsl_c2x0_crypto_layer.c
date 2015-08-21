@@ -660,6 +660,53 @@ void hs_firmware_up(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	send_hs_command(HS_INIT_CONFIG, dev, config);
 }
 
+void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
+{
+	char *str_state = "FW_INIT_CONFIG_COMPLETE\n";
+	void *ptr;
+	struct config_data *hscfg = &dev->h_mem->hs_mem.data.config;
+	int i;
+
+	print_debug("--- FW_INIT_CONFIG_COMPLETE ---\n");
+	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE, str_state,
+			strlen(str_state));
+
+	dev->h_mem->hs_mem.state = DEFAULT;
+
+	iowrite32be(hscfg->s_r_cntrs, &hscfg->s_r_cntrs);
+	dev->s_mem.s_r_cntrs = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->s_r_cntrs;
+
+	iowrite32be(hscfg->s_cntrs, &hscfg->s_cntrs);
+	dev->s_mem.s_cntrs = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->s_cntrs;
+
+	iowrite32be(hscfg->ip_pool, &hscfg->ip_pool);
+
+	dev->ip_pool.fw_pool.dev_p_addr = dev->mem[MEM_TYPE_SRAM].dev_p_addr + hscfg->ip_pool;
+	dev->ip_pool.fw_pool.host_map_p_addr = dev->mem[MEM_TYPE_SRAM].host_p_addr + hscfg->ip_pool;
+	dev->ip_pool.fw_pool.host_map_v_addr = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->ip_pool;
+	iowrite32be(hscfg->resp_intr_ctrl_flag, &hscfg->resp_intr_ctrl_flag);
+
+	ptr = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->resp_intr_ctrl_flag;
+	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
+		dev->fw_resp_rings[i].intr_ctrl_flag = ptr + (i * sizeof(uint32_t *));
+		dev->fw_resp_rings[i].s_cntrs = &(dev->s_mem.s_r_cntrs[dev->num_of_rings + i]);
+		print_debug("FW Intrl Ctrl Flag: %p\n", dev->fw_resp_rings[i].intr_ctrl_flag);
+	}
+
+	print_debug(" ----- Details from firmware  -------\n");
+	print_debug("SRAM H V ADDR: %p\n", dev->mem[MEM_TYPE_SRAM].host_v_addr);
+	print_debug("S R CNTRS OFFSET: %x\n", hscfg->s_r_cntrs);
+	print_debug("S CNTRS: %x\n", hscfg->s_cntrs);
+	print_debug("-----------------------------------\n");
+	print_debug("R S Cntrs: %p\n", dev->s_mem.s_r_cntrs);
+	print_debug("S Cntrs: %p\n", dev->s_mem.s_cntrs);
+	print_debug("FW Pool Dev P addr: %llx\n", (uint64_t)dev->ip_pool.fw_pool.dev_p_addr);
+	print_debug("FW Pool host P addr: %pa\n", &(dev->ip_pool.fw_pool.host_map_p_addr));
+	print_debug("FW Pool host V addr: %p\n", dev->ip_pool.fw_pool.host_map_v_addr);
+
+	send_hs_command(HS_INIT_RING_PAIR, dev,	&(config->ring[rid]));
+}
+
 int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	const char *str_state = NULL;
@@ -678,72 +725,7 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 			hs_firmware_up(dev, config);
 			break;
 		case FW_INIT_CONFIG_COMPLETE:
-			print_debug("--- FW_INIT_CONFIG_COMPLETE ---\n");
-			str_state = "FW_INIT_CONFIG_COMPLETE\n";
-			set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
-					(uint8_t *) str_state,
-					strlen(str_state));
-
-			dev->h_mem->hs_mem.state = DEFAULT;
-
-			iowrite32be(dev->h_mem->hs_mem.data.config.s_r_cntrs,
-				 &dev->h_mem->hs_mem.data.config.s_r_cntrs);
-
-			dev->s_mem.s_r_cntrs =
-			    ((dev->mem[MEM_TYPE_SRAM].host_v_addr) +
-			     dev->h_mem->hs_mem.data.config.s_r_cntrs);
-
-			iowrite32be(dev->h_mem->hs_mem.data.config.s_cntrs,
-				 &dev->h_mem->hs_mem.data.config.s_cntrs);
-
-			dev->s_mem.s_cntrs =
-			    ((dev->mem[MEM_TYPE_SRAM].host_v_addr) +
-			     dev->h_mem->hs_mem.data.config.s_cntrs);
-
-			iowrite32be(dev->h_mem->hs_mem.data.config.ip_pool,
-				 &dev->h_mem->hs_mem.data.config.ip_pool);
-
-			dev->ip_pool.fw_pool.dev_p_addr =
-			    ((dev->mem[MEM_TYPE_SRAM].dev_p_addr) +
-			     dev->h_mem->hs_mem.data.config.ip_pool);
-			dev->ip_pool.fw_pool.host_map_p_addr =
-			    ((dev->mem[MEM_TYPE_SRAM].host_p_addr) +
-			     dev->h_mem->hs_mem.data.config.ip_pool);
-			dev->ip_pool.fw_pool.host_map_v_addr =
-			    ((dev->mem[MEM_TYPE_SRAM].host_v_addr) +
-			     dev->h_mem->hs_mem.data.config.ip_pool);
-
-			iowrite32be(dev->h_mem->hs_mem.data.config.resp_intr_ctrl_flag,
-				 &dev->h_mem->hs_mem.data.config.resp_intr_ctrl_flag);
-
-			{
-				int i = 0;
-				void *ptr =
-				    ((dev->mem[MEM_TYPE_SRAM].host_v_addr) +
-				     dev->h_mem->hs_mem.data.config.
-				     resp_intr_ctrl_flag);
-				for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
-					dev->fw_resp_rings[i].intr_ctrl_flag =
-					    ptr + (i * sizeof(uint32_t *));
-					dev->fw_resp_rings[i].s_cntrs =
-					    &(dev->s_mem.
-					      s_r_cntrs[dev->num_of_rings + i]);
-					print_debug("FW Intrl Ctrl Flag: %p\n",
-				     dev->fw_resp_rings[i].intr_ctrl_flag);
-				}
-			}
-
-			print_debug(" ----- Details from firmware  -------\n");
-			print_debug("SRAM H V ADDR: %p\n", dev->mem[MEM_TYPE_SRAM].host_v_addr);
-			print_debug("S R CNTRS OFFSET: %x\n", dev->h_mem->hs_mem.data.config.s_r_cntrs);
-			print_debug("S CNTRS: %x\n", dev->h_mem->hs_mem.data.config.s_cntrs);
-			print_debug("-----------------------------------\n");
-			print_debug("R S Cntrs: %p\n", dev->s_mem.s_r_cntrs);
-			print_debug("S Cntrs: %p\n", dev->s_mem.s_cntrs);
-			print_debug("FW Pool Dev P addr: %llx\n", (uint64_t)dev->ip_pool.fw_pool.dev_p_addr);
-			print_debug("FW Pool host P addr: %pa\n", &(dev->ip_pool.fw_pool.host_map_p_addr));
-			print_debug("FW Pool host V addr: %p\n", dev->ip_pool.fw_pool.host_map_v_addr);
-			send_hs_command(HS_INIT_RING_PAIR, dev,	&(config->ring[rid]));
+			hs_fw_init_complete(dev, config, rid);
 			break;
 
 		case FW_INIT_RING_PAIR_COMPLETE:
