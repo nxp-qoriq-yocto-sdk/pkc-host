@@ -707,9 +707,40 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	send_hs_command(HS_INIT_RING_PAIR, dev,	&(config->ring[rid]));
 }
 
+uint8_t hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
+{
+	char *str_state = "FW_INIT_RING_PAIR_COMPLETE\n";
+	struct ring_data *hsring = &dev->h_mem->hs_mem.data.ring;
+
+	print_debug("---- FW_INIT_RING_PAIR_COMPLETE ----\n");
+	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE, str_state,
+			strlen(str_state));
+	dev->h_mem->hs_mem.state = DEFAULT;
+
+	iowrite32be(hsring->req_r, &hsring->req_r);
+	iowrite32be(hsring->intr_ctrl_flag, &hsring->intr_ctrl_flag);
+
+	dev->ring_pairs[rid].shadow_counters = &(dev->s_mem.s_r_cntrs[rid]);
+	dev->ring_pairs[rid].req_r =dev->mem[MEM_TYPE_SRAM].host_v_addr +
+			hsring->req_r;
+	dev->ring_pairs[rid].intr_ctrl_flag = dev->mem[MEM_TYPE_SRAM].host_v_addr +
+			hsring->intr_ctrl_flag;
+
+	print_debug("Ring id: %d\n", rid);
+	print_debug("Shadow cntrs: %p\n", dev->ring_pairs[rid].shadow_counters);
+	print_debug("Req r: %p\n", dev->ring_pairs[rid].req_r);
+
+	rid++;
+	if (rid < dev->num_of_rings)
+		send_hs_command(HS_INIT_RING_PAIR, dev,	&(config->ring[rid]));
+	else
+		send_hs_command(HS_COMPLETE, dev, NULL);
+
+	return rid;
+}
+
 int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
-	const char *str_state = NULL;
 	uint8_t rid = 0;
 	uint32_t timeoutcntr = 0;
 #define HS_RESULT_OK			1
@@ -727,44 +758,13 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 		case FW_INIT_CONFIG_COMPLETE:
 			hs_fw_init_complete(dev, config, rid);
 			break;
-
 		case FW_INIT_RING_PAIR_COMPLETE:
-			print_debug("---- FW_INIT_RING_PAIR_COMPLETE ----\n");
-			str_state = "FW_INIT_RING_PAIR_COMPLETE\n";
-			set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
-					(uint8_t *) str_state,
-					strlen(str_state));
-			dev->h_mem->hs_mem.state = DEFAULT;
-
-			if (f_get_a(config->ring[rid].flags) >
-					dev->h_mem->hs_mem.data.device.no_secs){
+			if (f_get_a(config->ring[rid].flags) > dev->h_mem->hs_mem.data.device.no_secs) {
 				print_error("Wrong Affinity for the ring: %d\n", rid);
 				print_error("No of SECs are %d\n", dev->h_mem->hs_mem.data.device.no_secs);
 				goto error;
 			}
-			iowrite32be(dev->h_mem->hs_mem.data.ring.req_r,
-				 &dev->h_mem->hs_mem.data.ring.req_r);
-			iowrite32be(dev->h_mem->hs_mem.data.ring.intr_ctrl_flag,
-				 &dev->h_mem->hs_mem.data.ring.intr_ctrl_flag);
-
-			dev->ring_pairs[rid].shadow_counters =
-			    &(dev->s_mem.s_r_cntrs[rid]);
-			dev->ring_pairs[rid].req_r =
-			    ((dev->mem[MEM_TYPE_SRAM].host_v_addr) +
-			     dev->h_mem->hs_mem.data.ring.req_r);
-			dev->ring_pairs[rid].intr_ctrl_flag =
-			    ((dev->mem[MEM_TYPE_SRAM].host_v_addr) +
-			     dev->h_mem->hs_mem.data.ring.intr_ctrl_flag);
-
-			print_debug("Ring id: %d\n", rid);
-			print_debug("Shadow cntrs: %p\n", dev->ring_pairs[rid].shadow_counters);
-			print_debug("Req r: %p\n", dev->ring_pairs[rid].req_r);
-
-			if (++rid >= dev->num_of_rings) {
-				send_hs_command(HS_COMPLETE, dev, NULL);
-			} else
-				send_hs_command(HS_INIT_RING_PAIR, dev,
-						&(config->ring[rid]));
+			rid = hs_init_rp_complete(dev, config, rid);
 			break;
 		case FW_INIT_RNG:
 			send_hs_command(WAIT_FOR_RNG, dev, NULL);
