@@ -1262,10 +1262,8 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 
 	atomic_set(&(c_dev->crypto_dev_sess_cnt), 0);
 
-	c_dev->c_hs_mem =
-	    (crypto_c_hs_mem_t *) (c_dev->mem[MEM_TYPE_SRAM].host_v_addr +
-				   DEV_MEM_SIZE - FSL_FIRMWARE_SIZE -
-				   DEVICE_CACHE_LINE_SIZE);
+	c_dev->c_hs_mem = c_dev->mem[MEM_TYPE_SRAM].host_v_addr + HS_MEM_OFFSET;
+
 	print_debug("IB mem addr: %p\n", c_dev->mem[MEM_TYPE_SRAM].host_v_addr);
 	print_debug("Device hs mem addr: %p\n", c_dev->c_hs_mem);
 
