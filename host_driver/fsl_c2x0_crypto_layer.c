@@ -620,6 +620,46 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 	return;
 }
 
+void hs_firmware_up(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
+{
+	char *str_state = "FIRMWARE_UP\n";
+	struct fw_up_data *hsdev = &dev->h_mem->hs_mem.data.device;
+
+	print_debug(" ----------- FIRMWARE_UP -----------\n");
+	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE, str_state,
+			strlen(str_state));
+
+	dev->h_mem->hs_mem.state = DEFAULT;
+
+	iowrite32be(hsdev->p_ib_mem_base_l, &hsdev->p_ib_mem_base_l);
+	iowrite32be(hsdev->p_ib_mem_base_h, &hsdev->p_ib_mem_base_h);
+	iowrite32be(hsdev->p_ob_mem_base_l, &hsdev->p_ob_mem_base_l);
+	iowrite32be(hsdev->p_ob_mem_base_h, &hsdev->p_ob_mem_base_h);
+	iowrite32be(hsdev->no_secs,         &hsdev->no_secs);
+
+	print_debug("Device Shared Details\n");
+	print_debug("Ib mem PhyAddr L: %0x, H: %0x\n",
+			hsdev->p_ib_mem_base_l, hsdev->p_ib_mem_base_h);
+
+	print_debug("Ob mem PhyAddr L: %0x, H: %0x\n",
+			hsdev->p_ob_mem_base_l, hsdev->p_ob_mem_base_h);
+
+	dev->mem[MEM_TYPE_SRAM].dev_p_addr = (dev_p_addr_t)
+		((dev_p_addr_t) (hsdev->p_ib_mem_base_h) << 32) |
+		(hsdev->p_ib_mem_base_l);
+
+	dev->mem[MEM_TYPE_DRIVER].dev_p_addr = (dev_p_addr_t)
+		((dev_p_addr_t) (hsdev->p_ob_mem_base_h) << 32) |
+		(hsdev->p_ob_mem_base_l);
+
+	print_debug("Formed dev ib mem phys address: %llx\n",
+			(uint64_t)dev->mem[MEM_TYPE_SRAM].dev_p_addr);
+	print_debug("Formed dev ob mem phys address: %llx\n",
+			(uint64_t)dev->mem[MEM_TYPE_DRIVER].dev_p_addr);
+
+	send_hs_command(HS_INIT_CONFIG, dev, config);
+}
+
 int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	const char *str_state = NULL;
@@ -635,54 +675,8 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 		iowrite8(dev->h_mem->hs_mem.state, &dev->h_mem->hs_mem.state);
 		switch (dev->h_mem->hs_mem.state) {
 		case FIRMWARE_UP:
-			print_debug(" ----------- FIRMWARE_UP -----------\n");
-			str_state = "FIRMWARE_UP\n";
-			set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
-					(uint8_t *) str_state,
-					strlen(str_state));
-
-			dev->h_mem->hs_mem.state = DEFAULT;
-
-			iowrite32be(dev->h_mem->hs_mem.data.device.p_ib_mem_base_l,
-				 &dev->h_mem->hs_mem.data.device.p_ib_mem_base_l);
-			iowrite32be(dev->h_mem->hs_mem.data.device.p_ib_mem_base_h,
-				 &dev->h_mem->hs_mem.data.device.p_ib_mem_base_h);
-			iowrite32be(dev->h_mem->hs_mem.data.device.p_ob_mem_base_l,
-				 &dev->h_mem->hs_mem.data.device.p_ob_mem_base_l);
-			iowrite32be(dev->h_mem->hs_mem.data.device.p_ob_mem_base_h,
-				 &dev->h_mem->hs_mem.data.device.p_ob_mem_base_h);
-			iowrite32be(dev->h_mem->hs_mem.data.device.no_secs,
-				 &dev->h_mem->hs_mem.data.device.no_secs);
-
-			print_debug("Device Shared Details\n");
-			print_debug("Ib mem PhyAddr L: %0x, H: %0x\n",
-			     dev->h_mem->hs_mem.data.device.p_ib_mem_base_l,
-			     dev->h_mem->hs_mem.data.device.p_ib_mem_base_h);
-
-			print_debug("Ob mem PhyAddr L: %0x, H: %0x\n",
-			     dev->h_mem->hs_mem.data.device.p_ob_mem_base_l,
-			     dev->h_mem->hs_mem.data.device.p_ob_mem_base_h);
-
-			dev->mem[MEM_TYPE_SRAM].dev_p_addr = (dev_p_addr_t)
-			    ((dev_p_addr_t)
-			     (dev->h_mem->hs_mem.data.
-			      device.p_ib_mem_base_h) << 32) | (dev->h_mem->
-				  hs_mem.data.device.p_ib_mem_base_l);
-
-			dev->mem[MEM_TYPE_DRIVER].dev_p_addr = (dev_p_addr_t)
-			    ((dev_p_addr_t)
-			     (dev->h_mem->hs_mem.data.
-			      device.p_ob_mem_base_h) << 32) | (dev->h_mem->
-				  hs_mem.data.device.p_ob_mem_base_l);
-
-			print_debug("Formed dev ib mem phys address: %llx\n",
-			     (uint64_t)dev->mem[MEM_TYPE_SRAM].dev_p_addr);
-			print_debug("Formed dev ob mem phys address: %llx\n",
-			     (uint64_t)dev->mem[MEM_TYPE_DRIVER].dev_p_addr);
-
-			send_hs_command(HS_INIT_CONFIG, dev, config);
+			hs_firmware_up(dev, config);
 			break;
-
 		case FW_INIT_CONFIG_COMPLETE:
 			print_debug("--- FW_INIT_CONFIG_COMPLETE ---\n");
 			str_state = "FW_INIT_CONFIG_COMPLETE\n";
