@@ -542,6 +542,8 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 {
 	const char *str_state = NULL;
+	struct ring_info *ring = data;
+	phys_addr_t resp_r, s_r_cntrs;
 
 	switch (cmd) {
 	case HS_INIT_CONFIG:
@@ -554,31 +556,28 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 		str_state = "HS_INIT_RING_PAIR\n";
 		set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
 				(uint8_t *) str_state, strlen(str_state));
-		{
-			struct ring_info *ring = data;
-			phys_addr_t resp_r =
-			    __pa(dev->ring_pairs[ring->ring_id].resp_r);
-			phys_addr_t s_r_cntrs =
-			    __pa(dev->ring_pairs[ring->ring_id].s_c_counters);
 
-			iowrite8(HS_INIT_RING_PAIR, (void *) &dev->c_hs_mem->command);
-			iowrite8(ring->ring_id, (void *) &dev->c_hs_mem->data.ring.rid);
-			iowrite8(ring->flags, (void *) &dev->c_hs_mem->data.ring.props);
-			iowrite16be(ring->msi_data, (void *) &dev->c_hs_mem->data.ring.msi_data);
-			iowrite32be(ring->depth, (void *) &dev->c_hs_mem->data.ring.depth);
-			iowrite32be(resp_r, (void *) &dev->c_hs_mem->data.ring.resp_ring);
-			iowrite32be(ring->msi_addr_l, (void *) &dev->c_hs_mem->data.ring.msi_addr_l);
-			iowrite32be(ring->msi_addr_h, (void *) &dev->c_hs_mem->data.ring.msi_addr_h);
-			iowrite32be(s_r_cntrs, (void *) &dev->c_hs_mem->data.ring.s_r_cntrs);
+		resp_r = __pa(dev->ring_pairs[ring->ring_id].resp_r);
+		s_r_cntrs = __pa(dev->ring_pairs[ring->ring_id].s_c_counters);
 
-			print_debug("HS_INIT_RING_PAIR Details\n");
-			print_debug("Rid: %d\n", ring->ring_id);
-			print_debug("Depth: %d\n", ring->depth);
-			print_debug("MSI Data: %x\n", ring->msi_data);
-			print_debug("MSI Addr L: %x\n", ring->msi_addr_l);
-			print_debug("MSI Addr H: %x\n", ring->msi_addr_h);
-			print_debug("Ring counters addr: %pa\n", &(s_r_cntrs));
-		}
+		iowrite8(HS_INIT_RING_PAIR, (void *) &dev->c_hs_mem->command);
+		iowrite8(ring->ring_id, (void *) &dev->c_hs_mem->data.ring.rid);
+		iowrite8(ring->flags, (void *) &dev->c_hs_mem->data.ring.props);
+		iowrite16be(ring->msi_data, (void *) &dev->c_hs_mem->data.ring.msi_data);
+		iowrite32be(ring->depth, (void *) &dev->c_hs_mem->data.ring.depth);
+		iowrite32be(resp_r, (void *) &dev->c_hs_mem->data.ring.resp_ring);
+		iowrite32be(ring->msi_addr_l, (void *) &dev->c_hs_mem->data.ring.msi_addr_l);
+		iowrite32be(ring->msi_addr_h, (void *) &dev->c_hs_mem->data.ring.msi_addr_h);
+		iowrite32be(s_r_cntrs, (void *) &dev->c_hs_mem->data.ring.s_r_cntrs);
+
+		print_debug("HS_INIT_RING_PAIR Details\n");
+		print_debug("Rid: %d\n", ring->ring_id);
+		print_debug("Depth: %d\n", ring->depth);
+		print_debug("MSI Data: %x\n", ring->msi_data);
+		print_debug("MSI Addr L: %x\n", ring->msi_addr_l);
+		print_debug("MSI Addr H: %x\n", ring->msi_addr_h);
+		print_debug("Ring counters addr: %pa\n", &(s_r_cntrs));
+
 		iowrite8(FW_INIT_RING_PAIR, (void *) &dev->c_hs_mem->state);
 		break;
 	case HS_COMPLETE:
