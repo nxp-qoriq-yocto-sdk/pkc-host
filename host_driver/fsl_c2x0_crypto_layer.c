@@ -797,6 +797,10 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 		}
 	}
 exit:
+	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
+			(uint8_t *) "FW READY\n", strlen("FW READY\n"));
+	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
+			(uint8_t *) "DRIVER READY\n", strlen("DRIVER READY\n"));
 	return 0;
 
 error:
@@ -1288,12 +1292,6 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 		print_error("Handshake failed\n");
 		goto error;
 	}
-
-	set_sysfs_value(fsl_pci_dev, FIRMWARE_STATE_SYSFILE, (uint8_t *) "FW READY\n",
-			strlen("FW READY\n"));
-
-	set_sysfs_value(fsl_pci_dev, DEVICE_STATE_SYSFILE, (uint8_t *) "DRIVER READY\n",
-			strlen("DRIVER READY\n"));
 
 	err = prepare_crypto_cfg_info_string(config, crypto_info_str);
 	if (err) {
