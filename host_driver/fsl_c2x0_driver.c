@@ -1653,8 +1653,10 @@ int8_t *get_label(int8_t *line)
 	while (*line != '\n' && *line != '\0') {
 		if (*line == '<')
 			return line;
-		else if (*line == ':' && (*line = '\0'))
+		else if (*line == ':') {
+			*line = '\0';
 			return p;
+		}
 		else
 			line++;
 	}
