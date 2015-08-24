@@ -954,9 +954,6 @@ static irqreturn_t fsl_crypto_isr(int irq, void *data)
 		print_error("[ISR] Null Params.....\n");
 		return IRQ_NONE;
 	}
-#if 1
-/*	queue_work_on(0, instance->bh_handler.workq,
-		      &(instance->bh_handler.work)); */
 
 	list_for_each_entry((rp), &(isr_ctx->ring_list_head), isr_ctx_list_node) {
 		print_debug("Ring is assoc with this intr on core [%d]\n",
@@ -970,20 +967,8 @@ static irqreturn_t fsl_crypto_isr(int irq, void *data)
 		queue_work_on(rp->core_no, instance->bh_handler.workq,
 			      &(instance->bh_handler.work));
 	}
-#else
-	/* Tasklet has cpu hog issues if it runs continuously */
-	tasklet_hi_schedule(&(isr_ctx->tasklet));
-#endif
 
 	return IRQ_HANDLED;
-}
-
-static void resp_process_tasklet(unsigned long data)
-{
-#ifndef MULTIPLE_RESP_RINGS
-	isr_ctx_t *isr_ctx = (isr_ctx_t *) data;
-	demux_fw_responses(isr_ctx->dev->crypto_dev);
-#endif
 }
 
 /* release up to bar_max entries allocated in *bar array */
@@ -1251,8 +1236,6 @@ int fsl_request_irqs(fsl_pci_dev_t *fsl_pci_dev)
 
 		INIT_LIST_HEAD(&(isr_context->ring_list_head));
 		isr_context->dev = fsl_pci_dev;
-		tasklet_init(&(isr_context->tasklet), resp_process_tasklet,
-                               (unsigned long)isr_context);
 
 		if (fsl_pci_dev->intr_info.type == INT_MSIX)
 			irq = fsl_pci_dev->intr_info.msix_entries[i].vector;

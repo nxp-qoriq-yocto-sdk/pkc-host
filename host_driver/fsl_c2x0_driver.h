@@ -125,7 +125,6 @@ Fields      :	vector_no: vector number of the interrupt
 typedef struct isr_ctx {
 	uint32_t irq;
 	struct fsl_pci_dev *dev;
-	struct tasklet_struct tasklet;
 	/* List of Bhs for this ISR */
 /*	LIST_HEAD(isr_bh_list); */
 	uint32_t msi_addr_low;
