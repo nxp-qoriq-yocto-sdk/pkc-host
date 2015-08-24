@@ -235,7 +235,7 @@ extern volatile uint64_t jiffies_3;
 
 fsl_crypto_dev_t *get_crypto_dev(uint32_t no);
 uint32_t get_no_of_devices(void);
-extern crypto_dev_config_t *get_dev_config(fsl_pci_dev_t *fsl_pci_dev);
+extern struct crypto_dev_config *get_dev_config(fsl_pci_dev_t *fsl_pci_dev);
 extern int32_t parse_config_file(int8_t *config_file);
 void sysfs_napi_loop_count_set(char *fname, char *count, int len, char flag);
 

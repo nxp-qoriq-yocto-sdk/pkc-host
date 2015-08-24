@@ -139,7 +139,7 @@ void set_device(char *fname, char *device, int32_t size, char flag)
 	per_dev_struct_t *dev_stat = NULL;
 	fsl_pci_dev_t *fsl_pci_dev = NULL;
 	fsl_crypto_dev_t *c_dev = NULL;
-	crypto_dev_config_t *config = NULL;
+	struct crypto_dev_config *config = NULL;
 	unsigned long dev_no;
 
 	print_debug("INSIDE DEVICE SET FUNCTION\n");
@@ -202,9 +202,9 @@ void set_device(char *fname, char *device, int32_t size, char flag)
  ******************************************************************************/
 int32_t rehandshake(int8_t *config_file, fsl_crypto_dev_t *dev)
 {
-	crypto_dev_config_t *curr_config = get_dev_config(dev->priv_dev);
+	struct crypto_dev_config *curr_config = get_dev_config(dev->priv_dev);
 	fsl_crypto_dev_t *crypto_dev;
-	crypto_dev_config_t *new_config = NULL;
+	struct crypto_dev_config *new_config = NULL;
 
 	uint32_t size, i = 0;
 	int32_t new_dev_no = 1;
@@ -343,7 +343,7 @@ dconfig:
 *******************************************************************************/
 int32_t validate_cmd_args(fsl_crypto_dev_t *c_dev, user_command_args_t *cmd)
 {
-	crypto_dev_config_t *config = NULL;
+	struct crypto_dev_config *config = NULL;
 
 	switch (cmd->cmd_type) {
 	case RINGSTAT:

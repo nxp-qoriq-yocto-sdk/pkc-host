@@ -78,7 +78,7 @@ static void store_dev_ctx(void *buffer, uint8_t rid, uint32_t wi)
 static volatile uint32_t enqueue_counter;
 static volatile uint32_t dequeue_counter;
 
-void distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
+void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	fsl_h_rsrc_ring_pair_t *rp;
 	uint32_t core_no = 0;
@@ -143,7 +143,7 @@ uint32_t round_to_power2(uint32_t n)
 /* FIXME: the ring depths are rounded twice, once here, inside rearrange_config
  * and the second time inside calc_rp_mem_len. Check which one is the first
  * and remove the other one */
-static void pow2_rp_len(crypto_dev_config_t *config)
+static void pow2_rp_len(struct crypto_dev_config *config)
 {
 	uint32_t i;
 	/* Correct the ring depths to be power of 2 */
@@ -186,7 +186,7 @@ void f_set_o(uint8_t *flags, uint8_t order)
 	*flags |= order << APP_RING_PROP_ORDER_SHIFT;
 }
 
-static void rearrange_config(crypto_dev_config_t *config)
+static void rearrange_config(struct crypto_dev_config *config)
 {
 	struct ring_info temp;
 	uint8_t pri_j, pri_j_1, i, j;
@@ -226,7 +226,7 @@ static void rearrange_config(crypto_dev_config_t *config)
 	f_set_p(&config->ring[i].flags, j);
 }
 
-void rearrange_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
+void rearrange_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	uint8_t i, pri;
 
@@ -251,7 +251,7 @@ void rearrange_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
 	dev->num_of_rings = config->num_of_rings;
 }
 
-static uint32_t calc_rp_mem_len(crypto_dev_config_t *config)
+static uint32_t calc_rp_mem_len(struct crypto_dev_config *config)
 {
 	uint32_t i, len = 0;
 	struct ring_info *ring;
@@ -271,7 +271,7 @@ static uint32_t calc_rp_mem_len(crypto_dev_config_t *config)
  * translated relative to a pci mapped address by alloc_ob_mem
  */
 static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
-				crypto_dev_config_t *config)
+				struct crypto_dev_config *config)
 {
 	uint32_t ob_mem_len = 0;
 	uint32_t rp_len = 0;
@@ -343,7 +343,7 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
  * Allocate outbound memory
  * dev->h_mem will contain the driver's memory map
  */
-int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
+int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	void *host_v_addr;
 	crypto_dev_mem_info_t *mem;
@@ -633,7 +633,7 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 	return;
 }
 
-int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config)
+int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	const char *str_state = NULL;
 	uint8_t rid = 0;
@@ -1195,7 +1195,7 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 }
 
 #define CRYPTO_INFO_STR_LENGTH 200
-int prepare_crypto_cfg_info_string(crypto_dev_config_t *config,
+int prepare_crypto_cfg_info_string(struct crypto_dev_config *config,
 		uint8_t *cryp_cfg_str)
 {
 	uint32_t i;
@@ -1239,7 +1239,7 @@ int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set)
 }
 
 fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
-				  crypto_dev_config_t *config)
+				  struct crypto_dev_config *config)
 {
 	uint32_t i;
 	uint8_t crypto_info_str[CRYPTO_INFO_STR_LENGTH];

@@ -265,7 +265,7 @@ Fields      :	dev_no    : Number of the device to which this config applies.
 			8   : Ordered/Un-ordered
 		list      : To maintain list of config structures per device
 *******************************************************************************/
-typedef struct crypto_dev_config {
+struct crypto_dev_config {
 	uint32_t dev_no;
 /*  int8_t      *name;  We may not need this field  */
 #define FIRMWARE_FILE_DEFAULT_PATH  "/etc/crypto/pkc-firmware.bin"
@@ -290,7 +290,7 @@ typedef struct crypto_dev_config {
 	} ring[FSL_CRYPTO_MAX_RING_PAIRS];
 
 	struct list_head list;
-} crypto_dev_config_t;
+};
 
 /* Different types of memory between driver and ep */
 typedef enum crypto_dev_mem_type {

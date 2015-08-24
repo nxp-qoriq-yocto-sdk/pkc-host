@@ -51,7 +51,7 @@
 #include "test.h"
 #include "dma.h"
 
-static void create_default_config(crypto_dev_config_t *, uint8_t, uint8_t);
+static void create_default_config(struct crypto_dev_config *, uint8_t, uint8_t);
 /*********************************************************
  *                  MACRO DEFINITIONS                    *
  *********************************************************/
@@ -877,9 +877,9 @@ static void response_ring_handler(void *data)
  *
  ******************************************************************************/
 
-crypto_dev_config_t *get_config(uint32_t dev_no)
+struct crypto_dev_config *get_config(uint32_t dev_no)
 {
-	crypto_dev_config_t *config = NULL;
+	struct crypto_dev_config *config = NULL;
 
 	/* Loop for each config to get to the correct config.
 	 */
@@ -906,9 +906,9 @@ crypto_dev_config_t *get_config(uint32_t dev_no)
  *
  ******************************************************************************/
 
-crypto_dev_config_t *get_dev_config(fsl_pci_dev_t *fsl_pci_dev)
+struct crypto_dev_config *get_dev_config(fsl_pci_dev_t *fsl_pci_dev)
 {
-	crypto_dev_config_t *config = NULL;
+	struct crypto_dev_config *config = NULL;
 
 	/* Loop for each config to get to the correct config.
 	 */
@@ -1320,7 +1320,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	int8_t sys_pci_info[100];
 
 	fsl_pci_dev_t *fsl_pci_dev = NULL;
-	crypto_dev_config_t *config = NULL;
+	struct crypto_dev_config *config = NULL;
 
 	print_debug("========== PROBE FUNCTION ==========\n");
 
@@ -1446,7 +1446,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		/* FIX: IF NO CONFIGURATION IS SPECIFIED THEN
 		 * TAKE THE DEFAULT CONFIGURATION */
 		print_debug("NO CONFIG FOUND, CREATING DEFAULT CONFIGURATION\n");
-		config = kzalloc(sizeof(crypto_dev_config_t), GFP_KERNEL);
+		config = kzalloc(sizeof(struct crypto_dev_config), GFP_KERNEL);
 		if (!config) {
 			print_error("Mem allocation failed\n");
 			err = -ENODEV;
@@ -1682,7 +1682,7 @@ int8_t *get_label(int8_t *line)
  *			PRIORITY - 1	ORDER - 0
  *
  ******************************************************************************/
-static void create_default_config(crypto_dev_config_t *config,
+static void create_default_config(struct crypto_dev_config *config,
 				  uint8_t from_ring, uint8_t max_ring)
 {
 	if (max_ring > FSL_CRYPTO_MAX_RING_PAIRS)
@@ -1726,7 +1726,7 @@ uint32_t dev_count;
 int32_t process_label(int8_t *label, int8_t *value)
 {
 	int32_t conv_value = 0;
-	static crypto_dev_config_t *config;
+	static struct crypto_dev_config *config;
 	static uint32_t rings_spec;
 	static uint8_t ring_count;
 	static uint32_t ring_start;
@@ -1734,7 +1734,7 @@ int32_t process_label(int8_t *label, int8_t *value)
 
 	if (!strcmp(label, "<device>")) {
 		/* New device node - allocate memory for new config structure */
-		config = kzalloc(sizeof(crypto_dev_config_t), GFP_KERNEL);
+		config = kzalloc(sizeof(struct crypto_dev_config), GFP_KERNEL);
 
 		if (unlikely(NULL == config)) {
 			print_error("Mem allocation failed\n");
@@ -1997,8 +1997,8 @@ static void cleanup_percore_list(void)
  ******************************************************************************/
 static void cleanup_config_list(void)
 {
-	crypto_dev_config_t *config = NULL;
-	crypto_dev_config_t *next_config = NULL;
+	struct crypto_dev_config *config = NULL;
+	struct crypto_dev_config *next_config = NULL;
 
 	list_for_each_entry_safe(config, next_config, &crypto_dev_config_list,
 				 list) {

@@ -480,7 +480,7 @@ typedef struct fsl_crypto_dev {
 	fsl_pci_dev_t *priv_dev;
 
 	crypto_dev_info_t dev_info;
-	crypto_dev_config_t *config;
+	struct crypto_dev_config *config;
 	crypto_dev_mem_info_t mem[MEM_TYPE_MAX + 1];
 	driver_ob_mem_t ob_mem;
 	uint32_t tot_req_mem_size;
@@ -543,20 +543,21 @@ int32_t app_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 			 dev_dma_addr_t sec_desc);
 
-fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *dev, crypto_dev_config_t *config);
+fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *dev,
+		struct crypto_dev_config *config);
 void demux_fw_responses(fsl_crypto_dev_t *dev);
 void cleanup_crypto_device(fsl_crypto_dev_t *dev);
-int32_t handshake(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);
-void rearrange_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);
-void distribute_rings(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);
-int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, crypto_dev_config_t *config);
+int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
+void rearrange_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
+void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
+int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
 int init_ip_pool(fsl_crypto_dev_t *dev);
 int init_op_pool(fsl_crypto_dev_t *dev);
 int init_crypto_ctx_pool(fsl_crypto_dev_t *dev);
 void init_handshake(fsl_crypto_dev_t *dev);
 void init_fw_resp_ring(fsl_crypto_dev_t *dev);
 void init_ring_pairs(fsl_crypto_dev_t *dev);
-crypto_dev_config_t *get_config(uint32_t dev_no);
+struct crypto_dev_config *get_config(uint32_t dev_no);
 void f_set_a(uint8_t *, uint8_t);
 void f_set_p(uint8_t *, uint8_t);
 void f_set_o(uint8_t *, uint8_t);

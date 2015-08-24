@@ -166,8 +166,8 @@ typedef struct fsl_dev_stat_op {
     unsigned int codemem;
     unsigned int heapmem;
     unsigned int freemem;
-    unsigned int num_of_sec_engine;     /* ALREADY IN crypto_dev_config_t */
-    unsigned int no_of_app_rings;       /* ALREADY IN crypto_dev_config_t */
+    unsigned int num_of_sec_engine;
+    unsigned int no_of_app_rings;
     unsigned int total_jobs_rx;         /* ALREADY IN struct crypto_h_mem_layout */
     unsigned int total_jobs_pending;    /* ALREADY IN struct crypto_h_mem_layout */
 }fsl_dev_stat_op_t;
