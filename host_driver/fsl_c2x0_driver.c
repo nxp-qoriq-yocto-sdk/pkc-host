@@ -837,14 +837,8 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
  * Description  : Bottom half implementation to handle the responses.
  *
  ******************************************************************************/
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 19))
 static void response_ring_handler(struct work_struct *work)
 {
-#else
-static void response_ring_handler(void *data)
-{
-    struct work_struct *work = (struct work_struct *)data; 
-#endif
 	bh_handler_t *bh = container_of(work, bh_handler_t, work);
 	per_core_struct_t *instance;
 	fsl_crypto_dev_t *c_dev;
