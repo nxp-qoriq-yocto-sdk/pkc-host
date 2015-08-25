@@ -214,17 +214,10 @@ typedef struct bh_handler {
 
 /*******************************************************************************
 Description :	Holds the per CPU information
-Fields      :	core_no    : CPU no
-		context    : Some private context - Not decided yet on its use
-		cb         : Callback for any response processing
-		bh_handler : Holds the bh information affined to this core
-		list	   : List of this data structure instances
+Fields      :	bh_handler : Holds the bh information affined to this core
 		ring_list  : Linked list of rings to be processed by this core
 *******************************************************************************/
 typedef struct per_core_struct {
-	uint32_t core_no;
-	void *context;
-	void (*cb) (void *);
 	bh_handler_t bh_handler;
 	struct list_head ring_list_head;
 } per_core_struct_t;

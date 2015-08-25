@@ -1544,12 +1544,8 @@ int32_t create_per_core_info(void)
 		INIT_WORK(&(instance->bh_handler.work), response_ring_handler);
 
 		snprintf(wq_name, 9, "WQ_%d", i);
+
 		instance->bh_handler.workq = create_workqueue(wq_name);
-
-		instance->core_no = i;
-		instance->context = NULL;
-		instance->cb = NULL;
-
 		instance->bh_handler.core_no = i;
 
 		INIT_LIST_HEAD(&(instance->ring_list_head));
