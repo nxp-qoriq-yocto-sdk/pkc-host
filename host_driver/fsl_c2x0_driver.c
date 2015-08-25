@@ -98,6 +98,8 @@ int32_t dma_channel_count = 1;
 int32_t dma_channel_cpu_mask[NR_CPUS];
 int32_t cpu_mask_count;
 
+static struct workqueue_struct *workq;
+
 /* Module Load time parameter */
 /* This parameter specifies the file system path of the configuration file .*/
 module_param(dev_config_file, charp, S_IRUGO);
@@ -962,10 +964,8 @@ static irqreturn_t fsl_crypto_isr(int irq, void *data)
 		/* From the core number get the per core info instance */
 		instance = per_cpu_ptr(per_core, rp->core_no);
 		instance->bh_handler.c_dev = isr_ctx->dev->crypto_dev;
-		/* Queue work for the bh handler which is working on
-		 * a specific cpu */
-		queue_work_on(rp->core_no, instance->bh_handler.workq,
-			      &(instance->bh_handler.work));
+
+		queue_work_on(rp->core_no, workq, &(instance->bh_handler.work));
 	}
 
 	return IRQ_HANDLED;
@@ -1528,7 +1528,6 @@ free_dev:
 int32_t create_per_core_info(void)
 {
 	uint32_t i = 0;
-	uint8_t wq_name[10];
 	per_core_struct_t *instance;
 
 	per_core = alloc_percpu(per_core_struct_t);
@@ -1537,20 +1536,18 @@ int32_t create_per_core_info(void)
 		print_error("Mem allocation failed\n");
 		return -1;
 	}
+
+	workq = create_workqueue("pkc_wq");
 	for_each_online_cpu(i) {
 		if (!(wt_cpu_mask & (1 << i)))
 			continue;
 		instance = per_cpu_ptr(per_core, i);
 		INIT_WORK(&(instance->bh_handler.work), response_ring_handler);
-
-		snprintf(wq_name, 9, "WQ_%d", i);
-
-		instance->bh_handler.workq = create_workqueue(wq_name);
 		instance->bh_handler.core_no = i;
 
 		INIT_LIST_HEAD(&(instance->ring_list_head));
 
-		/*list_add(&(instance->list),&per_core_list_head); */
+
 	}
 	return 0;
 }
@@ -1948,12 +1945,12 @@ static void cleanup_percore_list(void)
 		cursor = per_cpu_ptr(per_core, i);
 		if (NULL == cursor)
 			return;
-		if (NULL != cursor->bh_handler.workq) {
-			flush_workqueue(cursor->bh_handler.workq);
-			destroy_workqueue(cursor->bh_handler.workq);
-		}
+
 		list_del(&(cursor->ring_list_head));
 	}
+
+	flush_workqueue(workq);
+	destroy_workqueue(workq);
 
 	free_percpu(per_core);
 }

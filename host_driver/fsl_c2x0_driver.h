@@ -208,7 +208,6 @@ Fields	    :	core_no: Number of the core to which this BH is affined
 typedef struct bh_handler {
 	int core_no;
 	fsl_crypto_dev_t *c_dev;
-	struct workqueue_struct *workq;
 	struct work_struct work;
 } bh_handler_t;
 
