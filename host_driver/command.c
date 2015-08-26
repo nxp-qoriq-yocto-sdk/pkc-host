@@ -141,7 +141,7 @@ void set_device(char *fname, char *device, int32_t size, char flag)
 	void *ccsr;
 
 	print_debug("INSIDE DEVICE SET FUNCTION\n");
-	if (strict_strtol(device, 0, &dev_no)) {
+	if (kstrtol(device, 0, &dev_no)) {
 		print_error("INVALID DEVICE VALUE\n");
 		return;
 	}
