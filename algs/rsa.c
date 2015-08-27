@@ -599,7 +599,7 @@ int rsa_op(struct pkc_request *req)
 	fsl_crypto_dev_t *c_dev = NULL;
 
 	dev_dma_addr_t sec_dma = 0;
-	uint32_t counter;
+	uint32_t sess_cnt;
 	uint32_t r_id = 0;
 	rsa_pub_op_buffers_t *pub_op_buffs = NULL;
 	rsa_priv1_op_buffers_t *priv1_op_buffs = NULL;
@@ -621,6 +621,7 @@ int rsa_op(struct pkc_request *req)
 		c_sess = (crypto_dev_sess_t *) crypto_pkc_ctx(crypto_pkc_reqtfm(req));
 		c_dev = c_sess->c_dev;
 		r_id = c_sess->r_id;
+		sess_cnt = atomic_read(&c_dev->crypto_dev_sess_cnt);
 #ifndef HIGH_PERF
 		if (-1 == check_device(c_dev))
 			return -1;
@@ -642,10 +643,8 @@ int rsa_op(struct pkc_request *req)
 
 	/* Choose ring id with round robin. Start ring counter from 1 since
 	 * ring 0 is used for commands */
-	counter = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
-	r_id = 1 + counter % (c_dev->num_of_rings - 1);
-	ctx_pool_id = counter % NR_CTX_POOLS;
-
+	sess_cnt = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
+	r_id = 1 + sess_cnt % (c_dev->num_of_rings - 1);
 
 #ifndef HIGH_PERF
 	atomic_inc(&c_dev->active_jobs);
@@ -656,8 +655,7 @@ int rsa_op(struct pkc_request *req)
 	offset = c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 
-	/* FIXME: When  (NULL != req->base.tfm) ctx_pool_id doesn't change
-	 * resulting in a performance regression on multi-core */
+	ctx_pool_id = sess_cnt % NR_CTX_POOLS;
 	ctx_pool = &c_dev->ctx_pool[ctx_pool_id];
 	crypto_ctx = get_crypto_ctx(ctx_pool);
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
