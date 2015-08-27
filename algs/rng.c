@@ -195,8 +195,7 @@ static int submit_job(struct rng_ctx *ctx, int to_current)
 	     (uint64_t)rng_buffs->desc_buff.dev_buffer.d_p_addr,
 	     rng_buffs->desc_buff.v_mem, crypto_ctx);
 
-	store_priv_data(crypto_ctx->crypto_mem.pool,
-			rng_buffs->desc_buff.v_mem, (unsigned long)crypto_ctx);
+	store_priv_data(rng_buffs->desc_buff.v_mem, (unsigned long)crypto_ctx);
 	crypto_ctx->oprn = RNG;
 
 	memcpy_to_dev(&crypto_ctx->crypto_mem);

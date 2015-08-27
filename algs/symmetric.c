@@ -589,8 +589,7 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 			       (uint32_t *) desc, desc_len(desc));
 	kfree(desc);
 
-	store_priv_data(crypto_ctx->crypto_mem.pool,
-			ablk_ctx->desc.v_mem, (unsigned long)crypto_ctx);
+	store_priv_data(ablk_ctx->desc.v_mem, (unsigned long)crypto_ctx);
 
 	/* STORE CRYPTO CTX */
 	crypto_ctx->req.ablk = req;

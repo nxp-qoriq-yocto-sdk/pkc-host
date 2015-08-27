@@ -902,8 +902,7 @@ int dsa_op(struct pkc_request *req)
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr:%p Crypto ctx: %p\n",
 			    (uint64_t)dsa_keygen_buffs->desc_buff.dev_buffer.d_p_addr,
 			    dsa_keygen_buffs->desc_buff.v_mem, crypto_ctx);
-		store_priv_data(crypto_ctx->crypto_mem.pool,
-				dsa_keygen_buffs->desc_buff.v_mem,
+		store_priv_data(dsa_keygen_buffs->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
 		break;
 
@@ -948,8 +947,7 @@ int dsa_op(struct pkc_request *req)
 			    (uint64_t)dsa_sign_buffs->desc_buff.dev_buffer.d_p_addr,
 			    dsa_sign_buffs->desc_buff.v_mem, crypto_ctx);
 
-		store_priv_data(crypto_ctx->crypto_mem.pool,
-				dsa_sign_buffs->desc_buff.v_mem,
+		store_priv_data(dsa_sign_buffs->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
 		break;
 	case DSA_VERIFY:
@@ -994,8 +992,7 @@ int dsa_op(struct pkc_request *req)
 		     (uint64_t)dsa_verify_buffs->desc_buff.dev_buffer.d_p_addr,
 		     dsa_verify_buffs->desc_buff.v_mem, crypto_ctx);
 
-		store_priv_data(crypto_ctx->crypto_mem.pool,
-				dsa_verify_buffs->desc_buff.v_mem,
+		store_priv_data(dsa_verify_buffs->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
 		break;
 

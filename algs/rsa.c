@@ -707,8 +707,7 @@ int rsa_op(struct pkc_request *req)
 		     (uint64_t)pub_op_buffs->desc_buff.dev_buffer.d_p_addr,
 		     pub_op_buffs->desc_buff.v_mem, crypto_ctx);
 
-		store_priv_data(crypto_ctx->crypto_mem.pool,
-				pub_op_buffs->desc_buff.v_mem,
+		store_priv_data(pub_op_buffs->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
 		break;
 	case RSA_PRIV_FORM1:
@@ -738,8 +737,7 @@ int rsa_op(struct pkc_request *req)
 			    (uint64_t)priv1_op_buffs->desc_buff.dev_buffer.d_p_addr,
 			    priv1_op_buffs->desc_buff.v_mem, crypto_ctx);
 
-		store_priv_data(crypto_ctx->crypto_mem.pool,
-				priv1_op_buffs->desc_buff.v_mem,
+		store_priv_data(priv1_op_buffs->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
 		break;
 
@@ -770,8 +768,7 @@ int rsa_op(struct pkc_request *req)
 			    (uint64_t)priv2_op_buffs->desc_buff.dev_buffer.d_p_addr,
 			    priv2_op_buffs->desc_buff.v_mem, crypto_ctx);
 
-		store_priv_data(crypto_ctx->crypto_mem.pool,
-				priv2_op_buffs->desc_buff.v_mem,
+		store_priv_data(priv2_op_buffs->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
 		break;
 
@@ -809,8 +806,7 @@ int rsa_op(struct pkc_request *req)
 		     (uint64_t)priv3_op_buffs->desc_buff.dev_buffer.d_p_addr,
 		     priv3_op_buffs->desc_buff.v_mem, crypto_ctx);
 
-		store_priv_data(crypto_ctx->crypto_mem.pool,
-				priv3_op_buffs->desc_buff.v_mem,
+		store_priv_data(priv3_op_buffs->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
 
 		break;

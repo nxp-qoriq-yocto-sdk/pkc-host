@@ -66,9 +66,9 @@ void *alloc_buffer(void *, uint32_t, uint8_t);
 void free_buffer(void *, void *);
 void reset_pool(void *);
 
-unsigned long get_priv_data(void *, void *);
+void store_priv_data(void *, unsigned long);
+unsigned long get_priv_data(void *);
 uint8_t get_flag(void *, void *);
 void set_flag(void *id, void *, uint8_t);
-void store_priv_data(void *, void *, unsigned long);
 
 #endif

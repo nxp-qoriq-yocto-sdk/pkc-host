@@ -375,8 +375,7 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		     (uint64_t)rng_init_buffs->desc_buff.dev_buffer.d_p_addr,
 		     rng_init_buffs->desc_buff.v_mem, crypto_ctx);
 
-		store_priv_data(crypto_ctx->crypto_mem.pool,
-				rng_init_buffs->desc_buff.v_mem,
+		store_priv_data(rng_init_buffs->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
 		break;
 	case RNG_SELF_TEST:
@@ -415,8 +414,7 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		     (uint64_t) rng_self_test_buffs->desc_buff.dev_buffer.d_p_addr,
 		     rng_self_test_buffs->desc_buff.v_mem, crypto_ctx);
 
-		store_priv_data(crypto_ctx->crypto_mem.pool,
-				rng_self_test_buffs->desc_buff.v_mem,
+		store_priv_data(rng_self_test_buffs->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
 		break;
 	default:

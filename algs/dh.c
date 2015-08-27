@@ -583,7 +583,7 @@ int dh_op(struct pkc_request *req)
 		(uint64_t)dh_keygen_buffs->desc_buff.dev_buffer.d_p_addr,
 		dh_keygen_buffs->desc_buff.v_mem, crypto_ctx);
 
-            store_priv_data(crypto_ctx->crypto_mem.pool, dh_keygen_buffs->desc_buff.v_mem, (unsigned long)crypto_ctx);
+            store_priv_data(dh_keygen_buffs->desc_buff.v_mem, (unsigned long)crypto_ctx);
 
             break;
 
@@ -628,8 +628,7 @@ int dh_op(struct pkc_request *req)
 			    (uint64_t)dh_key_buffs->desc_buff.dev_buffer.d_p_addr,
 			    dh_key_buffs->desc_buff.v_mem, crypto_ctx);
 
-		store_priv_data(crypto_ctx->crypto_mem.pool,
-				dh_key_buffs->desc_buff.v_mem,
+		store_priv_data(dh_key_buffs->desc_buff.v_mem,
 				(unsigned long)crypto_ctx);
 		break;
 

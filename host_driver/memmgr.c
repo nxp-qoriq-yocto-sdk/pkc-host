@@ -279,15 +279,12 @@ Fields      :
 Returns		:	None.
 ******************************************************************************/
 
-void store_priv_data(void *id, void *buffer, unsigned long priv)
+void store_priv_data(void *buffer, unsigned long priv)
 {
-	bh *header = NULL;
-	bp *pool = id;
+	bh *header;
 
-	spin_lock_bh(&(pool->mem_lock));
-	header = (buffer - sizeof(bh));
+	header = buffer - sizeof(bh);
 	header->priv = priv;
-	spin_unlock_bh(&(pool->mem_lock));
 }
 
 /******************************************************************************
@@ -299,18 +296,12 @@ Fields      :
 Return		:	The private data.
 ******************************************************************************/
 
-unsigned long get_priv_data(void *id, void *buffer)
+unsigned long get_priv_data(void *buffer)
 {
-	bh *header = NULL;
-	bp *pool = id;
-	unsigned long priv = 0;
+	bh *header;
 
-	spin_lock_bh(&(pool->mem_lock));
-	header = (buffer - sizeof(bh));
-	priv = header->priv;
-	spin_unlock_bh(&(pool->mem_lock));
-
-	return priv;
+	header = buffer - sizeof(bh);
+	return header->priv;
 }
 
 /******************************************************************************

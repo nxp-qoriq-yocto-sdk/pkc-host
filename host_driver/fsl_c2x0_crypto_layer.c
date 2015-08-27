@@ -1393,10 +1393,10 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 #ifndef HIGH_PERF
 	if (get_flag(dev->ip_pool.drv_map_pool.pool, h_desc))
 #endif
-		ctx0 = (crypto_op_ctx_t *) get_priv_data(dev->ip_pool.drv_map_pool.pool, h_desc);
+		ctx0 = (crypto_op_ctx_t *) get_priv_data(h_desc);
 #ifndef HIGH_PERF
 	else
-		ctx1 = (crypto_job_ctx_t *) get_priv_data(dev->ip_pool.drv_map_pool.pool, h_desc);
+		ctx1 = (crypto_job_ctx_t *) get_priv_data(h_desc);
 
 	print_debug("Total Resp count: %d\n", ++total_resp);
 	print_debug("[DEQ] Dev sec desc : %llx\n", desc);
