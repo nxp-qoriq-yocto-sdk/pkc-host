@@ -1477,10 +1477,10 @@ free_bar_map:
 clear_master:
 	pci_clear_master(dev);
 free_dev:
+	DEV_PRINT_ERROR("Probe of device [%d] failed\n", fsl_pci_dev->dev_no);
 	kfree(fsl_pci_dev);
 	dev_no--; /* don't count this device as usable */
 
-	DEV_PRINT_ERROR("Probe of device [%d] failed\n", fsl_pci_dev->dev_no);
 	return err;
 }
 
