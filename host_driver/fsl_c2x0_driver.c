@@ -1688,8 +1688,6 @@ static void cleanup_percore_list(void)
 		cursor = per_cpu_ptr(per_core, i);
 		if (NULL == cursor)
 			return;
-
-		list_del(&(cursor->ring_list_head));
 	}
 
 	flush_workqueue(workq);

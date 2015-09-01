@@ -1324,6 +1324,21 @@ rp_fail:
 	return NULL;
 }
 
+void clear_ring_lists(void)
+{
+	uint32_t i;
+	per_core_struct_t *instance;
+	struct list_head *pos, *next;
+
+	for_each_online_cpu(i) {
+		instance = per_cpu_ptr(per_core, i);
+
+		list_for_each_safe(pos, next, &(instance->ring_list_head)) {
+			list_del(pos);
+		}
+	}
+}
+
 void cleanup_crypto_device(fsl_crypto_dev_t *dev)
 {
 	if (NULL == dev)
@@ -1349,6 +1364,8 @@ void cleanup_crypto_device(fsl_crypto_dev_t *dev)
 				    dev->mem[MEM_TYPE_DRIVER].host_v_addr,
 				    dev->mem[MEM_TYPE_DRIVER].host_dma_addr);
 	}
+
+	clear_ring_lists();
 	kfree(dev->ring_pairs);
 	kfree(dev);
 }
