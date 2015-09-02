@@ -63,9 +63,6 @@ static void create_default_config(struct crypto_dev_config *, uint8_t, uint8_t);
  *********************************************************/
 static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 				unsigned long arg);
-static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
-				    const struct pci_device_id *id);
-static void fsl_crypto_pci_remove(struct pci_dev *dev);
 
 /*********************************************************
  *        GLOBAL VARIABLES                               *
@@ -144,13 +141,6 @@ static struct miscdevice fsl_cryptodev = {
 	.name = "fsl_cryptodev",
 	.fops = &fsl_cryptodev_fops,
 	.mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH,
-};
-
-static struct pci_driver fsl_cypto_driver = {
-	.name = "FSL-Crypto-Driver",
-	.id_table = fsl_crypto_pci_dev_ids,
-	.probe = fsl_crypto_pci_probe,
-	.remove = fsl_crypto_pci_remove
 };
 
 /* Head of the PCI devices linked list */
@@ -1269,214 +1259,6 @@ free_irqs:
 }
 
 /*******************************************************************************
- * Function     : fsl_crypto_pci_probe
- *
- * Arguments    : dev : PCI device structure instance.
- * 		  id  : Id of the PCI device.
- *
- * Return Value : int32_t
- *
- * Description  : Handles the PCI probe of the device.
- *
- ******************************************************************************/
-static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
-				    const struct pci_device_id *id)
-{
-	int32_t err = -ENODEV;
-	int local_cfg; /* clean-up is required on error path */
-	enum int_type int_type;
-	int8_t pci_info[60];
-	int8_t sys_pci_info[100];
-	void *ccsr;
-
-	fsl_pci_dev_t *fsl_pci_dev = NULL;
-	struct crypto_dev_config *config = NULL;
-
-	print_debug("========== PROBE FUNCTION ==========\n");
-
-	if (!dev) {
-		print_error("PCI device with VendorId:%0x DeviceId:%0x is not found\n",
-				id->vendor, id->device);
-		return err;
-	}
-
-	/* Allocate memory for the new PCI device data structure */
-	fsl_pci_dev = kzalloc(sizeof(fsl_pci_dev_t), GFP_KERNEL);
-	if (!fsl_pci_dev) {
-		print_error("Memory allocation failed\n");
-		return -ENOMEM;
-	}
-
-	/* Set this device instance as private data inside the pci dev struct */
-	dev_set_drvdata(&(dev->dev), fsl_pci_dev);
-
-	fsl_pci_dev->dev = dev;
-	fsl_pci_dev->id = id;
-
-	/* Starts from 1 */
-	fsl_pci_dev->dev_no = ++dev_no;
-
-	snprintf(fsl_pci_dev->dev_name, FSL_PCI_DEV_NAME_MAX_LEN, "%s%d",
-		 FSL_PCI_DEV_NAME, dev_no);
-
-	DEV_PRINT_DEBUG("Found C29x Device");
-
-	/* Set the DMA mask for the device. This helps the PCI subsystem
-	 * for proper dma mappings */
-#ifdef SEC_ENGINE_DMA_36BIT
-	pci_set_dma_mask(dev, DMA_36BIT_MASK);
-#else
-	pci_set_dma_mask(dev, DMA_32BIT_MASK);
-#endif
-
-	/* Check whether the device has PCIE cap */
-	if (!pci_find_capability(dev, PCI_CAP_ID_EXP)) {
-		DEV_PRINT_ERROR("Does not have PCIe cap\n");
-		goto free_dev;
-	}
-	DEV_PRINT_DEBUG("Is PCIe Capable\n");
-
-	/* Check whether the device has MSIx cap */
-	if (pci_find_capability(dev, PCI_CAP_ID_MSIX)) {
-		DEV_PRINT_DEBUG("MSIx Support\n");
-		int_type = INT_MSIX;
-	} else if (pci_find_capability(dev, PCI_CAP_ID_MSI)) {
-		DEV_PRINT_DEBUG("MSI Support\n");
-		int_type = INT_MSI;
-	} else {
-		DEV_PRINT_DEBUG("INTR Support\n");
-		int_type = INT_BASIC;
-	}
-
-	/* save the type to avoid querying again at driver removal */
-	fsl_pci_dev->intr_info.type = int_type;
-
-	/* Wake up the device if it is in suspended state */
-	err = pci_enable_device(dev);
-	if (err) {
-		DEV_PRINT_ERROR("Enable Device failed\n");
-		goto free_dev;
-	}
-
-	/* Set bus master */
-	pci_set_master(dev);
-
-	err = fsl_get_bar_map(fsl_pci_dev);
-	if (err)
-		goto clear_master;
-
-	/* clear reset for CORE 0: clear PIC_PIR register */
-	ccsr = fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr;
-	iowrite32be(0, ccsr + 0x41090);  /* PIC_PIR */
-
-	/* Call to the following function gets the number of
-	 * application rings to be created for the device.
-	 * The actual number of ring pairs created can be different
-	 * and can only be known during the handshake.
-	 * This number is the max limit. Number of iv's
-	 * to ask = number of application rings.*/
-
-	config = get_dev_config(fsl_pci_dev);
-	if (config) {
-		local_cfg = 0;
-	} else {
-		local_cfg = 1;
-		/* FIX: IF NO CONFIGURATION IS SPECIFIED THEN
-		 * TAKE THE DEFAULT CONFIGURATION */
-		print_debug("NO CONFIG FOUND, CREATING DEFAULT CONFIGURATION\n");
-		config = kzalloc(sizeof(struct crypto_dev_config), GFP_KERNEL);
-		if (!config) {
-			print_error("Mem allocation failed\n");
-			err = -ENODEV;
-			goto free_bar_map;
-		}
-
-		list_add(&(config->list), &(crypto_dev_config_list));
-		print_debug("===== DEFAULT CONFIGURATION DETAILS ======\n");
-		config->dev_no = fsl_pci_dev->dev_no;
-		strcpy(config->fw_file_path, FIRMWARE_FILE_DEFAULT_PATH);
-		print_debug("Firmware Path : %s\n", config->fw_file_path);
-		create_default_config(config, 0, 2);
-	}
-
-	err = get_irq_vectors(fsl_pci_dev, config->num_of_rings);
-	if (err)
-		goto free_config;
-
-	err = fsl_request_irqs(fsl_pci_dev);
-	if (err)
-		goto free_irq_vec;
-
-	/* Now create all the SYSFS entries required for this device */
-	err = init_sysfs(fsl_pci_dev);
-	if (err) {
-		print_error("Sysfs init failed !!\n");
-		goto free_req_irq;
-	}
-
-	/* Add the PCI device to the crypto layer --
-	 * This layer adds the device as crypto device.
-	 * To have kernel dependencies separate, all the
-	 * crypto device related handling will be done
-	 * by the crypto layer.
-	 */
-	fsl_pci_dev->crypto_dev = fsl_crypto_layer_add_device(fsl_pci_dev, config);
-	if (!fsl_pci_dev->crypto_dev) {
-		DEV_PRINT_ERROR("Adding device as crypto dev failed\n");
-		err = -ENODEV;
-		goto deinit_sysfs;
-	}
-
-	/* Updating the information to sysfs entries */
-	print_debug("Updating sys info\n");
-	snprintf(pci_info, 60, "VendorId:%0x DeviceId:%0x BusNo:%0x\nCAP:PCIe\n",
-		 id->device, id->vendor, fsl_pci_dev->dev->bus->number);
-	strcpy(sys_pci_info, pci_info);
-	if (int_type == INT_MSIX)
-		strcat(sys_pci_info, "MSIx CAP\n");
-	else if (int_type == INT_MSI)
-		strcat(sys_pci_info, "MSI CAP\n");
-	else
-		strcat(sys_pci_info, "INTR CAP\n");
-
-	set_sysfs_value(fsl_pci_dev, PCI_INFO_SYS_FILE,
-			(uint8_t *) sys_pci_info, strlen(sys_pci_info));
-	set_sysfs_value(fsl_pci_dev, FIRMWARE_PATH_SYSFILE,
-			config->fw_file_path, strlen(config->fw_file_path));
-	set_sysfs_value(fsl_pci_dev, FIRMWARE_VERSION_SYSFILE,
-			(uint8_t *) "FSL-FW-1.1.0\n", strlen("FSL-FW-1.1.0\n"));
-
-	g_fsl_pci_dev = fsl_pci_dev;
-
-	/* Add this node to the pci device's linked list */
-	list_add(&(fsl_pci_dev->list), &pci_dev_list);
-
-	return 0;
-
-deinit_sysfs:
-	sysfs_cleanup(fsl_pci_dev);
-free_req_irq:
-	fsl_release_irqs(fsl_pci_dev);
-free_irq_vec:
-	free_irq_vectors(fsl_pci_dev);
-free_config:
-	if (local_cfg) {
-		list_del(&(config->list));
-		kfree(config);
-	}
-free_bar_map:
-	fsl_free_bar_map(fsl_pci_dev->bars, MEM_TYPE_DRIVER);
-clear_master:
-	pci_clear_master(dev);
-free_dev:
-	DEV_PRINT_ERROR("Probe of device [%d] failed\n", fsl_pci_dev->dev_no);
-	kfree(fsl_pci_dev);
-	dev_no--; /* don't count this device as usable */
-
-	return err;
-}
-
-/*******************************************************************************
  * Function     : create_per_core_info
  *
  * Arguments    : None
@@ -1939,6 +1721,249 @@ static void cleanup_config_list(void)
 }
 
 /*******************************************************************************
+ * Function     : fsl_crypto_pci_remove
+ *
+ * Arguments    : dev : PCI device structure instance.
+ * Return Value : void
+ * Description  : Handles the PCI removal of the device.
+ *
+ ******************************************************************************/
+static void fsl_crypto_pci_remove(struct pci_dev *dev)
+{
+
+	fsl_pci_dev_t *fsl_pci_dev = dev_get_drvdata(&(dev->dev));
+
+	if (unlikely(NULL == fsl_pci_dev)) {
+		DEV_PRINT_ERROR("No such device\n");
+		return;
+	}
+
+	/* To do crypto layer related cleanup corresponding to this device */
+	cleanup_crypto_device(fsl_pci_dev->crypto_dev);
+	/* Cleanup the PCI related resources */
+	cleanup_pci_device(fsl_pci_dev);
+	/* Delete the device from list */
+	list_del(&(fsl_pci_dev->list));
+
+	kfree(fsl_pci_dev);
+}
+
+/*******************************************************************************
+ * Function     : fsl_crypto_pci_probe
+ *
+ * Arguments    : dev : PCI device structure instance.
+ * 		  id  : Id of the PCI device.
+ *
+ * Return Value : int32_t
+ *
+ * Description  : Handles the PCI probe of the device.
+ *
+ ******************************************************************************/
+static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
+				    const struct pci_device_id *id)
+{
+	int32_t err = -ENODEV;
+	int local_cfg; /* clean-up is required on error path */
+	enum int_type int_type;
+	int8_t pci_info[60];
+	int8_t sys_pci_info[100];
+	void *ccsr;
+
+	fsl_pci_dev_t *fsl_pci_dev = NULL;
+	struct crypto_dev_config *config = NULL;
+
+	print_debug("========== PROBE FUNCTION ==========\n");
+
+	if (!dev) {
+		print_error("PCI device with VendorId:%0x DeviceId:%0x is not found\n",
+				id->vendor, id->device);
+		return err;
+	}
+
+	/* Allocate memory for the new PCI device data structure */
+	fsl_pci_dev = kzalloc(sizeof(fsl_pci_dev_t), GFP_KERNEL);
+	if (!fsl_pci_dev) {
+		print_error("Memory allocation failed\n");
+		return -ENOMEM;
+	}
+
+	/* Set this device instance as private data inside the pci dev struct */
+	dev_set_drvdata(&(dev->dev), fsl_pci_dev);
+
+	fsl_pci_dev->dev = dev;
+	fsl_pci_dev->id = id;
+
+	/* Starts from 1 */
+	fsl_pci_dev->dev_no = ++dev_no;
+
+	snprintf(fsl_pci_dev->dev_name, FSL_PCI_DEV_NAME_MAX_LEN, "%s%d",
+		 FSL_PCI_DEV_NAME, dev_no);
+
+	DEV_PRINT_DEBUG("Found C29x Device");
+
+	/* Set the DMA mask for the device. This helps the PCI subsystem
+	 * for proper dma mappings */
+#ifdef SEC_ENGINE_DMA_36BIT
+	pci_set_dma_mask(dev, DMA_36BIT_MASK);
+#else
+	pci_set_dma_mask(dev, DMA_32BIT_MASK);
+#endif
+
+	/* Check whether the device has PCIE cap */
+	if (!pci_find_capability(dev, PCI_CAP_ID_EXP)) {
+		DEV_PRINT_ERROR("Does not have PCIe cap\n");
+		goto free_dev;
+	}
+	DEV_PRINT_DEBUG("Is PCIe Capable\n");
+
+	/* Check whether the device has MSIx cap */
+	if (pci_find_capability(dev, PCI_CAP_ID_MSIX)) {
+		DEV_PRINT_DEBUG("MSIx Support\n");
+		int_type = INT_MSIX;
+	} else if (pci_find_capability(dev, PCI_CAP_ID_MSI)) {
+		DEV_PRINT_DEBUG("MSI Support\n");
+		int_type = INT_MSI;
+	} else {
+		DEV_PRINT_DEBUG("INTR Support\n");
+		int_type = INT_BASIC;
+	}
+
+	/* save the type to avoid querying again at driver removal */
+	fsl_pci_dev->intr_info.type = int_type;
+
+	/* Wake up the device if it is in suspended state */
+	err = pci_enable_device(dev);
+	if (err) {
+		DEV_PRINT_ERROR("Enable Device failed\n");
+		goto free_dev;
+	}
+
+	/* Set bus master */
+	pci_set_master(dev);
+
+	err = fsl_get_bar_map(fsl_pci_dev);
+	if (err)
+		goto clear_master;
+
+	/* clear reset for CORE 0: clear PIC_PIR register */
+	ccsr = fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr;
+	iowrite32be(0, ccsr + 0x41090);  /* PIC_PIR */
+
+	/* Call to the following function gets the number of
+	 * application rings to be created for the device.
+	 * The actual number of ring pairs created can be different
+	 * and can only be known during the handshake.
+	 * This number is the max limit. Number of iv's
+	 * to ask = number of application rings.*/
+
+	config = get_dev_config(fsl_pci_dev);
+	if (config) {
+		local_cfg = 0;
+	} else {
+		local_cfg = 1;
+		/* FIX: IF NO CONFIGURATION IS SPECIFIED THEN
+		 * TAKE THE DEFAULT CONFIGURATION */
+		print_debug("NO CONFIG FOUND, CREATING DEFAULT CONFIGURATION\n");
+		config = kzalloc(sizeof(struct crypto_dev_config), GFP_KERNEL);
+		if (!config) {
+			print_error("Mem allocation failed\n");
+			err = -ENODEV;
+			goto free_bar_map;
+		}
+
+		list_add(&(config->list), &(crypto_dev_config_list));
+		print_debug("===== DEFAULT CONFIGURATION DETAILS ======\n");
+		config->dev_no = fsl_pci_dev->dev_no;
+		strcpy(config->fw_file_path, FIRMWARE_FILE_DEFAULT_PATH);
+		print_debug("Firmware Path : %s\n", config->fw_file_path);
+		create_default_config(config, 0, 2);
+	}
+
+	err = get_irq_vectors(fsl_pci_dev, config->num_of_rings);
+	if (err)
+		goto free_config;
+
+	err = fsl_request_irqs(fsl_pci_dev);
+	if (err)
+		goto free_irq_vec;
+
+	/* Now create all the SYSFS entries required for this device */
+	err = init_sysfs(fsl_pci_dev);
+	if (err) {
+		print_error("Sysfs init failed !!\n");
+		goto free_req_irq;
+	}
+
+	/* Add the PCI device to the crypto layer --
+	 * This layer adds the device as crypto device.
+	 * To have kernel dependencies separate, all the
+	 * crypto device related handling will be done
+	 * by the crypto layer.
+	 */
+	fsl_pci_dev->crypto_dev = fsl_crypto_layer_add_device(fsl_pci_dev, config);
+	if (!fsl_pci_dev->crypto_dev) {
+		DEV_PRINT_ERROR("Adding device as crypto dev failed\n");
+		err = -ENODEV;
+		goto deinit_sysfs;
+	}
+
+	/* Updating the information to sysfs entries */
+	print_debug("Updating sys info\n");
+	snprintf(pci_info, 60, "VendorId:%0x DeviceId:%0x BusNo:%0x\nCAP:PCIe\n",
+		 id->device, id->vendor, fsl_pci_dev->dev->bus->number);
+	strcpy(sys_pci_info, pci_info);
+	if (int_type == INT_MSIX)
+		strcat(sys_pci_info, "MSIx CAP\n");
+	else if (int_type == INT_MSI)
+		strcat(sys_pci_info, "MSI CAP\n");
+	else
+		strcat(sys_pci_info, "INTR CAP\n");
+
+	set_sysfs_value(fsl_pci_dev, PCI_INFO_SYS_FILE,
+			(uint8_t *) sys_pci_info, strlen(sys_pci_info));
+	set_sysfs_value(fsl_pci_dev, FIRMWARE_PATH_SYSFILE,
+			config->fw_file_path, strlen(config->fw_file_path));
+	set_sysfs_value(fsl_pci_dev, FIRMWARE_VERSION_SYSFILE,
+			(uint8_t *) "FSL-FW-1.1.0\n", strlen("FSL-FW-1.1.0\n"));
+
+	g_fsl_pci_dev = fsl_pci_dev;
+
+	/* Add this node to the pci device's linked list */
+	list_add(&(fsl_pci_dev->list), &pci_dev_list);
+
+	return 0;
+
+deinit_sysfs:
+	sysfs_cleanup(fsl_pci_dev);
+free_req_irq:
+	fsl_release_irqs(fsl_pci_dev);
+free_irq_vec:
+	free_irq_vectors(fsl_pci_dev);
+free_config:
+	if (local_cfg) {
+		list_del(&(config->list));
+		kfree(config);
+	}
+free_bar_map:
+	fsl_free_bar_map(fsl_pci_dev->bars, MEM_TYPE_DRIVER);
+clear_master:
+	pci_clear_master(dev);
+free_dev:
+	DEV_PRINT_ERROR("Probe of device [%d] failed\n", fsl_pci_dev->dev_no);
+	kfree(fsl_pci_dev);
+	dev_no--; /* don't count this device as usable */
+
+	return err;
+}
+
+static struct pci_driver fsl_cypto_driver = {
+	.name = "FSL-Crypto-Driver",
+	.id_table = fsl_crypto_pci_dev_ids,
+	.probe = fsl_crypto_pci_probe,
+	.remove = fsl_crypto_pci_remove,
+};
+
+/*******************************************************************************
  * Function     : fsl_drv_init
  *
  * Arguments    : void
@@ -2067,34 +2092,6 @@ free_config:
 	cleanup_config_list();
 
 	return ret;
-}
-
-/*******************************************************************************
- * Function     : fsl_crypto_pci_remove
- *
- * Arguments    : dev : PCI device structure instance.
- * Return Value : void
- * Description  : Handles the PCI removal of the device.
- *
- ******************************************************************************/
-static void fsl_crypto_pci_remove(struct pci_dev *dev)
-{
-
-	fsl_pci_dev_t *fsl_pci_dev = dev_get_drvdata(&(dev->dev));
-
-	if (unlikely(NULL == fsl_pci_dev)) {
-		DEV_PRINT_ERROR("No such device\n");
-		return;
-	}
-
-	/* To do crypto layer related cleanup corresponding to this device */
-	cleanup_crypto_device(fsl_pci_dev->crypto_dev);
-	/* Cleanup the PCI related resources */
-	cleanup_pci_device(fsl_pci_dev);
-	/* Delete the device from list */
-	list_del(&(fsl_pci_dev->list));
-
-	kfree(fsl_pci_dev);
 }
 
 /*******************************************************************************
