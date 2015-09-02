@@ -61,16 +61,8 @@ static void create_default_config(struct crypto_dev_config *, uint8_t, uint8_t);
 /*********************************************************
  *         INTERNAL FUNCTION PROTOTYPES                  *
  *********************************************************/
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 19))
-static void response_ring_handler(struct work_struct *work);
-#else
-static void response_ring_handler(void *data);
-#endif
-
 static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 				unsigned long arg);
-static irqreturn_t fsl_crypto_isr(int irq, void *dev);
-
 static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 				    const struct pci_device_id *id);
 static void fsl_crypto_pci_remove(struct pci_dev *dev);
