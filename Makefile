@@ -32,69 +32,34 @@ ENHANCE_KERNEL_TEST=n
 #Specify building host-driver to support Virtualization
 VIRTIO_C2X0=n
 
-KERNEL_DIR ?=/lib/modules/$(shell uname -r)/build
-
-ifeq ($(HIGH_PERF_MODE),y)
-EXTRA_CFLAGS += -DHIGH_PERF
-endif
-
-EXTRA_CFLAGS += -g3
-
-ifeq ($(P4080_EP),y)
-EXTRA_CFLAGS += -DP4080_EP
-endif
-
-ifeq ($(C293_EP),y)
-EXTRA_CFLAGS += -DC293_EP
-endif
-
-ifeq ($(DEBUG_PRINT),y)
-EXTRA_CFLAGS += -DDEV_PRINT_DBG -DPRINT_DEBUG
-endif
-
-ifeq ($(ERROR_PRINT),y)
-EXTRA_CFLAGS += -DDEV_PRINT_ERR -DPRINT_ERROR
-endif
-
-ifeq ($(INFO_PRINT),y)
-EXTRA_CFLAGS += -DPRINT_INFO
-endif
-
-EXTRA_CFLAGS += -DDEV_PHYS_ADDR_64BIT -DDEV_VIRT_ADDR_32BIT
-
-ifeq ($(VIRTIO_C2X0),y)
-EXTRA_CFLAGS += -DVIRTIO_C2X0
-endif
-
-ifeq ($(CONFIG_FSL_C2X0_HASH_OFFLOAD),y)
-EXTRA_CFLAGS += -DHASH_OFFLOAD
-ifeq ($(CONFIG_FSL_C2X0_HMAC_OFFLOAD),y)
-EXTRA_CFLAGS += -DHMAC_OFFLOAD
-endif
-endif
-
-ifeq ($(CONFIG_FSL_C2X0_SYMMETRIC_OFFLOAD),y)
-EXTRA_CFLAGS += -DSYMMETRIC_OFFLOAD
-endif
-
-ifeq ($(RNG_OFFLOAD),y)
-EXTRA_CFLAGS += -DRNG_OFFLOAD
-endif
-
+# do not enable together SEC_DMA and HOST_DMA
 ifeq ($(USE_SEC_DMA), y)
 USE_HOST_DMA = n
-EXTRA_CFLAGS += -DSEC_DMA
 endif
 
-ifeq ($(USE_HOST_DMA), y)
-EXTRA_CFLAGS += -DUSE_HOST_DMA
-endif
+KERNEL_DIR ?=/lib/modules/$(shell uname -r)/build
+CONFIG_FSL_C2X0_CRYPTO_DRV ?= m
 
-ifeq ($(ENHANCE_KERNEL_TEST), y)
-EXTRA_CFLAGS += -DENHANCE_KERNEL_TEST
-endif
+ccflags-y := -I$(src)/host_driver -I$(src)/algs -I$(src)/crypto_dev -I$(src)/dcl -I$(src)/test -g
+ccflags-y += -g3 -DDEV_PHYS_ADDR_64BIT -DDEV_VIRT_ADDR_32BIT
 
-EXTRA_CFLAGS += -I$(src)/host_driver -I$(src)/algs -I$(src)/crypto_dev -I$(src)/dcl -I$(src)/test -g
+ccflags-$(P4080_EP) += -DP4080_EP
+ccflags-$(C293_EP) += -DC293_EP
+
+ccflags-$(DEBUG_PRINT) += -DDEV_PRINT_DBG -DPRINT_DEBUG
+ccflags-$(ERROR_PRINT) += -DDEV_PRINT_ERR -DPRINT_ERROR
+ccflags-$(INFO_PRINT) += -DPRINT_INFO
+
+ccflags-$(HIGH_PERF_MODE) += -DHIGH_PERF
+ccflags-$(VIRTIO_C2X0) += -DVIRTIO_C2X0
+ccflags-$(CONFIG_FSL_C2X0_HASH_OFFLOAD) += -DHASH_OFFLOAD
+ccflags-$(CONFIG_FSL_C2X0_HMAC_OFFLOAD) += -DHMAC_OFFLOAD
+ccflags-$(CONFIG_FSL_C2X0_SYMMETRIC_OFFLOAD) += -DSYMMETRIC_OFFLOAD
+ccflags-$(RNG_OFFLOAD) += -DRNG_OFFLOAD
+ccflags-$(USE_SEC_DMA) += -DSEC_DMA
+ccflags-$(USE_HOST_DMA) += -DUSE_HOST_DMA
+ccflags-$(ENHANCE_KERNEL_TEST) += -DENHANCE_KERNEL_TEST
+ccflags-$(CONFIG_FSL_C2X0_CRYPTO_DRV) = sdfs
 
 DRIVER_KOBJ = fsl_pkc_crypto_offload_drv
 RSA_TEST_KOBJ = "rsa_test"
@@ -102,8 +67,6 @@ DSA_TEST_KOBJ = "dsa_test"
 ECDSA_TEST_KOBJ = "ecdsa_test"
 DH_TEST_KOBJ = "dh_test"
 ECDH_TEST_KOBJ = "ecdh_test"
-
-CONFIG_FSL_C2X0_CRYPTO_DRV ?= m
 
 obj-$(CONFIG_FSL_C2X0_CRYPTO_DRV) = $(DRIVER_KOBJ).o
 
