@@ -46,14 +46,6 @@ endif
 
 EXTRA_CFLAGS += -g3
 
-ifeq ("$(ARCH)","powerpc")
-EXTRA_CFLAGS += -DP4080_BUILD
-endif
-
-ifeq ("$(ARCH)","x86")
-EXTRA_CFLAGS += -DX86_BUILD
-endif
-
 ifeq ($(P4080_EP),y)
 EXTRA_CFLAGS += -DP4080_EP
 endif

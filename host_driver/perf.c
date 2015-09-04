@@ -36,7 +36,8 @@
 #ifndef _PERF_C_
 #define _PERF_C_
 #include "common.h"
-#ifdef P4080_BUILD
+
+#ifdef CONFIG_PPC
 inline uint64_t get_cpu_ticks(void)
 {
 	uint32_t l = 0, h = 0;
@@ -54,4 +55,5 @@ inline uint64_t get_cpu_ticks(void)
 	return ((uint64_t) h << 32) | l;
 }
 #endif
+
 #endif

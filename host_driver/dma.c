@@ -47,7 +47,7 @@ host_dma_t hostdma;
 
 per_cpu_dma_chnls_t per_cpu_dma[NR_CPUS];
 
-#ifdef X86_BUILD
+#ifdef CONFIG_X86
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 13))
 #define USE_IOAT_DMA_FIND_CHANNEL
 #endif

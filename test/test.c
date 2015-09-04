@@ -555,10 +555,10 @@ inline void check_test_done_test(void)
 	uint64_t cycle_diff = e_time - s_time;
 	uint32_t cpu_freq;
 
-#ifndef P4080_BUILD
-	cpu_freq = cpu_khz / 1000;
-#else
+#ifdef CONFIG_PPC
 	cpu_freq = ppc_proc_freq / 1000000;
+#else
+	cpu_freq = cpu_khz / 1000;
 #endif
 	print_debug("Cpu Freq: %d\n", cpu_freq);
 	snprintf(cpu_freq_s, sizeof(cpu_freq_s), "%d", cpu_freq);
