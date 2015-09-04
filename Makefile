@@ -33,12 +33,6 @@ ENHANCE_KERNEL_TEST=n
 VIRTIO_C2X0=n
 
 KERNEL_DIR ?=/lib/modules/$(shell uname -r)/build
-ifneq (${ARCH},)
-KERNEL_MAKE_OPTS += ARCH=${ARCH}
-endif
-ifneq (${CROSS_COMPILE},)
-KERNEL_MAKE_OPTS += CROSS_COMPILE=${CROSS_COMPILE}
-endif
 
 ifeq ($(HIGH_PERF_MODE),y)
 EXTRA_CFLAGS += -DHIGH_PERF
