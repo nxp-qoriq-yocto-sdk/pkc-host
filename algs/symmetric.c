@@ -322,7 +322,7 @@ static void create_src_sg_table(symm_ablk_buffers_t *ablk_ctx,
 	}
 
 	sec4_sg_ptr--;
-	iowrite32be(ablk_ctx->src_sg[i - 1].len | SEC4_SG_LEN_FIN,
+	iowrite32be(ablk_ctx->src_sg[sg_cnt - 1].len | SEC4_SG_LEN_FIN,
 			&sec4_sg_ptr->len);
 }
 
