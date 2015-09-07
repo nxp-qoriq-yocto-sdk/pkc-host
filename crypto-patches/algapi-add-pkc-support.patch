@@ -1,5 +1,5 @@
 --- algapi.h	2014-04-18 14:09:29.624398182 +0800
-+++ ../algapi.h	2014-04-18 14:35:02.348396614 +0800
++++ algapi.h	2014-04-18 14:35:02.348396614 +0800
 @@ -125,6 +125,7 @@
  extern const struct crypto_type crypto_ablkcipher_type;
  extern const struct crypto_type crypto_aead_type;
