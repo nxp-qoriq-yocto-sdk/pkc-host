@@ -306,17 +306,6 @@ struct resp_ring_entry {
 typedef struct resp_ring_entry resp_ring_entry_t;
 
 /*******************************************************************************
-Description :	Identifies the priority queue which has linked list of rings
-		with same priority level
-Fields      :	ring_list_head	: Head of the equal priority ring pairs.
-*******************************************************************************/
-typedef struct fsl_priority_queue {
-	/*fsl_h_rsrc_ring_pair_t *ring_pair; */
-	uint32_t ring_count;
-	struct list_head ring_list_head;
-} fsl_priority_queue_t;
-
-/*******************************************************************************
 Description :	Contains the information about each ring pair
 Fields      :	depth: Depth of the ring
 		props: Valid only for application ring as :
@@ -334,7 +323,6 @@ typedef struct fsl_h_rsrc_ring_pair {
 	struct fsl_crypto_dev *dev;
 	struct ring_info info;
 
-	struct list_head ring_pair_list_node;
 	struct list_head isr_ctx_list_node;
 	struct list_head bh_ctx_list_node;
 
@@ -511,10 +499,6 @@ typedef struct fsl_crypto_dev {
 	/* Firmware resp ring information */
 #define NUM_OF_RESP_RINGS 1
 	fw_resp_ring_t fw_resp_rings[NUM_OF_RESP_RINGS];
-
-#define MAX_PRIORITY_LEVELS		16
-	uint8_t max_pri_level;
-	fsl_priority_queue_t pri_queue[MAX_PRIORITY_LEVELS];
 
 	uint8_t num_of_rings;
 	fsl_h_rsrc_ring_pair_t *ring_pairs;

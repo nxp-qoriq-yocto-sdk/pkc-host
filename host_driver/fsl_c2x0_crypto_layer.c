@@ -226,25 +226,13 @@ static void rearrange_config(struct crypto_dev_config *config)
 
 void rearrange_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
-	uint8_t i, pri;
+	uint8_t i;
 
 	pow2_rp_len(config);
 	rearrange_config(config);
 
-	for (i = 0; i < MAX_PRIORITY_LEVELS; i++)
-		INIT_LIST_HEAD(&(dev->pri_queue[i].ring_list_head));
-
-	/* Put the rings in proper priority queue. The ring priority will be
-	 * used as the priority queue id */
 	for (i = 0; i < config->num_of_rings; i++) {
-		pri = f_get_p(config->ring[i].flags);
-		dev->max_pri_level = max(pri, dev->max_pri_level);
 		dev->ring_pairs[i].info = config->ring[i];
-
-		/* count priority queues from zero */
-		pri = pri - 1;
-		list_add_tail(&(dev->ring_pairs[i].ring_pair_list_node),
-			      &(dev->pri_queue[pri].ring_list_head));
 	}
 	dev->num_of_rings = config->num_of_rings;
 }
@@ -488,7 +476,6 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 		rp->s_c_counters = &(dev->h_mem->s_c_r_cntrs_mem[i]);
 		rp->shadow_counters = NULL;
 
-		INIT_LIST_HEAD(&(rp->ring_pair_list_node));
 		INIT_LIST_HEAD(&(rp->isr_ctx_list_node));
 		INIT_LIST_HEAD(&(rp->bh_ctx_list_node));
 
@@ -510,7 +497,7 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 
 	iowrite8(HS_INIT_CONFIG, (void *) &dev->c_hs_mem->command);
 	iowrite8(dev->num_of_rings, (void *) &config->num_of_rps);
-	iowrite8(dev->max_pri_level,(void *) &config->max_pri);
+	iowrite8(1, (void *) &config->max_pri);
 	iowrite8(NUM_OF_RESP_RINGS, (void *) &config->num_of_fwresp_rings);
 	/* Several aspects need to be clarified with the firmware:
 	 * TODO: tot_req_mem_size is below 64K by way of computing it in
@@ -527,7 +514,6 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 
 	print_debug("HS_INIT_CONFIG Details\n");
 	print_debug("Num of rps: %d\n", dev->num_of_rings);
-	print_debug("Max pri: %d\n", dev->max_pri_level);
 	print_debug("Req mem size: %d\n", dev->tot_req_mem_size);
 	print_debug("Drv resp ring: %pa\n", &drv_resp_rings);
 	print_debug("Fw resp ring: %pa\n", &fw_resp_ring);
@@ -1347,7 +1333,6 @@ void cleanup_crypto_device(fsl_crypto_dev_t *dev)
 	int i = 0;
 	for (i = 0; i < dev->num_of_rings; i++) {
 		/* Delete all the links */
-		list_del(&(dev->ring_pairs[i].ring_pair_list_node));
 		list_del(&(dev->ring_pairs[i].isr_ctx_list_node));
 		list_del(&(dev->ring_pairs[i].bh_ctx_list_node));
 	}

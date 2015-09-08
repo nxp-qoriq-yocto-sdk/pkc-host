@@ -265,7 +265,6 @@ dconfig:
 		atomic_set(&(crypto_dev->ring_pairs[i].sec_eng_sel), 0);
 
 		/* Delete all the links */
-		list_del(&(crypto_dev->ring_pairs[i].ring_pair_list_node));
 		list_del(&(crypto_dev->ring_pairs[i].isr_ctx_list_node));
 		list_del(&(crypto_dev->ring_pairs[i].bh_ctx_list_node));
 	}
