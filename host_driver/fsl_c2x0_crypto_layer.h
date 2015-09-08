@@ -303,8 +303,6 @@ struct resp_ring_entry {
 	volatile int32_t result;
 } __packed;
 
-typedef struct resp_ring_entry resp_ring_entry_t;
-
 /*******************************************************************************
 Description :	Contains the information about each ring pair
 Fields      :	depth: Depth of the ring
@@ -329,7 +327,7 @@ typedef struct fsl_h_rsrc_ring_pair {
 	uint32_t *intr_ctrl_flag;
 	void *ip_pool;
 	req_ring_entry_t *req_r;
-	resp_ring_entry_t *resp_r;
+	struct resp_ring_entry *resp_r;
 	ring_idxs_mem_t *indexes;
 	ring_counters_mem_t *counters;
 	ring_counters_mem_t *s_c_counters;
@@ -412,8 +410,8 @@ Fields      :	hs_mem	: Handshake memory - 64bytes
 typedef struct crypto_h_mem_layout {
 	fsl_h_mem_handshake_t hs_mem;
 
-	resp_ring_entry_t *fw_resp_ring;
-	resp_ring_entry_t *drv_resp_ring;
+	struct resp_ring_entry *fw_resp_ring;
+	struct resp_ring_entry *drv_resp_ring;
 	ring_idxs_mem_t *l_idxs_mem;
 	ring_idxs_mem_t *s_c_idxs_mem;
 	ring_counters_mem_t *l_r_cntrs_mem;

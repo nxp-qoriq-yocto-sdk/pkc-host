@@ -260,7 +260,7 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	rp_len = calc_rp_mem_len(config);
 	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
 	dev->ob_mem.drv_resp_rings = ob_mem_len;
-	ob_mem_len += rp_len * sizeof(resp_ring_entry_t);
+	ob_mem_len += rp_len * sizeof(struct resp_ring_entry);
 
 	/* For each rp we need a local memory for indexes */
 	/* FIXME: we should probably allocate
@@ -293,7 +293,7 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	ob_mem_len += DEFAULT_HOST_OP_BUFFER_POOL_SIZE;
 
 	/* See if we can fit fw_resp_ring before the end of a page */
-	fw_rr_size = DEFAULT_FIRMWARE_RESP_RING_DEPTH * sizeof(resp_ring_entry_t);
+	fw_rr_size = DEFAULT_FIRMWARE_RESP_RING_DEPTH * sizeof(struct resp_ring_entry);
 	if ((PAGE_SIZE - (ob_mem_len % PAGE_SIZE)) < fw_rr_size)
 		ob_mem_len = ALIGN_LEN_TO_PAGE_SIZE(ob_mem_len);
 
@@ -431,7 +431,7 @@ void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 		/* FIXME: clean-up leftovers. It probably makes sense to actually
 		 * use offset variable when NUM_OF_RESP_RINGS != 1
 		offset += (DEFAULT_FIRMWARE_RESP_RING_DEPTH *
-			   sizeof(resp_ring_entry_t));*/
+			   sizeof(struct resp_ring_entry));*/
 	}
 }
 
@@ -449,7 +449,7 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 	fsl_h_rsrc_ring_pair_t *rp;
 	uint32_t i;
 	/* all response ring entries start here. Each ring has rp->depth entries */
-	resp_ring_entry_t *resp_r = dev->h_mem->drv_resp_ring;
+	struct resp_ring_entry *resp_r = dev->h_mem->drv_resp_ring;
 
 	for (i = 0; i < dev->num_of_rings; i++) {
 		rp = &(dev->ring_pairs[i]);
@@ -1440,8 +1440,7 @@ void demux_fw_responses(fsl_crypto_dev_t *dev)
 #define MAX_ERROR_STRING 400
 	char outstr[MAX_ERROR_STRING];
 
-	resp_ring_entry_t *resp_ring =
-	    ((resp_ring_entry_t *) (dev->fw_resp_ring.v_addr));
+	struct resp_ring_entry *resp_ring = dev->fw_resp_ring.v_addr;
 
 	jobs_added = be32_to_cpu(dev->fw_resp_ring.s_c_cntrs->jobs_added);
 	count = jobs_added - dev->fw_resp_ring.cntrs->jobs_processed;
