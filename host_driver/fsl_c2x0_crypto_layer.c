@@ -138,9 +138,6 @@ uint32_t round_to_power2(uint32_t n)
 	return i;
 }
 
-/* FIXME: the ring depths are rounded twice, once here, inside rearrange_config
- * and the second time inside calc_rp_mem_len. Check which one is the first
- * and remove the other one */
 static void pow2_rp_len(struct crypto_dev_config *config)
 {
 	uint32_t i;
@@ -240,13 +237,9 @@ void rearrange_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 static uint32_t calc_rp_mem_len(struct crypto_dev_config *config)
 {
 	uint32_t i, len = 0;
-	struct ring_info *ring;
 
-	/* Correct the ring depths to be power of 2 */
 	for (i = 0; i < config->num_of_rings; i++) {
-		ring = &(config->ring[i]);
-		ring->depth = round_to_power2(ring->depth);
-		len += ring->depth;
+		len += config->ring[i].depth;
 	}
 	return len;
 }
