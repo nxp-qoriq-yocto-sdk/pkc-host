@@ -181,52 +181,11 @@ void f_set_o(uint8_t *flags, uint8_t order)
 	*flags |= order << APP_RING_PROP_ORDER_SHIFT;
 }
 
-static void rearrange_config(struct crypto_dev_config *config)
-{
-	struct ring_info temp;
-	uint8_t pri_j, pri_j_1, i, j;
-
-	/* sort rings by their ring priority */
-	for (i = 1; i < config->num_of_rings - 1; i++) {
-		for (j = 1; j < config->num_of_rings - i; j++) {
-			pri_j = f_get_p(config->ring[j].flags);
-			pri_j_1 = f_get_p(config->ring[j + 1].flags);
-			if (pri_j > pri_j_1) {
-				temp = config->ring[j];
-				config->ring[j] = config->ring[j + 1];
-				config->ring[j + 1] = temp;
-			}
-		}
-	}
-
-	/* Ring 0 is set priority 1 */
-	j = 1;
-	config->ring[0].ring_id = 0;
-	f_set_p(&config->ring[0].flags, j);
-
-	/* Rings 1..num_of_rings rebase their priority starting from 1
-	 * with increments of 1. This number (minus one) will be used as the
-	 * number of the priority queue */
-	for (i = 1; i < config->num_of_rings - 1; i++) {
-		config->ring[i].ring_id = i;
-		pri_j = f_get_p(config->ring[i].flags);
-		pri_j_1 = f_get_p(config->ring[i + 1].flags);
-
-		f_set_p(&config->ring[i].flags, j);
-
-		if (pri_j_1 != pri_j)
-			j++;
-	}
-	config->ring[i].ring_id = i;
-	f_set_p(&config->ring[i].flags, j);
-}
-
 void rearrange_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	uint8_t i;
 
 	pow2_rp_len(config);
-	rearrange_config(config);
 
 	for (i = 0; i < config->num_of_rings; i++) {
 		dev->ring_pairs[i].info = config->ring[i];
