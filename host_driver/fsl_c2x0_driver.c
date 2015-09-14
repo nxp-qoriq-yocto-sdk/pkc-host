@@ -1730,11 +1730,21 @@ static void fsl_crypto_pci_remove(struct pci_dev *dev)
 {
 
 	fsl_pci_dev_t *fsl_pci_dev = dev_get_drvdata(&(dev->dev));
+	void *ccsr;
 
 	if (unlikely(NULL == fsl_pci_dev)) {
 		DEV_PRINT_ERROR("No such device\n");
 		return;
 	}
+
+	ccsr = fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr;
+	print_debug("**** RESETTING THE DEVICE ****\n");
+	print_debug("BAR0 V ADDR: %p\n", ccsr);
+	/* iowrite32be(2, ccsr + 0x0e00b0); */
+	/* reset CORE 0: set P0 bit on PIC_PIR register */
+	iowrite32be(1, ccsr + 0x41090);  /* PIC_PIR */
+	iowrite32be(0, ccsr + BRR_OFFSET);
+	smp_wmb();
 
 	/* To do crypto layer related cleanup corresponding to this device */
 	cleanup_crypto_device(fsl_pci_dev->crypto_dev);
@@ -2104,9 +2114,6 @@ free_config:
  ******************************************************************************/
 static void __exit fsl_crypto_drv_exit(void)
 {
-	fsl_pci_dev_t *dev_cursor = NULL;
-	void *ccsr;
-
 #ifdef RNG_OFFLOAD 
 	rng_exit();
 #endif
@@ -2114,16 +2121,6 @@ static void __exit fsl_crypto_drv_exit(void)
 	fsl_algapi_exit();
 #endif
 
-	list_for_each_entry(dev_cursor, &pci_dev_list, list) {
-		ccsr = dev_cursor->bars[MEM_TYPE_CONFIG].v_addr;
-		print_debug("**** RESETTING THE DEVICE ****\n");
-		print_debug("BAR0 V ADDR: %p\n", ccsr);
-		/* iowrite32be(2, ccsr + 0x0e00b0); */
-		/* reset CORE 0: set P0 bit on PIC_PIR register */
-		iowrite32be(1, ccsr + 0x41090);  /* PIC_PIR */
-		iowrite32be(0, ccsr + BRR_OFFSET);
-		smp_wmb();
-	}
 #ifdef USE_HOST_DMA
 	cleanup_rc_dma();
 #endif
