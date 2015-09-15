@@ -1739,7 +1739,7 @@ static void fsl_crypto_pci_remove(struct pci_dev *dev)
 
 	ccsr = fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr;
 	print_debug("Assert core0_hreset signal\n");
-	iowrite32be(1, ccsr + 0x41090);  /* PIC_PIR */
+	iowrite32be(1, ccsr + PIC_PIR);
 	udelay(250);
 
 	/* To do crypto layer related cleanup corresponding to this device */
@@ -1771,7 +1771,6 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	enum int_type int_type;
 	int8_t pci_info[60];
 	int8_t sys_pci_info[100];
-	void *ccsr;
 
 	fsl_pci_dev_t *fsl_pci_dev = NULL;
 	struct crypto_dev_config *config = NULL;
@@ -1848,10 +1847,6 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	err = fsl_get_bar_map(fsl_pci_dev);
 	if (err)
 		goto clear_master;
-
-	/* clear reset for CORE 0: clear PIC_PIR register */
-	ccsr = fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr;
-	iowrite32be(0, ccsr + 0x41090);  /* PIC_PIR */
 
 	/* Call to the following function gets the number of
 	 * application rings to be created for the device.

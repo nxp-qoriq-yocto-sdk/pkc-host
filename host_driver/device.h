@@ -122,6 +122,7 @@
 #define BRR_RELEASE_CORE0                   0x01000000
 #endif
 #define BRR_VALUE                           (0x0 | BRR_RELEASE_CORE0)
+#define PIC_PIR	0x41090
 
 #define DEVICE_CONFIG_AND_PIN_CNTRL_BLK_OFFSET      0X0E0000
 #define DEVICE_RESET_CONTROL_REGISTER_OFFSET        \

@@ -881,13 +881,26 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 static int32_t boot_device(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 {
 	uint8_t byte;
-	uint32_t i;
+	uint32_t i, cpu0_en;
 	void *ccsr = dev->mem[MEM_TYPE_CONFIG].host_v_addr;
 	void *fw_addr = dev->mem[MEM_TYPE_SRAM].host_v_addr +
 				FIRMWARE_IMAGE_START_OFFSET;
 	loff_t pos = 0;
 	struct file *file = NULL;
 	mm_segment_t old_fs;
+
+	cpu0_en = ioread32be(ccsr + BRR_OFFSET) & BRR_RELEASE_CORE0;
+	print_debug("CPU_EN %x\n", cpu0_en);
+
+	/* Stop the CPU from running while we upload the firmware
+	 * Reset CPU core only if it is enabled. If the device is coming from
+	 * a hard reset or cold boot the core will be in hold-off mode. We
+	 * should not reset it in that state.
+	 */
+	if (cpu0_en) {
+		iowrite32be(1, ccsr + PIC_PIR);
+		udelay(250);
+	}
 
 	old_fs = get_fs();
 	set_fs(KERNEL_DS);
@@ -914,8 +927,15 @@ static int32_t boot_device(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 	filp_close(file, 0);
 	set_fs(old_fs);
 
-	/* Release the core 0 */
-	iowrite32be(BRR_VALUE, ccsr + BRR_OFFSET);
+	/* Enable CPU core and let it run the firmware: either release the
+	 * hold-off mode or clear the CPU core reset register
+	 */
+	if (cpu0_en)
+		iowrite32be(0, ccsr + PIC_PIR);
+	else
+		iowrite32be(BRR_VALUE, ccsr + BRR_OFFSET);
+
+	udelay(250);
 
 	return 0;
 }
