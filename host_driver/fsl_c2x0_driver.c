@@ -1738,13 +1738,9 @@ static void fsl_crypto_pci_remove(struct pci_dev *dev)
 	}
 
 	ccsr = fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr;
-	print_debug("**** RESETTING THE DEVICE ****\n");
-	print_debug("BAR0 V ADDR: %p\n", ccsr);
-	/* iowrite32be(2, ccsr + 0x0e00b0); */
-	/* reset CORE 0: set P0 bit on PIC_PIR register */
+	print_debug("Assert core0_hreset signal\n");
 	iowrite32be(1, ccsr + 0x41090);  /* PIC_PIR */
-	iowrite32be(0, ccsr + BRR_OFFSET);
-	smp_wmb();
+	udelay(250);
 
 	/* To do crypto layer related cleanup corresponding to this device */
 	cleanup_crypto_device(fsl_pci_dev->crypto_dev);
