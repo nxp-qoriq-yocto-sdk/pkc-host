@@ -82,6 +82,11 @@ uint64_t virtio_enq_cnt;
 uint64_t virtio_deq_cnt;
 #endif
 
+/* FIXME: assigning dev_no to new devices in probe is broken. Since this
+ * variable is used to match devices with their configuration, we can end up
+ * with incorrect configurations being assigned to multiple devices if we keep
+ * removing and adding devices in arbitrary order (e.g using /sys/bus/pci)
+ */
 static uint32_t dev_no;
 int32_t dma_channel_count = 1;
 int32_t dma_channel_cpu_mask[NR_CPUS];
@@ -1750,6 +1755,7 @@ static void fsl_crypto_pci_remove(struct pci_dev *dev)
 	list_del(&(fsl_pci_dev->list));
 
 	kfree(fsl_pci_dev);
+	dev_no--;
 }
 
 /*******************************************************************************
