@@ -844,6 +844,9 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	iowrite32be(0x800000000 >> 12,	ccsr + 0xac28); /* PEX_PEXOWBAR1 */
 	iowrite32be(0x80044021,		ccsr + 0xac30); /* PEX_PEXOWAR1 */
 
+	/* Read-back LAW register to guarantee visibility to all device blocks */
+	val = ioread32be(ccsr + 0xc30); /* LAW_LAWAR1 */
+
 	print_debug("======= setup_ep =======\n");
 	print_debug("Ob mem dma_addr: %pa\n", &(dev->mem[MEM_TYPE_DRIVER].host_p_addr));
 	print_debug("Ob mem len: %d\n", dev->mem[MEM_TYPE_DRIVER].len);
