@@ -541,6 +541,8 @@ void f_set_o(uint8_t *, uint8_t);
 uint8_t f_get_a(uint8_t);
 uint8_t f_get_p(uint8_t);
 uint8_t f_get_o(uint8_t);
+void stop_device(fsl_crypto_dev_t *dev);
+void start_device(fsl_crypto_dev_t *dev);
 
 int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set);
 

@@ -878,29 +878,15 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	print_debug("=======================\n");
 }
 
-static int32_t boot_device(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
+static int32_t load_firmware(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 {
 	uint8_t byte;
-	uint32_t i, cpu0_en;
-	void *ccsr = dev->mem[MEM_TYPE_CONFIG].host_v_addr;
+	uint32_t i;
 	void *fw_addr = dev->mem[MEM_TYPE_SRAM].host_v_addr +
 				FIRMWARE_IMAGE_START_OFFSET;
 	loff_t pos = 0;
 	struct file *file = NULL;
 	mm_segment_t old_fs;
-
-	cpu0_en = ioread32be(ccsr + BRR_OFFSET) & BRR_RELEASE_CORE0;
-	print_debug("CPU_EN %x\n", cpu0_en);
-
-	/* Stop the CPU from running while we upload the firmware
-	 * Reset CPU core only if it is enabled. If the device is coming from
-	 * a hard reset or cold boot the core will be in hold-off mode. We
-	 * should not reset it in that state.
-	 */
-	if (cpu0_en) {
-		iowrite32be(1, ccsr + PIC_PIR);
-		udelay(250);
-	}
 
 	old_fs = get_fs();
 	set_fs(KERNEL_DS);
@@ -926,16 +912,6 @@ static int32_t boot_device(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 
 	filp_close(file, 0);
 	set_fs(old_fs);
-
-	/* Enable CPU core and let it run the firmware: either release the
-	 * hold-off mode or clear the CPU core reset register
-	 */
-	if (cpu0_en)
-		iowrite32be(0, ccsr + PIC_PIR);
-	else
-		iowrite32be(BRR_VALUE, ccsr + BRR_OFFSET);
-
-	udelay(250);
 
 	return 0;
 }
@@ -1139,6 +1115,39 @@ int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set)
 	return 0;
 }
 
+void stop_device(fsl_crypto_dev_t *dev)
+{
+	void *ccsr = dev->mem[MEM_TYPE_CONFIG].host_v_addr;
+	uint32_t cpu0_en;
+
+	/* Reset CPU core only if it is enabled. If the device is coming from
+	 * a hard reset or cold boot the core will be in hold-off mode. We
+	 * should not reset it in that state
+	 */
+	cpu0_en = ioread32be(ccsr + BRR_OFFSET) & BRR_RELEASE_CORE0;
+	if (cpu0_en) {
+		iowrite32be(1, ccsr + PIC_PIR);
+		udelay(250);
+	}
+}
+
+void start_device(fsl_crypto_dev_t *dev)
+{
+	void *ccsr = dev->mem[MEM_TYPE_CONFIG].host_v_addr;
+	uint32_t cpu0_en;
+
+	/* Enable CPU core and let it run the firmware: either release the
+	 * hold-off mode or clear the CPU core reset register
+	 */
+	cpu0_en = ioread32be(ccsr + BRR_OFFSET) & BRR_RELEASE_CORE0;
+	if (cpu0_en)
+		iowrite32be(0, ccsr + PIC_PIR);
+	else
+		iowrite32be(BRR_VALUE, ccsr + BRR_OFFSET);
+
+	udelay(250);
+}
+
 fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 				  struct crypto_dev_config *config)
 {
@@ -1220,6 +1229,8 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	distribute_rings(c_dev, config);
 	print_debug("Distribute ring complete...\n");
 
+	stop_device(c_dev);
+
 #ifdef C293_EP
 	/* Set the EP registers correctly before booting... */
 	setup_ep(c_dev);
@@ -1229,11 +1240,14 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	init_handshake(c_dev);
 	print_debug("Init Handshake complete...\n");
 
-	err = boot_device(c_dev, config->fw_file_path);
+	err = load_firmware(c_dev, config->fw_file_path);
 	if (err) {
 		print_error("Firmware download failed\n");
 		goto error;
 	}
+
+	start_device(c_dev);
+
 #ifdef CHECK_EP_BOOTUP
 	check_ep_bootup(c_dev);
 #endif

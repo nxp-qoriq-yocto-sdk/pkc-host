@@ -1735,18 +1735,13 @@ static void fsl_crypto_pci_remove(struct pci_dev *dev)
 {
 
 	fsl_pci_dev_t *fsl_pci_dev = dev_get_drvdata(&(dev->dev));
-	void *ccsr;
 
 	if (unlikely(NULL == fsl_pci_dev)) {
 		DEV_PRINT_ERROR("No such device\n");
 		return;
 	}
 
-	ccsr = fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr;
-	print_debug("Assert core0_hreset signal\n");
-	iowrite32be(1, ccsr + PIC_PIR);
-	udelay(250);
-
+	stop_device(fsl_pci_dev->crypto_dev);
 	/* To do crypto layer related cleanup corresponding to this device */
 	cleanup_crypto_device(fsl_pci_dev->crypto_dev);
 	/* Cleanup the PCI related resources */
