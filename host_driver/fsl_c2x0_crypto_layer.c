@@ -800,7 +800,7 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	 * which will hold the firmware and operand data */
 	unsigned int l2_sram_start = 0xfff00000;
 	unsigned int p_sram_start  = 0xfff80000;
-	unsigned int val;
+	volatile unsigned int val;
 
 	/* CCSR base address is obtained from BAR0 device register */
 	void *ccsr = dev->mem[MEM_TYPE_CONFIG].host_v_addr;
