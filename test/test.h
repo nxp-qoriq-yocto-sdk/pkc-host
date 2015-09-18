@@ -124,7 +124,6 @@ extern void cleanup_ecpbn_test(void);
 extern void cleanup_ecdh_keygen_test(void);
 
 extern void common_dec_count(void);
-extern void timer_test_done_check(void);
 extern void init_all_test(void);
 extern void clean_all_test(void);
 

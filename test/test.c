@@ -212,7 +212,13 @@ static void test_timer_expired(unsigned long data)
 	atomic_set(&hold_off, 1);
 	print_debug("Tot jobs completed.. :%d\n", total_succ_jobs);
 	total_enq_req = 0;
-	timer_test_done_check();
+	if ((atomic_read(&total_deq_cnt) >= total_enq_req)) {
+		if (!atomic_read(&flag)) {
+			e_time = get_cpu_ticks();
+			atomic_set(&test_done, 1);
+			atomic_set(&flag, 1);
+		}
+	}
 }
 
 int valid_test(void)
@@ -600,17 +606,6 @@ void common_dec_count(void)
 	print_debug("Checking Tot: %d, Dec count: %d\n ", total_enq_req,
 		    atomic_read(&total_deq_cnt));
 	if ((atomic_inc_return(&total_deq_cnt) >= total_enq_req)) {
-		if (!atomic_read(&flag)) {
-			e_time = get_cpu_ticks();
-			atomic_set(&test_done, 1);
-			atomic_set(&flag, 1);
-		}
-	}
-}
-
-void timer_test_done_check(void)
-{
-	if ((atomic_read(&total_deq_cnt) >= total_enq_req)) {
 		if (!atomic_read(&flag)) {
 			e_time = get_cpu_ticks();
 			atomic_set(&test_done, 1);
