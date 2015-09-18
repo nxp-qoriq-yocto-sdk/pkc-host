@@ -76,11 +76,86 @@ static uint32_t total_enq_req;
 static int32_t timer_set;
 static int time_duration;
 
-inline void check_test_done_test(void);
 static int (*testfunc) (void);
 static int threads_per_cpu;
 static int cpu_mask;
 static struct timer_list test_timer;
+
+
+inline void check_test_done_test(void)
+{
+	print_debug("Inside check_test_done_test\n");
+	if (!newtest)
+		return;
+
+	print_debug("No of job successfully finished: %d\n", total_succ_jobs);
+	newtest = 0;
+	atomic_set(&hold_off, 1);
+	print_debug("Set hold_off\n");
+	testfunc = NULL;
+	no_thread = 0;
+	while (atomic_read(&total_deq_cnt) != atomic_read(&total_enq_cnt)) {
+		print_debug("Enq is not equal to deq\n");
+		print_debug("Total enq: %d, Total deq: %d\n",
+				atomic_read(&total_enq_cnt),
+				atomic_read(&total_deq_cnt));
+		set_current_state(TASK_INTERRUPTIBLE);
+		schedule_timeout(msecs_to_jiffies(1000));
+	}
+	exit = 1;
+	timer_set = 0;
+	print_debug("Total enq: %d, Total deq: %d\n",
+		atomic_read(&total_enq_cnt), atomic_read(&total_deq_cnt));
+	print_debug("s_time: %llx, e_time: %llx\n", s_time, e_time);
+	print_debug("*** Test Complete ***\n");
+
+	{
+	uint8_t sysfs_val[30];
+	uint8_t cycle_diff_s[16];
+	uint8_t cpu_freq_s[10];
+	uint64_t cycle_diff = e_time - s_time;
+	uint32_t cpu_freq;
+
+#ifdef CONFIG_PPC
+	cpu_freq = ppc_proc_freq / 1000000;
+#else
+	cpu_freq = cpu_khz / 1000;
+#endif
+	print_debug("Cpu Freq: %d\n", cpu_freq);
+	snprintf(cpu_freq_s, sizeof(cpu_freq_s), "%d", cpu_freq);
+	print_debug("Cpu Freq_s: %s\n", cpu_freq_s);
+	print_debug("Diff: %llx\n", cycle_diff);
+	print_debug("total_jobs_s: %0x\n", total_succ_jobs);
+	/* Write to the sysfs file entry */
+
+	snprintf(cycle_diff_s, sizeof(cycle_diff_s), "%0llx", cycle_diff);
+	print_debug("cycle_diff_s: %s\n", cycle_diff_s);
+
+	strcpy(sysfs_val, cycle_diff_s);
+	print_debug("sysfs val: %s\n", sysfs_val);
+
+	strcat(sysfs_val, " ");
+	print_debug("sysfs val space: %s\n", sysfs_val);
+
+	strcat(sysfs_val, cpu_freq_s);
+	print_debug("sysfs_val: %s\n", sysfs_val);
+
+	set_sysfs_value(g_fsl_pci_dev, TEST_PERF_SYS_FILE, (uint8_t *) sysfs_val,
+			strlen(sysfs_val));
+
+	set_sysfs_value(g_fsl_pci_dev, TEST_REPEAT_SYS_FILE,
+			(uint8_t *) &total_succ_jobs, sizeof(uint32_t));
+
+	set_sysfs_value(g_fsl_pci_dev, TEST_RES_SYS_FILE, "SUCCESS",
+			strlen("SUCCESS"));
+
+	set_sysfs_value(g_fsl_pci_dev, TEST_NAME_SYS_FILE, "INVALID",
+			strlen("INVALID"));
+	}
+	atomic_set(&total_deq_cnt, 0);
+	atomic_set(&total_enq_cnt, 0);
+	atomic_set(&flag, 0);
+}
 
 void start_test(void)
 {
@@ -518,81 +593,6 @@ void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 		mod_timer(&test_timer,
 			  jiffies + msecs_to_jiffies(time_duration * 1000));
 	}
-}
-
-inline void check_test_done_test(void)
-{
-	print_debug("Inside check_test_done_test\n");
-	if (!newtest)
-		return;
-
-	print_debug("No of job successfully finished: %d\n", total_succ_jobs);
-	newtest = 0;
-	atomic_set(&hold_off, 1);
-	print_debug("Set hold_off\n");
-	testfunc = NULL;
-	no_thread = 0;
-	while (atomic_read(&total_deq_cnt) != atomic_read(&total_enq_cnt)) {
-		print_debug("Enq is not equal to deq\n");
-		print_debug("Total enq: %d, Total deq: %d\n",
-				atomic_read(&total_enq_cnt),
-				atomic_read(&total_deq_cnt));
-		set_current_state(TASK_INTERRUPTIBLE);
-		schedule_timeout(msecs_to_jiffies(1000));
-	}
-	exit = 1;
-	timer_set = 0;
-	print_debug("Total enq: %d, Total deq: %d\n",
-		atomic_read(&total_enq_cnt), atomic_read(&total_deq_cnt));
-	print_debug("s_time: %llx, e_time: %llx\n", s_time, e_time);
-	print_debug("*** Test Complete ***\n");
-
-	{
-	uint8_t sysfs_val[30];
-	uint8_t cycle_diff_s[16];
-	uint8_t cpu_freq_s[10];
-	uint64_t cycle_diff = e_time - s_time;
-	uint32_t cpu_freq;
-
-#ifdef CONFIG_PPC
-	cpu_freq = ppc_proc_freq / 1000000;
-#else
-	cpu_freq = cpu_khz / 1000;
-#endif
-	print_debug("Cpu Freq: %d\n", cpu_freq);
-	snprintf(cpu_freq_s, sizeof(cpu_freq_s), "%d", cpu_freq);
-	print_debug("Cpu Freq_s: %s\n", cpu_freq_s);
-	print_debug("Diff: %llx\n", cycle_diff);
-	print_debug("total_jobs_s: %0x\n", total_succ_jobs);
-	/* Write to the sysfs file entry */
-
-	snprintf(cycle_diff_s, sizeof(cycle_diff_s), "%0llx", cycle_diff);
-	print_debug("cycle_diff_s: %s\n", cycle_diff_s);
-
-	strcpy(sysfs_val, cycle_diff_s);
-	print_debug("sysfs val: %s\n", sysfs_val);
-
-	strcat(sysfs_val, " ");
-	print_debug("sysfs val space: %s\n", sysfs_val);
-
-	strcat(sysfs_val, cpu_freq_s);
-	print_debug("sysfs_val: %s\n", sysfs_val);
-
-	set_sysfs_value(g_fsl_pci_dev, TEST_PERF_SYS_FILE, (uint8_t *) sysfs_val,
-			strlen(sysfs_val));
-
-	set_sysfs_value(g_fsl_pci_dev, TEST_REPEAT_SYS_FILE,
-			(uint8_t *) &total_succ_jobs, sizeof(uint32_t));
-
-	set_sysfs_value(g_fsl_pci_dev, TEST_RES_SYS_FILE, "SUCCESS",
-			strlen("SUCCESS"));
-
-	set_sysfs_value(g_fsl_pci_dev, TEST_NAME_SYS_FILE, "INVALID",
-			strlen("INVALID"));
-	}
-	atomic_set(&total_deq_cnt, 0);
-	atomic_set(&total_enq_cnt, 0);
-	atomic_set(&flag, 0);
 }
 
 void common_dec_count(void)
