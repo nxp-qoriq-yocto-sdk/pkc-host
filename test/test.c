@@ -583,9 +583,9 @@ void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 	atomic_set(&hold_off, 0);
 	exit = 0;
 
+	print_debug("Wake up all test threads\n");
 	for (loop = 0; loop < no_thread; loop++)
 		wake_up_process(task[loop]);
-	print_debug("After all the thread woke up\n");
 
 	if (timer_set) {
 		print_debug("Registering the kernel timer\n");
