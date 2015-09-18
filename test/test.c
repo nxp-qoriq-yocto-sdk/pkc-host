@@ -519,7 +519,7 @@ int parsing_test_command(char *test_name)
 	return 0;
 }
 
-void c2x0_test_func(char *fname, char *test_name, int len, char flag)
+void c2x0_test_func(char *fname, char *test_name, int len)
 {
 	int loop;
 

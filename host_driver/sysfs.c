@@ -111,13 +111,12 @@ ssize_t common_sysfs_store(struct kobject *kobj, struct attribute *attr,
 		sysfs_file->buf[size - 1] = '\0';
 		sysfs_file->buf_len = size;
 		sysfs_file->cb(sysfs_file->name, sysfs_file->buf,
-			       sysfs_file->buf_len, sysfs_file->str_flag);
+			       sysfs_file->buf_len);
 
 	} else {
 		sysfs_file->num = simple_strtol(buf, NULL, 10);
 		sysfs_file->cb(sysfs_file->name,
-			       (uint8_t *) (&(sysfs_file->num)), size,
-			       sysfs_file->str_flag);
+			       (uint8_t *) (&(sysfs_file->num)), size);
 	}
 
 	return size;
@@ -149,7 +148,7 @@ struct k_sysfs_file *create_sysfs_file(int8_t *name, struct sysfs_dir *parent,
 }
 
 struct k_sysfs_file *create_sysfs_file_cb(int8_t *name, struct sysfs_dir *parent,
-		uint8_t str_flag, void (*cb) (char *, char *, int, char))
+		uint8_t str_flag, void (*cb) (char *, char *, int))
 {
 	struct k_sysfs_file *file = create_sysfs_file(name, parent, str_flag);
 	if (file)

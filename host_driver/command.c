@@ -119,7 +119,6 @@ void process_cmd_response(fsl_crypto_dev_t *c_dev, dev_dma_addr_t desc,
 * Arguments    : fname
 *				 device - device no
 *				 size	- length device
-*				 flag
 *
 * Return Value : -
 *
@@ -130,7 +129,7 @@ void process_cmd_response(fsl_crypto_dev_t *c_dev, dev_dma_addr_t desc,
 * FIXME: This function fails for a whole lot of reasons. Is it OK for it to
 * 	return void?
 *******************************************************************************/
-void set_device(char *fname, char *device, int32_t size, char flag)
+void set_device(char *fname, char *device, int32_t size)
 {
 	int32_t cpu = 0;
 	per_dev_struct_t *dev_stat = NULL;

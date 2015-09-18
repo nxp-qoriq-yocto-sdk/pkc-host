@@ -103,7 +103,7 @@ typedef enum sys_files_id {
 typedef struct sysfs_file {
 	char *name;
 	struct k_sysfs_file *file;
-	void (*cb) (char *, char *, int, char);
+	void (*cb) (char *, char *, int);
 } sysfs_file_t;
 
 typedef struct dev_sysfs_entries {
@@ -144,7 +144,7 @@ struct k_sysfs_file {
 	uint8_t buf[MAX_SYSFS_BUFFER];
 	uint32_t num;
 	size_t buf_len;
-	void (*cb) (char *, char *, int, char);
+	void (*cb) (char *, char *, int);
 };
 
 /* TODO :
@@ -160,8 +160,8 @@ typedef struct fsl_pci_dev fsl_pci_dev_t_1;
 extern struct sysfs_dir *fsl_sysfs_entries;
 
 /* CALLBACK FUN FOR FW TRIGGER */
-extern void set_device(char *, char *, int, char);
-extern void c2x0_test_func(char *fname, char *test_name, int len, char flag);
+extern void set_device(char *, char *, int);
+extern void c2x0_test_func(char *fname, char *test_name, int len);
 
 void set_sysfs_value(fsl_pci_dev_t_1 *fsl_pci_dev, sys_files_id_t id,
 		     uint8_t *value, size_t len);
