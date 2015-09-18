@@ -33,7 +33,6 @@
 #define PERF_TEST
 #define SIMPLE_TEST_ENABLE
 
-/* #include "rsa_test.h" */
 extern fsl_pci_dev_t *g_fsl_pci_dev;
 extern int test_rsa_pub_op_1k(void);
 extern int test_rsa_pub_op_2k(void);
@@ -124,10 +123,9 @@ extern void cleanup_ecp_test(void);
 extern void cleanup_ecpbn_test(void);
 extern void cleanup_ecdh_keygen_test(void);
 
-/* extern inline void check_test_done(void); */
 extern void common_dec_count(void);
 extern void timer_test_done_check(void);
 extern void init_all_test(void);
 extern void clean_all_test(void);
-/* extern void check_test_done(void); */
+
 extern atomic_t total_deq_cnt;

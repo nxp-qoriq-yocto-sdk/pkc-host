@@ -44,34 +44,35 @@
 #include "memmgr.h"
 #include "sysfs.h"
 #include "perf.c"
-
 #include "test.h"
 
 #define MAX_TEST_THREAD_SUPPORT 200
-typedef void (*cb) (struct pkc_request *req, int32_t sec_result);
-
 #define TEST_NAME_LENGTH 100
+
 static char g_test_name[TEST_NAME_LENGTH];
 static struct task_struct *task[MAX_TEST_THREAD_SUPPORT];
 static int32_t no_thread;
 static int32_t no_cpu;
 static int32_t g_is_test_in_progress;
-atomic_t init_test;
 
 static uint64_t s_time;
 static uint64_t e_time;
-atomic_t hold_off;
+
 static uint32_t exit;
 static uint32_t newtest;
+
 atomic_t total_enq_cnt;
 atomic_t total_deq_cnt;
+atomic_t total_err_cnt;
+
+atomic_t hold_off;
+atomic_t test_done;
 atomic_t test_started;
+atomic_t flag;
+
 static uint32_t total_succ_jobs;
 static uint32_t total_enq_req;
-/*static int32_t test_done;*/
-atomic_t test_done;
-atomic_t total_err_cnt;
-atomic_t enq_success;
+
 static int32_t timer_set;
 static int time_duration;
 
@@ -79,6 +80,7 @@ inline void check_test_done_test(void);
 static int (*testfunc) (void);
 static int threads_per_cpu;
 static int cpu_mask;
+static struct timer_list test_timer;
 
 void start_test(void)
 {
@@ -129,7 +131,6 @@ void start_test(void)
 	}
 }
 
-static struct timer_list test_timer;
 static void test_timer_expired(unsigned long data)
 {
 	total_succ_jobs = atomic_read(&total_deq_cnt);
@@ -518,8 +519,6 @@ void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 			  jiffies + msecs_to_jiffies(time_duration * 1000));
 	}
 }
-
-atomic_t flag;
 
 inline void check_test_done_test(void)
 {
