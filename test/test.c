@@ -82,9 +82,9 @@ static int cpu_mask;
 static struct timer_list test_timer;
 
 
-inline void check_test_done_test(void)
+inline void check_test_done(void)
 {
-	print_debug("Inside check_test_done_test\n");
+	print_debug("Inside %s\n", __func__);
 	if (!newtest)
 		return;
 
@@ -198,7 +198,7 @@ void start_test(void)
 				print_debug("Total_job_count inside thread\n");
 				total_succ_jobs = atomic_read(&total_deq_cnt);
 			}
-			check_test_done_test();
+			check_test_done();
 			atomic_set(&test_done, 0);
 		}
 		set_current_state(TASK_INTERRUPTIBLE);
@@ -532,7 +532,7 @@ void c2x0_test_func(char *fname, char *test_name, int len, char flag)
 		print_debug("Test stopped by user\n\n");
 		strcpy(g_test_name, "INVALID");
 		g_is_test_in_progress = 0;
-		check_test_done_test();
+		check_test_done();
 		return;
 	}
 
