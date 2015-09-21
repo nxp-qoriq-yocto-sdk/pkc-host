@@ -30,19 +30,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <linux/completion.h>
-#include <linux/cpufreq.h>
-#include <linux/sched.h>
-#include<linux/kthread.h>
-#include <linux/cpumask.h>
 #include "common.h"
-#include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
 #include "algs.h"
-#include "pkc_desc.h"
-#include "desc.h"
-#include "memmgr.h"
-#include "sysfs.h"
 #include "test.h"
 
 #define MAX_TEST_THREAD_SUPPORT 200
