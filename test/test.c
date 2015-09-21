@@ -162,6 +162,7 @@ inline void check_test_done(void)
 	atomic_set(&total_deq_cnt, 0);
 	atomic_set(&total_enq_cnt, 0);
 	atomic_set(&flag, 0);
+	atomic_set(&test_done, 0);
 }
 
 void start_test(void)
@@ -206,7 +207,6 @@ void start_test(void)
 				total_succ_jobs = atomic_read(&total_deq_cnt);
 			}
 			check_test_done();
-			atomic_set(&test_done, 0);
 		}
 		set_current_state(TASK_INTERRUPTIBLE);
 		schedule_timeout(msecs_to_jiffies(1000));
