@@ -168,9 +168,10 @@ inline void check_test_done(void)
 void start_test(void)
 {
 	newtest = 1;
-	print_debug("This Thread is invoked by CPU: %d\n", get_cpu());
+	print_debug("This Thread is invoked by CPU: %d\n", smp_processor_id());
 	if (!atomic_read(&test_started)) {
-		print_debug("S_timr is captured by this thread\n");
+		print_debug("start stopwatch: s_time is set by thread %d\n",
+				smp_processor_id());
 		s_time = get_cpu_ticks();
 		atomic_set(&test_started, 1);
 	}
