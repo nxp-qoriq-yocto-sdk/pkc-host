@@ -43,7 +43,6 @@
 #include "desc.h"
 #include "memmgr.h"
 #include "sysfs.h"
-#include "perf.c"
 #include "test.h"
 
 #define MAX_TEST_THREAD_SUPPORT 200
@@ -81,6 +80,24 @@ static int threads_per_cpu;
 static int cpu_mask;
 static struct timer_list test_timer;
 
+#ifdef CONFIG_PPC
+inline uint64_t get_cpu_ticks(void)
+{
+	uint32_t l = 0, h = 0;
+
+	asm volatile ("mfspr %0, 526" : "=r" (l));
+	asm volatile ("mfspr %0, 527" : "=r" (h));
+
+	return ((uint64_t) h << 32) | l;
+}
+#else
+inline uint64_t get_cpu_ticks(void)
+{
+	uint32_t h = 0, l = 0;
+	__asm__ __volatile__("rdtsc" : "=a"(l), "=d"(h));
+	return ((uint64_t) h << 32) | l;
+}
+#endif
 
 inline void check_test_done(void)
 {
