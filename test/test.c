@@ -56,7 +56,7 @@ atomic_t total_err_cnt;
 
 atomic_t hold_off;
 atomic_t test_done;
-atomic_t test_started;
+atomic_t timer_started;
 atomic_t flag;
 
 static uint32_t total_succ_jobs;
@@ -169,11 +169,11 @@ void start_test(void)
 {
 	newtest = 1;
 	print_debug("This Thread is invoked by CPU: %d\n", smp_processor_id());
-	if (!atomic_read(&test_started)) {
+	if (!atomic_read(&timer_started)) {
 		print_debug("start stopwatch: s_time is set by thread %d\n",
 				smp_processor_id());
 		s_time = get_cpu_ticks();
-		atomic_set(&test_started, 1);
+		atomic_set(&timer_started, 1);
 	}
 	while (!exit) {
 		while (!atomic_read(&hold_off)) {
@@ -593,7 +593,7 @@ void c2x0_test_func(char *fname, char *test_name, int len)
 		return;
 	}
 	print_debug("no of thread created: %d\n", no_thread);
-	atomic_set(&test_started, 0);
+	atomic_set(&timer_started, 0);
 	atomic_set(&hold_off, 0);
 	exit = 0;
 
