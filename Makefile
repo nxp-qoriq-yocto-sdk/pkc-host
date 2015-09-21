@@ -60,17 +60,9 @@ ccflags-$(RNG_OFFLOAD) += -DRNG_OFFLOAD
 ccflags-$(USE_SEC_DMA) += -DSEC_DMA
 ccflags-$(USE_HOST_DMA) += -DUSE_HOST_DMA
 ccflags-$(ENHANCE_KERNEL_TEST) += -DENHANCE_KERNEL_TEST
-ccflags-$(CONFIG_FSL_C2X0_CRYPTO_DRV) = sdfs
 
 DRIVER_KOBJ = fsl_pkc_crypto_offload_drv
-RSA_TEST_KOBJ = "rsa_test"
-DSA_TEST_KOBJ = "dsa_test"
-ECDSA_TEST_KOBJ = "ecdsa_test"
-DH_TEST_KOBJ = "dh_test"
-ECDH_TEST_KOBJ = "ecdh_test"
-
 obj-$(CONFIG_FSL_C2X0_CRYPTO_DRV) = $(DRIVER_KOBJ).o
-
 $(DRIVER_KOBJ)-objs := host_driver/fsl_c2x0_driver.o
 $(DRIVER_KOBJ)-objs += host_driver/fsl_c2x0_crypto_layer.o
 $(DRIVER_KOBJ)-objs += host_driver/memmgr.o
