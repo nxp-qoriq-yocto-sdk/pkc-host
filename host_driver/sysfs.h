@@ -36,9 +36,6 @@
 #ifndef FSL_PKC_SYSFS_H
 #define FSL_PKC_SYSFS_H
 
-#include "common.h"
-/*#include "fsl_c2x0_driver.h"*/
-
 /** SYSFS RELATED INLINE FUNCTIONS **/
 #define NUM_OF_FW_SYSFS_FILES     FIRMWARE_SYS_FILE_END - FIRMWARE_SYS_FILES_START - 1
 #define NUM_OF_PCI_SYSFS_FILES    PCI_SYS_FILES_END - PCI_SYS_FILES_START - 1
