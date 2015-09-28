@@ -183,13 +183,13 @@ void sysfs_napi_loop_count_set(char *fname, char *count, int len)
  ******************************************************************************/
 static int32_t __init fsl_cryptodev_register(void)
 {
-	int rc;
+	int32_t rc;
+
 	rc = misc_register(&fsl_cryptodev);
-	if (0 != rc) {
+	if (rc != 0) {
 		print_error("registration of /dev/fsl_crypto failed\n");
-		return rc;
 	}
-	return 0;
+	return rc;
 }
 
 /*******************************************************************************
