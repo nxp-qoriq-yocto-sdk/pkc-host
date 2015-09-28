@@ -83,15 +83,12 @@ void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	uint16_t isr_count = 0;
 	uint32_t i;
 	struct list_head *isr_ctx_list_head;
-	uint32_t total_cores = 0;
+	uint32_t total_cores = num_online_cpus();
 	uint16_t total_isrs = dev->priv_dev->intr_info.intr_vectors_cnt;
 	per_core_struct_t *instance;
 	isr_ctx_t *isr_ctx;
 
 	isr_ctx_list_head = &(dev->priv_dev->intr_info.isr_ctx_list_head);
-
-	for_each_online_cpu(i)
-	    ++total_cores;
 
 	print_debug("Total cores: %d\n", total_cores);
 	isr_ctx = list_entry(isr_ctx_list_head->next, isr_ctx_t, list);

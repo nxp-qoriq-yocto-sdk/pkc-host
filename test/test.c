@@ -41,7 +41,6 @@
 static char g_test_name[TEST_NAME_LENGTH];
 static struct task_struct *task[MAX_TEST_THREAD_SUPPORT];
 static int32_t no_thread;
-static int32_t no_cpu;
 static int32_t g_is_test_in_progress;
 
 static uint64_t s_time;
@@ -562,17 +561,13 @@ void c2x0_test_func(char *fname, char *test_name, int len)
 		return;
 	}
 
-	no_cpu = 0;
-	for_each_online_cpu(loop)
-	    no_cpu++;
-
 	print_debug("Test Name: %s, Cpu: %d, Thread: %d, Timer: %d sec, req count: %d\n",
 	     g_test_name, cpu_mask, threads_per_cpu, time_duration, total_enq_req);
 	/* Start up the threads per CPU */
 	for (loop = 0; loop < threads_per_cpu; loop++) {
 		int cpu_loop;
 		/* Traverse through CPUs */
-		for (cpu_loop = 0; cpu_loop < no_cpu; cpu_loop++) {
+		for (cpu_loop = 0; cpu_loop < num_online_cpus(); cpu_loop++) {
 			if (!(cpu_mask & (1 << cpu_loop)))
 				continue;
 			/* Start the test thread */
