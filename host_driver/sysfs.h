@@ -167,8 +167,6 @@ int32_t init_sysfs(fsl_pci_dev_t_1 *fsl_pci_dev);
 int32_t init_common_sysfs(void);
 void sysfs_cleanup(fsl_pci_dev_t_1 *fsl_pci_dev);
 void clean_common_sysfs(void);
-ssize_t common_sysfs_show(struct kobject *, struct attribute *, char *);
-ssize_t common_sysfs_store(struct kobject *, struct attribute *, const char *,
-			size_t);
+
 
 #endif

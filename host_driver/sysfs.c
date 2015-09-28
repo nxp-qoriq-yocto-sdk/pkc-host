@@ -67,15 +67,6 @@ uint8_t test_sysfs_file_str_flag[NUM_OF_TEST_SYSFS_FILES] = { 1, 1, 1, 0 };
 
 void *napi_loop_count_file;
 
-static const struct sysfs_ops common_sysfs_ops = {
-	.show = common_sysfs_show,
-	.store = common_sysfs_store
-};
-
-static struct kobj_type sysfs_entry_type = {
-	.sysfs_ops = &common_sysfs_ops
-};
-
 ssize_t common_sysfs_show(struct kobject *kobj, struct attribute *attr,
 				 char *buf)
 {
@@ -121,6 +112,15 @@ ssize_t common_sysfs_store(struct kobject *kobj, struct attribute *attr,
 
 	return size;
 }
+
+static const struct sysfs_ops common_sysfs_ops = {
+	.show = &common_sysfs_show,
+	.store = &common_sysfs_store,
+};
+
+static struct kobj_type sysfs_entry_type = {
+	.sysfs_ops = &common_sysfs_ops
+};
 
 struct k_sysfs_file *create_sysfs_file(int8_t *name, struct sysfs_dir *parent,
 		uint8_t str_flag)
