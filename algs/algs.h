@@ -36,7 +36,7 @@
 #ifndef _ALG_H_
 #define _ALG_H_
 
-#include "desc_cnstr.h"
+#include "desc_buffs.h"
 #include <linux/crypto.h>
 #include <crypto/algapi.h>
 #ifdef VIRTIO_C2X0

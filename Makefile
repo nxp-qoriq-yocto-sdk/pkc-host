@@ -76,7 +76,7 @@ $(DRIVER_KOBJ)-objs += algs/algs.o
 $(DRIVER_KOBJ)-objs += algs/rsa.o
 $(DRIVER_KOBJ)-objs += algs/dsa.o
 $(DRIVER_KOBJ)-objs += algs/dh.o
-$(DRIVER_KOBJ)-objs += algs/desc_cnstr.o
+$(DRIVER_KOBJ)-objs += algs/desc_buffs.o
 $(DRIVER_KOBJ)-objs += algs/rng_init.o
 $(DRIVER_KOBJ)-objs += crypto_dev/algs_reg.o
 ifeq ($(CONFIG_FSL_C2X0_HASH_OFFLOAD),y)

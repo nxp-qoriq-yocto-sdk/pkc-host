@@ -37,7 +37,7 @@
 #include "common.h"
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
-#include "desc_cnstr.h"
+#include "desc_buffs.h"
 #include "algs.h"
 #include "dma.h"
 

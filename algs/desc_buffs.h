@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __DESC_CNSTR_H__
-#define __DESC_CNSTR_H__
+#ifndef FSL_PKC_DESC_BUFFS_H
+#define FSL_PKC_DESC_BUFFS_H
 
 typedef enum buffer_type {
 	BT_DESC,
