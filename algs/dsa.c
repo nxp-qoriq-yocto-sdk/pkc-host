@@ -778,10 +778,8 @@ int dsa_op(struct pkc_request *req)
 #endif
 {
 	int32_t ret = 0;
-	crypto_dev_sess_t *c_sess = NULL;
 	crypto_op_ctx_t *crypto_ctx = NULL;
 	fsl_crypto_dev_t *c_dev = NULL;
-
 	dev_dma_addr_t sec_dma = 0;
 	uint32_t r_id = 0;
 	dsa_sign_buffers_t *dsa_sign_buffs = NULL;
@@ -796,12 +794,11 @@ int dsa_op(struct pkc_request *req)
 
 #ifndef VIRTIO_C2X0
 	if (NULL != req->base.tfm) {
+		crypto_dev_sess_t *c_sess;
 		dsa_completion_cb = pkc_request_complete;
 		ecdsa_completion_cb = pkc_request_complete;
 		/* Get the session context from input request */
-		c_sess =
-		    (crypto_dev_sess_t *)
-		    crypto_pkc_ctx(crypto_pkc_reqtfm(req));
+		c_sess = crypto_pkc_ctx(crypto_pkc_reqtfm(req));
 		c_dev = c_sess->c_dev;
 		r_id = c_sess->r_id;
 #ifndef HIGH_PERF
@@ -812,7 +809,6 @@ int dsa_op(struct pkc_request *req)
 	else
 #endif
 	{
-		c_sess = c_sess;
 		/* By default using first device --
 		 * Logic here will be replaced with LB */
 #ifdef VIRTIO_C2X0
