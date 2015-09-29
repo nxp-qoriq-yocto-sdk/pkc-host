@@ -190,10 +190,4 @@ typedef struct crypto_dev_mem_info {
 	dma_addr_t host_dma_addr;
 } crypto_dev_mem_info_t;
 
-#ifndef VAR
-extern uint32_t wt_cpu_mask;
-#else
-int32_t wt_cpu_mask = -1;
-#endif
-
 #endif

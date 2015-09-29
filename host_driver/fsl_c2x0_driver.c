@@ -33,8 +33,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define VAR
-
 #include "common.h"
 #include "device.h"
 #include "fsl_c2x0_driver.h"
@@ -69,6 +67,8 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
  *********************************************************/
 static char *dev_config_file = "/etc/crypto/crypto.cfg";
 int napi_poll_count = -1;
+/*TODO: Make wt_cpu_mask a real CPU bitmask */
+int32_t wt_cpu_mask = -1;
 
 #ifdef VIRTIO_C2X0
 struct list_head virtio_c2x0_cmd_list;
