@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _SYSFS_H
-#define _SYSFS_H
+#ifndef FSL_PKC_SYSFS_H
+#define FSL_PKC_SYSFS_H
 
 #include "common.h"
 /*#include "fsl_c2x0_driver.h"*/

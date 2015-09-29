@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _RSA_H_
-#define _RSA_H_
+#ifndef FSL_PKC_RSA_H
+#define FSL_PKC_RSA_H
 
 typedef struct rsa_pub_dev_mem {
 	uint8_t *n;

@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __DESC_CONSTR_H__
-#define __DESC_CONSTR_H__
+#ifndef FSL_PKC_DESC_CONSTR_H
+#define FSL_PKC_DESC_CONSTR_H
 
 #include "desc.h"
 

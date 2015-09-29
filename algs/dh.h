@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _DH_H_
-#define _DH_H_
+#ifndef FSL_PKC_DH_H
+#define FSL_PKC_DH_H
 
 #define DH_PDB_L_SHIFT         7
 #define DH_PDB_L_MASK          (0x3ff << DH_PDB_L_SHIFT)

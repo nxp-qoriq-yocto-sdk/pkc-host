@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _ALG_H_
-#define _ALG_H_
+#ifndef FSL_PKC_ALG_H
+#define FSL_PKC_ALG_H
 
 #include "desc_buffs.h"
 #include <linux/crypto.h>

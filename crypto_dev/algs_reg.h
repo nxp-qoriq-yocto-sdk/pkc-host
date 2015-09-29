@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __ALGS_REG_H__
-#define __ALGS_REG_H__
+#ifndef FSL_PKC_ALGS_REG_H
+#define FSL_PKC_ALGS_REG_H
 
 #include "compat.h"
 #include "desc.h"

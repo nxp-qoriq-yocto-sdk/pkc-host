@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __SYMDESC__
-#define __SYMDESC__
+#ifndef FSL_PKC_SYMDESC_H
+#define FSL_PKC_SYMDESC_H
 
 #include "compat.h"
 #include "desc_constr.h"

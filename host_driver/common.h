@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __COMMON_H__
-#define __COMMON_H__
+#ifndef FSL_PKC_COMMON_H
+#define FSL_PKC_COMMON_H
 
 #include <linux/version.h>
 #include <linux/init.h>

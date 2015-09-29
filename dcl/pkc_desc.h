@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __PKC_DESC_H__
-#define __PKC_DESC_H__
+#ifndef FSL_PKC_DESC_H
+#define FSL_PKC_DESC_H
 
 #define RSA_PRIV_KEY_FRM_1     0
 #define RSA_PRIV_KEY_FRM_2     1

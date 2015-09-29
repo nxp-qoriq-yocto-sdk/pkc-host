@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __MEMMGR_H__
-#define __MEMMGR_H__
+#ifndef FSL_PKC_MEMMGR_H
+#define FSL_PKC_MEMMGR_H
 
 struct buffer_header {
 	struct buffer_header *prev_link;

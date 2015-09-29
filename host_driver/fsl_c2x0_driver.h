@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __FSL_DRIVER_H__
-#define __FSL_DRIVER_H__
+#ifndef FSL_PKC_DRIVER_H
+#define FSL_PKC_DRIVER_H
 
 #include "sysfs.h"
 #include "device.h"

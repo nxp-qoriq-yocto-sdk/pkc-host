@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __IOCTL_HEAD
-#define __IOCTL_HEAD
+#ifndef FSL_PKC_IOCTL_H
+#define FSL_PKC_IOCTL_H
 
 #define CMDOPERATION _IOWR('c', 201, user_command_args_t)
 #define CHECKCMD _IOWR('c', 209, user_command_args_t)

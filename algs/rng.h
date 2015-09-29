@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __RNG_H__
-#define __RNG_H__
+#ifndef FSL_PKC_RNG_H
+#define FSL_PKC_RNG_H
 #include "symdesc.h"
 
 /* length of descriptors */

@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __HASH_H__
-#define __HASH_H__
+#ifndef FSL_PKC_HASH_H
+#define FSL_PKC_HASH_H
 
 #include "symdesc.h"
 

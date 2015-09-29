@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _DMA_H_
-#define _DMA_H_
+#ifndef FSL_PKC_DMA_H
+#define FSL_PKC_DMA_H
 
 typedef struct chnl_info {
 	uint32_t desc_count;

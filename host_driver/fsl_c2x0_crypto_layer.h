@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __CRYPTO_LAYER_H__
-#define __CRYPTO_LAYER_H__
+#ifndef FSL_PKC_CRYPTO_LAYER_H
+#define FSL_PKC_CRYPTO_LAYER_H
 
 extern int napi_poll_count;
 

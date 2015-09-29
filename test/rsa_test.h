@@ -30,8 +30,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _RSA_TEST_H_
-#define _RSA_TEST_H_
+#ifndef FSL_PKC_RSA_TEST_H
+#define FSL_PKC_RSA_TEST_H
 
 /* FOR PUBLIC KET ENCRYPT */
 static uint8_t PUB_N_1024[] = {

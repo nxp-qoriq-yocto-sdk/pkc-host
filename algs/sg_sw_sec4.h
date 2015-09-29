@@ -33,8 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __SG_SW_SEC4_H__
-#define __SG_SW_SEC4_H__
+#ifndef FSL_PKC_SG_SW_SEC4_H
+#define FSL_PKC_SG_SW_SEC4_H
 
 #include"common.h"
 #include "memmgr.h"
