@@ -1030,55 +1030,6 @@ error:
 	return -ENOMEM;
 }
 
-/* If MSIx is supported - Then number of vectors to be asked
- * should be equal to the number of application
- * rings + command ring.
- */
-int get_msix_iv_cnt(fsl_pci_dev_t *fsl_pci_dev, u16 num_of_vectors)
-{
-	int err;
-	u16 i;
-
-	fsl_pci_dev->intr_info.msix_entries = kzalloc(
-		num_of_vectors * sizeof(struct msix_entry), GFP_KERNEL);
-	if (!fsl_pci_dev->intr_info.msix_entries) {
-		DEV_PRINT_ERROR("MSIx entries mem alloc failed\n");
-		return -ENOMEM;
-	}
-
-	/* In case of MSIx - The driver needs to fill
-	 * this value inside the MSIx entry. For this
-	 * entry number, kernel will fill the vector number.
-	 */
-	for (i = 0; i < num_of_vectors; i++)
-		fsl_pci_dev->intr_info.msix_entries[i].entry = i;
-
-	/* Though we may need vectors we want,
-	 * the Kernel/APIC may not entertain it.
-	 * This loop determines the actual number of
-	 * vectors allocated by the APIC
-	 * for this device. We have to live with it.
-	 * The actual distribution of rings
-	 * to the iv's will be done in later stage.
-	 */
-	do {
-		i = num_of_vectors;
-		err = pci_enable_msix(fsl_pci_dev->dev,
-					fsl_pci_dev->intr_info.msix_entries,
-					num_of_vectors);
-		num_of_vectors = err;
-	} while (err > 0);
-
-	if (err) {
-		DEV_PRINT_ERROR("MSIx enable failed!!\n");
-		kfree(fsl_pci_dev->intr_info.msix_entries);
-		return -ENODEV;
-	}
-
-	fsl_pci_dev->intr_info.intr_vectors_cnt = i;
-	return 0;
-}
-
 #ifdef MULTIPLE_MSI_SUPPORT
 int get_msi_iv_cnt(fsl_pci_dev_t *fsl_pci_dev, uint8_t num_of_vectors)
 {
@@ -1169,33 +1120,19 @@ void fsl_release_irqs(fsl_pci_dev_t *fsl_pci_dev)
 	}
 }
 
-void free_irq_vectors(fsl_pci_dev_t *fsl_pci_dev)
-{
-	if (fsl_pci_dev->intr_info.type == INT_MSIX) {
-		pci_disable_msix(fsl_pci_dev->dev);
-		kfree(fsl_pci_dev->intr_info.msix_entries);
-	} else if (fsl_pci_dev->intr_info.type == INT_MSI) {
-		pci_disable_msi(fsl_pci_dev->dev);
-	}
-}
-
 int get_irq_vectors(fsl_pci_dev_t *fsl_pci_dev, uint8_t num_of_rings)
 {
-	int err = 0;
+	int err;
 
-	if (fsl_pci_dev->intr_info.type == INT_MSIX)
-		err = get_msix_iv_cnt(fsl_pci_dev, num_of_rings);
-	else if (fsl_pci_dev->intr_info.type == INT_MSI)
 #ifdef MULTIPLE_MSI_SUPPORT
-		err = get_msi_iv_cnt(fsl_pci_dev, num_of_rings);
+	err = get_msi_iv_cnt(fsl_pci_dev, num_of_rings);
 #else
-		err = get_msi_iv(fsl_pci_dev);
+	err = get_msi_iv(fsl_pci_dev);
 #endif
-	else
-		fsl_pci_dev->intr_info.intr_vectors_cnt = 1;
 
-	if (err)
-		free_irq_vectors(fsl_pci_dev);
+	if (err != 0) {
+		pci_disable_msi(fsl_pci_dev->dev);
+	}
 
 	return err;
 }
@@ -1224,13 +1161,10 @@ int fsl_request_irqs(fsl_pci_dev_t *fsl_pci_dev)
 		INIT_LIST_HEAD(&(isr_context->ring_list_head));
 		isr_context->dev = fsl_pci_dev;
 
-		if (fsl_pci_dev->intr_info.type == INT_MSIX)
-			irq = fsl_pci_dev->intr_info.msix_entries[i].vector;
-		else
 #ifdef MULTIPLE_MSI_SUPPORT
-			irq = fsl_pci_dev->dev->irq + i;
+		irq = fsl_pci_dev->dev->irq + i;
 #else
-			irq = fsl_pci_dev->dev->irq;
+		irq = fsl_pci_dev->dev->irq;
 #endif
 		/* Register the ISR with kernel for each vector */
 		err = request_irq(irq, (irq_handler_t) fsl_crypto_isr, 0,
@@ -1242,16 +1176,7 @@ int fsl_request_irqs(fsl_pci_dev_t *fsl_pci_dev)
 		}
 		isr_context->irq = irq;
 
-		if (fsl_pci_dev->intr_info.type == INT_MSIX) {
-			/* [MAK] TODO: For MSIx support, Device will expose an
-			 * another BAR which will have table of MSI
-			 * address and data. To get the MSI address and data a
-			 * look up has to be done with the entry
-			 * number. The exact implementation will depend on the
-			 * MSIx implementation in the device.*/
-		} else if (fsl_pci_dev->intr_info.type == INT_MSI) {
-			get_msi_config_data(fsl_pci_dev, isr_context);
-		}
+		get_msi_config_data(fsl_pci_dev, isr_context);
 
 		/* Add this to the list of ISR contexts */
 		list_add(&(isr_context->list), ctx_list);
@@ -1661,7 +1586,7 @@ static void cleanup_pci_device(fsl_pci_dev_t *dev)
 	}
 
 	fsl_release_irqs(dev);
-	free_irq_vectors(dev);
+	pci_disable_msi(dev->dev);
 
 disable_dev:
 	pci_disable_device(dev->dev);
@@ -1769,7 +1694,6 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 {
 	int32_t err = -ENODEV;
 	int local_cfg; /* clean-up is required on error path */
-	enum int_type int_type;
 	int8_t pci_info[60];
 	int8_t sys_pci_info[100];
 
@@ -1813,27 +1737,15 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	pci_set_dma_mask(dev, DMA_32BIT_MASK);
 #endif
 
-	/* Check whether the device has PCIE cap */
 	if (!pci_find_capability(dev, PCI_CAP_ID_EXP)) {
 		DEV_PRINT_ERROR("Does not have PCIe cap\n");
 		goto free_dev;
 	}
-	DEV_PRINT_DEBUG("Is PCIe Capable\n");
 
-	/* Check whether the device has MSIx cap */
-	if (pci_find_capability(dev, PCI_CAP_ID_MSIX)) {
-		DEV_PRINT_DEBUG("MSIx Support\n");
-		int_type = INT_MSIX;
-	} else if (pci_find_capability(dev, PCI_CAP_ID_MSI)) {
-		DEV_PRINT_DEBUG("MSI Support\n");
-		int_type = INT_MSI;
-	} else {
-		DEV_PRINT_DEBUG("INTR Support\n");
-		int_type = INT_BASIC;
+	if (!pci_find_capability(dev, PCI_CAP_ID_MSI)) {
+		DEV_PRINT_ERROR("Does not support MSI\n");
+		goto free_dev;
 	}
-
-	/* save the type to avoid querying again at driver removal */
-	fsl_pci_dev->intr_info.type = int_type;
 
 	/* Wake up the device if it is in suspended state */
 	err = pci_enable_device(dev);
@@ -1885,7 +1797,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 	err = fsl_request_irqs(fsl_pci_dev);
 	if (err)
-		goto free_irq_vec;
+		goto disable_msi;
 
 	/* Now create all the SYSFS entries required for this device */
 	err = init_sysfs(fsl_pci_dev);
@@ -1912,12 +1824,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	snprintf(pci_info, 60, "VendorId:%0x DeviceId:%0x BusNo:%0x\nCAP:PCIe\n",
 		 id->device, id->vendor, fsl_pci_dev->dev->bus->number);
 	strcpy(sys_pci_info, pci_info);
-	if (int_type == INT_MSIX)
-		strcat(sys_pci_info, "MSIx CAP\n");
-	else if (int_type == INT_MSI)
-		strcat(sys_pci_info, "MSI CAP\n");
-	else
-		strcat(sys_pci_info, "INTR CAP\n");
+	strcat(sys_pci_info, "MSI CAP\n");
 
 	set_sysfs_value(fsl_pci_dev, PCI_INFO_SYS_FILE,
 			(uint8_t *) sys_pci_info, strlen(sys_pci_info));
@@ -1937,8 +1844,8 @@ deinit_sysfs:
 	sysfs_cleanup(fsl_pci_dev);
 free_req_irq:
 	fsl_release_irqs(fsl_pci_dev);
-free_irq_vec:
-	free_irq_vectors(fsl_pci_dev);
+disable_msi:
+	pci_disable_msi(fsl_pci_dev->dev);
 free_config:
 	if (local_cfg) {
 		list_del(&(config->list));

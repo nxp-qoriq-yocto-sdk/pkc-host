@@ -149,21 +149,14 @@ typedef struct pci_bar_info {
 	resource_size_t len;
 } pci_bar_info_t;
 
-enum int_type {INT_BASIC, INT_MSI, INT_MSIX};
-
 /*******************************************************************************
 Description:	Contains the interrupts information of the device
 Fields	   :	intr_vectors_cnt: Number of intr vectors alloc for this device
-		msix_entries: Kernel DS, required to be passed to MSIx KPI
 		isr_ctx_list_head: Head of the linked list of isr contexts
 *******************************************************************************/
 typedef struct pci_intr_info {
 	u16 intr_vectors_cnt;
-
-	/* Kernel DS :- Required for MSIx support */
-	struct msix_entry *msix_entries;
 	struct list_head isr_ctx_list_head;
-	enum int_type type;
 } pci_intr_info_t;
 
 /*******************************************************************************
