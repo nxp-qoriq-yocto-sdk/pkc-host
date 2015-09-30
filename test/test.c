@@ -51,12 +51,12 @@ static uint32_t newtest;
 
 atomic_t total_enq_cnt;
 atomic_t total_deq_cnt;
-atomic_t total_err_cnt;
+static atomic_t total_err_cnt;
 
-atomic_t hold_off;
-atomic_t test_done;
-atomic_t timer_started;
-atomic_t flag;
+static atomic_t hold_off;
+static atomic_t test_done;
+static atomic_t timer_started;
+static atomic_t flag;
 
 static uint32_t total_succ_jobs;
 static uint32_t total_enq_req;
