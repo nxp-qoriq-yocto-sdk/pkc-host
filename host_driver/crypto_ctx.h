@@ -1,3 +1,6 @@
+#ifndef FSL_PKC_CRYPTO_CTX_H
+#define FSL_PKC_CRYPTO_CTX_H
+
 /* Copyright 2013 Freescale Semiconductor, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,3 +73,7 @@ static inline void free_crypto_ctx(void *id, crypto_op_ctx_t *ctx)
 	pool->head = ctx;
 	spin_unlock_bh(&pool->ctx_lock);
 }
+
+#else
+#error Header file is already included
+#endif
