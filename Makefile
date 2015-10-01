@@ -62,7 +62,7 @@ ccflags-$(USE_HOST_DMA) += -DUSE_HOST_DMA
 ccflags-$(ENHANCE_KERNEL_TEST) += -DENHANCE_KERNEL_TEST
 
 DRIVER_KOBJ = fsl_pkc_crypto_offload_drv
-obj-$(CONFIG_FSL_C2X0_CRYPTO_DRV) = $(DRIVER_KOBJ).o
+obj-$(CONFIG_FSL_C2X0_CRYPTO_DRV) := $(DRIVER_KOBJ).o
 $(DRIVER_KOBJ)-objs := host_driver/fsl_c2x0_driver.o
 $(DRIVER_KOBJ)-objs += host_driver/fsl_c2x0_crypto_layer.o
 $(DRIVER_KOBJ)-objs += host_driver/memmgr.o
@@ -102,13 +102,13 @@ endif
 .PHONY: build
 
 build:
-	make -C $(KERNEL_DIR) SUBDIRS=`pwd` modules
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
 	$(CROSS_COMPILE)gcc  -Wall apps/cli/cli.c -o apps/cli/cli -static
 
 modules_install:
-	make -C $(KERNEL_DIR) SUBDIRS=`pwd` modules_install
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules_install
 
 clean:
-	make -C $(KERNEL_DIR) SUBDIRS=`pwd` clean
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) clean
 
 dist: clean
