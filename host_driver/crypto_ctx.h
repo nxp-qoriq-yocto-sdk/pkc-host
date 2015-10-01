@@ -40,45 +40,33 @@
 
 #define NUM_OF_CTXS     1024
 
-typedef struct ctx {
-	crypto_op_ctx_t crypto_ctx;
-	struct ctx *next;
-} ctx_t;
-
 typedef struct ctx_pool {
-	ctx_t mem[NUM_OF_CTXS];
-	ctx_t *head;
+	crypto_op_ctx_t mem[NUM_OF_CTXS];
+	crypto_op_ctx_t *head;
 	spinlock_t ctx_lock;
 } ctx_pool_t;
 
-static inline void *get_crypto_ctx(void *id)
+static inline void *get_crypto_ctx(ctx_pool_t *pool)
 {
-	ctx_pool_t *pool = id;
-	ctx_t *ctx = NULL;
+	crypto_op_ctx_t *ctx;
 
 	spin_lock_bh(&pool->ctx_lock);
-	if (!pool->head) {
-		spin_unlock_bh(&pool->ctx_lock);
-		return NULL;
-	}
-
 	ctx = pool->head;
-	pool->head = pool->head->next;
+	if (ctx != NULL) {
+		pool->head = ctx->next;
+	}
 	spin_unlock_bh(&pool->ctx_lock);
 
-	return &ctx->crypto_ctx;
+	return ctx;
 }
 
-static inline void free_crypto_ctx(void *id, void *c_ctx)
+static inline void free_crypto_ctx(void *id, crypto_op_ctx_t *ctx)
 {
 	ctx_pool_t *pool = id;
-	ctx_t *ctx = c_ctx;
 
 	spin_lock_bh(&pool->ctx_lock);
-	memset(ctx, 0, sizeof(ctx_t));
-
+	memset(ctx, 0, sizeof(crypto_op_ctx_t));
 	ctx->next = pool->head;
 	pool->head = ctx;
-
 	spin_unlock_bh(&pool->ctx_lock);
 }

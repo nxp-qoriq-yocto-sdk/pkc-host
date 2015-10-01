@@ -208,6 +208,7 @@ typedef struct crypto_op_ctx {
 #ifdef VIRTIO_C2X0
 	int32_t card_status;
 #endif
+	struct crypto_op_ctx *next;
 } crypto_op_ctx_t;
 
 /*******************************************************************************
