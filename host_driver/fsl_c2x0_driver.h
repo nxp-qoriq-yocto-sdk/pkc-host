@@ -215,7 +215,6 @@ typedef struct per_core_struct {
 } per_core_struct_t;
 
 extern per_core_struct_t __percpu *per_core;
-extern volatile uint64_t jiffies_3;
 
 fsl_crypto_dev_t *get_crypto_dev(uint32_t no);
 uint32_t get_no_of_devices(void);
