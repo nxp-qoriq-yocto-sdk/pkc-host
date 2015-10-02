@@ -95,13 +95,6 @@
  * Only two bits from higher address is sufficient */
 #define PHYS_ADDR_H_32_BIT_MASK       0x300000000ull
 
-/* Typedefs */
-#ifdef DEV_VIRT_ADDR_32BIT
-typedef uint32_t dev_v_addr_t;
-#else
-typedef uint64_t dev_v_addr_t;
-#endif
-
 #ifdef DEV_PHYS_ADDR_32BIT
 typedef uint32_t dev_p_addr_t;
 typedef uint32_t dev_dma_addr_t;
@@ -170,23 +163,14 @@ Description :	Contains the information of all the mem associated with this dev
 Fields      :	type          : Type of the memory ~= BAR's
 		host_v_addr   : Virtual address of mem in host
 		host_p_addr   : Physical address of mem in host
-		dev_v_addr    : Virtual/TLB address in the dev.
-				Required in case of desc where in certain
-				pointers need to be built with exact
-				device addresses.
 		dev_p_addr    : May not need. Holding it for now.
 *******************************************************************************/
 typedef struct crypto_dev_mem_info {
 	crypto_dev_mem_type_t type;
-
 	uint32_t len;
-
 	void *host_v_addr;
 	phys_addr_t host_p_addr;
-
-	dev_v_addr_t dev_v_addr;
 	dev_p_addr_t dev_p_addr;
-
 	dma_addr_t host_dma_addr;
 } crypto_dev_mem_info_t;
 

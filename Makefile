@@ -41,7 +41,7 @@ KERNEL_DIR ?=/lib/modules/$(shell uname -r)/build
 CONFIG_FSL_C2X0_CRYPTO_DRV ?= m
 
 ccflags-y := -I$(src)/host_driver -I$(src)/algs -I$(src)/crypto_dev -I$(src)/dcl -I$(src)/test
-ccflags-y += -g -g3 -DDEV_PHYS_ADDR_64BIT -DDEV_VIRT_ADDR_32BIT
+ccflags-y += -g -g3 -DDEV_PHYS_ADDR_64BIT
 ccflags-y += -Wall -Werror
 
 ccflags-$(P4080_EP) += -DP4080_EP
