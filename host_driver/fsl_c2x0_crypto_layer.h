@@ -514,7 +514,7 @@ void start_device(fsl_crypto_dev_t *dev);
 int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set);
 
 #ifdef MULTIPLE_RESP_RINGS
-int32_t process_response(fsl_crypto_dev_t *, struct list_head *);
+int32_t process_rings(fsl_crypto_dev_t *, struct list_head *);
 #endif
 
 extern int32_t rng_instantiation(fsl_crypto_dev_t *c_dev);

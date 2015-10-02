@@ -1511,82 +1511,88 @@ CMD_RING_RESP:
 
 #else
 
-/* FIXME: function argument dev is overwritten in the first loop */
-int32_t process_response(fsl_crypto_dev_t *dev,
-			 struct list_head *ring_list_head)
-{
 #define MAX_ERROR_STRING 400
-	uint64_t desc;
-#ifndef HIGH_PERF
-	uint32_t r_id;
-#endif
+
+/* FIXME: function argument dev is overwritten in the first loop */
+void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor)
+{
+	uint32_t pollcount;
+	uint32_t jobs_added = 0;
 	uint32_t resp_cnt = 0;
 	uint32_t ri;
+	uint64_t desc;
 	int32_t res = 0;
-	uint32_t jobs_added = 0;
-	uint32_t pollcount;
+	char outstr[MAX_ERROR_STRING];
 #ifndef HIGH_PERF
+	uint32_t r_id;
 	uint32_t app_resp_cnt = 0;
 #endif
-	char outstr[MAX_ERROR_STRING];
+
+	pollcount = 0;
+
+	while (pollcount++ < napi_poll_count) {
+		jobs_added = be32_to_cpu(ring_cursor->s_c_counters->jobs_added);
+		resp_cnt = jobs_added - ring_cursor->counters->jobs_processed;
+		if (!resp_cnt)
+			continue;
+
+		dev = ring_cursor->dev;
+#ifndef HIGH_PERF
+		r_id = ring_cursor->info.ring_id;
+#endif
+		ri = ring_cursor->indexes->r_index;
+		print_debug("RING ID: %d\n", ring_cursor->info.ring_id);
+		print_debug("GOT INTERRUPT FROM DEV: %d\n", dev->config->dev_no);
+
+		while (resp_cnt) {
+			desc = be64_to_cpu(ring_cursor->resp_r[ri].sec_desc);
+			res = be32_to_cpu(ring_cursor->resp_r[ri].result);
+			ri = (ri + 1) % (ring_cursor->depth);
+			ring_cursor->indexes->r_index = ri;
+#ifndef HIGH_PERF
+			if (r_id == 0) {
+				print_debug("COMMAND RING GOT AN INTERRUPT\n");
+				if (desc)
+					process_cmd_response(dev, desc, res);
+			} else
+#endif
+			{
+				print_debug("APP RING GOT AN INTERRUPT\n");
+				if (desc) {
+					if (res) {
+						sec_jr_strstatus(outstr, res);
+						printk(KERN_INFO "SEC Error:%s\n", outstr);
+					}
+					handle_response(dev, desc, res);
+				} else {
+					print_error("INVALID DESC AT RI : %u\n", ri - 1);
+				}
+#ifndef HIGH_PERF
+				atomic_inc_return(&dev->app_resp_cnt);
+#endif
+			}
+			ring_cursor->counters->jobs_processed += 1;
+			iowrite32be(ring_cursor->counters->jobs_processed,
+				&ring_cursor->shadow_counters->jobs_processed);
+
+			--resp_cnt;
+		}
+	}
+	/* Enable the intrs for this ring */
+	*(ring_cursor->intr_ctrl_flag) = 0;
+}
+
+int32_t process_rings(fsl_crypto_dev_t *dev,
+			 struct list_head *ring_list_head)
+{
 	fsl_h_rsrc_ring_pair_t *ring_cursor = NULL;
 
 	print_debug("---------------- PROCESSING RESPONSE ------------------\n");
 
 	list_for_each_entry(ring_cursor, ring_list_head, bh_ctx_list_node) {
-		pollcount = 0;
-
-		while (pollcount++ < napi_poll_count) {
-			jobs_added = be32_to_cpu(ring_cursor->s_c_counters->jobs_added);
-			resp_cnt = jobs_added - ring_cursor->counters->jobs_processed;
-			if (!resp_cnt)
-				continue;
-
-			dev = ring_cursor->dev;
-#ifndef HIGH_PERF
-			r_id = ring_cursor->info.ring_id;
-#endif
-			ri = ring_cursor->indexes->r_index;
-			print_debug("RING ID: %d\n", ring_cursor->info.ring_id);
-			print_debug("GOT INTERRUPT FROM DEV: %d\n", dev->config->dev_no);
-
-			while (resp_cnt) {
-				desc = be64_to_cpu(ring_cursor->resp_r[ri].sec_desc);
-				res = be32_to_cpu(ring_cursor->resp_r[ri].result);
-				ri = (ri + 1) % (ring_cursor->depth);
-				ring_cursor->indexes->r_index = ri;
-#ifndef HIGH_PERF
-				if (r_id == 0) {
-					print_debug("COMMAND RING GOT AN INTERRUPT\n");
-					if (desc)
-						process_cmd_response(dev, desc, res);
-				} else 
-#endif
-				{
-					print_debug("APP RING GOT AN INTERRUPT\n");
-					if (desc) {
-						if (res) {
-							sec_jr_strstatus(outstr, res);
-							printk(KERN_INFO "SEC Error:%s\n", outstr);
-						}
-						handle_response(dev, desc, res);
-					} else {
-						print_error("INVALID DESC AT RI : %u\n", ri - 1);
-					}
-#ifndef HIGH_PERF
-					atomic_inc_return(&dev->app_resp_cnt);
-#endif
-				}
-				ring_cursor->counters->jobs_processed += 1;
-				iowrite32be(ring_cursor->counters->jobs_processed,
-					&ring_cursor->shadow_counters->jobs_processed);
-
-				--resp_cnt;
-			}
-		}
-		/* Enable the intrs for this ring */
-		*(ring_cursor->intr_ctrl_flag) = 0;
+		process_response(dev, ring_cursor);
 	}
+
 #ifndef HIGH_PERF
 	/* UPDATE SYSFS ENTRY */
 	app_resp_cnt = atomic_read(&dev->app_resp_cnt);

@@ -842,7 +842,7 @@ static void response_ring_handler(struct work_struct *work)
 #ifdef MULTIPLE_RESP_RINGS
 	print_debug("Worker thread invoked on cpu [%d]\n", bh->core_no);
 	instance = per_cpu_ptr(per_core, bh->core_no);
-	process_response(c_dev, &(instance->ring_list_head));
+	process_rings(c_dev, &(instance->ring_list_head));
 #else
 	demux_fw_responses(c_dev);
 #endif
