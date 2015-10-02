@@ -60,15 +60,13 @@ static void rsa_op_done(void *ctx, int32_t res)
 
 	dealloc_crypto_mem(&(crypto_ctx->crypto_mem));
 
-#ifndef VIRTIO_C2X0
-	rsa_completion_cb(crypto_ctx->req.pkc, res);
-
-	free_crypto_ctx(crypto_ctx->ctx_pool, crypto_ctx);
-#endif
 #ifdef VIRTIO_C2X0
 	/* Update the sec result to crypto job context */
 	crypto_ctx->card_status = res;
 	print_debug("Updated card status to %d\n", crypto_ctx->card_status);
+#else
+	rsa_completion_cb(crypto_ctx->req.pkc, res);
+	free_crypto_ctx(crypto_ctx->ctx_pool, crypto_ctx);
 #endif
 }
 
