@@ -276,9 +276,9 @@ typedef struct crypto_dev_info {
 Description : Identifies the request ring entry
 Fields      : sec_desc        : DMA address of the sec addr valid in dev domain
 *******************************************************************************/
-typedef struct req_ring_entry {
+struct req_ring_entry {
 	dev_dma_addr_t sec_desc;
-} req_ring_entry_t;
+};
 
 /*******************************************************************************
 Description :	Identifies the response ring entry
@@ -313,7 +313,7 @@ typedef struct fsl_h_rsrc_ring_pair {
 
 	uint32_t *intr_ctrl_flag;
 	void *ip_pool;
-	req_ring_entry_t *req_r;
+	struct req_ring_entry *req_r;
 	struct resp_ring_entry *resp_r;
 	struct ring_idxs_mem *indexes;
 	struct ring_counters_mem *counters;

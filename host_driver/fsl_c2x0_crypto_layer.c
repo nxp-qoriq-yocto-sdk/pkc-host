@@ -268,7 +268,7 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	/* Make the total mem requirement aligned to page size */
 	ob_mem_len = ALIGN_LEN_TO_PAGE_SIZE(ob_mem_len);
 
-	dev->tot_req_mem_size = rp_len * sizeof(req_ring_entry_t);
+	dev->tot_req_mem_size = rp_len * sizeof(struct req_ring_entry);
 
 	return ob_mem_len;
 }
