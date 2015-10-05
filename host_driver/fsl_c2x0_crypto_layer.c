@@ -992,10 +992,7 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 
 	jobs_processed = be32_to_cpu(rp->s_c_counters->jobs_processed);
 
-#define RING_FULL(rp) \
-	(((rp->counters->jobs_added - jobs_processed) >= rp->depth) ? 1 : 0)
-
-	if (RING_FULL(rp)) {
+	if (rp->counters->jobs_added - jobs_processed >= rp->depth) {
 		print_error("Ring: %d is full\n", jr_id);
 		spin_unlock_bh(&(rp->ring_lock));
 		return -1;
