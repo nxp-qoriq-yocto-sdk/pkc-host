@@ -246,10 +246,10 @@ Description :	Contains the counters per job ring. This mem exist on device.
 Fields      :	req_jobs_added	: Count of Jobs added by driver to the fw.
 		resp_jobs_processed: Count of resp jobs processed by driver.
 *******************************************************************************/
-typedef struct ring_shadow_counters_mem {
+struct ring_shadow_counters_mem {
 	uint32_t req_jobs_added;
 	uint32_t resp_jobs_processed;
-} ring_shadow_counters_mem_t;
+};
 
 /*******************************************************************************
 Description :	Contains the identity information of the crypto device.
@@ -318,7 +318,7 @@ typedef struct fsl_h_rsrc_ring_pair {
 	struct ring_idxs_mem *indexes;
 	ring_counters_mem_t *counters;
 	ring_counters_mem_t *s_c_counters;
-	ring_shadow_counters_mem_t *shadow_counters;
+	struct ring_shadow_counters_mem *shadow_counters;
 
 	uint32_t depth;
 	uint32_t core_no;
@@ -360,7 +360,7 @@ typedef struct shadow_memory {
 	/* Pointer to the shadow indexes memory */
 
 	/* Pointer to the shadow ring counters memory */
-	ring_shadow_counters_mem_t *s_r_cntrs;
+	struct ring_shadow_counters_mem *s_r_cntrs;
 
 	/* Pointer to the shadow total counters memory */
 	struct counters_mem *s_cntrs;
@@ -378,7 +378,7 @@ typedef struct fw_resp_ring {
 	struct ring_idxs_mem *idxs;
 	ring_counters_mem_t *cntrs;
 	ring_counters_mem_t *s_c_cntrs;
-	ring_shadow_counters_mem_t *s_cntrs;
+	struct ring_shadow_counters_mem *s_cntrs;
 
 	struct fw_resp_ring *next;
 } fw_resp_ring_t;
