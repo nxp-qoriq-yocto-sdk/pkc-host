@@ -210,13 +210,6 @@ typedef struct ring_idxs_mem {
 } ring_idxs_mem_t;
 
 /*******************************************************************************
-Description :	Defines the shadow ring indexes
-Fields      :	w_index	: Pointer to the req w index in the device mem
-		r_index	: Pointer to the resp r index in the device mem
-*******************************************************************************/
-typedef ring_idxs_mem_t ring_shadow_idxs_mem_t;
-
-/*******************************************************************************
 Description :	Contains the counters per job ring. There will two copies one
 		for local usage and one shadowed for firmware
 Fields      :	Local memory
