@@ -215,10 +215,10 @@ Description :	Contains the counters per job ring. There will two copies one
 Fields      :	Local memory
 		jobs_added	: Count of number of req jobs added
 		jobs_processed	: Count of number of resp jobs processed
-					Shadow copy memory
+
+		Shadow copy memory
 		jobs_added	: Count of number of resp jobs added by fw
-		jobs_processed	: Count of number of req jobs
-					processed by fw
+		jobs_processed	: Count of number of req jobs processed by fw
 *******************************************************************************/
 typedef struct ring_counters_mem {
 	uint32_t jobs_added;
@@ -231,14 +231,15 @@ Description :	Contains the total counters. There will two copies one
 Fields      :	Local memory
 		tot_jobs_added	: Total count of req jobs added by driver
 		tot_jobs_processed: Total count of resp jobs processed
-					Shadow copy memory
+
+		Shadow copy memory
 		tot_jobs_added	: Total count of resp jobs added by fw
 		tot_jobs_processed: Total count of req jobs processed by fw
 *******************************************************************************/
-typedef struct counters_mem {
+struct counters_mem {
 	uint32_t tot_jobs_added;
 	uint32_t tot_jobs_processed;
-} counters_mem_t;
+};
 
 /*******************************************************************************
 Description :	Contains the counters per job ring. This mem exist on device.
@@ -249,13 +250,6 @@ typedef struct ring_shadow_counters_mem {
 	uint32_t req_jobs_added;
 	uint32_t resp_jobs_processed;
 } ring_shadow_counters_mem_t;
-
-/*******************************************************************************
-Description :	Contains the overall counters. This mem exist on device.
-Fields      :	req_tot_jobs_added	: Total no of reqs added by driver to fw
-		resp_tot_jobs_processed	: Total no of reqs processed by driver
-*******************************************************************************/
-typedef counters_mem_t shadow_counters_mem_t;
 
 /*******************************************************************************
 Description :	Contains the identity information of the crypto device.
@@ -369,7 +363,7 @@ typedef struct shadow_memory {
 	ring_shadow_counters_mem_t *s_r_cntrs;
 
 	/* Pointer to the shadow total counters memory */
-	shadow_counters_mem_t *s_cntrs;
+	struct counters_mem *s_cntrs;
 } shadow_memory_t;
 
 /* This structure defines the resp ring interfacing with the firmware */
@@ -409,8 +403,8 @@ typedef struct crypto_h_mem_layout {
 	ring_idxs_mem_t *s_c_idxs_mem;
 	ring_counters_mem_t *l_r_cntrs_mem;
 	ring_counters_mem_t *s_c_r_cntrs_mem;
-	counters_mem_t *cntrs_mem;
-	counters_mem_t *s_c_cntrs_mem;
+	struct counters_mem *cntrs_mem;
+	struct counters_mem *s_c_cntrs_mem;
 	void *op_pool;
 	void *ip_pool;
 

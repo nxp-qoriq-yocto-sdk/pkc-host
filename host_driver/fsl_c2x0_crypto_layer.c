@@ -243,8 +243,8 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 
 	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
 	dev->ob_mem.cntrs_mem = ob_mem_len;
-	ob_mem_len += sizeof(counters_mem_t);
-	dev->ob_mem.s_c_cntrs_mem += sizeof(counters_mem_t);
+	ob_mem_len += sizeof(struct counters_mem);
+	dev->ob_mem.s_c_cntrs_mem += sizeof(struct counters_mem);
 
 	/* We have to make sure that we align the output buffer pool to DMA */
 	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
