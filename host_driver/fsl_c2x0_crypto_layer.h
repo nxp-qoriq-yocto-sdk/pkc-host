@@ -220,10 +220,10 @@ Fields      :	Local memory
 		jobs_added	: Count of number of resp jobs added by fw
 		jobs_processed	: Count of number of req jobs processed by fw
 *******************************************************************************/
-typedef struct ring_counters_mem {
+struct ring_counters_mem {
 	uint32_t jobs_added;
 	uint32_t jobs_processed;
-} ring_counters_mem_t;
+};
 
 /*******************************************************************************
 Description :	Contains the total counters. There will two copies one
@@ -316,8 +316,8 @@ typedef struct fsl_h_rsrc_ring_pair {
 	req_ring_entry_t *req_r;
 	struct resp_ring_entry *resp_r;
 	struct ring_idxs_mem *indexes;
-	ring_counters_mem_t *counters;
-	ring_counters_mem_t *s_c_counters;
+	struct ring_counters_mem *counters;
+	struct ring_counters_mem *s_c_counters;
 	struct ring_shadow_counters_mem *shadow_counters;
 
 	uint32_t depth;
@@ -376,8 +376,8 @@ typedef struct fw_resp_ring {
 
 	uint32_t *intr_ctrl_flag;
 	struct ring_idxs_mem *idxs;
-	ring_counters_mem_t *cntrs;
-	ring_counters_mem_t *s_c_cntrs;
+	struct ring_counters_mem *cntrs;
+	struct ring_counters_mem *s_c_cntrs;
 	struct ring_shadow_counters_mem *s_cntrs;
 
 	struct fw_resp_ring *next;
@@ -401,8 +401,8 @@ typedef struct crypto_h_mem_layout {
 	struct resp_ring_entry *drv_resp_ring;
 	struct ring_idxs_mem *l_idxs_mem;
 	struct ring_idxs_mem *s_c_idxs_mem;
-	ring_counters_mem_t *l_r_cntrs_mem;
-	ring_counters_mem_t *s_c_r_cntrs_mem;
+	struct ring_counters_mem *l_r_cntrs_mem;
+	struct ring_counters_mem *s_c_r_cntrs_mem;
 	struct counters_mem *cntrs_mem;
 	struct counters_mem *s_c_cntrs_mem;
 	void *op_pool;
