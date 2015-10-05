@@ -367,7 +367,7 @@ void init_handshake(fsl_crypto_dev_t *dev)
 
 void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 {
-	fw_resp_ring_t *fw_ring;
+	struct fw_resp_ring *fw_ring;
 	uint8_t i;
 	uint8_t id = dev->num_of_rings;
 	/*int offset = 0;*/

@@ -357,7 +357,7 @@ typedef struct op_pool_info {
 } op_pool_info_t;
 
 /* This structure defines the resp ring interfacing with the firmware */
-typedef struct fw_resp_ring {
+struct fw_resp_ring {
 	phys_addr_t p_addr;
 	void *v_addr;
 	uint32_t depth;
@@ -371,7 +371,7 @@ typedef struct fw_resp_ring {
 	struct ring_shadow_counters_mem *s_cntrs;
 
 	struct fw_resp_ring *next;
-} fw_resp_ring_t;
+};
 
 /*******************************************************************************
 Description :	Contains the structured layout of the driver mem - outbound mem
@@ -475,7 +475,7 @@ typedef struct fsl_crypto_dev {
 
 	/* Firmware resp ring information */
 #define NUM_OF_RESP_RINGS 1
-	fw_resp_ring_t fw_resp_rings[NUM_OF_RESP_RINGS];
+	struct fw_resp_ring fw_resp_rings[NUM_OF_RESP_RINGS];
 
 	uint8_t num_of_rings;
 	fsl_h_rsrc_ring_pair_t *ring_pairs;
