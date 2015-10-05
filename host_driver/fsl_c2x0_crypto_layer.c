@@ -611,10 +611,10 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	dev->h_mem->hs_mem.state = DEFAULT;
 
 	iowrite32be(hscfg->s_r_cntrs, &hscfg->s_r_cntrs);
-	dev->s_mem.s_r_cntrs = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->s_r_cntrs;
+	dev->s_r_cntrs = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->s_r_cntrs;
 
 	iowrite32be(hscfg->s_cntrs, &hscfg->s_cntrs);
-	dev->s_mem.s_cntrs = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->s_cntrs;
+	dev->s_cntrs = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->s_cntrs;
 
 	iowrite32be(hscfg->ip_pool, &hscfg->ip_pool);
 
@@ -626,7 +626,7 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	ptr = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->resp_intr_ctrl_flag;
 	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
 		dev->fw_resp_rings[i].intr_ctrl_flag = ptr + (i * sizeof(uint32_t *));
-		dev->fw_resp_rings[i].s_cntrs = &(dev->s_mem.s_r_cntrs[dev->num_of_rings + i]);
+		dev->fw_resp_rings[i].s_cntrs = &(dev->s_r_cntrs[dev->num_of_rings + i]);
 		print_debug("FW Intrl Ctrl Flag: %p\n", dev->fw_resp_rings[i].intr_ctrl_flag);
 	}
 
@@ -635,8 +635,8 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	print_debug("S R CNTRS OFFSET: %x\n", hscfg->s_r_cntrs);
 	print_debug("S CNTRS: %x\n", hscfg->s_cntrs);
 	print_debug("-----------------------------------\n");
-	print_debug("R S Cntrs: %p\n", dev->s_mem.s_r_cntrs);
-	print_debug("S Cntrs: %p\n", dev->s_mem.s_cntrs);
+	print_debug("R S Cntrs: %p\n", dev->s_r_cntrs);
+	print_debug("S Cntrs: %p\n", dev->s_cntrs);
 	print_debug("FW Pool Dev P addr: %llx\n", (uint64_t)dev->ip_pool.fw_pool.dev_p_addr);
 	print_debug("FW Pool host P addr: %pa\n", &(dev->ip_pool.fw_pool.host_map_p_addr));
 	print_debug("FW Pool host V addr: %p\n", dev->ip_pool.fw_pool.host_map_v_addr);
@@ -657,7 +657,7 @@ uint8_t hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *con
 	iowrite32be(hsring->req_r, &hsring->req_r);
 	iowrite32be(hsring->intr_ctrl_flag, &hsring->intr_ctrl_flag);
 
-	dev->ring_pairs[rid].shadow_counters = &(dev->s_mem.s_r_cntrs[rid]);
+	dev->ring_pairs[rid].shadow_counters = &(dev->s_r_cntrs[rid]);
 	dev->ring_pairs[rid].req_r =dev->mem[MEM_TYPE_SRAM].host_v_addr +
 			hsring->req_r;
 	dev->ring_pairs[rid].intr_ctrl_flag = dev->mem[MEM_TYPE_SRAM].host_v_addr +

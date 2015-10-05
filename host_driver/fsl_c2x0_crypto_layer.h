@@ -356,16 +356,6 @@ typedef struct op_pool_info {
 	void *pool;
 } op_pool_info_t;
 
-typedef struct shadow_memory {
-	/* Pointer to the shadow indexes memory */
-
-	/* Pointer to the shadow ring counters memory */
-	struct ring_shadow_counters_mem *s_r_cntrs;
-
-	/* Pointer to the shadow total counters memory */
-	struct counters_mem *s_cntrs;
-} shadow_memory_t;
-
 /* This structure defines the resp ring interfacing with the firmware */
 typedef struct fw_resp_ring {
 	phys_addr_t p_addr;
@@ -466,9 +456,11 @@ typedef struct fsl_crypto_dev {
 	 */
 	volatile crypto_c_hs_mem_t *c_hs_mem;
 
-	/* Structure defining the shadow memories on the device which
-	 * needs to be updated by driver */
-	shadow_memory_t s_mem;
+	/* Pointer to the shadow ring counters memory */
+	struct ring_shadow_counters_mem *s_r_cntrs;
+
+	/* Pointer to the shadow total counters memory */
+	struct counters_mem *s_cntrs;
 
 	/* Structure defining the input pool */
 	ip_pool_info_t ip_pool;
