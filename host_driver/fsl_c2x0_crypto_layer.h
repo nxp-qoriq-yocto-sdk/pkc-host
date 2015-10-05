@@ -204,10 +204,10 @@ Description :	Defines the ring indexes
 Fields      :	w_index		: Request ring write index
 		r_index		: Response ring read index
 *******************************************************************************/
-typedef struct ring_idxs_mem {
+struct ring_idxs_mem {
 	uint32_t w_index;
 	uint32_t r_index;
-} ring_idxs_mem_t;
+};
 
 /*******************************************************************************
 Description :	Contains the counters per job ring. There will two copies one
@@ -315,7 +315,7 @@ typedef struct fsl_h_rsrc_ring_pair {
 	void *ip_pool;
 	req_ring_entry_t *req_r;
 	struct resp_ring_entry *resp_r;
-	ring_idxs_mem_t *indexes;
+	struct ring_idxs_mem *indexes;
 	ring_counters_mem_t *counters;
 	ring_counters_mem_t *s_c_counters;
 	ring_shadow_counters_mem_t *shadow_counters;
@@ -375,7 +375,7 @@ typedef struct fw_resp_ring {
 	uint8_t id;
 
 	uint32_t *intr_ctrl_flag;
-	ring_idxs_mem_t *idxs;
+	struct ring_idxs_mem *idxs;
 	ring_counters_mem_t *cntrs;
 	ring_counters_mem_t *s_c_cntrs;
 	ring_shadow_counters_mem_t *s_cntrs;
@@ -399,8 +399,8 @@ typedef struct crypto_h_mem_layout {
 
 	struct resp_ring_entry *fw_resp_ring;
 	struct resp_ring_entry *drv_resp_ring;
-	ring_idxs_mem_t *l_idxs_mem;
-	ring_idxs_mem_t *s_c_idxs_mem;
+	struct ring_idxs_mem *l_idxs_mem;
+	struct ring_idxs_mem *s_c_idxs_mem;
 	ring_counters_mem_t *l_r_cntrs_mem;
 	ring_counters_mem_t *s_c_r_cntrs_mem;
 	struct counters_mem *cntrs_mem;

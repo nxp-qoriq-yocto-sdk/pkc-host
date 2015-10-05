@@ -227,11 +227,11 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	 * 		config->num_of_rings + 1 */
 	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
 	dev->ob_mem.l_idxs_mem = ob_mem_len;
-	ob_mem_len += (config->num_of_rings + 1) * (sizeof(ring_idxs_mem_t));
+	ob_mem_len += (config->num_of_rings + 1) * (sizeof(struct ring_idxs_mem));
 
 	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
 	dev->ob_mem.s_c_idxs_mem = ob_mem_len;
-	ob_mem_len += (config->num_of_rings + 1) * (sizeof(ring_idxs_mem_t));
+	ob_mem_len += (config->num_of_rings + 1) * (sizeof(struct ring_idxs_mem));
 
 	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
 	dev->ob_mem.l_r_cntrs_mem = ob_mem_len;
