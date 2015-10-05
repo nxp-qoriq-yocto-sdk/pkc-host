@@ -1048,8 +1048,8 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 	}
 #endif
 	print_debug("Ring: %d	Shadow counter address	%p\n", jr_id,
-		    &(rp->shadow_counters->req_jobs_added));
-	rp->shadow_counters->req_jobs_added = be32_to_cpu(rp->counters->jobs_added);
+		    &(rp->shadow_counters->jobs_added));
+	rp->shadow_counters->jobs_added = be32_to_cpu(rp->counters->jobs_added);
 
 /*
  * No more need to update total counters ...
@@ -1579,7 +1579,7 @@ int32_t process_response(fsl_crypto_dev_t *dev,
 				}
 				ring_cursor->counters->jobs_processed += 1;
 				iowrite32be(ring_cursor->counters->jobs_processed,
-					&ring_cursor->shadow_counters->resp_jobs_processed);
+					&ring_cursor->shadow_counters->jobs_processed);
 
 				--resp_cnt;
 			}

@@ -242,16 +242,6 @@ struct counters_mem {
 };
 
 /*******************************************************************************
-Description :	Contains the counters per job ring. This mem exist on device.
-Fields      :	req_jobs_added	: Count of Jobs added by driver to the fw.
-		resp_jobs_processed: Count of resp jobs processed by driver.
-*******************************************************************************/
-struct ring_shadow_counters_mem {
-	uint32_t req_jobs_added;
-	uint32_t resp_jobs_processed;
-};
-
-/*******************************************************************************
 Description :	Contains the identity information of the crypto device.
 Fields      :	dev_type	: P4080/c270/c280/c290 – String version
 					of the device type
@@ -318,7 +308,7 @@ typedef struct fsl_h_rsrc_ring_pair {
 	struct ring_idxs_mem *indexes;
 	struct ring_counters_mem *counters;
 	struct ring_counters_mem *s_c_counters;
-	struct ring_shadow_counters_mem *shadow_counters;
+	struct ring_counters_mem *shadow_counters;
 
 	uint32_t depth;
 	uint32_t core_no;
@@ -368,7 +358,7 @@ struct fw_resp_ring {
 	struct ring_idxs_mem *idxs;
 	struct ring_counters_mem *cntrs;
 	struct ring_counters_mem *s_c_cntrs;
-	struct ring_shadow_counters_mem *s_cntrs;
+	struct ring_counters_mem *s_cntrs;
 };
 
 /*******************************************************************************
@@ -455,7 +445,7 @@ typedef struct fsl_crypto_dev {
 	volatile crypto_c_hs_mem_t *c_hs_mem;
 
 	/* Pointer to the shadow ring counters memory */
-	struct ring_shadow_counters_mem *s_r_cntrs;
+	struct ring_counters_mem *s_r_cntrs;
 
 	/* Pointer to the shadow total counters memory */
 	struct counters_mem *s_cntrs;
