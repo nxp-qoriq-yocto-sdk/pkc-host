@@ -388,7 +388,7 @@ typedef struct crypto_h_mem_layout {
 
 } crypto_h_mem_layout_t;
 
-typedef struct driver_ob_mem {
+struct driver_ob_mem {
 	uint32_t drv_resp_rings;
 	uint32_t fw_resp_ring;
 	uint32_t ip_pool;
@@ -399,7 +399,7 @@ typedef struct driver_ob_mem {
 	uint32_t s_c_r_cntrs_mem;
 	uint32_t s_c_cntrs_mem;
 	uint32_t cntrs_mem;
-} driver_ob_mem_t;
+};
 
 /* Per dev status structure */
 typedef struct per_dev_struct {
@@ -427,7 +427,7 @@ typedef struct fsl_crypto_dev {
 
 	crypto_dev_info_t dev_info;
 	struct crypto_dev_config *config;
-	driver_ob_mem_t ob_mem;
+	struct driver_ob_mem ob_mem;
 	uint32_t tot_req_mem_size;
 
 	/* Pointer to the memory on the host side, structures the plain bytes.
