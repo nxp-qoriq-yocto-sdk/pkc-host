@@ -76,10 +76,6 @@ static void store_dev_ctx(void *buffer, uint8_t rid, uint32_t wi)
 
 #endif
 
-/* For debugging purpose */
-static volatile uint32_t enqueue_counter;
-static volatile uint32_t dequeue_counter;
-
 void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	fsl_h_rsrc_ring_pair_t *rp;
