@@ -190,7 +190,7 @@ void rearrange_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	dev->num_of_rings = config->num_of_rings;
 }
 
-static uint32_t calc_rp_mem_len(struct crypto_dev_config *config)
+static uint32_t count_ring_slots(struct crypto_dev_config *config)
 {
 	uint32_t i, len = 0;
 
@@ -209,14 +209,14 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 				struct crypto_dev_config *config)
 {
 	uint32_t ob_mem_len = sizeof(crypto_h_mem_layout_t);
-	uint32_t rp_len;
+	uint32_t total_ring_slots;
 	uint32_t fw_rr_size;
 
 	/* Correct the ring depths to power of 2 */
-	rp_len = calc_rp_mem_len(config);
+	total_ring_slots = count_ring_slots(config);
 	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
 	dev->ob_mem.drv_resp_rings = ob_mem_len;
-	ob_mem_len += rp_len * sizeof(struct resp_ring_entry);
+	ob_mem_len += total_ring_slots * sizeof(struct resp_ring_entry);
 
 	/* For each rp we need a local memory for indexes */
 	/* FIXME: we should probably allocate
@@ -269,7 +269,7 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	/* Make the total mem requirement aligned to page size */
 	ob_mem_len = ALIGN_LEN_TO_PAGE_SIZE(ob_mem_len);
 
-	dev->tot_req_mem_size = rp_len * sizeof(struct req_ring_entry);
+	dev->tot_req_mem_size = total_ring_slots * sizeof(struct req_ring_entry);
 
 	return ob_mem_len;
 }
