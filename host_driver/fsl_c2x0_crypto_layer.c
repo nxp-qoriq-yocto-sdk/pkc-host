@@ -208,7 +208,7 @@ static uint32_t count_ring_slots(struct crypto_dev_config *config)
 static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 				struct crypto_dev_config *config)
 {
-	uint32_t ob_mem_len = sizeof(crypto_h_mem_layout_t);
+	uint32_t ob_mem_len = sizeof(struct crypto_h_mem_layout);
 	uint32_t total_ring_slots;
 	uint32_t fw_rr_size;
 
