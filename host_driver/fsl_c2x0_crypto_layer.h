@@ -104,7 +104,7 @@ typedef enum crypto_dev_type {
 Description : Defines the handshake memory on the host
 Fields      :
 ***********************************************************************/
-typedef struct fsl_h_mem_handshake {
+struct fsl_h_mem_handshake {
 	uint8_t state;
 	uint8_t result;
 
@@ -129,7 +129,7 @@ typedef struct fsl_h_mem_handshake {
 			uint32_t intr_ctrl_flag;
 		} ring;
 	} data;
-} fsl_h_mem_handshake_t;
+};
 
 /*******************************************************************************
 Description : Defines the handshake memory on the device
@@ -373,7 +373,7 @@ Fields      :	hs_mem	: Handshake memory - 64bytes
 		shadow_counters: Memory of the shadow counters per ring
 *******************************************************************************/
 struct crypto_h_mem_layout {
-	volatile fsl_h_mem_handshake_t hs_mem;
+	volatile struct fsl_h_mem_handshake hs_mem;
 
 	struct resp_ring_entry *fw_resp_ring;
 	struct resp_ring_entry *drv_resp_ring;
