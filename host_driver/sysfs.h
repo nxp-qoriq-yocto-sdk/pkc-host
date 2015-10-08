@@ -143,16 +143,7 @@ struct k_sysfs_file {
 	size_t buf_len;
 	void (*cb) (char *, char *, int);
 };
-
-/* TODO :
- * Renamed typedef struct fsl_pci_dev fsl_pci_dev_t
- *       to typedef struct fsl_pci_dev fsl_pci_dev_t_1
- * so as to avoid compilation error in old gcc version(gcc-4.5.2)
- * This error doesnt occur in later gcc versions
- * Need to find proper solution other than renaming
- */
-typedef struct fsl_pci_dev fsl_pci_dev_t_1;
-
+struct fsl_pci_dev;
 /* Head of all the sysfs entries */
 extern struct sysfs_dir *fsl_sysfs_entries;
 
@@ -160,12 +151,12 @@ extern struct sysfs_dir *fsl_sysfs_entries;
 extern void set_device(char *, char *, int);
 extern void c2x0_test_func(char *fname, char *test_name, int len);
 
-void set_sysfs_value(fsl_pci_dev_t_1 *fsl_pci_dev, sys_files_id_t id,
+void set_sysfs_value(struct fsl_pci_dev *fsl_pci_dev, sys_files_id_t id,
 		     uint8_t *value, size_t len);
 
-int32_t init_sysfs(fsl_pci_dev_t_1 *fsl_pci_dev);
+int32_t init_sysfs(struct fsl_pci_dev *fsl_pci_dev);
 int32_t init_common_sysfs(void);
-void sysfs_cleanup(fsl_pci_dev_t_1 *fsl_pci_dev);
+void sysfs_cleanup(struct fsl_pci_dev *fsl_pci_dev);
 void clean_common_sysfs(void);
 
 

@@ -226,7 +226,7 @@ int32_t init_common_sysfs(void)
     return 0;
 }
 
-int32_t init_sysfs(fsl_pci_dev_t *fsl_pci_dev)
+int32_t init_sysfs(struct fsl_pci_dev *fsl_pci_dev)
 {
 	uint32_t i = 0;
 
@@ -353,7 +353,7 @@ int32_t init_sysfs(fsl_pci_dev_t *fsl_pci_dev)
 	return 0;
 }
 
-void sysfs_cleanup(fsl_pci_dev_t *fsl_pci_dev)
+void sysfs_cleanup(struct fsl_pci_dev *fsl_pci_dev)
 {
 	uint32_t i = 0;
 
@@ -393,7 +393,7 @@ void sysfs_cleanup(fsl_pci_dev_t *fsl_pci_dev)
 	delete_sysfs_dir(fsl_pci_dev->sysfs.dev_dir);
 }
 
-struct k_sysfs_file *get_sys_file(fsl_pci_dev_t *fsl_pci_dev, sys_files_id_t id)
+struct k_sysfs_file *get_sys_file(struct fsl_pci_dev *fsl_pci_dev, sys_files_id_t id)
 {
 	struct k_sysfs_file *file;
 
@@ -421,7 +421,7 @@ struct k_sysfs_file *get_sys_file(fsl_pci_dev_t *fsl_pci_dev, sys_files_id_t id)
 	return file;
 }
 
-void set_sysfs_value(fsl_pci_dev_t *fsl_pci_dev, sys_files_id_t id,
+void set_sysfs_value(struct fsl_pci_dev *fsl_pci_dev, sys_files_id_t id,
 		     uint8_t *value, size_t len)
 {
 	struct k_sysfs_file *file = get_sys_file(fsl_pci_dev, id);

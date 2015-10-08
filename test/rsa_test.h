@@ -1186,6 +1186,4 @@ static uint8_t C_4096[] = {
 };
 
 static int c_4096 = sizeof(C_4096);
-/* extern int test_rsa_op(struct pkc_request *req, void (*cb) (struct pkc_request *, int32_t result)); */
-/* extern fsl_pci_dev_t *g_fsl_pci_dev; */
 #endif

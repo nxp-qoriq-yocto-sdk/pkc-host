@@ -406,7 +406,6 @@ typedef struct per_dev_struct {
 	atomic_t device_status;
 } per_dev_struct_t;
 
-typedef struct fsl_pci_dev fsl_pci_dev_t;
 typedef struct ctx_pool ctx_pool_t;
 
 /*******************************************************************************
@@ -423,7 +422,7 @@ Fields      :	priv_dev	: Low level private data structure of the device
 					as linked list.
 *******************************************************************************/
 typedef struct fsl_crypto_dev {
-	fsl_pci_dev_t *priv_dev;
+	struct fsl_pci_dev *priv_dev;
 
 	crypto_dev_info_t dev_info;
 	struct crypto_dev_config *config;
@@ -484,7 +483,7 @@ int32_t app_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 			 dev_dma_addr_t sec_desc);
 
-fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *dev,
+fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct fsl_pci_dev *dev,
 		struct crypto_dev_config *config);
 void demux_fw_responses(fsl_crypto_dev_t *dev);
 void cleanup_crypto_device(fsl_crypto_dev_t *dev);

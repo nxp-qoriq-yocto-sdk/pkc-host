@@ -171,7 +171,7 @@ Fields      :	dev_name: Name of the device
 		list	: To make multiple instances of this structure as
 				linked list.
 *******************************************************************************/
-typedef struct fsl_pci_dev {
+struct fsl_pci_dev {
 	uint32_t dev_no;
 
 	struct pci_dev *dev;
@@ -189,7 +189,7 @@ typedef struct fsl_pci_dev {
 	void *sysfs_dir;
 
 	struct list_head list;
-} fsl_pci_dev_t;
+};
 
 struct bh_handler {
 	int core_no;
@@ -200,7 +200,7 @@ struct bh_handler {
 
 fsl_crypto_dev_t *get_crypto_dev(uint32_t no);
 uint32_t get_no_of_devices(void);
-extern struct crypto_dev_config *get_dev_config(fsl_pci_dev_t *fsl_pci_dev);
+extern struct crypto_dev_config *get_dev_config(struct fsl_pci_dev *fsl_pci_dev);
 extern int32_t parse_config_file(int8_t *config_file);
 void sysfs_napi_loop_count_set(char *fname, char *count, int len);
 
