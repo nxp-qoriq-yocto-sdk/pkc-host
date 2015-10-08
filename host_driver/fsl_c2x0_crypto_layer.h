@@ -135,7 +135,7 @@ typedef struct fsl_h_mem_handshake {
 Description : Defines the handshake memory on the device
 Fields      :
 *******************************************************************************/
-typedef struct crypto_c_hs_mem {
+struct crypto_c_hs_mem {
 	uint32_t h_ob_mem_l;
 	uint32_t h_ob_mem_h;
 
@@ -170,7 +170,7 @@ typedef struct crypto_c_hs_mem {
 			uint32_t s_r_cntrs;
 		} ring;
 	} data;
-} crypto_c_hs_mem_t;
+};
 
 /********************************************/
 
@@ -440,7 +440,7 @@ typedef struct fsl_crypto_dev {
 	 * This data structure helps in structured access of raw bytes
 	 * in the device memory during the handshake.
 	 */
-	volatile crypto_c_hs_mem_t *c_hs_mem;
+	volatile struct crypto_c_hs_mem *c_hs_mem;
 
 	/* Pointer to the shadow ring counters memory */
 	struct ring_counters_mem *s_r_cntrs;
