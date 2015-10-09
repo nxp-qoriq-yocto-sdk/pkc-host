@@ -1161,11 +1161,8 @@ int fsl_request_irqs(fsl_pci_dev_t *fsl_pci_dev)
 		INIT_LIST_HEAD(&(isr_context->ring_list_head));
 		isr_context->dev = fsl_pci_dev;
 
-#ifdef MULTIPLE_MSI_SUPPORT
 		irq = fsl_pci_dev->dev->irq + i;
-#else
-		irq = fsl_pci_dev->dev->irq;
-#endif
+
 		/* Register the ISR with kernel for each vector */
 		err = request_irq(irq, (irq_handler_t) fsl_crypto_isr, 0,
 				fsl_pci_dev->dev_name, isr_context);
