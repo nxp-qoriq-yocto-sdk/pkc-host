@@ -40,8 +40,6 @@
 #include "device.h"
 #include "fsl_c2x0_crypto_layer.h"
 
-#define CRYPTO_JOB_CTX_SIZE     DEV_DMA_ALIGNMENT_BYTES
-
 /* General macros */
 #define FSL_PCI_DEV_NAME				"fsl_crypto_"
 /* Strlen of FSL_PCI_DEV_NAME + 1 for number of device + 1 for '\0' */
