@@ -90,7 +90,6 @@ inline uint64_t get_cpu_ticks(void)
 
 inline void check_test_done(void)
 {
-	print_debug("Inside %s\n", __func__);
 	if (!newtest)
 		return;
 
