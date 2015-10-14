@@ -2010,6 +2010,10 @@ free_config:
  ******************************************************************************/
 static void __exit fsl_crypto_drv_exit(void)
 {
+#ifndef VIRTIO_C2X0
+	clean_all_test();
+#endif
+
 #ifdef RNG_OFFLOAD 
 	rng_exit();
 #endif
@@ -2033,10 +2037,6 @@ static void __exit fsl_crypto_drv_exit(void)
 
 	/* Cleanup the per core linked list */
 	cleanup_percore_list();
-
-#ifndef VIRTIO_C2X0
-	clean_all_test();
-#endif
 
 	return;
 }
