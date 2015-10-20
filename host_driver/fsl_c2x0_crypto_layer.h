@@ -152,7 +152,7 @@ typedef struct crypto_c_hs_mem {
 			uint8_t num_of_rps;
 			uint8_t max_pri;
 			uint8_t num_of_fwresp_rings;
-			uint16_t req_mem_size;
+			uint32_t req_mem_size;
 			uint32_t drv_resp_ring;
 			uint32_t fw_resp_ring;
 			uint32_t s_cntrs;
