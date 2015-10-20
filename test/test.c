@@ -108,6 +108,9 @@ inline void check_test_done(void)
 		schedule_timeout(msecs_to_jiffies(1000));
 	}
 	exit = 1;
+	if (timer_set) {
+		del_timer(&test_timer);
+	}
 	timer_set = 0;
 	print_debug("Total enq: %d, Total deq: %d\n",
 		atomic_read(&total_enq_cnt), atomic_read(&total_deq_cnt));
@@ -279,6 +282,7 @@ int valid_test(void)
 
 void clean_all_test(void)
 {
+	/* FIXME: stop all test threads before driver exits */
 	cleanup_rsa_test();
 	cleanup_dsa_test();
 	cleanup_ecdh_test();
