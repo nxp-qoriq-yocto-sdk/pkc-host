@@ -244,5 +244,4 @@ int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem);
 #endif
 int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info);
 int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info);
-extern per_core_struct_t __percpu *per_core;
 #endif

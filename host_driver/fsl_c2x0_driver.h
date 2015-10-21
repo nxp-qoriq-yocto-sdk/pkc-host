@@ -214,8 +214,6 @@ typedef struct per_core_struct {
 	struct list_head ring_list_head;
 } per_core_struct_t;
 
-extern per_core_struct_t __percpu *per_core;
-
 fsl_crypto_dev_t *get_crypto_dev(uint32_t no);
 uint32_t get_no_of_devices(void);
 extern struct crypto_dev_config *get_dev_config(fsl_pci_dev_t *fsl_pci_dev);

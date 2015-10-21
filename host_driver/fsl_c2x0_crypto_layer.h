@@ -480,8 +480,6 @@ typedef struct fsl_crypto_dev {
 	atomic_t app_resp_cnt;
 } fsl_crypto_dev_t;
 
-/*extern void *per_core;*/
-/*extern per_core_struct_t __percpu *per_core;*/
 int32_t app_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 			 dev_dma_addr_t sec_desc);
 int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,

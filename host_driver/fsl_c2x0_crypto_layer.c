@@ -47,6 +47,7 @@
 #endif
 
 extern int32_t wt_cpu_mask;
+extern per_core_struct_t __percpu *per_core;
 
 #define DEFAULT_HOST_OP_BUFFER_POOL_SIZE	(1*1024)
 #define DEFAULT_FIRMWARE_RESP_RING_DEPTH	(128*4)
