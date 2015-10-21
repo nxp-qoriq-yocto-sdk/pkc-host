@@ -99,16 +99,19 @@ $(DRIVER_KOBJ)-objs += test/ecdh_keygen_test.o
 $(DRIVER_KOBJ)-objs += test/test.o
 endif
 
-.PHONY: build
+.PHONY: build clean
 
 build:
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
-	$(CROSS_COMPILE)gcc  -Wall apps/cli/cli.c -o apps/cli/cli
 
 modules_install:
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules_install
 
 clean:
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) clean
+	rm -f apps/cli/cli
 
 dist: clean
+
+apps/cli/cli : apps/cli/cli.c apps/cli/cli.h
+	$(CROSS_COMPILE)gcc -Wall apps/cli/cli.c -o apps/cli/cli
