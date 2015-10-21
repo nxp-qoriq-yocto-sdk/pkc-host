@@ -103,7 +103,7 @@ endif
 
 build:
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
-	$(CROSS_COMPILE)gcc  -Wall apps/cli/cli.c -o apps/cli/cli -static
+	$(CROSS_COMPILE)gcc  -Wall apps/cli/cli.c -o apps/cli/cli
 
 modules_install:
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules_install
