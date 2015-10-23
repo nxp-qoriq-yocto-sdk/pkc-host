@@ -190,12 +190,12 @@ typedef struct fsl_pci_dev {
 	struct list_head list;
 } fsl_pci_dev_t;
 
-typedef struct per_core_struct {
+struct bh_handler {
 	int core_no;
 	fsl_crypto_dev_t *c_dev;
 	struct work_struct work;
 	struct list_head ring_list_head;
-} per_core_struct_t;
+};
 
 fsl_crypto_dev_t *get_crypto_dev(uint32_t no);
 uint32_t get_no_of_devices(void);

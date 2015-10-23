@@ -162,7 +162,7 @@ struct sysfs_dir *fsl_sysfs_entries;
 void *wt_loop_cnt_sysfs_file;
 
 /* Pointer to the base of per cpu memory */
-per_core_struct_t __percpu *per_core;
+struct bh_handler __percpu *per_core;
 
 void sysfs_napi_loop_count_set(char *fname, char *count, int len)
 {
@@ -828,7 +828,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
  ******************************************************************************/
 static void response_ring_handler(struct work_struct *work)
 {
-	per_core_struct_t *bh = container_of(work, per_core_struct_t, work);
+	struct bh_handler *bh = container_of(work, struct bh_handler, work);
 	fsl_crypto_dev_t *c_dev;
 
 	if (unlikely(NULL == bh)) {
@@ -934,7 +934,7 @@ static uint64_t readtb(void)
 static irqreturn_t fsl_crypto_isr(int irq, void *data)
 {
 	isr_ctx_t *isr_ctx = (isr_ctx_t *) data;
-	per_core_struct_t *instance = NULL;
+	struct bh_handler *instance = NULL;
 	fsl_h_rsrc_ring_pair_t *rp = NULL;
 
 	if (unlikely(!isr_ctx)) {
@@ -1196,9 +1196,9 @@ free_irqs:
 int32_t create_per_core_info(void)
 {
 	uint32_t i = 0;
-	per_core_struct_t *instance;
+	struct bh_handler *instance;
 
-	per_core = alloc_percpu(per_core_struct_t);
+	per_core = alloc_percpu(struct bh_handler);
 
 	if (unlikely(per_core == NULL)) {
 		print_error("Mem allocation failed\n");
@@ -1214,8 +1214,6 @@ int32_t create_per_core_info(void)
 		instance->core_no = i;
 
 		INIT_LIST_HEAD(&(instance->ring_list_head));
-
-
 	}
 	return 0;
 }
@@ -1600,7 +1598,7 @@ disable_dev:
 static void cleanup_percore_list(void)
 {
 	uint32_t i = 0;
-	per_core_struct_t *cursor = NULL;
+	struct bh_handler *cursor = NULL;
 
 	if (per_core == NULL)
 		return;

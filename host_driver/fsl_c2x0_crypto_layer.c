@@ -47,7 +47,7 @@
 #endif
 
 extern int32_t wt_cpu_mask;
-extern per_core_struct_t __percpu *per_core;
+extern struct bh_handler __percpu *per_core;
 
 #define DEFAULT_HOST_OP_BUFFER_POOL_SIZE	(1*1024)
 #define DEFAULT_FIRMWARE_RESP_RING_DEPTH	(128*4)
@@ -85,7 +85,7 @@ void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	struct list_head *isr_ctx_list_head;
 	uint32_t total_cores = num_online_cpus();
 	uint16_t total_isrs = dev->priv_dev->intr_info.intr_vectors_cnt;
-	per_core_struct_t *instance;
+	struct bh_handler *instance;
 	isr_ctx_t *isr_ctx;
 
 	isr_ctx_list_head = &(dev->priv_dev->intr_info.isr_ctx_list_head);
@@ -1287,7 +1287,7 @@ rp_fail:
 void clear_ring_lists(void)
 {
 	uint32_t i;
-	per_core_struct_t *instance;
+	struct bh_handler *instance;
 	struct list_head *pos, *next;
 
 	for_each_online_cpu(i) {
