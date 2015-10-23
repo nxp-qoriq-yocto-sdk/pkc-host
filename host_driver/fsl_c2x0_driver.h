@@ -190,25 +190,10 @@ typedef struct fsl_pci_dev {
 	struct list_head list;
 } fsl_pci_dev_t;
 
-/*******************************************************************************
-Description :	Identifies a bottom half handler - Work queue is used
-Fields	    :	core_no: Number of the core to which this BH is affined
-		workq: Kernel data structure for work queue
-		work : Instance of the work to be posted in the queue
-*******************************************************************************/
-typedef struct bh_handler {
+typedef struct per_core_struct {
 	int core_no;
 	fsl_crypto_dev_t *c_dev;
 	struct work_struct work;
-} bh_handler_t;
-
-/*******************************************************************************
-Description :	Holds the per CPU information
-Fields      :	bh_handler : Holds the bh information affined to this core
-		ring_list  : Linked list of rings to be processed by this core
-*******************************************************************************/
-typedef struct per_core_struct {
-	bh_handler_t bh_handler;
 	struct list_head ring_list_head;
 } per_core_struct_t;
 

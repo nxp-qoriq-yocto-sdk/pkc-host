@@ -828,7 +828,7 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
  ******************************************************************************/
 static void response_ring_handler(struct work_struct *work)
 {
-	bh_handler_t *bh = container_of(work, bh_handler_t, work);
+	per_core_struct_t *bh = container_of(work, per_core_struct_t, work);
 	per_core_struct_t *instance;
 	fsl_crypto_dev_t *c_dev;
 
@@ -950,9 +950,9 @@ static irqreturn_t fsl_crypto_isr(int irq, void *data)
 		print_debug("SHEDULING THE WORK ON CORE : %d\n", rp->core_no);
 		/* From the core number get the per core info instance */
 		instance = per_cpu_ptr(per_core, rp->core_no);
-		instance->bh_handler.c_dev = isr_ctx->dev->crypto_dev;
+		instance->c_dev = isr_ctx->dev->crypto_dev;
 
-		queue_work_on(rp->core_no, workq, &(instance->bh_handler.work));
+		queue_work_on(rp->core_no, workq, &(instance->work));
 	}
 
 	return IRQ_HANDLED;
@@ -1212,8 +1212,8 @@ int32_t create_per_core_info(void)
 		if (!(wt_cpu_mask & (1 << i)))
 			continue;
 		instance = per_cpu_ptr(per_core, i);
-		INIT_WORK(&(instance->bh_handler.work), response_ring_handler);
-		instance->bh_handler.core_no = i;
+		INIT_WORK(&(instance->work), response_ring_handler);
+		instance->core_no = i;
 
 		INIT_LIST_HEAD(&(instance->ring_list_head));
 
