@@ -829,7 +829,6 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 static void response_ring_handler(struct work_struct *work)
 {
 	per_core_struct_t *bh = container_of(work, per_core_struct_t, work);
-	per_core_struct_t *instance;
 	fsl_crypto_dev_t *c_dev;
 
 	if (unlikely(NULL == bh)) {
@@ -841,8 +840,7 @@ static void response_ring_handler(struct work_struct *work)
 	print_debug("GOT INTERRUPT FROM DEV : %d\n", c_dev->config->dev_no);
 #ifdef MULTIPLE_RESP_RINGS
 	print_debug("Worker thread invoked on cpu [%d]\n", bh->core_no);
-	instance = per_cpu_ptr(per_core, bh->core_no);
-	process_rings(c_dev, &(instance->ring_list_head));
+	process_rings(c_dev, &(bh->ring_list_head));
 #else
 	demux_fw_responses(c_dev);
 #endif
