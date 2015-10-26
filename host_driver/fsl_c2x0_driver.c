@@ -957,7 +957,7 @@ static irqreturn_t fsl_crypto_isr(int irq, void *data)
 }
 
 /* release up to bar_max entries allocated in *bar array */
-void fsl_free_bar_map(pci_bar_info_t *bar, int bar_max)
+void fsl_free_bar_map(struct pci_bar_info *bar, int bar_max)
 {
 	int i;
 
@@ -968,7 +968,7 @@ void fsl_free_bar_map(pci_bar_info_t *bar, int bar_max)
 	}
 }
 
-int request_and_map_pci_resource(pci_bar_info_t *bar)
+int request_and_map_pci_resource(struct pci_bar_info *bar)
 {
 	int err = -ENOMEM;
 
@@ -1000,7 +1000,7 @@ int fsl_get_bar_map(fsl_pci_dev_t *fsl_pci_dev)
 {
 	int i;
 	struct pci_dev *dev = fsl_pci_dev->dev;
-	pci_bar_info_t *bars = fsl_pci_dev->bars;
+	struct pci_bar_info *bars = fsl_pci_dev->bars;
 
 	/* Get the BAR resources and remap them into the driver memory */
 	for (i = 0; i < MEM_TYPE_DRIVER; i++) {
@@ -1084,7 +1084,7 @@ int get_msi_iv(fsl_pci_dev_t *fsl_pci_dev)
 /* Get the MSI address and MSI data from the configuration space */
 void get_msi_config_data(fsl_pci_dev_t *fsl_pci_dev, isr_ctx_t *isr_context)
 {
-	pci_bar_info_t *bar = &fsl_pci_dev->bars[MEM_TYPE_MSI];
+	struct pci_bar_info *bar = &fsl_pci_dev->bars[MEM_TYPE_MSI];
 
 	pci_read_config_dword(fsl_pci_dev->dev, PCI_MSI_ADDR_LOW,
 			&(isr_context->msi_addr_low));

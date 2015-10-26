@@ -140,12 +140,12 @@ Fields      :	phy_addr	: Physical address of the BAR.
 		dma_addr	: DMA mapped address
 		len		: Length of the BAR
 *******************************************************************************/
-typedef struct pci_bar_info {
+struct pci_bar_info {
 	void *v_addr;
 	phys_addr_t phy_addr;
 	dma_addr_t dma_addr;
 	resource_size_t len;
-} pci_bar_info_t;
+};
 
 /*******************************************************************************
 Description:	Contains the interrupts information of the device
@@ -181,7 +181,7 @@ typedef struct fsl_pci_dev {
 	char dev_node_path[FSL_PCI_DEV_NODE_STD_PATH_LEN +
 			   FSL_PCI_DEV_NAME_MAX_LEN];
 
-	pci_bar_info_t bars[MEM_TYPE_MAX];
+	struct pci_bar_info bars[MEM_TYPE_MAX];
 	pci_intr_info_t intr_info;
 
 	dev_sysfs_entries_t sysfs;
