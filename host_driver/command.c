@@ -89,16 +89,16 @@ void process_cmd_response(fsl_crypto_dev_t *c_dev, dev_dma_addr_t desc,
 	}
 
 	print_debug("DEV_P_ADDR: %llx   HOST_V_ADDR: %p\n",
-		    (uint64_t)c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr,
-		    c_dev->mem[MEM_TYPE_DRIVER].host_v_addr);
+		    (uint64_t)c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr,
+		    c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr);
 
-	op_buf_addr = (dev_dma_addr_t) (op_buf_addr - c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr);
+	op_buf_addr = (dev_dma_addr_t) (op_buf_addr - c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr);
 	print_debug("Offset in device domain: %llx\n", (uint64_t)op_buf_addr);
 
-	op_buf_addr = (op_buf_addr - c_dev->mem[MEM_TYPE_DRIVER].host_p_addr);
+	op_buf_addr = (op_buf_addr - c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr);
 	print_debug("Offset in host domain: %llx\n", (uint64_t)op_buf_addr);
 
-	op_mem = (cmd_op_t *) (c_dev->mem[MEM_TYPE_DRIVER].host_v_addr +
+	op_mem = (cmd_op_t *) (c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr +
 			  (unsigned long)op_buf_addr);
 	print_debug("Buffer virtual address: %p\n", op_mem);
 
@@ -272,9 +272,9 @@ dconfig:
 	kfree(crypto_dev->ring_pairs);
 	/* REALLOCATE OB MEMORY */
 	pci_free_consistent(crypto_dev->priv_dev->dev,
-			    crypto_dev->mem[MEM_TYPE_DRIVER].len,
-			    crypto_dev->mem[MEM_TYPE_DRIVER].host_v_addr,
-			    crypto_dev->mem[MEM_TYPE_DRIVER].host_dma_addr);
+			    crypto_dev->priv_dev->bars[MEM_TYPE_DRIVER].len,
+			    crypto_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr,
+			    crypto_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr);
 
 	atomic_set(&(crypto_dev->crypto_dev_sess_cnt), 0);
 
@@ -592,18 +592,18 @@ static cmd_op_t *get_cmd_op_ctx(fsl_crypto_dev_t *c_dev,
 
 	init_completion(&(cmd_op->cmd_ctx->cmd_completion));
 
-	print_debug("host_p_addr: %pa\n", &(c_dev->mem[MEM_TYPE_DRIVER].host_p_addr));
-	print_debug("host_v_addr: %p\n", c_dev->mem[MEM_TYPE_DRIVER].host_v_addr);
+	print_debug("host_p_addr: %pa\n", &(c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr));
+	print_debug("host_v_addr: %p\n", c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr);
 	print_debug("get_cmd_op_ctx: cmd_op adr: %p\n", cmd_op);
 	print_debug("cmd_trace_ctx_t size: %zu\n", sizeof(cmd_trace_ctx_t));
 
 	op_dev_addr = (dev_dma_addr_t)
-	    (c_dev->mem[MEM_TYPE_DRIVER].host_p_addr) +
+	    (c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr) +
 	    (((unsigned long)cmd_op + sizeof(cmd_trace_ctx_t *)) -
-	     ((unsigned long)c_dev->mem[MEM_TYPE_DRIVER].host_v_addr));
+	     ((unsigned long)c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr));
 
 	op_dev_addr =
-	    (dev_dma_addr_t) (c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr +
+	    (dev_dma_addr_t) (c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr +
 			      op_dev_addr);
 
 	ASSIGN64(pci_cmd_desc->cmd_op, op_dev_addr);
@@ -682,18 +682,18 @@ int32_t send_command_to_fw(fsl_crypto_dev_t *c_dev, commands_t command,
 	}
 
 	print_debug("pci_cmd_desc: %p\n", pci_cmd_desc);
-	print_debug("host_v_addr: %p\n", c_dev->mem[MEM_TYPE_SRAM].host_v_addr);
+	print_debug("host_v_addr: %p\n", c_dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr);
 
 	desc_dev_addr =
 	    (dev_dma_addr_t) ((unsigned long)pci_cmd_desc -
-			      (unsigned long)c_dev->mem[MEM_TYPE_SRAM].
+			      (unsigned long)c_dev->priv_dev->bars[MEM_TYPE_SRAM].
 			      host_v_addr);
 
 	print_debug("desc_dev_addr: %llx\n", (uint64_t)desc_dev_addr);
-	print_debug("dev_p_addr: %llx\n", (uint64_t)c_dev->mem[MEM_TYPE_SRAM].dev_p_addr);
+	print_debug("dev_p_addr: %llx\n", (uint64_t)c_dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr);
 
 	desc_dev_addr =
-	    (dev_dma_addr_t) (c_dev->mem[MEM_TYPE_SRAM].dev_p_addr +
+	    (dev_dma_addr_t) (c_dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr +
 			      desc_dev_addr);
 
 	print_debug("Enqueueing CMD DESC ADDR: %llx\n", (uint64_t) desc_dev_addr);

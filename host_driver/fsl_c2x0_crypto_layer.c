@@ -281,12 +281,12 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	void *host_v_addr;
-	crypto_dev_mem_info_t *mem;
+	struct pci_bar_info *mem;
 	uint32_t ob_mem_len;
 
 	/* First get the total ob mem required */
 	ob_mem_len = calc_ob_mem_len(dev, config);
-	mem = &(dev->mem[MEM_TYPE_DRIVER]);
+	mem = &(dev->priv_dev->bars[MEM_TYPE_DRIVER]);
 
 	print_debug("alloc_ob_mem entered...\n");
 	print_debug("Total ob mem returned: %d\n", ob_mem_len);
@@ -341,8 +341,8 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 
 void init_handshake(fsl_crypto_dev_t *dev)
 {
-	phys_addr_t ob_mem = dev->mem[MEM_TYPE_DRIVER].host_p_addr;
-	phys_addr_t msi_mem = dev->mem[MEM_TYPE_MSI].host_p_addr;
+	phys_addr_t ob_mem = dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr;
+	phys_addr_t msi_mem = dev->priv_dev->bars[MEM_TYPE_MSI].host_p_addr;
 
 	/* Write our address to the firmware -
 	 * It uses this to give it details when it is up */
@@ -432,7 +432,7 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 
 void send_hs_init_config(fsl_crypto_dev_t *dev)
 {
-	phys_addr_t host_p_addr = dev->mem[MEM_TYPE_DRIVER].host_p_addr;
+	phys_addr_t host_p_addr = dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr;
 	phys_addr_t drv_resp_rings = dev->ob_mem.drv_resp_rings + host_p_addr;
 	phys_addr_t fw_resp_ring   = dev->ob_mem.fw_resp_ring + host_p_addr;
 	phys_addr_t s_cntrs        = dev->ob_mem.s_c_cntrs_mem + host_p_addr;
@@ -566,19 +566,19 @@ void hs_firmware_up(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	p_ob_l = be32_to_cpu(hsdev->p_ob_mem_base_l);
 	p_ob_h = be32_to_cpu(hsdev->p_ob_mem_base_h);
 
-	dev->mem[MEM_TYPE_SRAM].dev_p_addr = (dev_p_addr_t) p_ib_h << 32;
-	dev->mem[MEM_TYPE_SRAM].dev_p_addr |= p_ib_l;
+	dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr = (dev_p_addr_t) p_ib_h << 32;
+	dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr |= p_ib_l;
 
-	dev->mem[MEM_TYPE_DRIVER].dev_p_addr = (dev_p_addr_t) p_ob_h << 32;
-	dev->mem[MEM_TYPE_DRIVER].dev_p_addr |= p_ob_l;
+	dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr = (dev_p_addr_t) p_ob_h << 32;
+	dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr |= p_ob_l;
 
 	print_debug("Device Shared Details\n");
 	print_debug("Ib mem PhyAddr L: %0x, H: %0x\n", p_ib_l, p_ib_h);
 	print_debug("Ob mem PhyAddr L: %0x, H: %0x\n", p_ob_l, p_ob_h);
 	print_debug("Formed dev ib mem phys address: %llx\n",
-			(uint64_t)dev->mem[MEM_TYPE_SRAM].dev_p_addr);
+			(uint64_t)dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr);
 	print_debug("Formed dev ob mem phys address: %llx\n",
-			(uint64_t)dev->mem[MEM_TYPE_DRIVER].dev_p_addr);
+			(uint64_t)dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr);
 
 	send_hs_command(HS_INIT_CONFIG, dev, config);
 }
@@ -605,13 +605,13 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	ip_pool = be32_to_cpu(hscfg->ip_pool);
 	resp_intr_ctrl_flag = be32_to_cpu(hscfg->resp_intr_ctrl_flag);
 
-	dev->s_r_cntrs = dev->mem[MEM_TYPE_SRAM].host_v_addr + s_r_cntrs;
-	dev->s_cntrs = dev->mem[MEM_TYPE_SRAM].host_v_addr + s_cntrs;
-	dev->ip_pool.fw_pool.dev_p_addr = dev->mem[MEM_TYPE_SRAM].dev_p_addr + ip_pool;
-	dev->ip_pool.fw_pool.host_map_p_addr = dev->mem[MEM_TYPE_SRAM].host_p_addr + ip_pool;
-	dev->ip_pool.fw_pool.host_map_v_addr = dev->mem[MEM_TYPE_SRAM].host_v_addr + ip_pool;
+	dev->s_r_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_r_cntrs;
+	dev->s_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_cntrs;
+	dev->ip_pool.fw_pool.dev_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr + ip_pool;
+	dev->ip_pool.fw_pool.host_map_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_p_addr + ip_pool;
+	dev->ip_pool.fw_pool.host_map_v_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + ip_pool;
 
-	ptr = dev->mem[MEM_TYPE_SRAM].host_v_addr + resp_intr_ctrl_flag;
+	ptr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + resp_intr_ctrl_flag;
 	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
 		dev->fw_resp_rings[i].intr_ctrl_flag = ptr + (i * sizeof(uint32_t *));
 		dev->fw_resp_rings[i].s_cntrs = &(dev->s_r_cntrs[dev->num_of_rings + i]);
@@ -619,7 +619,7 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	}
 
 	print_debug(" ----- Details from firmware  -------\n");
-	print_debug("SRAM H V ADDR: %p\n", dev->mem[MEM_TYPE_SRAM].host_v_addr);
+	print_debug("SRAM H V ADDR: %p\n", dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr);
 	print_debug("S R CNTRS OFFSET: %x\n", s_r_cntrs);
 	print_debug("S CNTRS OFFSET: %x\n", s_cntrs);
 	print_debug("-----------------------------------\n");
@@ -648,8 +648,8 @@ uint8_t hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *con
 	intr_ctrl_flag = be32_to_cpu(hsring->intr_ctrl_flag);
 
 	dev->ring_pairs[rid].shadow_counters = &(dev->s_r_cntrs[rid]);
-	dev->ring_pairs[rid].req_r =dev->mem[MEM_TYPE_SRAM].host_v_addr + req_r;
-	dev->ring_pairs[rid].intr_ctrl_flag = dev->mem[MEM_TYPE_SRAM].host_v_addr +
+	dev->ring_pairs[rid].req_r =dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + req_r;
+	dev->ring_pairs[rid].intr_ctrl_flag = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr +
 			intr_ctrl_flag;
 
 	print_debug("Ring id: %d\n", rid);
@@ -739,8 +739,8 @@ error:
 #ifdef CHECK_EP_BOOTUP
 static void check_ep_bootup(fsl_crypto_dev_t *dev)
 {
-	unsigned char *ibaddr = dev->mem[MEM_TYPE_SRAM].host_v_addr;
-	unsigned char *obaddr = dev->mem[MEM_TYPE_DRIVER].host_v_addr;
+	unsigned char *ibaddr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr;
+	unsigned char *obaddr = dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr;
 
 	char stdstr[] = "SUCCESS";
 	char obstr[] = "0000000";
@@ -793,7 +793,7 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	volatile unsigned int val;
 
 	/* CCSR base address is obtained from BAR0 device register */
-	void *ccsr = dev->mem[MEM_TYPE_CONFIG].host_v_addr;
+	void *ccsr = dev->priv_dev->bars[MEM_TYPE_CONFIG].host_v_addr;
 
 	/* disable L2 SRAM ECC error
 	 * TODO: enable ECC by default for normal operation */
@@ -838,10 +838,10 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	val = ioread32be(ccsr + 0xc30); /* LAW_LAWAR1 */
 
 	print_debug("======= setup_ep =======\n");
-	print_debug("Ob mem dma_addr: %pa\n", &(dev->mem[MEM_TYPE_DRIVER].host_p_addr));
-	print_debug("Ob mem len: %d\n", dev->mem[MEM_TYPE_DRIVER].len);
+	print_debug("Ob mem dma_addr: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr));
+	print_debug("Ob mem len: %pa\n", &dev->priv_dev->bars[MEM_TYPE_DRIVER].len);
 	print_debug("BAR0 V Addr: %p\n", ccsr);
-	print_debug("MSI mem: %pa\n", &(dev->mem[MEM_TYPE_MSI].host_p_addr));
+	print_debug("MSI mem: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_MSI].host_p_addr));
 
 	/* Dumping the registers set */
 	print_debug(" ==== EP REGISTERS ====\n");
@@ -875,7 +875,7 @@ static int32_t load_firmware(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 {
 	uint8_t byte;
 	uint32_t i;
-	void *fw_addr = dev->mem[MEM_TYPE_SRAM].host_v_addr +
+	void *fw_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr +
 				FIRMWARE_IMAGE_START_OFFSET;
 	loff_t pos = 0;
 	struct file *file = NULL;
@@ -978,7 +978,7 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 	dev_dma_addr_t ctx_desc = 0;
 	void *h_desc = 0;
 #ifdef SEC_DMA
-        dev_p_addr_t offset = c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+        dev_p_addr_t offset = c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 #endif
 #endif
@@ -1107,7 +1107,7 @@ int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set)
 
 void stop_device(fsl_crypto_dev_t *dev)
 {
-	void *ccsr = dev->mem[MEM_TYPE_CONFIG].host_v_addr;
+	void *ccsr = dev->priv_dev->bars[MEM_TYPE_CONFIG].host_v_addr;
 	uint32_t cpu0_en;
 
 	/* Reset CPU core only if it is enabled. If the device is coming from
@@ -1123,7 +1123,7 @@ void stop_device(fsl_crypto_dev_t *dev)
 
 void start_device(fsl_crypto_dev_t *dev)
 {
-	void *ccsr = dev->mem[MEM_TYPE_CONFIG].host_v_addr;
+	void *ccsr = dev->priv_dev->bars[MEM_TYPE_CONFIG].host_v_addr;
 	uint32_t cpu0_en;
 
 	/* Enable CPU core and let it run the firmware: either release the
@@ -1141,7 +1141,6 @@ void start_device(fsl_crypto_dev_t *dev)
 fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 				  struct crypto_dev_config *config)
 {
-	uint32_t i;
 	uint8_t crypto_info_str[CRYPTO_INFO_STR_LENGTH];
 	fsl_crypto_dev_t *c_dev;
 	int err;
@@ -1162,18 +1161,11 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(fsl_pci_dev_t *fsl_pci_dev,
 	/* HACK */
 	fsl_pci_dev->crypto_dev = c_dev;
 
-	/* Get the inbound memory addresses from the PCI driver */
-	for (i = 0; i < MEM_TYPE_MAX; i++) {
-		c_dev->mem[i].type = i;
-		c_dev->mem[i].host_v_addr = fsl_pci_dev->bars[i].host_v_addr;
-		c_dev->mem[i].host_p_addr = fsl_pci_dev->bars[i].host_p_addr;
-	}
-
 	atomic_set(&(c_dev->crypto_dev_sess_cnt), 0);
 
-	c_dev->c_hs_mem = c_dev->mem[MEM_TYPE_SRAM].host_v_addr + HS_MEM_OFFSET;
+	c_dev->c_hs_mem = c_dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + HS_MEM_OFFSET;
 
-	print_debug("IB mem addr: %p\n", c_dev->mem[MEM_TYPE_SRAM].host_v_addr);
+	print_debug("IB mem addr: %p\n", c_dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr);
 	print_debug("Device hs mem addr: %p\n", c_dev->c_hs_mem);
 
 	/* Rearrange rings according to their priority */
@@ -1275,9 +1267,9 @@ op_pool_fail:
 	kfree(c_dev->ip_pool.drv_map_pool.pool);
 ip_pool_fail:
 	pci_free_consistent(c_dev->priv_dev->dev,
-			    c_dev->mem[MEM_TYPE_DRIVER].len,
-			    c_dev->mem[MEM_TYPE_DRIVER].host_v_addr,
-			    c_dev->mem[MEM_TYPE_DRIVER].host_dma_addr);
+			    c_dev->priv_dev->bars[MEM_TYPE_DRIVER].len,
+			    c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr,
+			    c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr);
 ob_mem_fail:
 	kfree(c_dev->ring_pairs);
 rp_fail:
@@ -1318,11 +1310,11 @@ void cleanup_crypto_device(fsl_crypto_dev_t *dev)
 	kfree(dev->op_pool.pool);
 
 	/* Free the pci alloc consistent mem */
-	if (dev->mem[MEM_TYPE_DRIVER].host_v_addr) {
+	if (dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr) {
 		pci_free_consistent(dev->priv_dev->dev,
-				    dev->mem[MEM_TYPE_DRIVER].len,
-				    dev->mem[MEM_TYPE_DRIVER].host_v_addr,
-				    dev->mem[MEM_TYPE_DRIVER].host_dma_addr);
+				    dev->priv_dev->bars[MEM_TYPE_DRIVER].len,
+				    dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr,
+				    dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr);
 	}
 
 	clear_ring_lists();
@@ -1363,7 +1355,7 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 #endif
 
 #ifdef SEC_DMA
-        dev_p_addr_t offset = dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+        dev_p_addr_t offset = dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 
 #ifdef SEC_DMA

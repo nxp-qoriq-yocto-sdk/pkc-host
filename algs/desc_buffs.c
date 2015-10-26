@@ -197,7 +197,7 @@ static inline dev_dma_addr_t op_buf_d_dma_addr(fsl_crypto_dev_t *dev,
 					       dma_addr_t h_dma_addr)
 {
 	dev_dma_addr_t d_dma = (dev_dma_addr_t) h_dma_addr;
-	return d_dma + dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+	return d_dma + dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 }
 
 static phys_addr_t h_map_p_addr(fsl_crypto_dev_t *dev, void *h_v_addr)

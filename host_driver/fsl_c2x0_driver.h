@@ -145,6 +145,7 @@ struct pci_bar_info {
 	phys_addr_t host_p_addr;
 	dma_addr_t host_dma_addr;
 	resource_size_t len;
+	dev_p_addr_t dev_p_addr;
 };
 
 /*******************************************************************************

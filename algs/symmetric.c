@@ -337,7 +337,7 @@ static void create_dst_sg_table(fsl_crypto_dev_t *c_dev,
 
 	while (sg_cnt--) {
 		dma_addr = (dev_dma_addr_t) sg_dma_address(sg) +
-		    c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+		    c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 		length = sg_dma_len(sg);
 		ASSIGN64(sec4_sg_ptr->ptr, dma_addr);
 		iowrite32be(length, &sec4_sg_ptr->len);
@@ -553,7 +553,7 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 	if (!dst_sgcnt) {
 		/* NO NEED TO CREATE SG TABLE FOR DEST */
 		dst_dma = (dev_dma_addr_t) sg_dma_address(req->dst);
-		dst_dma = c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr + dst_dma;
+		dst_dma = c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr + dst_dma;
 		out_options = 0;
 	} else {
 		/* CREATE DEST SG TABLE */

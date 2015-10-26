@@ -158,7 +158,7 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 	    (struct rsa_pub_desc_s *)mem->desc_buff.v_mem;
 
 #ifdef SEC_DMA
-        dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+        dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 
 #ifdef PRINT_DEBUG
@@ -442,7 +442,7 @@ static void constr_rsa_priv3_op_desc(crypto_mem_info_t *mem_info)
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 
 #ifdef SEC_DMA
-        dev_p_addr_t offset = mem_info->dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+        dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 
 	start_idx &= HDR_START_IDX_MASK;
@@ -650,7 +650,7 @@ int rsa_op(struct pkc_request *req)
 	}
 
 #ifdef SEC_DMA
-	offset = c_dev->mem[MEM_TYPE_DRIVER].dev_p_addr;
+	offset = c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 
 	ctx_pool_id = sess_cnt % NR_CTX_POOLS;

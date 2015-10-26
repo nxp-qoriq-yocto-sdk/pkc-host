@@ -158,20 +158,4 @@ typedef enum crypto_dev_mem_type {
 	MEM_TYPE_MAX
 } crypto_dev_mem_type_t;
 
-/*******************************************************************************
-Description :	Contains the information of all the mem associated with this dev
-Fields      :	type          : Type of the memory ~= BAR's
-		host_v_addr   : Virtual address of mem in host
-		host_p_addr   : Physical address of mem in host
-		dev_p_addr    : May not need. Holding it for now.
-*******************************************************************************/
-typedef struct crypto_dev_mem_info {
-	crypto_dev_mem_type_t type;
-	uint32_t len;
-	void *host_v_addr;
-	phys_addr_t host_p_addr;
-	dev_p_addr_t dev_p_addr;
-	dma_addr_t host_dma_addr;
-} crypto_dev_mem_info_t;
-
 #endif

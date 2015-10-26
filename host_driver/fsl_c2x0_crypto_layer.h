@@ -427,7 +427,6 @@ typedef struct fsl_crypto_dev {
 
 	crypto_dev_info_t dev_info;
 	struct crypto_dev_config *config;
-	crypto_dev_mem_info_t mem[MEM_TYPE_MAX + 1];
 	driver_ob_mem_t ob_mem;
 	uint32_t tot_req_mem_size;
 
