@@ -435,7 +435,7 @@ typedef struct fsl_crypto_dev {
 	 * Represents the memory layout on the driver.
 	 * This points to the base of the outbound memory.
 	 */
-	crypto_h_mem_layout_t *h_mem;
+	crypto_h_mem_layout_t *host_mem;
 
 	/* Pointer to the device's handshake memory, this will be
 	 * pointing to the inbound memory.

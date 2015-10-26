@@ -276,7 +276,7 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 
 /*
  * Allocate outbound memory
- * dev->h_mem will contain the driver's memory map
+ * dev->host_mem will contain the driver's memory map
  */
 int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
@@ -309,31 +309,31 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	/* The outbound pointers are locations where the device is supposed to
 	 * write to. We calculate the addresses with the correct offset and
 	 * then communicate them to the device in the handshake operation */
-	dev->h_mem = host_v_addr;
-	dev->h_mem->fw_resp_ring = host_v_addr + dev->ob_mem.fw_resp_ring;
-	dev->h_mem->drv_resp_ring = host_v_addr + dev->ob_mem.drv_resp_rings;
-	dev->h_mem->l_idxs_mem = host_v_addr + dev->ob_mem.l_idxs_mem;
-	dev->h_mem->s_c_idxs_mem = host_v_addr + dev->ob_mem.s_c_idxs_mem;
-	dev->h_mem->l_r_cntrs_mem = host_v_addr + dev->ob_mem.l_r_cntrs_mem;
-	dev->h_mem->s_c_r_cntrs_mem = host_v_addr + dev->ob_mem.s_c_r_cntrs_mem;
-	dev->h_mem->cntrs_mem = host_v_addr + dev->ob_mem.cntrs_mem;
-	dev->h_mem->s_c_cntrs_mem = host_v_addr + dev->ob_mem.s_c_cntrs_mem;
-	dev->h_mem->op_pool = host_v_addr + dev->ob_mem.op_pool;
-	dev->h_mem->ip_pool = host_v_addr + dev->ob_mem.ip_pool;
+	dev->host_mem = host_v_addr;
+	dev->host_mem->fw_resp_ring = host_v_addr + dev->ob_mem.fw_resp_ring;
+	dev->host_mem->drv_resp_ring = host_v_addr + dev->ob_mem.drv_resp_rings;
+	dev->host_mem->l_idxs_mem = host_v_addr + dev->ob_mem.l_idxs_mem;
+	dev->host_mem->s_c_idxs_mem = host_v_addr + dev->ob_mem.s_c_idxs_mem;
+	dev->host_mem->l_r_cntrs_mem = host_v_addr + dev->ob_mem.l_r_cntrs_mem;
+	dev->host_mem->s_c_r_cntrs_mem = host_v_addr + dev->ob_mem.s_c_r_cntrs_mem;
+	dev->host_mem->cntrs_mem = host_v_addr + dev->ob_mem.cntrs_mem;
+	dev->host_mem->s_c_cntrs_mem = host_v_addr + dev->ob_mem.s_c_cntrs_mem;
+	dev->host_mem->op_pool = host_v_addr + dev->ob_mem.op_pool;
+	dev->host_mem->ip_pool = host_v_addr + dev->ob_mem.ip_pool;
 
 	print_debug("====== OB MEM POINTERS =======\n");
-	print_debug("Hmem		: %p\n", dev->h_mem);
-	print_debug("H HS Mem		: %p\n", &(dev->h_mem->hs_mem));
-	print_debug("Fw resp ring	: %p\n", dev->h_mem->fw_resp_ring);
-	print_debug("Drv resp ring	: %p\n", dev->h_mem->drv_resp_ring);
-	print_debug("L Idxs mem		: %p\n", dev->h_mem->l_idxs_mem);
-	print_debug("S C Idxs mem	: %p\n", dev->h_mem->s_c_idxs_mem);
-	print_debug("L R cntrs mem	: %p\n", dev->h_mem->l_r_cntrs_mem);
-	print_debug("S C R cntrs mem	: %p\n", dev->h_mem->s_c_r_cntrs_mem);
-	print_debug("Cntrs mem		: %p\n", dev->h_mem->cntrs_mem);
-	print_debug("S C cntrs mem	: %p\n", dev->h_mem->s_c_cntrs_mem);
-	print_debug("OP pool		: %p\n", dev->h_mem->op_pool);
-	print_debug("IP pool		: %p\n", dev->h_mem->ip_pool);
+	print_debug("Hmem		: %p\n", dev->host_mem);
+	print_debug("H HS Mem		: %p\n", &(dev->host_mem->hs_mem));
+	print_debug("Fw resp ring	: %p\n", dev->host_mem->fw_resp_ring);
+	print_debug("Drv resp ring	: %p\n", dev->host_mem->drv_resp_ring);
+	print_debug("L Idxs mem		: %p\n", dev->host_mem->l_idxs_mem);
+	print_debug("S C Idxs mem	: %p\n", dev->host_mem->s_c_idxs_mem);
+	print_debug("L R cntrs mem	: %p\n", dev->host_mem->l_r_cntrs_mem);
+	print_debug("S C R cntrs mem	: %p\n", dev->host_mem->s_c_r_cntrs_mem);
+	print_debug("Cntrs mem		: %p\n", dev->host_mem->cntrs_mem);
+	print_debug("S C cntrs mem	: %p\n", dev->host_mem->s_c_cntrs_mem);
+	print_debug("OP pool		: %p\n", dev->host_mem->op_pool);
+	print_debug("IP pool		: %p\n", dev->host_mem->ip_pool);
 	print_debug("Total req mem size : %d\n", dev->tot_req_mem_size);
 
 	return 0;
@@ -349,7 +349,7 @@ void init_handshake(fsl_crypto_dev_t *dev)
 	uint32_t l_val = (uint32_t) (ob_mem & PHYS_ADDR_L_32_BIT_MASK);
 	uint32_t h_val = (ob_mem & PHYS_ADDR_H_32_BIT_MASK) >> 32;
 
-	dev->h_mem->hs_mem.state = DEFAULT;
+	dev->host_mem->hs_mem.state = DEFAULT;
 
 	print_debug("C HS mem addr: %p\n", &(dev->c_hs_mem->h_ob_mem_l));
 	print_debug("Host ob mem addr	L: %0x	H: %0x\n", l_val, h_val);
@@ -377,15 +377,15 @@ void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 		fw_ring = &dev->fw_resp_rings[i];
 		fw_ring->id = i;
 		fw_ring->depth = DEFAULT_FIRMWARE_RESP_RING_DEPTH;
-		fw_ring->v_addr = dev->h_mem->fw_resp_ring;
+		fw_ring->v_addr = dev->host_mem->fw_resp_ring;
 		fw_ring->p_addr = __pa(fw_ring->v_addr);
 
 		/* We allocated "config->num_of_rings + 1" in alloc_ob_mem and
 		 * id is the last one in this array of rings. But if
 		 * NUM_OF_RESP_RINGS is not 1, we've got ourself a mess here */
-		fw_ring->idxs = &(dev->h_mem->l_idxs_mem[id]);
-		fw_ring->cntrs = &(dev->h_mem->l_r_cntrs_mem[id]);
-		fw_ring->s_c_cntrs = &(dev->h_mem->s_c_r_cntrs_mem[id]);
+		fw_ring->idxs = &(dev->host_mem->l_idxs_mem[id]);
+		fw_ring->cntrs = &(dev->host_mem->l_r_cntrs_mem[id]);
+		fw_ring->s_c_cntrs = &(dev->host_mem->s_c_r_cntrs_mem[id]);
 		fw_ring->s_cntrs = NULL;
 
 		/* FIXME: clean-up leftovers. It probably makes sense to actually
@@ -400,7 +400,7 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 	fsl_h_rsrc_ring_pair_t *rp;
 	uint32_t i;
 	/* all response ring entries start here. Each ring has rp->depth entries */
-	struct resp_ring_entry *resp_r = dev->h_mem->drv_resp_ring;
+	struct resp_ring_entry *resp_r = dev->host_mem->drv_resp_ring;
 
 	for (i = 0; i < dev->num_of_rings; i++) {
 		rp = &(dev->ring_pairs[i]);
@@ -415,9 +415,9 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 		resp_r += rp->depth;
 
 		rp->intr_ctrl_flag = NULL;
-		rp->indexes = &(dev->h_mem->l_idxs_mem[i]);
-		rp->counters = &(dev->h_mem->l_r_cntrs_mem[i]);
-		rp->s_c_counters = &(dev->h_mem->s_c_r_cntrs_mem[i]);
+		rp->indexes = &(dev->host_mem->l_idxs_mem[i]);
+		rp->counters = &(dev->host_mem->l_r_cntrs_mem[i]);
+		rp->s_c_counters = &(dev->host_mem->s_c_r_cntrs_mem[i]);
 		rp->shadow_counters = NULL;
 
 		INIT_LIST_HEAD(&(rp->isr_ctx_list_node));
@@ -549,13 +549,13 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 void hs_firmware_up(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	char *str_state = "FIRMWARE_UP\n";
-	struct fw_up_data *hsdev = &dev->h_mem->hs_mem.data.device;
+	struct fw_up_data *hsdev = &dev->host_mem->hs_mem.data.device;
 
 	print_debug(" ----------- FIRMWARE_UP -----------\n");
 	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE, str_state,
 			strlen(str_state));
 
-	dev->h_mem->hs_mem.state = DEFAULT;
+	dev->host_mem->hs_mem.state = DEFAULT;
 
 	iowrite32be(hsdev->p_ib_mem_base_l, &hsdev->p_ib_mem_base_l);
 	iowrite32be(hsdev->p_ib_mem_base_h, &hsdev->p_ib_mem_base_h);
@@ -590,14 +590,14 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 {
 	char *str_state = "FW_INIT_CONFIG_COMPLETE\n";
 	void *ptr;
-	struct config_data *hscfg = &dev->h_mem->hs_mem.data.config;
+	struct config_data *hscfg = &dev->host_mem->hs_mem.data.config;
 	int i;
 
 	print_debug("--- FW_INIT_CONFIG_COMPLETE ---\n");
 	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE, str_state,
 			strlen(str_state));
 
-	dev->h_mem->hs_mem.state = DEFAULT;
+	dev->host_mem->hs_mem.state = DEFAULT;
 
 	iowrite32be(hscfg->s_r_cntrs, &hscfg->s_r_cntrs);
 	dev->s_r_cntrs = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->s_r_cntrs;
@@ -636,12 +636,12 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 uint8_t hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
 {
 	char *str_state = "FW_INIT_RING_PAIR_COMPLETE\n";
-	struct ring_data *hsring = &dev->h_mem->hs_mem.data.ring;
+	struct ring_data *hsring = &dev->host_mem->hs_mem.data.ring;
 
 	print_debug("---- FW_INIT_RING_PAIR_COMPLETE ----\n");
 	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE, str_state,
 			strlen(str_state));
-	dev->h_mem->hs_mem.state = DEFAULT;
+	dev->host_mem->hs_mem.state = DEFAULT;
 
 	iowrite32be(hsring->req_r, &hsring->req_r);
 	iowrite32be(hsring->intr_ctrl_flag, &hsring->intr_ctrl_flag);
@@ -674,8 +674,8 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 #define HS_TIMEOUT_IN_MS		(50 * LOOP_BREAK_TIMEOUT_MS)
 
 	while (true) {
-		iowrite8(dev->h_mem->hs_mem.state, &dev->h_mem->hs_mem.state);
-		switch (dev->h_mem->hs_mem.state) {
+		iowrite8(dev->host_mem->hs_mem.state, &dev->host_mem->hs_mem.state);
+		switch (dev->host_mem->hs_mem.state) {
 		case FIRMWARE_UP:
 			hs_firmware_up(dev, config);
 			break;
@@ -683,9 +683,9 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 			hs_fw_init_complete(dev, config, rid);
 			break;
 		case FW_INIT_RING_PAIR_COMPLETE:
-			if (f_get_a(config->ring[rid].flags) > dev->h_mem->hs_mem.data.device.no_secs) {
+			if (f_get_a(config->ring[rid].flags) > dev->host_mem->hs_mem.data.device.no_secs) {
 				print_error("Wrong Affinity for the ring: %d\n", rid);
-				print_error("No of SECs are %d\n", dev->h_mem->hs_mem.data.device.no_secs);
+				print_error("No of SECs are %d\n", dev->host_mem->hs_mem.data.device.no_secs);
 				goto error;
 			}
 			rid = hs_init_rp_complete(dev, config, rid);
@@ -719,7 +719,7 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 			break;
 
 		default:
-			print_error("Invalid state: %d\n", dev->h_mem->hs_mem.state);
+			print_error("Invalid state: %d\n", dev->host_mem->hs_mem.state);
 			goto error;
 		}
 	}
@@ -912,12 +912,12 @@ int init_op_pool(fsl_crypto_dev_t *dev)
 {
 	void *pool;
 
-	pool = create_pool(dev->h_mem->op_pool, DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
+	pool = create_pool(dev->host_mem->op_pool, DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
 	if (!pool)
 		return -ENOMEM;
 
-	dev->op_pool.v_addr = dev->h_mem->op_pool;
-	dev->op_pool.p_addr = __pa(dev->h_mem->op_pool);
+	dev->op_pool.v_addr = dev->host_mem->op_pool;
+	dev->op_pool.p_addr = __pa(dev->host_mem->op_pool);
 	dev->op_pool.pool = pool;
 	return 0;
 }
@@ -926,12 +926,12 @@ int init_ip_pool(fsl_crypto_dev_t *dev)
 {
 	void *pool;
 
-	pool = create_pool(dev->h_mem->ip_pool, FIRMWARE_IP_BUFFER_POOL_SIZE);
+	pool = create_pool(dev->host_mem->ip_pool, FIRMWARE_IP_BUFFER_POOL_SIZE);
 	if (!pool)
 		return -ENOMEM;
 
-	dev->ip_pool.drv_map_pool.v_addr = dev->h_mem->ip_pool;
-	dev->ip_pool.drv_map_pool.p_addr = __pa(dev->h_mem->ip_pool);
+	dev->ip_pool.drv_map_pool.v_addr = dev->host_mem->ip_pool;
+	dev->ip_pool.drv_map_pool.p_addr = __pa(dev->host_mem->ip_pool);
 	dev->ip_pool.drv_map_pool.pool = pool;
 	print_debug("Registered Pool Address: %p\n", pool);
 	return 0;
@@ -1049,10 +1049,10 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 /*
  * No more need to update total counters ...
 
-	c_dev->h_mem->cntrs_mem->tot_jobs_added += 1;
+	c_dev->host_mem->cntrs_mem->tot_jobs_added += 1;
 	print_debug("Tot jobs added	:%d\n",
-	c_dev->h_mem->cntrs_mem->tot_jobs_added);
-	iowrite32be(c_dev->h_mem->cntrs_mem->tot_jobs_added,
+	c_dev->host_mem->cntrs_mem->tot_jobs_added);
+	iowrite32be(c_dev->host_mem->cntrs_mem->tot_jobs_added,
 		&c_dev->s_mem.s_cntrs->tot_jobs_added);
 */
 

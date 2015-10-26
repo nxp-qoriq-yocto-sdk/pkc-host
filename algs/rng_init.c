@@ -470,7 +470,7 @@ int32_t rng_instantiation(fsl_crypto_dev_t *c_dev)
 	int no_of_secs, i;
 	int err = -ENODEV;
 
-	no_of_secs = c_dev->h_mem->hs_mem.data.device.no_secs;
+	no_of_secs = c_dev->host_mem->hs_mem.data.device.no_secs;
 
 	for (i = 1; i <= no_of_secs; i++) {
 		err = rng_op(c_dev, i, RNG_SELF_TEST);
