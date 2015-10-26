@@ -549,7 +549,7 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 void hs_firmware_up(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	char *str_state = "FIRMWARE_UP\n";
-	struct fw_up_data *hsdev = &dev->host_mem->hs_mem.data.device;
+	volatile struct fw_up_data *hsdev = &dev->host_mem->hs_mem.data.device;
 	uint32_t p_ib_l;
 	uint32_t p_ib_h;
 	uint32_t p_ob_l;
@@ -586,8 +586,12 @@ void hs_firmware_up(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
 {
 	char *str_state = "FW_INIT_CONFIG_COMPLETE\n";
+	volatile struct config_data *hscfg = &dev->host_mem->hs_mem.data.config;
 	void *ptr;
-	struct config_data *hscfg = &dev->host_mem->hs_mem.data.config;
+	uint32_t s_r_cntrs;
+	uint32_t s_cntrs;
+	uint32_t ip_pool;
+	uint32_t resp_intr_ctrl_flag;
 	int i;
 
 	print_debug("--- FW_INIT_CONFIG_COMPLETE ---\n");
@@ -596,20 +600,18 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 
 	dev->host_mem->hs_mem.state = DEFAULT;
 
-	iowrite32be(hscfg->s_r_cntrs, &hscfg->s_r_cntrs);
-	dev->s_r_cntrs = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->s_r_cntrs;
+	s_r_cntrs = be32_to_cpu(hscfg->s_r_cntrs);
+	s_cntrs = be32_to_cpu(hscfg->s_cntrs);
+	ip_pool = be32_to_cpu(hscfg->ip_pool);
+	resp_intr_ctrl_flag = be32_to_cpu(hscfg->resp_intr_ctrl_flag);
 
-	iowrite32be(hscfg->s_cntrs, &hscfg->s_cntrs);
-	dev->s_cntrs = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->s_cntrs;
+	dev->s_r_cntrs = dev->mem[MEM_TYPE_SRAM].host_v_addr + s_r_cntrs;
+	dev->s_cntrs = dev->mem[MEM_TYPE_SRAM].host_v_addr + s_cntrs;
+	dev->ip_pool.fw_pool.dev_p_addr = dev->mem[MEM_TYPE_SRAM].dev_p_addr + ip_pool;
+	dev->ip_pool.fw_pool.host_map_p_addr = dev->mem[MEM_TYPE_SRAM].host_p_addr + ip_pool;
+	dev->ip_pool.fw_pool.host_map_v_addr = dev->mem[MEM_TYPE_SRAM].host_v_addr + ip_pool;
 
-	iowrite32be(hscfg->ip_pool, &hscfg->ip_pool);
-
-	dev->ip_pool.fw_pool.dev_p_addr = dev->mem[MEM_TYPE_SRAM].dev_p_addr + hscfg->ip_pool;
-	dev->ip_pool.fw_pool.host_map_p_addr = dev->mem[MEM_TYPE_SRAM].host_p_addr + hscfg->ip_pool;
-	dev->ip_pool.fw_pool.host_map_v_addr = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->ip_pool;
-	iowrite32be(hscfg->resp_intr_ctrl_flag, &hscfg->resp_intr_ctrl_flag);
-
-	ptr = dev->mem[MEM_TYPE_SRAM].host_v_addr + hscfg->resp_intr_ctrl_flag;
+	ptr = dev->mem[MEM_TYPE_SRAM].host_v_addr + resp_intr_ctrl_flag;
 	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
 		dev->fw_resp_rings[i].intr_ctrl_flag = ptr + (i * sizeof(uint32_t *));
 		dev->fw_resp_rings[i].s_cntrs = &(dev->s_r_cntrs[dev->num_of_rings + i]);
@@ -618,8 +620,8 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 
 	print_debug(" ----- Details from firmware  -------\n");
 	print_debug("SRAM H V ADDR: %p\n", dev->mem[MEM_TYPE_SRAM].host_v_addr);
-	print_debug("S R CNTRS OFFSET: %x\n", hscfg->s_r_cntrs);
-	print_debug("S CNTRS: %x\n", hscfg->s_cntrs);
+	print_debug("S R CNTRS OFFSET: %x\n", s_r_cntrs);
+	print_debug("S CNTRS OFFSET: %x\n", s_cntrs);
 	print_debug("-----------------------------------\n");
 	print_debug("R S Cntrs: %p\n", dev->s_r_cntrs);
 	print_debug("S Cntrs: %p\n", dev->s_cntrs);
@@ -633,21 +635,22 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 uint8_t hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
 {
 	char *str_state = "FW_INIT_RING_PAIR_COMPLETE\n";
-	struct ring_data *hsring = &dev->host_mem->hs_mem.data.ring;
+	volatile struct ring_data *hsring = &dev->host_mem->hs_mem.data.ring;
+	uint32_t req_r;
+	uint32_t intr_ctrl_flag;
 
 	print_debug("---- FW_INIT_RING_PAIR_COMPLETE ----\n");
 	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE, str_state,
 			strlen(str_state));
-	dev->host_mem->hs_mem.state = DEFAULT;
 
-	iowrite32be(hsring->req_r, &hsring->req_r);
-	iowrite32be(hsring->intr_ctrl_flag, &hsring->intr_ctrl_flag);
+	dev->host_mem->hs_mem.state = DEFAULT;
+	req_r = be32_to_cpu(hsring->req_r);
+	intr_ctrl_flag = be32_to_cpu(hsring->intr_ctrl_flag);
 
 	dev->ring_pairs[rid].shadow_counters = &(dev->s_r_cntrs[rid]);
-	dev->ring_pairs[rid].req_r =dev->mem[MEM_TYPE_SRAM].host_v_addr +
-			hsring->req_r;
+	dev->ring_pairs[rid].req_r =dev->mem[MEM_TYPE_SRAM].host_v_addr + req_r;
 	dev->ring_pairs[rid].intr_ctrl_flag = dev->mem[MEM_TYPE_SRAM].host_v_addr +
-			hsring->intr_ctrl_flag;
+			intr_ctrl_flag;
 
 	print_debug("Ring id: %d\n", rid);
 	print_debug("Shadow cntrs: %p\n", dev->ring_pairs[rid].shadow_counters);
@@ -672,7 +675,6 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 #define HS_TIMEOUT_IN_MS		(50 * LOOP_BREAK_TIMEOUT_MS)
 
 	while (true) {
-		iowrite8(dev->host_mem->hs_mem.state, &dev->host_mem->hs_mem.state);
 		switch (dev->host_mem->hs_mem.state) {
 		case FIRMWARE_UP:
 			hs_firmware_up(dev, config);

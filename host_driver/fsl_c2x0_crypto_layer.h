@@ -373,7 +373,7 @@ Fields      :	hs_mem	: Handshake memory - 64bytes
 		shadow_counters: Memory of the shadow counters per ring
 *******************************************************************************/
 typedef struct crypto_h_mem_layout {
-	fsl_h_mem_handshake_t hs_mem;
+	volatile fsl_h_mem_handshake_t hs_mem;
 
 	struct resp_ring_entry *fw_resp_ring;
 	struct resp_ring_entry *drv_resp_ring;
