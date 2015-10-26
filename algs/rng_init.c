@@ -469,7 +469,7 @@ int32_t rng_instantiation(fsl_crypto_dev_t *c_dev)
 {
 	uint32_t no_of_secs;
 	uint32_t i;
-	int err = -ENODEV;
+	int32_t err = -ENODEV;
 
 	no_of_secs = be32_to_cpu(c_dev->host_mem->hs_mem.data.device.no_secs);
 
