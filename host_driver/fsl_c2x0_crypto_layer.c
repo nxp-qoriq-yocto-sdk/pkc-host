@@ -550,6 +550,10 @@ void hs_firmware_up(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	char *str_state = "FIRMWARE_UP\n";
 	struct fw_up_data *hsdev = &dev->host_mem->hs_mem.data.device;
+	uint32_t p_ib_l;
+	uint32_t p_ib_h;
+	uint32_t p_ob_l;
+	uint32_t p_ob_h;
 
 	print_debug(" ----------- FIRMWARE_UP -----------\n");
 	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE, str_state,
@@ -557,27 +561,20 @@ void hs_firmware_up(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 
 	dev->host_mem->hs_mem.state = DEFAULT;
 
-	iowrite32be(hsdev->p_ib_mem_base_l, &hsdev->p_ib_mem_base_l);
-	iowrite32be(hsdev->p_ib_mem_base_h, &hsdev->p_ib_mem_base_h);
-	iowrite32be(hsdev->p_ob_mem_base_l, &hsdev->p_ob_mem_base_l);
-	iowrite32be(hsdev->p_ob_mem_base_h, &hsdev->p_ob_mem_base_h);
-	iowrite32be(hsdev->no_secs,         &hsdev->no_secs);
+	p_ib_l = be32_to_cpu(hsdev->p_ib_mem_base_l);
+	p_ib_h = be32_to_cpu(hsdev->p_ib_mem_base_h);
+	p_ob_l = be32_to_cpu(hsdev->p_ob_mem_base_l);
+	p_ob_h = be32_to_cpu(hsdev->p_ob_mem_base_h);
+
+	dev->mem[MEM_TYPE_SRAM].dev_p_addr = (dev_p_addr_t) p_ib_h << 32;
+	dev->mem[MEM_TYPE_SRAM].dev_p_addr |= p_ib_l;
+
+	dev->mem[MEM_TYPE_DRIVER].dev_p_addr = (dev_p_addr_t) p_ob_h << 32;
+	dev->mem[MEM_TYPE_DRIVER].dev_p_addr |= p_ob_l;
 
 	print_debug("Device Shared Details\n");
-	print_debug("Ib mem PhyAddr L: %0x, H: %0x\n",
-			hsdev->p_ib_mem_base_l, hsdev->p_ib_mem_base_h);
-
-	print_debug("Ob mem PhyAddr L: %0x, H: %0x\n",
-			hsdev->p_ob_mem_base_l, hsdev->p_ob_mem_base_h);
-
-	dev->mem[MEM_TYPE_SRAM].dev_p_addr = (dev_p_addr_t)
-		((dev_p_addr_t) (hsdev->p_ib_mem_base_h) << 32) |
-		(hsdev->p_ib_mem_base_l);
-
-	dev->mem[MEM_TYPE_DRIVER].dev_p_addr = (dev_p_addr_t)
-		((dev_p_addr_t) (hsdev->p_ob_mem_base_h) << 32) |
-		(hsdev->p_ob_mem_base_l);
-
+	print_debug("Ib mem PhyAddr L: %0x, H: %0x\n", p_ib_l, p_ib_h);
+	print_debug("Ob mem PhyAddr L: %0x, H: %0x\n", p_ob_l, p_ob_h);
 	print_debug("Formed dev ib mem phys address: %llx\n",
 			(uint64_t)dev->mem[MEM_TYPE_SRAM].dev_p_addr);
 	print_debug("Formed dev ob mem phys address: %llx\n",
@@ -669,6 +666,7 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	uint8_t rid = 0;
 	uint32_t timeoutcntr = 0;
+	uint32_t no_secs;
 #define LOOP_BREAK_TIMEOUT_MS		1000
 #define LOOP_BREAK_TIMEOUT_JIFFIES	msecs_to_jiffies(LOOP_BREAK_TIMEOUT_MS)
 #define HS_TIMEOUT_IN_MS		(50 * LOOP_BREAK_TIMEOUT_MS)
@@ -683,9 +681,10 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 			hs_fw_init_complete(dev, config, rid);
 			break;
 		case FW_INIT_RING_PAIR_COMPLETE:
-			if (f_get_a(config->ring[rid].flags) > dev->host_mem->hs_mem.data.device.no_secs) {
+			no_secs = be32_to_cpu(dev->host_mem->hs_mem.data.device.no_secs);
+			if (f_get_a(config->ring[rid].flags) > no_secs) {
 				print_error("Wrong Affinity for the ring: %d\n", rid);
-				print_error("No of SECs are %d\n", dev->host_mem->hs_mem.data.device.no_secs);
+				print_error("No of SECs are %d\n", no_secs);
 				goto error;
 			}
 			rid = hs_init_rp_complete(dev, config, rid);
