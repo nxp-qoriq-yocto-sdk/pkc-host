@@ -135,15 +135,15 @@ typedef struct isr_ctx {
 
 /*******************************************************************************
 Description :	Contains the PCI BAR information.
-Fields      :	phy_addr	: Physical address of the BAR.
-		v_addr		: Kernel mapped virtual address.
-		dma_addr	: DMA mapped address
+Fields      :	host_p_addr	: Physical address of the BAR.
+		host_v_addr	: Kernel mapped virtual address.
+		host_dma_addr	: DMA mapped address
 		len		: Length of the BAR
 *******************************************************************************/
 struct pci_bar_info {
-	void *v_addr;
-	phys_addr_t phy_addr;
-	dma_addr_t dma_addr;
+	void *host_v_addr;
+	phys_addr_t host_p_addr;
+	dma_addr_t host_dma_addr;
 	resource_size_t len;
 };
 

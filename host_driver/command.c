@@ -169,7 +169,7 @@ void set_device(char *fname, char *device, int32_t size)
 	cleanup_crypto_device(c_dev);
 
 	/* PUT DEVICE IN SET MODE */
-	ccsr = fsl_pci_dev->bars[MEM_TYPE_CONFIG].v_addr;
+	ccsr = fsl_pci_dev->bars[MEM_TYPE_CONFIG].host_v_addr;
 	iowrite32be(0, ccsr + 0x41090);  /* PIC_PIR */
 
 	/* GET THE OLD DEVICE CONFIG */

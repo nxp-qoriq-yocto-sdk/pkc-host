@@ -962,8 +962,8 @@ void fsl_free_bar_map(struct pci_bar_info *bar, int bar_max)
 	int i;
 
 	for (i = 0; i < bar_max; i++) {
-		iounmap(bar->v_addr);
-		release_mem_region(bar->phy_addr, bar->len);
+		iounmap(bar->host_v_addr);
+		release_mem_region(bar->host_p_addr, bar->len);
 		bar++;
 	}
 }
@@ -973,25 +973,25 @@ int request_and_map_pci_resource(struct pci_bar_info *bar)
 	int err = -ENOMEM;
 
 	/* Request resource region */
-	if (!request_mem_region(bar->phy_addr, bar->len, "FSL-CRYPTO")) {
+	if (!request_mem_region(bar->host_p_addr, bar->len, "FSL-CRYPTO")) {
 		print_error("BAR: Request mem region failed\n");
 		return err;
 	}
 
 	/* Map the MEM to the kernel address space */
-	bar->v_addr = ioremap(bar->phy_addr, (unsigned long)bar->len);
-	if (!bar->v_addr) {
+	bar->host_v_addr = ioremap(bar->host_p_addr, (unsigned long)bar->len);
+	if (!bar->host_v_addr) {
 		print_error("BAR: Mapping to kernel address failed\n");
 		goto out_free;
 	}
 
 	/* We will not be using DMA from RC or DMA from EP.
 	 * Hence this memory need not be mapped to DMA. */
-	bar->dma_addr = 0;
+	bar->host_dma_addr = 0;
 	return 0;
 
 out_free:
-	release_mem_region(bar->phy_addr, bar->len);
+	release_mem_region(bar->host_p_addr, bar->len);
 	return err;
 
 }
@@ -1006,17 +1006,17 @@ int fsl_get_bar_map(fsl_pci_dev_t *fsl_pci_dev)
 	for (i = 0; i < MEM_TYPE_DRIVER; i++) {
 		/* Read the hardware address and length*/
 		bars[i].len = pci_resource_len(dev, i);
-		bars[i].phy_addr = pci_resource_start(dev, i);
-		if (!bars[i].phy_addr) {
+		bars[i].host_p_addr = pci_resource_start(dev, i);
+		if (!bars[i].host_p_addr) {
 			DEV_PRINT_ERROR("BAR %d: failed to get physical address\n", i);
 			goto error; /* no clean-up required */
 		}
-		DEV_PRINT_DEBUG("BAR %d: physical address %pa\n", i, &bars[i].phy_addr);
+		DEV_PRINT_DEBUG("BAR %d: physical address %pa\n", i, &bars[i].host_p_addr);
 
 		if (request_and_map_pci_resource(&bars[i]) != 0)
 			goto error;
 		DEV_PRINT_DEBUG("BAR %d: virtual address %p, length %pa\n", i,
-				bars[i].v_addr, &bars[i].len);
+				bars[i].host_v_addr, &bars[i].len);
 	}
 	return 0;
 
@@ -1097,11 +1097,11 @@ void get_msi_config_data(fsl_pci_dev_t *fsl_pci_dev, isr_ctx_t *isr_context)
 			isr_context->msi_addr_low, isr_context->msi_addr_high,
 			isr_context->msi_data);
 
-	bar->phy_addr = isr_context->msi_addr_low;
+	bar->host_p_addr = isr_context->msi_addr_low;
 	if (sizeof(phys_addr_t) == sizeof(u64))
-		bar->phy_addr |= ((u64) isr_context->msi_addr_high) << 32;
+		bar->host_p_addr |= ((u64) isr_context->msi_addr_high) << 32;
 
-	bar->v_addr = (void *) phys_to_virt((unsigned long)bar->phy_addr);
+	bar->host_v_addr = (void *) phys_to_virt((unsigned long)bar->host_p_addr);
 }
 
 void fsl_release_irqs(fsl_pci_dev_t *fsl_pci_dev)
@@ -1559,13 +1559,13 @@ static void cleanup_pci_device(fsl_pci_dev_t *dev)
 
 	/* Free the BAR related resources */
 	for (i = 0; i < MEM_TYPE_DRIVER; i++) {
-		if (NULL != dev->bars[i].v_addr) {
+		if (NULL != dev->bars[i].host_v_addr) {
 			dev_print_dbg(dev, "IOunmap\n");
 			/* io unmap */
-			iounmap(dev->bars[i].v_addr);
+			iounmap(dev->bars[i].host_v_addr);
 		}
 
-		if (0 != dev->bars[i].phy_addr) {
+		if (0 != dev->bars[i].host_p_addr) {
 			dev_print_dbg(dev, "Releasing region\n");
 			/* Free the resource */
 			/* Free the mem region */
