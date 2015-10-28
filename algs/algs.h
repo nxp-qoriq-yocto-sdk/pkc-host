@@ -95,11 +95,11 @@ typedef enum crypto_op {
 
 struct fsl_crypto_alg {
 	struct list_head entry;
-	int op_type;
-	int alg_type;
-	int alg_op;
-	int class1_alg_type;
-	int class2_alg_type;
+	uint32_t op_type;
+	uint32_t alg_type;
+	uint32_t alg_op;
+	uint32_t class1_alg_type;
+	uint32_t class2_alg_type;
 	bool ahash;
 	union {
 		struct crypto_alg crypto_alg;
