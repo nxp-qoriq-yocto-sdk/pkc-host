@@ -122,7 +122,7 @@ Fields      :	vector_no: vector number of the interrupt
 *******************************************************************************/
 typedef struct isr_ctx {
 	uint32_t irq;
-	struct fsl_pci_dev *dev;
+	struct c29x_dev *dev;
 	/* List of Bhs for this ISR */
 /*	LIST_HEAD(isr_bh_list); */
 	uint32_t msi_addr_low;
@@ -171,7 +171,7 @@ Fields      :	dev_name: Name of the device
 		list	: To make multiple instances of this structure as
 				linked list.
 *******************************************************************************/
-struct fsl_pci_dev {
+struct c29x_dev {
 	uint32_t dev_no;
 
 	struct pci_dev *dev;
@@ -200,7 +200,7 @@ struct bh_handler {
 
 fsl_crypto_dev_t *get_crypto_dev(uint32_t no);
 uint32_t get_no_of_devices(void);
-extern struct crypto_dev_config *get_dev_config(struct fsl_pci_dev *fsl_pci_dev);
+extern struct crypto_dev_config *get_dev_config(struct c29x_dev *fsl_pci_dev);
 extern int32_t parse_config_file(int8_t *config_file);
 void sysfs_napi_loop_count_set(char *fname, char *count, int len);
 

@@ -133,7 +133,7 @@ void set_device(char *fname, char *device, int32_t size)
 {
 	int32_t cpu = 0;
 	per_dev_struct_t *dev_stat = NULL;
-	struct fsl_pci_dev *fsl_pci_dev = NULL;
+	struct c29x_dev *fsl_pci_dev = NULL;
 	fsl_crypto_dev_t *c_dev = NULL;
 	struct crypto_dev_config *config = NULL;
 	unsigned long dev_no;

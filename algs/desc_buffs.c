@@ -41,7 +41,7 @@
 #include "memmgr.h"
 
 #ifdef SEC_DMA
-extern struct fsl_pci_dev *g_fsl_pci_dev;
+extern struct c29x_dev *g_fsl_pci_dev;
 #endif
 
 static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
@@ -148,7 +148,7 @@ Returns     :	SUCCESS/FAILURE
 
 int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 {
-	struct fsl_pci_dev *pci_dev = mem_info->dev->priv_dev;
+	struct c29x_dev *pci_dev = mem_info->dev->priv_dev;
 	buffer_info_t *buffers = mem_info->buffers;
 	uint32_t i = 0;
 

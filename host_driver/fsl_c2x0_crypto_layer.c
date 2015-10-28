@@ -1138,7 +1138,7 @@ void start_device(fsl_crypto_dev_t *dev)
 	udelay(250);
 }
 
-fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct fsl_pci_dev *fsl_pci_dev,
+fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 				  struct crypto_dev_config *config)
 {
 	uint8_t crypto_info_str[CRYPTO_INFO_STR_LENGTH];

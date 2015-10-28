@@ -33,7 +33,7 @@
 #define PERF_TEST
 #define SIMPLE_TEST_ENABLE
 
-extern struct fsl_pci_dev *g_fsl_pci_dev;
+extern struct c29x_dev *g_fsl_pci_dev;
 extern int test_rsa_pub_op_1k(void);
 extern int test_rsa_pub_op_2k(void);
 extern int test_rsa_pub_op_4k(void);

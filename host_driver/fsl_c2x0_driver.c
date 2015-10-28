@@ -131,7 +131,7 @@ static struct pci_device_id fsl_crypto_pci_dev_ids[] = {
 	{0,},
 };
 
-struct fsl_pci_dev *g_fsl_pci_dev;
+struct c29x_dev *g_fsl_pci_dev;
 
 /*********************************************************
  *        FILE OPERATION STRUCTURE                       *
@@ -225,8 +225,8 @@ uint32_t get_no_of_devices(void)
  ******************************************************************************/
 fsl_crypto_dev_t *get_crypto_dev(uint32_t no)
 {
-	struct fsl_pci_dev *dev_n_cursor = NULL;
-	struct fsl_pci_dev *dev_cursor = NULL;
+	struct c29x_dev *dev_n_cursor = NULL;
+	struct c29x_dev *dev_cursor = NULL;
 
 	list_for_each_entry_safe(dev_cursor, dev_n_cursor, &pci_dev_list, list) {
 		print_debug("Input number [%d] Dev cursor dev no [%d]\n", no,
@@ -887,7 +887,7 @@ struct crypto_dev_config *get_config(uint32_t dev_no)
  *
  ******************************************************************************/
 
-struct crypto_dev_config *get_dev_config(struct fsl_pci_dev *fsl_pci_dev)
+struct crypto_dev_config *get_dev_config(struct c29x_dev *fsl_pci_dev)
 {
 	struct crypto_dev_config *config = NULL;
 
@@ -996,7 +996,7 @@ out_free:
 
 }
 
-int fsl_get_bar_map(struct fsl_pci_dev *fsl_pci_dev)
+int fsl_get_bar_map(struct c29x_dev *fsl_pci_dev)
 {
 	int i;
 	struct pci_dev *dev = fsl_pci_dev->dev;
@@ -1029,7 +1029,7 @@ error:
 }
 
 #ifdef MULTIPLE_MSI_SUPPORT
-int get_msi_iv_cnt(struct fsl_pci_dev *fsl_pci_dev, uint8_t num_of_vectors)
+int get_msi_iv_cnt(struct c29x_dev *fsl_pci_dev, uint8_t num_of_vectors)
 {
 	int err, tmp;
 	uint16_t msi_ctrl_word;
@@ -1069,7 +1069,7 @@ int get_msi_iv_cnt(struct fsl_pci_dev *fsl_pci_dev, uint8_t num_of_vectors)
 	return 0;
 }
 #else
-int get_msi_iv(struct fsl_pci_dev *fsl_pci_dev)
+int get_msi_iv(struct c29x_dev *fsl_pci_dev)
 {
 	if (pci_enable_msi(fsl_pci_dev->dev) != 0) {
 		DEV_PRINT_ERROR("MSI enable failed !!\n");
@@ -1082,7 +1082,7 @@ int get_msi_iv(struct fsl_pci_dev *fsl_pci_dev)
 #endif
 
 /* Get the MSI address and MSI data from the configuration space */
-void get_msi_config_data(struct fsl_pci_dev *fsl_pci_dev, isr_ctx_t *isr_context)
+void get_msi_config_data(struct c29x_dev *fsl_pci_dev, isr_ctx_t *isr_context)
 {
 	struct pci_bar_info *bar = &fsl_pci_dev->bars[MEM_TYPE_MSI];
 
@@ -1104,7 +1104,7 @@ void get_msi_config_data(struct fsl_pci_dev *fsl_pci_dev, isr_ctx_t *isr_context
 	bar->host_v_addr = (void *) phys_to_virt((unsigned long)bar->host_p_addr);
 }
 
-void fsl_release_irqs(struct fsl_pci_dev *fsl_pci_dev)
+void fsl_release_irqs(struct c29x_dev *fsl_pci_dev)
 {
 	isr_ctx_t *isr_context, *isr_n_context;
 
@@ -1118,7 +1118,7 @@ void fsl_release_irqs(struct fsl_pci_dev *fsl_pci_dev)
 	}
 }
 
-int get_irq_vectors(struct fsl_pci_dev *fsl_pci_dev, uint8_t num_of_rings)
+int get_irq_vectors(struct c29x_dev *fsl_pci_dev, uint8_t num_of_rings)
 {
 	int err;
 
@@ -1135,7 +1135,7 @@ int get_irq_vectors(struct fsl_pci_dev *fsl_pci_dev, uint8_t num_of_rings)
 	return err;
 }
 
-int fsl_request_irqs(struct fsl_pci_dev *fsl_pci_dev)
+int fsl_request_irqs(struct c29x_dev *fsl_pci_dev)
 {
 	uint16_t i, num_of_vectors;
 	uint32_t irq;
@@ -1548,7 +1548,7 @@ out:
  * Description  : Does the PCI related cleanup of a device
  *
  ******************************************************************************/
-static void cleanup_pci_device(struct fsl_pci_dev *dev)
+static void cleanup_pci_device(struct c29x_dev *dev)
 {
 	uint32_t i;
 
@@ -1652,7 +1652,7 @@ static void cleanup_config_list(void)
 static void fsl_crypto_pci_remove(struct pci_dev *dev)
 {
 
-	struct fsl_pci_dev *fsl_pci_dev = dev_get_drvdata(&(dev->dev));
+	struct c29x_dev *fsl_pci_dev = dev_get_drvdata(&(dev->dev));
 
 	if (unlikely(NULL == fsl_pci_dev)) {
 		DEV_PRINT_ERROR("No such device\n");
@@ -1690,7 +1690,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	int8_t pci_info[60];
 	int8_t sys_pci_info[100];
 
-	struct fsl_pci_dev *fsl_pci_dev = NULL;
+	struct c29x_dev *fsl_pci_dev = NULL;
 	struct crypto_dev_config *config = NULL;
 
 	print_debug("========== PROBE FUNCTION ==========\n");
@@ -1702,7 +1702,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	}
 
 	/* Allocate memory for the new PCI device data structure */
-	fsl_pci_dev = kzalloc(sizeof(struct fsl_pci_dev), GFP_KERNEL);
+	fsl_pci_dev = kzalloc(sizeof(struct c29x_dev), GFP_KERNEL);
 	if (!fsl_pci_dev) {
 		print_error("Memory allocation failed\n");
 		return -ENOMEM;
