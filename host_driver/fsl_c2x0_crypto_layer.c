@@ -1535,8 +1535,6 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 		while (resp_cnt) {
 			desc = be64_to_cpu(ring_cursor->resp_r[ri].sec_desc);
 			res = be32_to_cpu(ring_cursor->resp_r[ri].result);
-			ri = (ri + 1) % (ring_cursor->depth);
-			ring_cursor->indexes->r_index = ri;
 #ifndef HIGH_PERF
 			if (r_id == 0) {
 				print_debug("COMMAND RING GOT AN INTERRUPT\n");
@@ -1553,7 +1551,7 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 					}
 					handle_response(dev, desc, res);
 				} else {
-					print_error("INVALID DESC AT RI : %u\n", ri - 1);
+					print_error("INVALID DESC AT RI : %u\n", ri);
 				}
 #ifndef HIGH_PERF
 				atomic_inc_return(&dev->app_resp_cnt);
@@ -1563,6 +1561,8 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 			iowrite32be(ring_cursor->counters->jobs_processed,
 				&ring_cursor->shadow_counters->jobs_processed);
 
+			ri = (ri + 1) % (ring_cursor->depth);
+			ring_cursor->indexes->r_index = ri;
 			--resp_cnt;
 		}
 	}
