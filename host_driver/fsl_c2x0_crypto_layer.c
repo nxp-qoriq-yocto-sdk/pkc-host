@@ -1511,6 +1511,7 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 	uint64_t desc;
 	int32_t res = 0;
 	char outstr[MAX_ERROR_STRING];
+	struct device *c29x_dev = &dev->priv_dev->dev->dev;
 #ifndef HIGH_PERF
 	uint32_t r_id;
 	uint32_t app_resp_cnt = 0;
@@ -1545,13 +1546,13 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 			{
 				print_debug("APP RING GOT AN INTERRUPT\n");
 				if (desc) {
-					if (res) {
-						sec_jr_strstatus(outstr, res);
-						printk(KERN_INFO "SEC Error:%s\n", outstr);
-					}
 					handle_response(dev, desc, res);
 				} else {
-					print_error("INVALID DESC AT RI : %u\n", ri);
+					dev_err(c29x_dev, "INVALID DESC AT RI : %u\n", ri);
+				}
+				if (res) {
+					sec_jr_strstatus(outstr, res);
+					dev_err(c29x_dev, "SEC Error:%s\n", outstr);
 				}
 #ifndef HIGH_PERF
 				atomic_inc_return(&dev->app_resp_cnt);
