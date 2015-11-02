@@ -82,7 +82,7 @@ int hash_cra_init(struct crypto_tfm *tfm)
 	crypto_dev_sess_t *ctx = crypto_tfm_ctx(tfm);
 	struct hash_ctx *hctx = &ctx->u.hash;
 #endif
-
+	struct device *my_dev;
 	/* Sizes for MDHA running digests: MD5, SHA1, 224, 256, 384, 512 */
 	static const u8 runninglen[] = { HASH_MSG_LEN + MD5_DIGEST_SIZE,
 		HASH_MSG_LEN + SHA1_DIGEST_SIZE,
@@ -150,7 +150,8 @@ int hash_cra_init(struct crypto_tfm *tfm)
 
 	op_id = (hctx->alg_op & OP_ALG_ALGSEL_SUBMASK) >> OP_ALG_ALGSEL_SHIFT;
 	if (op_id >= ARRAY_SIZE(runninglen)) {
-		dev_print_err(ctx->c_dev->priv_dev, "incorrect op_id %d; must be less than %zu\n",
+		my_dev = &ctx->c_dev->priv_dev->dev->dev;
+		dev_err(my_dev, "incorrect op_id %d; must be less than %zu\n",
 				op_id, ARRAY_SIZE(runninglen));
 		return -EINVAL;
 	}

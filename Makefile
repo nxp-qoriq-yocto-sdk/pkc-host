@@ -48,7 +48,7 @@ ccflags-$(P4080_EP) += -DP4080_EP
 ccflags-$(C293_EP) += -DC293_EP
 
 ccflags-$(DEBUG_PRINT) += -DDEV_PRINT_DBG -DPRINT_DEBUG
-ccflags-$(ERROR_PRINT) += -DDEV_PRINT_ERR -DPRINT_ERROR
+ccflags-$(ERROR_PRINT) += -DPRINT_ERROR
 ccflags-$(INFO_PRINT) += -DPRINT_INFO
 
 ccflags-$(HIGH_PERF_MODE) += -DHIGH_PERF

@@ -85,17 +85,6 @@ dev_err(&(fdev->dev->dev), msg, ##__VA_ARGS__);\
 #define dev_print_dbg(fdev, msg, ...)
 #endif
 
-#ifdef DEV_PRINT_ERR
-#define dev_print_err(fdev, msg, ...) {	\
-dev_err(&(fdev->dev->dev), "[%s:%d] Devcnt:%d, DevId:%x, VendorId:%x, Bus:%d\n", \
-	__func__, __LINE__, fdev->dev_no, fdev->id->device, fdev->id->vendor, \
-	fdev->dev->bus->number); \
-dev_err(&(fdev->dev->dev), msg, ##__VA_ARGS__);\
-}
-#else
-#define dev_print_err(fdev, msg, ...)
-#endif
-
 /* PCI Config space fields related macros */
 #define MSI_CTRL_WORD_MMC_MASK	0xE	/* 1-3 bits */
 #define MSI_CTRL_WORD_MMC_SHIFT	1

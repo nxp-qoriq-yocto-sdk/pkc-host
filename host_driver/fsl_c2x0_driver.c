@@ -54,7 +54,6 @@ static void create_default_config(struct crypto_dev_config *, uint8_t, uint8_t);
  *                  MACRO DEFINITIONS                    *
  *********************************************************/
 #define DEV_PRINT_DEBUG(...) dev_print_dbg(fsl_pci_dev, ##__VA_ARGS__)
-#define DEV_PRINT_ERROR(...) dev_print_err(fsl_pci_dev, ##__VA_ARGS__)
 
 /*********************************************************
  *         INTERNAL FUNCTION PROTOTYPES                  *
@@ -1001,6 +1000,7 @@ int fsl_get_bar_map(struct c29x_dev *fsl_pci_dev)
 	int i;
 	struct pci_dev *dev = fsl_pci_dev->dev;
 	struct pci_bar_info *bars = fsl_pci_dev->bars;
+	struct device *my_dev = &fsl_pci_dev->dev->dev;
 
 	/* Get the BAR resources and remap them into the driver memory */
 	for (i = 0; i < MEM_TYPE_DRIVER; i++) {
@@ -1008,7 +1008,7 @@ int fsl_get_bar_map(struct c29x_dev *fsl_pci_dev)
 		bars[i].len = pci_resource_len(dev, i);
 		bars[i].host_p_addr = pci_resource_start(dev, i);
 		if (!bars[i].host_p_addr) {
-			DEV_PRINT_ERROR("BAR %d: failed to get physical address\n", i);
+			dev_err(my_dev, "BAR %d: failed to get physical address\n", i);
 			goto error; /* no clean-up required */
 		}
 		DEV_PRINT_DEBUG("BAR %d: physical address %pa\n", i, &bars[i].host_p_addr);
@@ -1034,6 +1034,7 @@ int get_msi_iv_cnt(struct c29x_dev *fsl_pci_dev, uint8_t num_of_vectors)
 	int err, tmp;
 	uint16_t msi_ctrl_word;
 	uint32_t mmc_count, mme_count;
+	struct device *my_dev = &fsl_pci_dev->dev->dev;
 
 	/* Check whether the device supports multiple MSI interrupts */
 	pci_read_config_word(fsl_pci_dev->dev, PCI_MSI_CTRL_REGISTER,
@@ -1059,7 +1060,7 @@ int get_msi_iv_cnt(struct c29x_dev *fsl_pci_dev, uint8_t num_of_vectors)
 	} while (err > 0);
 
 	if (err) {
-		DEV_PRINT_ERROR("MSI enable failed!!\n");
+		dev_err(my_dev, "MSI enable failed!!\n");
 		return -ENODEV;
 	}
 
@@ -1071,8 +1072,10 @@ int get_msi_iv_cnt(struct c29x_dev *fsl_pci_dev, uint8_t num_of_vectors)
 #else
 int get_msi_iv(struct c29x_dev *fsl_pci_dev)
 {
+	struct device *my_dev = &fsl_pci_dev->dev->dev;
+
 	if (pci_enable_msi(fsl_pci_dev->dev) != 0) {
-		DEV_PRINT_ERROR("MSI enable failed !!\n");
+		dev_err(my_dev, "MSI enable failed !!\n");
 		return -ENODEV;
 	}
 
@@ -1142,6 +1145,7 @@ int fsl_request_irqs(struct c29x_dev *fsl_pci_dev)
 	isr_ctx_t *isr_context;
 	struct list_head *ctx_list;
 	int err;
+	struct device *my_dev = &fsl_pci_dev->dev->dev;
 
 	ctx_list = &(fsl_pci_dev->intr_info.isr_ctx_list_head);
 	INIT_LIST_HEAD(ctx_list);
@@ -1151,7 +1155,7 @@ int fsl_request_irqs(struct c29x_dev *fsl_pci_dev)
 	for (i = 0; i < num_of_vectors; i++) {
 		isr_context = kzalloc(sizeof(*isr_context), GFP_KERNEL);
 		if (!isr_context) {
-			DEV_PRINT_ERROR("Mem alloc failed\n");
+			dev_err(my_dev, "Mem alloc failed\n");
 			err = -ENOMEM;
 			goto free_irqs;
 		}
@@ -1165,7 +1169,7 @@ int fsl_request_irqs(struct c29x_dev *fsl_pci_dev)
 		err = request_irq(irq, (irq_handler_t) fsl_crypto_isr, 0,
 				fsl_pci_dev->dev_name, isr_context);
 		if (err) {
-			DEV_PRINT_ERROR("Request IRQ failed for vector: %d\n", i);
+			dev_err(my_dev, "Request IRQ failed for vector: %d\n", i);
 			kfree(isr_context);
 			goto free_irqs;
 		}
@@ -1651,11 +1655,10 @@ static void cleanup_config_list(void)
  ******************************************************************************/
 static void fsl_crypto_pci_remove(struct pci_dev *dev)
 {
-
 	struct c29x_dev *fsl_pci_dev = dev_get_drvdata(&(dev->dev));
 
 	if (unlikely(NULL == fsl_pci_dev)) {
-		DEV_PRINT_ERROR("No such device\n");
+		dev_err(&dev->dev, "No such device\n");
 		return;
 	}
 
@@ -1689,7 +1692,6 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	int local_cfg; /* clean-up is required on error path */
 	int8_t pci_info[60];
 	int8_t sys_pci_info[100];
-
 	struct c29x_dev *fsl_pci_dev = NULL;
 	struct crypto_dev_config *config = NULL;
 
@@ -1731,19 +1733,19 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 #endif
 
 	if (!pci_find_capability(dev, PCI_CAP_ID_EXP)) {
-		DEV_PRINT_ERROR("Does not have PCIe cap\n");
+		dev_err(&dev->dev, "Does not have PCIe cap\n");
 		goto free_dev;
 	}
 
 	if (!pci_find_capability(dev, PCI_CAP_ID_MSI)) {
-		DEV_PRINT_ERROR("Does not support MSI\n");
+		dev_err(&dev->dev, "Does not support MSI\n");
 		goto free_dev;
 	}
 
 	/* Wake up the device if it is in suspended state */
 	err = pci_enable_device(dev);
 	if (err) {
-		DEV_PRINT_ERROR("Enable Device failed\n");
+		dev_err(&dev->dev, "Enable Device failed\n");
 		goto free_dev;
 	}
 
@@ -1807,7 +1809,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	 */
 	fsl_pci_dev->crypto_dev = fsl_crypto_layer_add_device(fsl_pci_dev, config);
 	if (!fsl_pci_dev->crypto_dev) {
-		DEV_PRINT_ERROR("Adding device as crypto dev failed\n");
+		dev_err(&dev->dev, "Adding device as crypto dev failed\n");
 		err = -ENODEV;
 		goto deinit_sysfs;
 	}
@@ -1849,7 +1851,7 @@ free_bar_map:
 clear_master:
 	pci_clear_master(dev);
 free_dev:
-	DEV_PRINT_ERROR("Probe of device [%d] failed\n", fsl_pci_dev->dev_no);
+	dev_err(&dev->dev, "Probe of device [%d] failed\n", fsl_pci_dev->dev_no);
 	kfree(fsl_pci_dev);
 	dev_no--; /* don't count this device as usable */
 
