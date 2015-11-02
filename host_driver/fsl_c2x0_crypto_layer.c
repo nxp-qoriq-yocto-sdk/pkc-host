@@ -1133,7 +1133,7 @@ void start_device(fsl_crypto_dev_t *dev)
 	if (cpu0_en)
 		iowrite32be(0, ccsr + PIC_PIR);
 	else
-		iowrite32be(BRR_VALUE, ccsr + BRR_OFFSET);
+		iowrite32be(BRR_RELEASE_CORE0, ccsr + BRR_OFFSET);
 
 	udelay(250);
 }
