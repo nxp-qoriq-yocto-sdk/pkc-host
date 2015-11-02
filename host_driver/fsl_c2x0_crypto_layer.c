@@ -53,12 +53,6 @@ extern struct bh_handler __percpu *per_core;
 #define DEFAULT_FIRMWARE_RESP_RING_DEPTH	(128*4)
 #define FIRMWARE_IP_BUFFER_POOL_SIZE		(512*1024)
 
-#define ALIGN_TO_CACHE_LINE(x)	\
-	(((x) + (DEVICE_CACHE_LINE_SIZE-1)) & ~(DEVICE_CACHE_LINE_SIZE-1))
-
-#define ALIGN_LEN_TO_PAGE_SIZE(x)	\
-	(((x) + (PAGE_SIZE-1)) & ~(PAGE_SIZE-1))
-
 #ifndef HIGH_PERF
 
 #ifdef PRINT_DEBUG
@@ -75,6 +69,22 @@ static void store_dev_ctx(void *buffer, uint8_t rid, uint32_t wi)
 #endif
 
 #endif
+
+static uint32_t align(uint32_t addr, uint32_t size)
+{
+	size--;
+	return (addr + size) & ~size;
+}
+
+static uint32_t cache_line_align(uint32_t addr)
+{
+	return align(addr, DEVICE_CACHE_LINE_SIZE);
+}
+
+static uint32_t page_align(uint32_t addr)
+{
+	return align(addr, PAGE_SIZE);
+}
 
 void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
@@ -214,7 +224,7 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 
 	/* Correct the ring depths to power of 2 */
 	total_ring_slots = count_ring_slots(config);
-	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
+	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.drv_resp_rings = ob_mem_len;
 	ob_mem_len += total_ring_slots * sizeof(struct resp_ring_entry);
 
@@ -222,32 +232,32 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	/* FIXME: we should probably allocate
 	 * 		config->num_of_rings + NUM_OF_RESP_RINGS instead of
 	 * 		config->num_of_rings + 1 */
-	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
+	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.l_idxs_mem = ob_mem_len;
 	ob_mem_len += (config->num_of_rings + 1) * (sizeof(struct ring_idxs_mem));
 
-	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
+	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.s_c_idxs_mem = ob_mem_len;
 	ob_mem_len += (config->num_of_rings + 1) * (sizeof(struct ring_idxs_mem));
 
-	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
+	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.l_r_cntrs_mem = ob_mem_len;
 	ob_mem_len += (config->num_of_rings + 1) * sizeof(struct ring_counters_mem);
 
-	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
+	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.s_c_r_cntrs_mem = ob_mem_len;
 	ob_mem_len += (config->num_of_rings + 1) * sizeof(struct ring_counters_mem);
 
-	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
+	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.cntrs_mem = ob_mem_len;
 	ob_mem_len += sizeof(struct counters_mem);
 
-	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
+	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.s_c_cntrs_mem = ob_mem_len;
 	ob_mem_len += sizeof(struct counters_mem);
 
 	/* We have to make sure that we align the output buffer pool to DMA */
-	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
+	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.op_pool = ob_mem_len;
 	ob_mem_len += DEFAULT_HOST_OP_BUFFER_POOL_SIZE;
 
@@ -255,19 +265,19 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	/* See if we can fit fw_resp_ring before the end of this page and if not
 	 * put it in the next page */
 	if ((PAGE_SIZE - (ob_mem_len % PAGE_SIZE)) < fw_rr_size)
-		ob_mem_len = ALIGN_LEN_TO_PAGE_SIZE(ob_mem_len);
+		ob_mem_len = page_align(ob_mem_len);
 
 	dev->ob_mem.fw_resp_ring = ob_mem_len;
 	ob_mem_len += fw_rr_size;
 
 	/* For IP Pool we need to make sure that we always
 	 * get 32BYTE aligned address */
-	ob_mem_len = ALIGN_TO_CACHE_LINE(ob_mem_len);
+	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.ip_pool = ob_mem_len;
 	ob_mem_len += FIRMWARE_IP_BUFFER_POOL_SIZE;
 
 	/* Make the total mem requirement aligned to page size */
-	ob_mem_len = ALIGN_LEN_TO_PAGE_SIZE(ob_mem_len);
+	ob_mem_len = page_align(ob_mem_len);
 
 	dev->tot_req_mem_size = total_ring_slots * sizeof(struct req_ring_entry);
 
