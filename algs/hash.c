@@ -131,12 +131,14 @@ int hash_cra_init(struct crypto_tfm *tfm)
 	list_add_tail(&hash_sess->list_entry, &virtio_c2x0_hash_sess_list);
 	spin_unlock(&hash_sess_list_lock);
 
-	if (-1 == fill_crypto_dev_sess_ctx(ctx, qemu_cmd->u.hash.init.op_type))
+	if (-1 == fill_crypto_dev_sess_ctx(ctx, qemu_cmd->u.hash.init.op_type)) {
 		return -1;
+	}
 #else
 
-	if (-1 == fill_crypto_dev_sess_ctx(ctx, fsl_alg->op_type))
+	if (-1 == fill_crypto_dev_sess_ctx(ctx, fsl_alg->op_type)) {
 		return -1;
+	}
 #endif
 
 	/* copy descriptor header template value */
@@ -159,9 +161,10 @@ int hash_cra_init(struct crypto_tfm *tfm)
 
 #ifdef VIRTIO_C2X0
 	err = ahash_set_sh_desc(ctx, qemu_cmd->u.hash.init.digestsize);
-	if (!err)
+	if (!err) {
 		print_debug("New hash_sess with sess_id %lx:%lx created;\n",
 			    hash_sess->sess_id, qemu_cmd->u.hash.init.sess_id);
+	}
 #else
 	crypto_ahash_set_reqsize(__crypto_ahash_cast(tfm),
 				 sizeof(struct hash_state));
@@ -328,8 +331,9 @@ static int hash_cp_key(const uint8_t *input, uint32_t ip_len,
 	hash_key_init_len(ip_len, op_len, mem_info);
 
 	print_debug("\t \t Calling alloc_crypto_mem\n");
-	if (-ENOMEM == alloc_crypto_mem(mem_info))
+	if (-ENOMEM == alloc_crypto_mem(mem_info)) {
 		return -ENOMEM;
+	}
 
 #ifdef USE_HOST_DMA
 	memcpy(mem->input_buff.v_mem, input, ip_len);
@@ -373,18 +377,21 @@ static void hash_init_len(struct ahash_request *req, struct hash_lengths *len,
 		    (len->src_nents +
 		     len->addon_nents) * sizeof(struct sec4_sg_entry);
 
-		if (len->ctx_len)
+		if (len->ctx_len) {
 			mem->input_buffs[i++].len = len->ctx_len;
+		}
 
-		if (len->buff_len)
+		if (len->buff_len) {
 			mem->input_buffs[i++].len = len->buff_len;
+		}
 
 		for (; i < (len->src_nents + len->addon_nents); i++) {
 			mem->input_buffs[i].len = sg->length;
 			sg = scatterwalk_sg_next(sg);
 		}
-	} else
+	} else {
 		mem->sec_sg_buff.len = len->src_len;
+	}
 
 	mem->desc_buff.len = DESC_JOB_IO_LEN;
 	mem->sh_desc_buff.len = len->sh_desc_len;
@@ -396,8 +403,9 @@ static void create_sg_table(crypto_mem_info_t *mem_info, uint32_t count)
 	hash_buffers_t *mem = NULL;
 	struct sec4_sg_entry *sec4_sg_ptr = NULL;
 
-	if (!count)
+	if (!count) {
 		return;
+	}
 
 	mem = (hash_buffers_t *) (mem_info->buffers);
 	sec4_sg_ptr = (struct sec4_sg_entry *)mem->sec_sg_buff.v_mem;
@@ -426,30 +434,30 @@ static int hash_cp_req(struct ahash_request *req, struct hash_lengths *len,
 	hash_init_len(req, len, mem_info);
 
 	print_debug("\t \t Calling alloc_crypto_mem\n");
-	if (-ENOMEM == alloc_crypto_mem(mem_info))
+	if (-ENOMEM == alloc_crypto_mem(mem_info)) {
 		return -ENOMEM;
+	}
 	if (len->src_nents || len->addon_nents) {
-		if (ctx && len->ctx_len)
+		if (ctx && len->ctx_len) {
 			memcpy(mem->input_buffs[i++].v_mem, ctx, len->ctx_len);
+		}
 
-		if (buff && len->buff_len)
-			memcpy(mem->input_buffs[i++].v_mem, buff,
-			       len->buff_len);
+		if (buff && len->buff_len) {
+			memcpy(mem->input_buffs[i++].v_mem, buff, len->buff_len);
+		}
 
 		for (; i < (len->src_nents + len->addon_nents); i++) {
 			sg_map_copy(mem->input_buffs[i].v_mem, sg, sg->length,
 				    sg->offset);
 			sg = scatterwalk_sg_next(sg);
 		}
-
-	} else if (buff && len->buff_len)
+	} else if (buff && len->buff_len) {
 		memcpy(mem->sec_sg_buff.v_mem, buff, len->buff_len);
-
-	else if (ctx && len->ctx_len)
+	} else if (ctx && len->ctx_len) {
 		memcpy(mem->sec_sg_buff.v_mem, ctx, len->ctx_len);
-
-	else if (len->src_len)
+	} else if (len->src_len) {
 		sg_copy(mem->sec_sg_buff.v_mem, req->src, len->src_len);
+	}
 
 	memcpy(mem->sh_desc_buff.v_mem, sh_desc, len->sh_desc_len);
 
@@ -476,12 +484,14 @@ int ahash_set_sh_desc(struct crypto_ahash *ahash)
 #endif
 	struct hash_ctx *ctx = &c_sess->u.hash;
 
-	if (ctx->split_key_len)
+	if (ctx->split_key_len) {
 		have_key = OP_ALG_AAI_HMAC_PRECOMP;
+	}
 
 	desc = kzalloc(DESC_HASH_MAX_USED_BYTES, GFP_KERNEL);
-	if (!desc)
+	if (!desc) {
 		return -ENOMEM;
+	}
 
 	ahash_update_desc(desc, ctx);
 	ctx->len_desc_update = desc_len(desc);
@@ -533,8 +543,9 @@ static int32_t gen_split_hash_key(crypto_dev_sess_t *c_sess,
 	c_dev = c_sess->c_dev;
 	r_id = c_sess->r_id;
 
-	if (-1 == check_device(c_dev))
+	if (-1 == check_device(c_dev)) {
 		return -1;
+	}
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 	print_debug("crypto_ctx addr : %p\n", crypto_ctx);
@@ -643,8 +654,9 @@ static uint32_t hash_digest_key(crypto_dev_sess_t *c_sess,
 	c_dev = c_sess->c_dev;
 	r_id = c_sess->r_id;
 
-	if (-1 == check_device(c_dev))
+	if (-1 == check_device(c_dev)) {
 		return -1;
+	}
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
@@ -788,13 +800,15 @@ int ahash_setkey(struct crypto_ahash *ahash, const uint8_t *key,
 
 	if (keylen > blocksize) {
 		hashed_key = kzalloc(digestsize, GFP_KERNEL | GFP_DMA);
-		if (!hashed_key)
+		if (!hashed_key) {
 			return -ENOMEM;
+		}
 		ret =
 		    hash_digest_key(c_sess, key, &keylen, hashed_key,
 				    digestsize);
-		if (ret)
+		if (ret) {
 			goto badkey;
+		}
 		key = hashed_key;
 	}
 
@@ -805,8 +819,9 @@ int ahash_setkey(struct crypto_ahash *ahash, const uint8_t *key,
 	ctx->split_key_pad_len = ALIGN(ctx->split_key_len, 16);
 
 	ret = gen_split_hash_key(c_sess, key, keylen);
-	if (ret)
+	if (ret) {
 		goto badkey;
+	}
 
 #ifdef VIRTIO_C2X0
 	ret = ahash_set_sh_desc(c_sess, digestsize);
@@ -884,8 +899,9 @@ int ahash_digest(struct ahash_request *req)
 	c_dev = c_sess->c_dev;
 	r_id = c_sess->r_id;
 
-	if (-1 == check_device(c_dev))
+	if (-1 == check_device(c_dev)) {
 		return -1;
+	}
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
@@ -912,9 +928,9 @@ int ahash_digest(struct ahash_request *req)
 	hash_init_crypto_mem(&crypto_ctx->crypto_mem, len.src_nents);
 	mem = (hash_buffers_t *) (crypto_ctx->crypto_mem.buffers);
 
-	if (len.src_nents)
+	if (len.src_nents) {
 		options = LDST_SGF;
-	else {
+	} else {
 		len.src_len = req->nbytes;
 		options = 0;
 	}
@@ -988,8 +1004,9 @@ error:
 error1:
 #endif
 	if (crypto_ctx) {
-		if (crypto_ctx->crypto_mem.buffers)
+		if (crypto_ctx->crypto_mem.buffers) {
 			dealloc_crypto_mem(&crypto_ctx->crypto_mem);
+		}
 		kfree(crypto_ctx->crypto_mem.c_buffers.hash);
 		free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
 	}
@@ -1086,8 +1103,9 @@ int ahash_update_ctx(struct ahash_request *req)
 		c_dev = c_sess->c_dev;
 		r_id = c_sess->r_id;
 		
-		if (-1 == check_device(c_dev))
+		if (-1 == check_device(c_dev)) {
 			return -1;
+		}
 
 		crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 		print_debug("crypto_ctx addr: %p\n", crypto_ctx);
@@ -1278,8 +1296,9 @@ int ahash_finup_ctx(struct ahash_request *req)
 	c_dev = c_sess->c_dev;
 	r_id = c_sess->r_id;
 
-	if (-1 == check_device(c_dev))
+	if (-1 == check_device(c_dev)) {
 		return -1;
+	}
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
@@ -1377,8 +1396,9 @@ error:
 error1:
 #endif
 	if (crypto_ctx) {
-		if (crypto_ctx->crypto_mem.buffers)
+		if (crypto_ctx->crypto_mem.buffers) {
 			dealloc_crypto_mem(&crypto_ctx->crypto_mem);
+		}
 		kfree(crypto_ctx->crypto_mem.c_buffers.hash);
 		free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
 	}
@@ -1448,8 +1468,9 @@ int ahash_final_ctx(struct ahash_request *req)
 	c_dev = c_sess->c_dev;
 	r_id = c_sess->r_id;
 
-	if (-1 == check_device(c_dev))
+	if (-1 == check_device(c_dev)) {
 		return -1;
+	}
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
@@ -1476,10 +1497,9 @@ int ahash_final_ctx(struct ahash_request *req)
 	if (buflen) {
 		len.addon_nents = 2;
 		options = LDST_SGF;
-	}
-
-	else
+	} else {
 		len.src_len = ctx->ctx_len;
+	}
 
 	hash_init_crypto_mem(&crypto_ctx->crypto_mem,
 			     len.src_nents + len.addon_nents);
@@ -1626,8 +1646,9 @@ int ahash_final_no_ctx(struct ahash_request *req)
 	c_dev = c_sess->c_dev;
 	r_id = c_sess->r_id;
 
-	if (-1 == check_device(c_dev))
+	if (-1 == check_device(c_dev)) {
 		return -1;
+	}
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 	print_debug("crypto_ctx addr : %p\n", crypto_ctx);
@@ -1797,8 +1818,9 @@ int ahash_finup_no_ctx(struct ahash_request *req)
 	c_dev = c_sess->c_dev;
 	r_id = c_sess->r_id;
 
-	if (-1 == check_device(c_dev))
+	if (-1 == check_device(c_dev)) {
 		return -1;
+	}
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
@@ -1980,8 +2002,9 @@ int ahash_update_no_ctx(struct ahash_request *req)
 		c_dev = c_sess->c_dev;
 		r_id = c_sess->r_id;
 
-		if (-1 == check_device(c_dev))
+		if (-1 == check_device(c_dev)) {
 			return -1;
+		}
 
 		crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 		print_debug("crypto_ctx addr: %p\n", crypto_ctx);
@@ -2182,8 +2205,9 @@ int ahash_update_first(struct ahash_request *req)
 		c_dev = c_sess->c_dev;
 		r_id = c_sess->r_id;
 
-		if (-1 == check_device(c_dev))
+		if (-1 == check_device(c_dev)) {
 			return -1;
+		}
 
 		crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 		print_debug("crypto_ctx addr: %p\n", crypto_ctx);
@@ -2211,10 +2235,11 @@ int ahash_update_first(struct ahash_request *req)
 		hash_init_crypto_mem(&crypto_ctx->crypto_mem,
 				     len.src_nents + len.addon_nents);
 
-		if (len.src_nents)
+		if (len.src_nents) {
 			options = LDST_SGF;
-		else
+		} else {
 			len.src_len = to_hash;
+		}
 
 		if (-ENOMEM == hash_cp_req(req, &len, state->ctx, NULL, NULL,
 				      ctx->sh_desc_update_first,
@@ -2281,8 +2306,9 @@ int ahash_update_first(struct ahash_request *req)
 			goto error1;
 		}
 #endif
-		if (*next_buflen)
+		if (*next_buflen) {
 			sg_copy_part(next_buf, req->src, to_hash, req->nbytes);
+		}
 
 #ifndef VIRTIO_C2X0
 		state->update = ahash_update_ctx;

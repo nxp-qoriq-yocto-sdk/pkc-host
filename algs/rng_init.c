@@ -69,8 +69,9 @@ static int32_t self_test_chk_res(uint32_t *output)
 	for (i = 0; i < 8; i += 1)
 		status |= (exp_res[i] ^ output[i]);
 
-	if (status != 0)
+	if (status != 0) {
 		print_error("RNG generated the incorrect results\n");
+	}
 
 	return status;
 }
@@ -448,16 +449,18 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 			kfree(output);
 		}
 	} else {
-		if (ret)
+		if (ret) {
 			print_error("RNG INIT Failed\n");
+		}
 	}
 
 	return ret;
 
 error:
 	if (crypto_ctx) {
-		if (crypto_ctx->crypto_mem.buffers)
+		if (crypto_ctx->crypto_mem.buffers) {
 			dealloc_crypto_mem(&crypto_ctx->crypto_mem);
+		}
 
 		free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
 	}
@@ -475,11 +478,13 @@ int32_t rng_instantiation(fsl_crypto_dev_t *c_dev)
 
 	for (i = 1; i <= no_of_secs; i++) {
 		err = rng_op(c_dev, i, RNG_SELF_TEST);
-		if (err)
+		if (err) {
 			break;
+		}
 		err = rng_op(c_dev, i, RNG_INIT);
-		if (err)
+		if (err) {
 			break;
+		}
 	}
 	return err;
 }

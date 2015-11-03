@@ -191,10 +191,11 @@ static int dsa_sign_cp_req(struct dsa_sign_req_s *req,
 	mem->m_buff.req_ptr = req->m;
 	mem->tmp_buff.req_ptr = mem->tmp_buff.v_mem;
 
-	if (ecdsa)
+	if (ecdsa) {
 		mem->ab_buff.req_ptr = req->ab;
-	else
+	} else {
 		mem->ab_buff.req_ptr = NULL;
+	}
 #endif
 	mem->c_buff.v_mem = req->c;
 	mem->d_buff.v_mem = req->d;
@@ -238,10 +239,11 @@ static int dsa_verify_cp_req(struct dsa_verify_req_s *req,
 	mem->d_buff.req_ptr = req->d;
 	mem->tmp_buff.req_ptr = mem->tmp_buff.v_mem;
 
-	if (ecdsa)
+	if (ecdsa) {
 		mem->ab_buff.req_ptr = req->ab;
-	else
+	} else {
 		mem->ab_buff.req_ptr = NULL;
+	}
 #endif
 	return 0;
 }
@@ -271,10 +273,11 @@ static int dsa_keygen_cp_req(struct dsa_keygen_req_s *req,
 	mem->r_buff.req_ptr = req->r;
 	mem->g_buff.req_ptr = req->g;
 
-	if (ecdsa)
+	if (ecdsa) {
 		mem->ab_buff.req_ptr = req->ab;
-	else
+	} else {
 		mem->ab_buff.req_ptr = NULL;
+	}
 #endif
 	mem->prvkey_buff.v_mem = req->prvkey;
 	mem->pubkey_buff.v_mem = req->pubkey;
@@ -516,13 +519,14 @@ static void constr_ecdsa_sign_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 		 (mem->tmp_buff.dev_buffer.d_p_addr + mem->r_buff.len));
 
 	iowrite32be((mem->q_buff.len << 7) | mem->r_buff.len, &ecdsa_sign_desc->sgf_ln);
-	if (ecc_bin)
+	if (ecc_bin) {
 		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
 			  OP_PCLID_DSASIGN | OP_PCL_PKPROT_ECC |
 			  OP_PCL_PKPROT_F2M, &ecdsa_sign_desc->op[0]);
-	else
+	} else {
 		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
 			  OP_PCLID_DSASIGN | OP_PCL_PKPROT_ECC, &ecdsa_sign_desc->op[0]);
+	}
 
 	iowrite32be(CMD_MOVE | MOVE_SRC_INFIFO | MOVE_DEST_OUTFIFO |
 		  (2 * mem->r_buff.len), &ecdsa_sign_desc->op[1]);
@@ -604,14 +608,15 @@ static void constr_ecdsa_verify_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 	iowrite32be((mem->q_buff.len << 7) | mem->r_buff.len, &ecdsa_verify_desc->sgf_ln);
 
-	if (ecc_bin)
+	if (ecc_bin) {
 		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
 			  OP_PCLID_DSAVERIFY | OP_PCL_PKPROT_ECC |
 			  OP_PCL_PKPROT_F2M, &ecdsa_verify_desc->op);
-	else
+	} else {
 		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL |
 			  OP_PCLID_DSAVERIFY | OP_PCL_PKPROT_ECC,
 			  &ecdsa_verify_desc->op);
+	}
 
 #ifdef PRINT_DEBUG
 
@@ -707,8 +712,9 @@ static void dsa_sign_init_crypto_mem(crypto_mem_info_t *crypto_mem, bool ecdsa)
 	dsa_sign_buffers_t *dsa_sign_buffs = NULL;
 
 	crypto_mem->count = sizeof(dsa_sign_buffers_t) / sizeof(buffer_info_t);
-	if (!ecdsa)
+	if (!ecdsa) {
 		crypto_mem->count -= 1;
+	}
 
 	crypto_mem->buffers =
 	    (buffer_info_t *) (&(crypto_mem->c_buffers.dsa_sign));
@@ -731,8 +737,9 @@ static void dsa_verify_init_crypto_mem(crypto_mem_info_t *crypto_mem,
 	crypto_mem->count =
 	    sizeof(dsa_verify_buffers_t) / sizeof(buffer_info_t);
 
-	if (!ecdsa)
+	if (!ecdsa) {
 		crypto_mem->count -= 1;
+	}
 
 	crypto_mem->buffers =
 	    (buffer_info_t *) (&(crypto_mem->c_buffers.dsa_verify));
@@ -754,8 +761,9 @@ static void dsa_keygen_init_crypto_mem(crypto_mem_info_t *crypto_mem,
 
 	crypto_mem->count =
 	    sizeof(dsa_keygen_buffers_t) / sizeof(buffer_info_t);
-	if (!ecdsa)
+	if (!ecdsa) {
 		crypto_mem->count -= 1;
+	}
 
 	crypto_mem->buffers =
 	    (buffer_info_t *) (&(crypto_mem->c_buffers.dsa_keygen));
@@ -855,8 +863,9 @@ int dsa_op(struct pkc_request *req)
 	if ((ECDSA_KEYGEN == req->type) ||
 	    (ECDSA_SIGN == req->type) || (ECDSA_VERIFY == req->type)) {
 		ecdsa = true;
-		if (ECC_BINARY == req->curve_type)
+		if (ECC_BINARY == req->curve_type) {
 			ecc_bin = true;
+		}
 	}
 
 	switch (req->type) {
@@ -886,11 +895,11 @@ int dsa_op(struct pkc_request *req)
 #endif
 
 		/* Constr the hw desc */
-		if (ecdsa)
-			constr_ecdsa_keygen_desc(&crypto_ctx->crypto_mem,
-						 ecc_bin);
-		else
+		if (ecdsa) {
+			constr_ecdsa_keygen_desc(&crypto_ctx->crypto_mem, ecc_bin);
+		} else {
 			constr_dsa_keygen_desc(&crypto_ctx->crypto_mem);
+		}
 		print_debug("Desc constr complete...\n");
 
 #ifdef SEC_DMA
@@ -929,11 +938,11 @@ int dsa_op(struct pkc_request *req)
 		print_debug("Host to dev convert complete....\n");
 
 		/* Constr the hw desc */
-		if (ecdsa)
-			constr_ecdsa_sign_desc(&crypto_ctx->crypto_mem,
-					       ecc_bin);
-		else
+		if (ecdsa) {
+			constr_ecdsa_sign_desc(&crypto_ctx->crypto_mem, ecc_bin);
+		} else {
 			constr_dsa_sign_desc(&crypto_ctx->crypto_mem);
+		}
 		print_debug("Desc constr complete...\n");
 
 #ifdef SEC_DMA
@@ -973,11 +982,12 @@ int dsa_op(struct pkc_request *req)
 		print_debug("Host to dev convert complete....\n");
 
 		/* Constr the hw desc */
-		if (ecdsa)
+		if (ecdsa) {
 			constr_ecdsa_verify_desc(&crypto_ctx->crypto_mem,
 						 ecc_bin);
-		else
+		} else {
 			constr_dsa_verify_desc(&crypto_ctx->crypto_mem);
+		}
 
 		print_debug("Desc constr complete...\n");
 
@@ -1021,10 +1031,11 @@ int dsa_op(struct pkc_request *req)
 	crypto_ctx->desc = sec_dma;
 	crypto_ctx->c_dev = c_dev;
 
-	if (ecdsa)
+	if (ecdsa) {
 		crypto_ctx->op_done = ecdsa_op_done;
-	else
+	} else {
 		crypto_ctx->op_done = dsa_op_done;
+	}
 #ifdef VIRTIO_C2X0
 	/* Initialise card status as Unfinished */
 	crypto_ctx->card_status = -1;
@@ -1104,10 +1115,12 @@ int test_dsa_op(struct pkc_request *req,
 #else
 	ret = dsa_op(req);
 #endif
-    if (-EINPROGRESS == ret)
-        ret = 0;
-    if (0 > ret)
-        ret = -1;
+    if (-EINPROGRESS == ret) {
+	    ret = 0;
+    }
+    if (0 > ret) {
+	    ret = -1;
+    }
 
     return ret;
 }

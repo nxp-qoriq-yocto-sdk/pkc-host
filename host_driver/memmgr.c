@@ -208,14 +208,16 @@ void *alloc_buffer(void *id, uint32_t len, uint8_t flag)
 		a_node = f_node;
 
 		new_node->prev_link = f_node->prev_link;
-		if (f_node->prev_link)
+		if (f_node->prev_link) {
 			f_node->prev_link->next_link = new_node;
+		}
 		new_node->next_link = f_node->next_link;
-		if (f_node->next_link)
+		if (f_node->next_link) {
 			f_node->next_link->prev_link = new_node;
-
-		if (pool->free_list == f_node)
+		}
+		if (pool->free_list == f_node) {
 			pool->free_list = new_node;
+		}
 
 		f_node->next_link = f_node->prev_link = NULL;
 		f_node->in_use = 1;
@@ -385,10 +387,11 @@ static void link_and_merge(bp *pool, bh *node)
 	bh *add_after = NULL;
 
 	while (head) {
-		if (node >= head)
+		if (node >= head) {
 			add_after = head;
-		else
+		} else {
 			break;
+		}
 
 		head = head->next_link;
 	}
@@ -409,11 +412,13 @@ static void free_link(bp *pool, bh *node)
 {
 	print_debug("Freeing link for node: %p\n", node);
 
-	if (node->prev_link)
+	if (node->prev_link) {
 		node->prev_link->next_link = node->next_link;
+	}
 
-	if (node->next_link)
+	if (node->next_link) {
 		node->next_link->prev_link = node->prev_link;
+	}
 
 	if (pool->free_list == node) {
 		print_debug("List has gone completely empty.......\n");
@@ -443,8 +448,9 @@ static void link_add(bp *pool, bh *node)
 			node->len += pool->free_list->len + sizeof(bh);
 
 			node->next_link = pool->free_list->next_link;
-			if (pool->free_list->next_link)
+			if (pool->free_list->next_link) {
 				pool->free_list->next_link->prev_link = node;
+			}
 
 			node->prev_link = NULL;
 			pool->free_list->next_link =
@@ -474,8 +480,9 @@ static void link_after(bp *pool, bh *node, bh *prev)
 	print_debug("Link After  .........\n");
 
 	/* First create the link */
-	if (prev->next_link)
+	if (prev->next_link) {
 		prev->next_link->prev_link = node;
+	}
 
 	node->next_link = prev->next_link;
 
@@ -496,8 +503,9 @@ static void link_after(bp *pool, bh *node, bh *prev)
 		prev->in_use = 0;
 		node->in_use = 0;
 		prev->next_link = node->next_link;
-		if (node->next_link)
+		if (node->next_link) {
 			node->next_link->prev_link = prev;
+		}
 
 		node->next_link = node->prev_link = NULL;
 		node = prev;
@@ -507,17 +515,19 @@ static void link_after(bp *pool, bh *node, bh *prev)
 	next = node->next_link;
 	n_buff = (uint8_t *) node + sizeof(bh);
 
-	if (next)
+	if (next) {
 		print_debug("Node buff: %p    next buff: %p\n",
 			    (n_buff + node->len),
 			    ((uint8_t *) next + sizeof(bh)));
+	}
 	if (next && ((n_buff + node->len) == ((uint8_t *) next))) {
 		print_debug("Merging with next node ............\n");
 		node->len += next->len + sizeof(bh);
 		node->in_use = 0;
 		next->in_use = 0;
-		if (next->next_link)
+		if (next->next_link) {
 			next->next_link->prev_link = node;
+		}
 
 		node->next_link = next->next_link;
 		next->next_link = next->prev_link = NULL;

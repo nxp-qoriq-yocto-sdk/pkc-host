@@ -273,10 +273,11 @@ int valid_test(void)
 		(!strcmp(test_name, "ECDH_KEYGEN_P521")) ||
 		(!strcmp(test_name, "ECDH_KEYGEN_B283")) ||
 		(!strcmp(test_name, "ECDH_KEYGEN_B409")) ||
-		(!strcmp(test_name, "ECDH_KEYGEN_B571")))
+		(!strcmp(test_name, "ECDH_KEYGEN_B571"))) {
 		ret = 1;
-	else
+	} else {
 		ret = 0;
+	}
 	return ret;
 }
 
@@ -465,8 +466,9 @@ int test(void *data)
 		run = 0;
 	}
 
-	if (run)
+	if (run) {
 		start_test();
+	}
 	strcpy(g_test_name, "INVALID");
 	g_is_test_in_progress = 0;
 	print_debug("Returning from thread\n");
@@ -519,8 +521,9 @@ int parsing_test_command(char *test_name)
 		total_enq_req =
 		    (total_enq_req * 10) + (test_name[i++] - '0');
 
-	if (0 == total_enq_req)
+	if (0 == total_enq_req) {
 		total_enq_req = 0xffffffff;
+	}
 
 	if (time_duration > 0) {
 		total_enq_req = 0xffffffff;

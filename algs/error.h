@@ -64,10 +64,11 @@ static inline void report_jump_idx(uint32_t status, char *outstr)
 	u8 idx = (status & JRSTA_DECOERR_INDEX_MASK) >>
 	    JRSTA_DECOERR_INDEX_SHIFT;
 
-	if (status & JRSTA_DECOERR_JUMP)
+	if (status & JRSTA_DECOERR_JUMP) {
 		strcat(outstr, "jump tgt desc idx ");
-	else
+	} else {
 		strcat(outstr, "desc idx ");
+	}
 
 	SPRINTFCAT(outstr, "%d: ", idx, sizeof("255"));
 }
@@ -301,8 +302,9 @@ static inline int sec_jr_strstatus(char *outstr, uint32_t status)
 	if (status_src[ssrc].report_ssed) {
 		status_src[ssrc].report_ssed(status, outstr);
 		ret = -1;
-	} else
+	} else {
 		ret = 0;
+	}
 
 	return ret;
 }

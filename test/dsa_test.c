@@ -502,65 +502,77 @@ void cleanup_dsa_test(void)
         }
 #endif
 
-	if(g_dsasignreq_1k.req_u.dsa_sign.c)
+	if(g_dsasignreq_1k.req_u.dsa_sign.c) {
 		kfree(g_dsasignreq_1k.req_u.dsa_sign.c);
-	if(g_dsasignreq_1k.req_u.dsa_sign.d)
+	}
+	if(g_dsasignreq_1k.req_u.dsa_sign.d) {
 		kfree(g_dsasignreq_1k.req_u.dsa_sign.d);
-	if(g_dsasignreq_2k.req_u.dsa_sign.c)
+	}
+	if(g_dsasignreq_2k.req_u.dsa_sign.c) {
 		kfree(g_dsasignreq_2k.req_u.dsa_sign.c);
-	if(g_dsasignreq_2k.req_u.dsa_sign.d)
+	}
+	if(g_dsasignreq_2k.req_u.dsa_sign.d) {
 		kfree(g_dsasignreq_2k.req_u.dsa_sign.d);
-	if(g_dsasignreq_4k.req_u.dsa_sign.c)
+	}
+	if(g_dsasignreq_4k.req_u.dsa_sign.c) {
 		kfree(g_dsasignreq_4k.req_u.dsa_sign.c);
-	if(g_dsasignreq_4k.req_u.dsa_sign.d)
+	}
+	if(g_dsasignreq_4k.req_u.dsa_sign.d) {
 		kfree(g_dsasignreq_4k.req_u.dsa_sign.d);
+	}
 
 }
 
 int dsa_verify_test_1k(void)
 {
-	if (-1 == test_dsa_op(&g_dsaverifyreq_1k, dsa_done))
+	if (-1 == test_dsa_op(&g_dsaverifyreq_1k, dsa_done)) {
 		return -1;
+	}
 
 	return 0;
 }
 
 int dsa_sign_test_1k(void)
 {
-	if (-1 == test_dsa_op(&g_dsasignreq_1k, dsa_done))
+	if (-1 == test_dsa_op(&g_dsasignreq_1k, dsa_done)) {
 		return -1;
+	}
 
 	return 0;
 }
 
 int dsa_verify_test_2k(void)
 {
-	if (-1 == test_dsa_op(&g_dsaverifyreq_2k, dsa_done))
+	if (-1 == test_dsa_op(&g_dsaverifyreq_2k, dsa_done)) {
 		return -1;
+	}
 
 	return 0;
 }
 
 int dsa_sign_test_2k(void)
 {
-	if (-1 == test_dsa_op(&g_dsasignreq_2k, dsa_done))
+	if (-1 == test_dsa_op(&g_dsasignreq_2k, dsa_done)) {
 		return -1;
+	}
 
 	return 0;
 }
 
 int dsa_verify_test_4k(void)
 {
-	if (-1 == test_dsa_op(&g_dsaverifyreq_4k, dsa_done))
+	if (-1 == test_dsa_op(&g_dsaverifyreq_4k, dsa_done)) {
 		return -1;
+	}
 
 	return 0;
 }
 
 int dsa_sign_test_4k(void)
 {
-	if (-1 == test_dsa_op(&g_dsasignreq_4k, dsa_done))
+	if (-1 == test_dsa_op(&g_dsasignreq_4k, dsa_done)) {
 		return -1;
+	}
 
 	return 0;
 }
@@ -817,10 +829,12 @@ error:
                     kfree(genreq->req_u.dsa_keygen.g);
                 }
 #endif
-		if (genreq->req_u.dsa_keygen.pubkey)
+		if (genreq->req_u.dsa_keygen.pubkey) {
 			kfree(genreq->req_u.dsa_keygen.pubkey);
-		if (genreq->req_u.dsa_keygen.prvkey)
+		}
+		if (genreq->req_u.dsa_keygen.prvkey) {
 			kfree(genreq->req_u.dsa_keygen.prvkey);
+		}
 		kfree(genreq);
 	}
 
@@ -842,12 +856,15 @@ error:
                     kfree(signreq->req_u.dsa_sign.m);
                 }
 #endif
-		if (signreq->req_u.dsa_sign.c)
+		if (signreq->req_u.dsa_sign.c) {
 			kfree(signreq->req_u.dsa_sign.c);
-		if (signreq->req_u.dsa_sign.d)
+		}
+		if (signreq->req_u.dsa_sign.d) {
 			kfree(signreq->req_u.dsa_sign.d);
-		if (signreq->req_u.dsa_sign.priv_key)
+		}
+		if (signreq->req_u.dsa_sign.priv_key) {
 			kfree(signreq->req_u.dsa_sign.priv_key);
+		}
 
 		kfree(signreq);
 	}
@@ -869,12 +886,15 @@ error:
                     kfree(verifyreq->req_u.dsa_verify.m);
                 }
 #endif
-		if (verifyreq->req_u.dsa_verify.c)
+		if (verifyreq->req_u.dsa_verify.c) {
 			kfree(verifyreq->req_u.dsa_verify.c);
-		if (verifyreq->req_u.dsa_verify.d)
+		}
+		if (verifyreq->req_u.dsa_verify.d) {
 			kfree(verifyreq->req_u.dsa_verify.d);
-		if (verifyreq->req_u.dsa_verify.pub_key)
+		}
+		if (verifyreq->req_u.dsa_verify.pub_key) {
 			kfree(verifyreq->req_u.dsa_verify.pub_key);
+		}
 
 		kfree(verifyreq);
 	}

@@ -71,8 +71,9 @@ void crypto_op_done(fsl_crypto_dev_t *c_dev, crypto_job_ctx_t *ctx,
 		print_debug("Job is discarded in the firmware\n");
 	} else {
 		sec_jr_strstatus(outstr, sec_result);
-		if (0 != sec_result)
+		if (0 != sec_result) {
 			print_error("STATUS FROM SEC ENGINE :%s\n", outstr);
+		}
 	}
 
 	switch (ctx->oprn) {
@@ -211,10 +212,11 @@ void crypto_op_done(fsl_crypto_dev_t *c_dev, crypto_job_ctx_t *ctx,
 			break;
 		}
 #ifndef VIRTIO_C2X0
-		if (NULL != ctx->req.pkc->base.tfm)
+		if (ctx->req.pkc->base.tfm != NULL) {
 			pkc_request_complete(ctx->req.pkc, sec_result);
-		else
+		} else {
 			ctx->done(ctx->req.pkc, sec_result);
+		}
 
 		kfree(ctx);
 #endif
@@ -315,12 +317,12 @@ uint32_t get_ring_rr(fsl_crypto_dev_t *c_dev)
 	int32_t r_id = 0;
 	no_of_app_rings = c_dev->num_of_rings - 1;
 
-	if (0 < no_of_app_rings)
-		r_id =
-			((atomic_inc_return(&c_dev->crypto_dev_sess_cnt) -
-				1) % no_of_app_rings) + 1;
-	else 
+	if (0 < no_of_app_rings) {
+		r_id = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
+		r_id = (r_id - 1) % no_of_app_rings + 1;
+	} else {
 		print_error("No application ring configured\n");
+	}
 
 	return r_id;
 }

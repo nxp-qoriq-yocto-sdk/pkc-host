@@ -151,8 +151,9 @@ struct k_sysfs_file *create_sysfs_file_cb(int8_t *name, struct sysfs_dir *parent
 		uint8_t str_flag, void (*cb) (char *, char *, int))
 {
 	struct k_sysfs_file *file = create_sysfs_file(name, parent, str_flag);
-	if (file)
+	if (file) {
 		file->cb = cb;
+	}
 	return file;
 }
 
@@ -426,10 +427,11 @@ void set_sysfs_value(struct c29x_dev *fsl_pci_dev, sys_files_id_t id,
 {
 	struct k_sysfs_file *file = get_sys_file(fsl_pci_dev, id);
 
-	if (file->str_flag)
+	if (file->str_flag) {
 		memcpy(file->buf, value, len);
-	else
+	} else {
 		file->num = *((uint32_t *) (value));
+	}
 
 	file->buf_len = len;
 }

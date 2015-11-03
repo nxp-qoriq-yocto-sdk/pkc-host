@@ -124,11 +124,12 @@ void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 		list_add(&(rp->isr_ctx_list_node), &(isr_ctx->ring_list_head));
 		list_add(&(rp->bh_ctx_list_node), &(instance->ring_list_head));
 
-		if ((++isr_count) % total_isrs)
+		if ((++isr_count) % total_isrs) {
 			isr_ctx = list_entry(isr_ctx->list.next, isr_ctx_t, list);
-		else
+		} else {
 			isr_ctx = list_entry(isr_ctx_list_head->next, isr_ctx_t,
 						list);
+		}
 
 		print_debug("ISR COUNT: %d total num of isrs: %d\n",
 			    isr_count, total_isrs);
@@ -264,8 +265,9 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	fw_rr_size = DEFAULT_FIRMWARE_RESP_RING_DEPTH * sizeof(struct resp_ring_entry);
 	/* See if we can fit fw_resp_ring before the end of this page and if not
 	 * put it in the next page */
-	if ((PAGE_SIZE - (ob_mem_len % PAGE_SIZE)) < fw_rr_size)
+	if ((PAGE_SIZE - (ob_mem_len % PAGE_SIZE)) < fw_rr_size) {
 		ob_mem_len = page_align(ob_mem_len);
+	}
 
 	dev->ob_mem.fw_resp_ring = ob_mem_len;
 	ob_mem_len += fw_rr_size;
@@ -667,10 +669,11 @@ uint8_t hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *con
 	print_debug("Req r: %p\n", dev->ring_pairs[rid].req_r);
 
 	rid++;
-	if (rid < dev->num_of_rings)
+	if (rid < dev->num_of_rings) {
 		send_hs_command(HS_INIT_RING_PAIR, dev,	&(config->ring[rid]));
-	else
+	} else {
 		send_hs_command(HS_COMPLETE, dev, NULL);
+	}
 
 	return rid;
 }
@@ -1140,10 +1143,11 @@ void start_device(fsl_crypto_dev_t *dev)
 	 * hold-off mode or clear the CPU core reset register
 	 */
 	cpu0_en = ioread32be(ccsr + BRR_OFFSET) & BRR_RELEASE_CORE0;
-	if (cpu0_en)
+	if (cpu0_en) {
 		iowrite32be(0, ccsr + PIC_PIR);
-	else
+	} else {
 		iowrite32be(BRR_RELEASE_CORE0, ccsr + BRR_OFFSET);
+	}
 
 	udelay(250);
 }
@@ -1400,13 +1404,14 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
                 }
 #endif
 		ctx0->op_done(ctx0, res);
-        }
-	else
+        } else {
 		print_debug("NULL Context!!\n");
+	}
 
 #ifndef HIGH_PERF
-	if (ctx1)
+	if (ctx1) {
 		crypto_op_done(dev, ctx1, res);
+	}
 #endif
 	return;
 
@@ -1617,8 +1622,9 @@ cmd_ring_entry_desc_t *get_buffer(fsl_crypto_dev_t *c_dev, void *id, uint32_t le
 	void *addr;
 
 	addr = alloc_buffer(id, len, flag);
-	if (addr)
+	if (addr) {
 		addr = ip_buf_d_v_addr(c_dev, addr);
+	}
 
 	return addr;
 }

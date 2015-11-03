@@ -228,18 +228,22 @@ void cleanup_dh_test(void)
         }
 #endif
 
-	if(g_dhreq_1k.req_u.dh_req.z)
+	if(g_dhreq_1k.req_u.dh_req.z) {
 		kfree(g_dhreq_1k.req_u.dh_req.z);
-	if(g_dhreq_2k.req_u.dh_req.z)
+	}
+	if(g_dhreq_2k.req_u.dh_req.z) {
 		kfree(g_dhreq_2k.req_u.dh_req.z);
-	if(g_dhreq_4k.req_u.dh_req.z)
+	}
+	if(g_dhreq_4k.req_u.dh_req.z) {
 		kfree(g_dhreq_4k.req_u.dh_req.z);
+	}
 }
 
 int dh_test_1k(void)
 {
-	if (-1 == test_dh_op(&g_dhreq_1k, dh_done))
+	if (-1 == test_dh_op(&g_dhreq_1k, dh_done)) {
 		return -1;
+	}
 
 	return 0;
 }

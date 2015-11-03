@@ -124,8 +124,9 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 	return 0;
 
 no_mem:
-	if (!mem_info->split_ip)
+	if (!mem_info->split_ip) {
 		return -ENOMEM;
+	}
 error:
 	while (i--) {
 		if (buffers[i].bt == BT_IP) {
@@ -152,20 +153,23 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 	buffer_info_t *buffers = mem_info->buffers;
 	uint32_t i = 0;
 
-	if (buffers[0].v_mem)
+	if (buffers[0].v_mem) {
 		free_buffer(mem_info->pool, buffers[0].v_mem);
+	}
 
 	for (i = 1; i < mem_info->count; i++) {
 		switch (buffers[i].bt) {
 		case BT_IP:
-			if (mem_info->split_ip && buffers[i].v_mem)
+			if (mem_info->split_ip && buffers[i].v_mem) {
 				free_buffer(mem_info->pool, buffers[i].v_mem);
+			}
 			break;
 		case BT_OP:
-			if (buffers[i].dev_buffer.h_dma_addr)
+			if (buffers[i].dev_buffer.h_dma_addr) {
 				pci_unmap_single(pci_dev->dev, buffers[i].dev_buffer.
 						 h_dma_addr, buffers[i].len,
 						 PCI_DMA_BIDIRECTIONAL);
+			}
 		default:
 			break;
 		}
@@ -257,13 +261,15 @@ int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
 	int32_t i;
 	buffer_info_t *buffers;
 
-	if (!crypto_mem)
+	if (!crypto_mem) {
 		return -1;
+	}
 
 	buffers = crypto_mem->buffers;
 	for (i = 0; i < crypto_mem->count; i++) {
-		if (buffers[i].bt != BT_IP)
+		if (buffers[i].bt != BT_IP) {
 			continue;
+		}
 
 		buffers[i].dev_buffer.h_p_addr = (phys_addr_t)pci_map_single(
 			g_fsl_pci_dev->dev, buffers[i].req_ptr, buffers[i].len,
@@ -286,13 +292,15 @@ int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
 	int32_t i;
 	buffer_info_t *buffers;
 
-	if (!crypto_mem)
+	if (!crypto_mem) {
 		return -1;
+	}
 
 	buffers = crypto_mem->buffers;
 	for (i = 0; i < crypto_mem->count; i++) {
-		if (buffers[i].bt != BT_IP)
+		if (buffers[i].bt != BT_IP) {
 			continue;
+		}
 
 		pci_unmap_single(g_fsl_pci_dev->dev,
 			(dma_addr_t)buffers[i].dev_buffer.h_p_addr, buffers[i].len,

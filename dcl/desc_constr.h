@@ -148,8 +148,10 @@ static inline void append_data(u32 *desc, void *data, int len)
 {
 	u32 *offset = desc_end(desc);
 
-	if (len)	/* avoid sparse warning: memcpy with byte count of 0 */
+	if (len) {
+		/* avoid sparse warning: memcpy with byte count of 0 */
 		memcpy(offset, data, len);
+	}
 
 	(*desc) += (len + CAAM_CMD_SZ - 1) / CAAM_CMD_SZ;
 }
@@ -270,10 +272,11 @@ static inline void append_##cmd(u32 *desc, dev_dma_addr_t ptr, \
 				type len, u32 options) \
 { \
 	PRINT_POS; \
-	if (sizeof(type) > sizeof(u16)) \
+	if (sizeof(type) > sizeof(u16)) {\
 		append_##cmd##_extlen(desc, ptr, len, options); \
-	else \
+	} else {\
 		append_##cmd##_intlen(desc, ptr, len, options); \
+	}\
 }
 APPEND_CMD_PTR_LEN(seq_in_ptr, SEQ_IN_PTR, u32)
 APPEND_CMD_PTR_LEN(seq_out_ptr, SEQ_OUT_PTR, u32)

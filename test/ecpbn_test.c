@@ -328,34 +328,42 @@ void init_ecpbn_sign_test_571(void)
 
 int ecpbn_verify_test_571(void)
 {
-	if (-1 == test_dsa_op(&g_ecpbnverifyreq_571, ecpbn_done))
+	if (-1 == test_dsa_op(&g_ecpbnverifyreq_571, ecpbn_done)) {
 		return -1;
+	}
 
 	return 0;
 }
 
 int ecpbn_sign_test_571(void)
 {
-	if (-1 == test_dsa_op(&g_ecpbnsignreq_571, ecpbn_done))
+	if (-1 == test_dsa_op(&g_ecpbnsignreq_571, ecpbn_done)) {
 		return -1;
+	}
 
 	return 0;
 }
 
 void cleanup_ecpbn_test(void)
 {
-	if(g_ecpbnsignreq_283.req_u.dsa_sign.c)
+	if(g_ecpbnsignreq_283.req_u.dsa_sign.c) {
 		kfree(g_ecpbnsignreq_283.req_u.dsa_sign.c);
-	if(g_ecpbnsignreq_283.req_u.dsa_sign.d)
+	}
+	if(g_ecpbnsignreq_283.req_u.dsa_sign.d) {
 		kfree(g_ecpbnsignreq_283.req_u.dsa_sign.d);
-	if(g_ecpbnsignreq_409.req_u.dsa_sign.c)
+	}
+	if(g_ecpbnsignreq_409.req_u.dsa_sign.c) {
 		kfree(g_ecpbnsignreq_409.req_u.dsa_sign.c);
-	if(g_ecpbnsignreq_409.req_u.dsa_sign.d)
+	}
+	if(g_ecpbnsignreq_409.req_u.dsa_sign.d) {
 		kfree(g_ecpbnsignreq_409.req_u.dsa_sign.d);
-	if(g_ecpbnsignreq_571.req_u.dsa_sign.c)
+	}
+	if(g_ecpbnsignreq_571.req_u.dsa_sign.c) {
 		kfree(g_ecpbnsignreq_571.req_u.dsa_sign.c);
-	if(g_ecpbnsignreq_571.req_u.dsa_sign.d)
+	}
+	if(g_ecpbnsignreq_571.req_u.dsa_sign.d) {
 		kfree(g_ecpbnsignreq_571.req_u.dsa_sign.d);
+	}
 }
 
 /*

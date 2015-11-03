@@ -891,8 +891,9 @@ int test_rsa_op(struct pkc_request *req,
 #else
 	err = rsa_op(req);
 #endif
-	if (err == -EINPROGRESS)
+	if (err == -EINPROGRESS) {
 		err = 0;
+	}
 	return err;
 }
 EXPORT_SYMBOL(test_rsa_op);

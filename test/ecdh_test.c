@@ -163,14 +163,16 @@ void init_ecdh_test(void)
 
 void cleanup_ecdh_test(void)
 {
-	if(g_ecdhreq.req_u.dh_req.z)
+	if(g_ecdhreq.req_u.dh_req.z) {
 		kfree(g_ecdhreq.req_u.dh_req.z);
+	}
 }
 
 int ecdh_test(void)
 {
-	if (-1 == test_dh_op(&g_ecdhreq, ecdh_done))
+	if (-1 == test_dh_op(&g_ecdhreq, ecdh_done)) {
 		return -1;
+	}
 
 	return 0;
 }

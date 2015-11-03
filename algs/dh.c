@@ -155,10 +155,11 @@ static int dh_key_cp_req(struct dh_key_req_s *req, crypto_mem_info_t *mem_info,
 	mem->w_buff.req_ptr = req->pub_key;
 	mem->s_buff.req_ptr = req->s;
 
-	if (ecdh)
+	if (ecdh) {
 		mem->ab_buff.req_ptr = req->ab;
-	else
+	} else {
 		mem->ab_buff.req_ptr = NULL;
+	}
 #endif
 	mem->z_buff.v_mem = req->z;
 	return 0;
@@ -187,10 +188,11 @@ static int dh_keygen_cp_req(struct dh_keygen_req_s *req, crypto_mem_info_t *mem_
     mem->r_buff.req_ptr         =   req->r;
     mem->g_buff.req_ptr         =   req->g;
 
-    if(ecdh)
+    if(ecdh) {
        mem->ab_buff.req_ptr     =   req->ab;
-    else
+    } else {
        mem->ab_buff.req_ptr     =   NULL;
+    }
 #endif
     mem->prvkey_buff.v_mem     =   req->prvkey;
     mem->pubkey_buff.v_mem     =   req->pubkey;
@@ -285,12 +287,13 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 	iowrite32be((mem->q_buff.len << 7) | mem->s_buff.len,
 			&ecdh_key_desc->sgf_ln);
-	if (ecc_bin)
+	if (ecc_bin) {
 		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH |
 			  OP_PCL_PKPROT_ECC | OP_PCL_PKPROT_F2M, &ecdh_key_desc->op);
-	else
+	} else {
 		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH |
 			  OP_PCL_PKPROT_ECC, &ecdh_key_desc->op);
+	}
 
 #ifdef PRINT_DEBUG
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
@@ -422,8 +425,9 @@ static void dh_key_init_crypto_mem(crypto_mem_info_t *crypto_mem, bool ecdh)
 	dh_key_buffers_t *dh_key_buffs = NULL;
 
 	crypto_mem->count = sizeof(dh_key_buffers_t) / sizeof(buffer_info_t);
-	if (!ecdh)
+	if (!ecdh) {
 		crypto_mem->count -= 1;
+	}
 
 	crypto_mem->buffers =
 	    (buffer_info_t *) (&(crypto_mem->c_buffers.dh_key));
@@ -441,8 +445,9 @@ static void dh_keygen_init_crypto_mem(crypto_mem_info_t *crypto_mem, bool ecdh)
     dh_keygen_buffers_t    *dh_key_buffs   =   NULL;
 
     crypto_mem->count       =   sizeof(dh_keygen_buffers_t)/sizeof(buffer_info_t);
-    if(!ecdh)
-        crypto_mem->count -= 1;
+    if(!ecdh) {
+	    crypto_mem->count -= 1;
+    }
 
     crypto_mem->buffers     =   (buffer_info_t *)(&(crypto_mem->c_buffers.dh_keygen));
     memset(crypto_mem->buffers, 0, sizeof(dh_keygen_buffers_t));
@@ -539,8 +544,9 @@ int dh_op(struct pkc_request *req)
 
 	if (ECDH_COMPUTE_KEY == req->type || ECDH_KEYGEN == req->type) {
 		ecdh = true;
-		if (ECC_BINARY == req->curve_type)
+		if (ECC_BINARY == req->curve_type) {
 			ecc_bin = true;
+		}
 	}
 
 	switch (req->type) {
@@ -566,10 +572,11 @@ int dh_op(struct pkc_request *req)
 #endif
 
             /* Constr the hw desc */
-            if(ecdh)
+            if(ecdh) {
                 constr_ecdh_keygen_desc(&crypto_ctx->crypto_mem, ecc_bin);
-            else
+            } else {
                 constr_dh_keygen_desc(&crypto_ctx->crypto_mem);
+            }
             print_debug("Desc constr complete... \n");
 
 #ifdef SEC_DMA
@@ -611,10 +618,11 @@ int dh_op(struct pkc_request *req)
 #endif
 
 		/* Constr the hw desc */
-		if (ecdh)
+		if (ecdh) {
 			constr_ecdh_key_desc(&crypto_ctx->crypto_mem, ecc_bin);
-		else
+		} else{
 			constr_dh_key_desc(&crypto_ctx->crypto_mem);
+		}
 		print_debug("Desc constr complete...\n");
 
 #ifdef SEC_DMA
@@ -657,10 +665,11 @@ int dh_op(struct pkc_request *req)
 	crypto_ctx->desc = sec_dma;
 	crypto_ctx->c_dev = c_dev;
 
-	if (ecdh)
+	if (ecdh) {
 		crypto_ctx->op_done = ecdh_op_done;
-	else
+	} else {
 		crypto_ctx->op_done = dh_op_done;
+	}
 #ifdef VIRTIO_C2X0
 	/* Initialise card status as Unfinished */
 	crypto_ctx->card_status = -1;
@@ -738,10 +747,12 @@ int test_dh_op(struct pkc_request *req,
 #else
 	ret = dh_op(req);
 #endif
-    if (-EINPROGRESS == ret)
-        ret = 0;
-    if (0 > ret)
-        ret = -1;
+    if (ret == -EINPROGRESS) {
+	    ret = 0;
+    }
+    if (ret < 0) {
+	    ret = -1;
+    }
 
     return ret;    
 }

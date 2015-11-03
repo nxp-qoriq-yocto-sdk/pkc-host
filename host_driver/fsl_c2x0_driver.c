@@ -1101,8 +1101,9 @@ void get_msi_config_data(struct c29x_dev *fsl_pci_dev, isr_ctx_t *isr_context)
 			isr_context->msi_data);
 
 	bar->host_p_addr = isr_context->msi_addr_low;
-	if (sizeof(phys_addr_t) == sizeof(u64))
+	if (sizeof(phys_addr_t) == sizeof(u64)) {
 		bar->host_p_addr |= ((u64) isr_context->msi_addr_high) << 32;
+	}
 
 	bar->host_v_addr = (void *) phys_to_virt((unsigned long)bar->host_p_addr);
 }
@@ -1263,8 +1264,9 @@ static int32_t get_line(struct file *file, loff_t *pos, uint8_t *line,
 
 	line[0] = '\0';
 	while (ch != '\n') {
-		if (vfs_read(file, &ch, 1, pos) <= 0)
+		if (vfs_read(file, &ch, 1, pos) <= 0) {
 			return -1;
+		}
 		if (ch != '\n') {
 			line[count++] = ch;
 			if (count == line_size)
@@ -1291,14 +1293,14 @@ int8_t *get_label(int8_t *line)
 	int8_t *p = line;
 
 	while (*line != '\n' && *line != '\0') {
-		if (*line == '<')
+		if (*line == '<') {
 			return line;
-		else if (*line == ':') {
+		} else if (*line == ':') {
 			*line = '\0';
 			return p;
-		}
-		else
+		} else {
 			line++;
+		}
 	}
 
 	while (*p == ' ')
@@ -1325,16 +1327,17 @@ int8_t *get_label(int8_t *line)
 static void create_default_config(struct crypto_dev_config *config,
 				  uint8_t from_ring, uint8_t max_ring)
 {
-	if (max_ring > FSL_CRYPTO_MAX_RING_PAIRS)
+	if (max_ring > FSL_CRYPTO_MAX_RING_PAIRS) {
 		max_ring = FSL_CRYPTO_MAX_RING_PAIRS;
+	}
 	print_debug("Total no of Rings : %d\n", max_ring);
 	for (; from_ring < max_ring; ++from_ring) {
 		config->ring[from_ring].ring_id = from_ring;
-		if (0 == from_ring)
+		if (0 == from_ring) {
 			config->ring[from_ring].depth = 16;
-		else
+		} else {
 			config->ring[from_ring].depth = 1024;
-
+		}
 		/* default values for affinity, priority and order */
 		f_set_a(&config->ring[from_ring].flags, 0);
 		f_set_p(&config->ring[from_ring].flags, 1);
@@ -1392,8 +1395,9 @@ int32_t process_label(int8_t *label, int8_t *value)
 		config->fw_file_path[FIRMWARE_FILE_PATH_LEN - 1] = '\0';
 	} else if (!strcmp(label, "rings")) {
 		conv_value = str_to_int(value);
-		if (FSL_CRYPTO_MAX_RING_PAIRS < conv_value || 0 > conv_value)
+		if (FSL_CRYPTO_MAX_RING_PAIRS < conv_value || 0 > conv_value) {
 			conv_value = FSL_CRYPTO_MAX_RING_PAIRS;
+		}
 		config->num_of_rings = conv_value;
 		rings_spec = true;
 		/* Default values for all the rings */
@@ -1416,37 +1420,41 @@ int32_t process_label(int8_t *label, int8_t *value)
 		f_set_a(&config->ring[ring_count].flags, (uint8_t)conv_value);
 	} else if (!strcmp(label, "priority") && (ring_start == true)) {
 		conv_value = str_to_int(value);
-		if (16 < conv_value)
+		if (16 < conv_value) {
 			conv_value = 16;
-		if (0 >= conv_value)
+		}
+		if (0 >= conv_value) {
 			conv_value = 1;
+		}
 		f_set_p(&config->ring[ring_count].flags, (uint8_t)conv_value);
 	} else if (!strcmp(label, "order") && (ring_start == true)) {
 		conv_value = str_to_int(value);
-		if ( conv_value > 1 || conv_value < 0)
+		if ( conv_value > 1 || conv_value < 0) {
 			conv_value = 0;
+		}
 		f_set_o(&config->ring[ring_count].flags, (uint8_t)conv_value);
 	} else if (!strcmp(label, "<end>")) {
 		if (ring_start == true) {
 			ring_start = false;
 			if (config->ring[ring_count].depth < 16) {
-				if (ring_count == 0)
+				if (ring_count == 0) {
 					config->ring[ring_count].depth = 16;
-				else
+				} else {
 					config->ring[ring_count].depth = 128;
+				}
 			}
 			ring_count++;
 		} else if (dev_start == true) {
 			/* FIX: IF GIVEN CONFIGURATION FAILS THEN MAKE DEFAULT
 			 * CONFIGURATION ENABLED */
-			if (1 >= config->num_of_rings)
+			if (1 >= config->num_of_rings) {
 				create_default_config(config, 0, 2);
-			else if (ring_count < config->num_of_rings)
+			} else if (ring_count < config->num_of_rings) {
 				create_default_config(config, ring_count,
 						      config->num_of_rings);
-			else if (ring_count > config->num_of_rings)
+			} else if (ring_count > config->num_of_rings) {
 				return -1;
-
+			}
 			rings_spec = false;
 			dev_start = false;
 			ring_count = 0;
@@ -1534,8 +1542,9 @@ int32_t parse_config_file(int8_t *config_file)
 	}
 
 out:
-	if (file)
+	if (file) {
 		filp_close(file, 0);
+	}
 
 	set_fs(old_fs);
 

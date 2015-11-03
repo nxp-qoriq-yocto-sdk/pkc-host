@@ -83,8 +83,9 @@ static inline int __sg_count(struct scatterlist *sg_list, int nbytes,
 	while (nbytes > 0) {
 		sg_nents++;
 		nbytes -= sg->length;
-		if (!sg_is_last(sg) && (sg + 1)->length == 0)
+		if (!sg_is_last(sg) && (sg + 1)->length == 0) {
 			*chained = true;
+		}
 		sg = scatterwalk_sg_next(sg);
 	}
 
@@ -97,8 +98,9 @@ static inline int sg_count(struct scatterlist *sg_list, int nbytes,
 {
 	int sg_nents = __sg_count(sg_list, nbytes, chained);
 
-	if (likely(sg_nents == 1))
+	if (likely(sg_nents == 1)) {
 		return 0;
+	}
 
 	return sg_nents;
 }
@@ -154,11 +156,12 @@ static inline void sg_copy(u8 *dest, struct scatterlist *sg, unsigned int len)
 		cpy_index = next_cpy_index;
 		next_cpy_index += current_sg->length;
 	}
-	if (cpy_index < len)
+	if (cpy_index < len) {
 		/*memcpy(dest + cpy_index, (u8 *) sg_virt(current_sg),
 		   len - cpy_index); */
 		sg_map_copy(dest + cpy_index, current_sg, len - cpy_index,
 			    current_sg->offset);
+	}
 }
 
 /* Copy sg data, from to_skip to end, to dest */

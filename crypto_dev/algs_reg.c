@@ -342,11 +342,10 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 
 	/* Select the ring in which this job has to be posted. */
 
-	if (0 < no_of_app_rings)
-		ctx->r_id =
-		    ((atomic_inc_return(&ctx->c_dev->crypto_dev_sess_cnt) -
-		      1) % no_of_app_rings) + 1;
-	else {
+	if (0 < no_of_app_rings) {
+		ctx->r_id = atomic_inc_return(&ctx->c_dev->crypto_dev_sess_cnt);
+		ctx->r_id = (ctx->r_id - 1) % no_of_app_rings + 1;
+	} else {
 		print_error("No application ring configured\n");
 		return -1;
 	}
@@ -521,8 +520,9 @@ static struct fsl_crypto_alg *fsl_alg_alloc(struct alg_template *template,
 	if (CRYPTO_ALG_TYPE_AHASH == template->type) {
 		f_alg->u.ahash_alg = template->u.ahash;
 		alg = &f_alg->u.ahash_alg.halg.base;
-	} else
+	} else {
 		alg = &f_alg->u.crypto_alg;
+	}
 
 	if (keyed && (CRYPTO_ALG_TYPE_AHASH == template->type)) {
 		snprintf(alg->cra_name, CRYPTO_MAX_ALG_NAME, "%s",
@@ -631,12 +631,13 @@ l_start:
 			goto out_err;
 		}
 
-		if (keyed)
+		if (keyed) {
 			print_debug("%s alg allocation successful\n",
 					driver_algs[loop].hmac_driver_name);
-		else
+		} else {
 			print_debug("%s alg allocation successful\n",
 					driver_algs[loop].driver_name);
+		}
 
 		if (f_alg->ahash) {
 			err = crypto_register_ahash(&f_alg->u.ahash_alg);
@@ -694,11 +695,11 @@ void fsl_algapi_exit(void)
 		return;
 
 	list_for_each_entry_safe(f_alg, temp, &alg_list, entry) {
-		if (f_alg->ahash)
+		if (f_alg->ahash) {
 			alg = &f_alg->u.ahash_alg.halg.base;
-		else
+		} else {
 			alg = &f_alg->u.crypto_alg;
-
+		}
 		crypto_unregister_alg(alg);
 		list_del(&f_alg->entry);
 		kfree(f_alg);

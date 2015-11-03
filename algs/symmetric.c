@@ -463,8 +463,9 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 	pci_dev = c_dev->priv_dev->dev;
 #endif
 
-	if (-1 == check_device(c_dev))
+	if (-1 == check_device(c_dev)) {
 		return -1;
+	}
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 	if (unlikely(!crypto_ctx)) {
@@ -483,8 +484,9 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 
 	/* INIT CRYPTO MEMORY */
 	ret = ablk_init_crypto_mem(crypto_mem, src_sgcnt);
-	if (-ENOMEM == ret)
+	if (-ENOMEM == ret) {
 		goto error;
+	}
 
 	ablk_ctx = crypto_mem->c_buffers.symm_ablk;
 	ablk_ctx->desc.len = DESC_JOB_IO_LEN * CAAM_CMD_SZ;
@@ -503,10 +505,11 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 		ablk_ctx->src.len = 0;
 	}
 
-	if (dst_sgcnt)
+	if (dst_sgcnt) {
 		ablk_ctx->dst.len = dst_sgcnt * sizeof(struct sec4_sg_entry);
-	else
+	} else {
 		ablk_ctx->dst.len = 0;
+	}
 
 	/* ALLOCATE MEMORY */
 	if (-ENOMEM == alloc_crypto_mem(crypto_mem)) {
@@ -612,7 +615,7 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 	sec_dma = set_sec_affinity(c_dev, r_id, sec_dma);
 	atomic_dec(&c_dev->active_jobs);
 
-    if (app_ring_enqueue(c_dev, r_id, sec_dma)) {
+	if (app_ring_enqueue(c_dev, r_id, sec_dma)) {
 		ret = -1;
 		goto error1;
 	}
@@ -642,12 +645,15 @@ error1:
 
 	if (crypto_ctx) {
 		dealloc_crypto_mem(crypto_mem);
-		if (crypto_ctx->crypto_mem.ip_sg)
+		if (crypto_ctx->crypto_mem.ip_sg) {
 			kfree(crypto_ctx->crypto_mem.ip_sg);
-		if (crypto_ctx->crypto_mem.op_sg)
+		}
+		if (crypto_ctx->crypto_mem.op_sg) {
 			kfree(crypto_ctx->crypto_mem.op_sg);
-		if (crypto_ctx->crypto_mem.c_buffers.symm_ablk)
+		}
+		if (crypto_ctx->crypto_mem.c_buffers.symm_ablk) {
 			kfree(crypto_ctx->crypto_mem.c_buffers.symm_ablk);
+		}
 		free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
 	}
 	return ret;

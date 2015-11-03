@@ -190,31 +190,42 @@ void init_ecdh_keygen_test_b571(void)
 
 void cleanup_ecdh_keygen_test(void)
 {
-	if(p256.req_u.dh_keygenreq.pubkey)
+	if(p256.req_u.dh_keygenreq.pubkey) {
 		kfree(p256.req_u.dh_keygenreq.pubkey);
-	if(p256.req_u.dh_keygenreq.prvkey)
+	}
+	if(p256.req_u.dh_keygenreq.prvkey) {
 		kfree(p256.req_u.dh_keygenreq.prvkey);
-	if(p384.req_u.dh_keygenreq.pubkey)
+	}
+	if(p384.req_u.dh_keygenreq.pubkey) {
 		kfree(p384.req_u.dh_keygenreq.pubkey);
-	if(p384.req_u.dh_keygenreq.prvkey)
+	}
+	if(p384.req_u.dh_keygenreq.prvkey) {
 		kfree(p384.req_u.dh_keygenreq.prvkey);
-	if(p521.req_u.dh_keygenreq.pubkey)
+	}
+	if(p521.req_u.dh_keygenreq.pubkey) {
 		kfree(p521.req_u.dh_keygenreq.pubkey);
-	if(p521.req_u.dh_keygenreq.prvkey)
+	}
+	if(p521.req_u.dh_keygenreq.prvkey) {
 		kfree(p521.req_u.dh_keygenreq.prvkey);
-
-	if(b283.req_u.dh_keygenreq.pubkey)
+	}
+	if(b283.req_u.dh_keygenreq.pubkey) {
 		kfree(b283.req_u.dh_keygenreq.pubkey);
-	if(b283.req_u.dh_keygenreq.prvkey)
+	}
+	if(b283.req_u.dh_keygenreq.prvkey) {
 		kfree(b283.req_u.dh_keygenreq.prvkey);
-	if(b409.req_u.dh_keygenreq.pubkey)
+	}
+	if(b409.req_u.dh_keygenreq.pubkey) {
 		kfree(b409.req_u.dh_keygenreq.pubkey);
-	if(b409.req_u.dh_keygenreq.prvkey)
+	}
+	if(b409.req_u.dh_keygenreq.prvkey) {
 		kfree(b409.req_u.dh_keygenreq.prvkey);
-	if(b571.req_u.dh_keygenreq.pubkey)
+	}
+	if(b571.req_u.dh_keygenreq.pubkey) {
 		kfree(b571.req_u.dh_keygenreq.pubkey);
-	if(b571.req_u.dh_keygenreq.prvkey)
+	}
+	if(b571.req_u.dh_keygenreq.prvkey) {
 		kfree(b571.req_u.dh_keygenreq.prvkey);
+	}
 }
 
 int ecdh_keygen_test_b409(void)

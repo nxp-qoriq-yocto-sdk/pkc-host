@@ -395,9 +395,10 @@ void wait_active_jobs_to_finish(fsl_crypto_dev_t *c_dev)
 {
 	uint32_t count = 0;
 	while (atomic_read(&(c_dev->active_jobs))) {
-		if (++count > 1000000)
+		if (++count > 1000000) {
 			print_error("WAITING ACTIVE JOBS TO FINISH: %d\n",
 				    atomic_read(&(c_dev->active_jobs)));
+		}
 	}
 	return;
 }
@@ -454,8 +455,9 @@ int32_t process_cmd_req(fsl_crypto_dev_t *c_dev,
 	case PINGDEV:
 		result = send_command_to_fw(c_dev, usr_cmd_desc->cmd_type,
 				       usr_cmd_desc);
-		if (result == -1)
+		if (result == -1) {
 			print_error("Sending command failed....\n");
+		}
 		break;
 
 	case RESETDEV:
@@ -611,9 +613,9 @@ static cmd_op_t *get_cmd_op_ctx(fsl_crypto_dev_t *c_dev,
 	return cmd_op;
 error:
 	if (NULL != cmd_op) {
-		if (NULL != cmd_op->cmd_ctx)
+		if (NULL != cmd_op->cmd_ctx) {
 			kfree(cmd_op->cmd_ctx);
-
+		}
 		put_buffer(c_dev, c_dev->op_pool.pool, cmd_op);
 	}
 
@@ -665,11 +667,13 @@ int32_t send_command_to_fw(fsl_crypto_dev_t *c_dev, commands_t command,
 				&pci_cmd_desc->ip_info.dgb.val);
 			user_op_buff = usr_cmd->op_buffer;
 		}
-		if (RESETSEC == usr_cmd->cmd_type)
+		if (RESETSEC == usr_cmd->cmd_type) {
 			iowrite32be(usr_cmd->rsrc.sec_id,
 				&pci_cmd_desc->ip_info.sec_id);
-		if (DEVSTAT == usr_cmd->cmd_type)
+		}
+		if (DEVSTAT == usr_cmd->cmd_type) {
 			user_op_buff = usr_cmd->op_buffer;
+		}
 		if (RINGSTAT == usr_cmd->cmd_type) {
 			iowrite32be(usr_cmd->rsrc.ring_id,
 				&pci_cmd_desc->ip_info.ring_id);
@@ -702,8 +706,9 @@ int32_t send_command_to_fw(fsl_crypto_dev_t *c_dev, commands_t command,
 		print_error("Command ring enqueue failed.....\n");
 		ret = -1;
 		goto exit;
-	} else
+	} else {
 		print_debug("Command ring enqueue succeed.....\n");
+	}
 
 	if (RESETDEV == command) {
 		/* No need to do anything if device has been reset */
@@ -737,8 +742,9 @@ int32_t send_command_to_fw(fsl_crypto_dev_t *c_dev, commands_t command,
 
 exit:
 
-	if (NULL != pci_cmd_desc)
+	if (NULL != pci_cmd_desc) {
 		put_buffer(c_dev, c_dev->ring_pairs[0].ip_pool, pci_cmd_desc);
+	}
 
 	if (NULL != cmd_op) {
 		kfree(cmd_op->cmd_ctx);

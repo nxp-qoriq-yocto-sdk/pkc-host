@@ -381,18 +381,24 @@ void cleanup_rsa_test(void)
         }
 #endif
 
-	if(g_1kpubopreq.req_u.rsa_pub_req.g)
+	if(g_1kpubopreq.req_u.rsa_pub_req.g) {
 		kfree(g_1kpubopreq.req_u.rsa_pub_req.g);
-	if(g_2kpubopreq.req_u.rsa_pub_req.g)
+	}
+	if(g_2kpubopreq.req_u.rsa_pub_req.g) {
 		kfree(g_2kpubopreq.req_u.rsa_pub_req.g);
-	if(g_4kpubopreq.req_u.rsa_pub_req.g)
+	}
+	if(g_4kpubopreq.req_u.rsa_pub_req.g) {
 		kfree(g_4kpubopreq.req_u.rsa_pub_req.g);
-	if(g_1kprv3opreq.req_u.rsa_priv_f3.f)
+	}
+	if(g_1kprv3opreq.req_u.rsa_priv_f3.f) {
 		kfree(g_1kprv3opreq.req_u.rsa_priv_f3.f);
-	if(g_2kprv3opreq.req_u.rsa_priv_f3.f)
+	}
+	if(g_2kprv3opreq.req_u.rsa_priv_f3.f) {
 		kfree(g_2kprv3opreq.req_u.rsa_priv_f3.f);
-	if(g_4kprv3opreq.req_u.rsa_priv_f3.f)
+	}
+	if(g_4kprv3opreq.req_u.rsa_priv_f3.f) {
 		kfree(g_4kprv3opreq.req_u.rsa_priv_f3.f);
+	}
 }
 
 #ifndef SIMPLE_TEST_ENABLE

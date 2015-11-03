@@ -310,24 +310,28 @@ void init_ecdsa_sign_test(void)
 
 void cleanup_ecdsa_test(void)
 {
-	if(g_ecdsasignreq.req_u.dsa_sign.c)
+	if(g_ecdsasignreq.req_u.dsa_sign.c) {
 		kfree(g_ecdsasignreq.req_u.dsa_sign.c);
-	if(g_ecdsasignreq.req_u.dsa_sign.d)
+	}
+	if(g_ecdsasignreq.req_u.dsa_sign.d) {
 		kfree(g_ecdsasignreq.req_u.dsa_sign.d);
+	}
 }
 
 int ecdsa_verify_test(void)
 {
-	if (-1 == test_dsa_op(&g_ecdsaverifyreq, ecdsa_done))
+	if (-1 == test_dsa_op(&g_ecdsaverifyreq, ecdsa_done)) {
 		return -1;
+	}
 
 	return 0;
 }
 
 int ecdsa_sign_test(void)
 {
-	if (-1 == test_dsa_op(&g_ecdsasignreq, ecdsa_done))
+	if (-1 == test_dsa_op(&g_ecdsasignreq, ecdsa_done)) {
 		return -1;
+	}
 
 	return 0;
 }
