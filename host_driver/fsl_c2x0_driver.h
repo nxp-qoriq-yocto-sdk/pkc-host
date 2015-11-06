@@ -60,13 +60,6 @@ pr_err("FSL-CRYPTO-DRV [%s:%d] DEBUG:\t" msg, __func__, __LINE__, ##__VA_ARGS__)
 #define print_debug(msg, ...)
 #endif
 
-#ifdef PRINT_ERROR
-#define print_error(msg, ...) \
-pr_err("FSL-CRYPTO-DRV [%s:%d] ERROR:\t" msg, __func__, __LINE__, ##__VA_ARGS__)
-#else
-#define print_error(msg, ...)
-#endif
-
 #ifdef PRINT_INFO
 #define print_info(msg, ...) \
 pr_info("FSL-CRYPTO-DRV [%s:%d] INFO:\t" msg, __func__, __LINE__, ##__VA_ARGS__)
@@ -84,6 +77,9 @@ dev_err(&(fdev->dev->dev), msg, ##__VA_ARGS__);\
 #else
 #define dev_print_dbg(fdev, msg, ...)
 #endif
+
+#define print_error(msg, ...) \
+pr_err("FSL-CRYPTO-DRV [%s:%d] ERROR:\t" msg, __func__, __LINE__, ##__VA_ARGS__)
 
 /* PCI Config space fields related macros */
 #define MSI_CTRL_WORD_MMC_MASK	0xE	/* 1-3 bits */
