@@ -3139,9 +3139,7 @@ int32_t process_virtio_hash_split_key_job(struct virtio_c2x0_job_ctx *
 	 * Soln -> Copy return value in qemu_cmd->host_status
 	 * and send 0/-1 as ioctl return
 	 */
-	ret =
-	    copy_to_user((uint8_t *) qemu_cmd->host_status, (uint8_t *) status,
-			 sizeof(int32_t));
+	ret = copy_to_user(qemu_cmd->host_status, &status, sizeof(int32_t));
 	if (ret > 0)
 		print_error("Copy to user for status failed\n");
 
