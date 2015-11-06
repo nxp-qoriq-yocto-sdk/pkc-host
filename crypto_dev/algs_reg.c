@@ -47,6 +47,107 @@
 atomic_t selected_devices;
 struct list_head alg_list;
 
+/*****************************************************************************
+ * Function     : fill_crypto_dev_sess_ctx
+ *
+ * Arguments    : ctx
+ *              : op_type
+ *
+ * Return Value : void
+ *
+ * Description  : Fill the cryptodev context.
+ *
+ *****************************************************************************/
+int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
+{
+	uint32_t no_of_app_rings = 0;
+	uint32_t no_of_devices = 0;
+#ifndef HIGH_PERF
+	uint32_t  new_device = 0;
+	int device_status = 0, count = 0, cpu = 0;
+	per_dev_struct_t *dev_stat = NULL;
+	uint32_t loop_cnt = 0;
+#endif
+
+	no_of_devices = get_no_of_devices();
+	if (0 >= no_of_devices) {
+		print_error("No Device configured\n");
+		return -1;
+	}
+
+#ifndef HIGH_PERF
+	while (!device_status && count < no_of_devices) {
+		new_device =
+		    ((atomic_inc_return(&selected_devices) -
+		      1) % no_of_devices) + 1;
+		ctx->c_dev = get_crypto_dev(new_device);
+		if (!ctx->c_dev) {
+			print_error
+			    ("Could not retrieve the device structure.\n");
+			return -1;
+		}
+		cpu = get_cpu();
+		dev_stat = per_cpu_ptr(ctx->c_dev->dev_status, cpu);
+		put_cpu();
+
+		device_status = atomic_read(&(dev_stat->device_status));
+		if (device_status) {
+			count = 0;
+			break;
+		}
+		count++;
+		if (++loop_cnt > 1000000) {
+			print_error("Could not get an active device\n");
+			return -1;
+		}
+	}
+	if (!device_status) {
+		print_error("No Device is ALIVE\n");
+		return -1;
+	}
+#else
+	ctx->c_dev = get_crypto_dev(1);
+	if (!ctx->c_dev) {
+		print_error("Could not retrieve the device structure.\n");
+		return -1;
+	}
+#endif
+
+	no_of_app_rings = ctx->c_dev->num_of_rings - 1;
+
+	/* Select the ring in which this job has to be posted. */
+
+	if (0 < no_of_app_rings) {
+		ctx->r_id = atomic_inc_return(&ctx->c_dev->crypto_dev_sess_cnt);
+		ctx->r_id = (ctx->r_id - 1) % no_of_app_rings + 1;
+	} else {
+		print_error("No application ring configured\n");
+		return -1;
+	}
+
+	print_debug("C dev num of rings [%d] r_id [%d]\n",
+		    ctx->c_dev->num_of_rings, ctx->r_id);
+
+	/* For symmetric algos all the job under same session should
+	 * go to same sec engine. Hence selecting one of the sec engine
+	 * for the ring pair. This sec engine selection will be passed
+	 * to firmware and firmware will enqueue the job to selected sec engine
+	 */
+/*
+#define NO_SEC_ENGINE_ASSIGNED          -1
+	if (SYMMETRIC == op_type) {
+		if (ctx->sec_eng == NO_SEC_ENGINE_ASSIGNED) {
+			fsl_h_rsrc_ring_pair_t *rp;
+			rp = &ctx->c_dev->ring_pairs[ctx->r_id];
+			ctx->sec_eng =
+			    atomic_inc_return(&(rp->sec_eng_sel)) &
+			    (rp->num_of_sec_engines);
+		}
+	}
+*/
+	return 0;
+}
+
 #ifndef VIRTIO_C2X0
 static struct alg_template driver_algs[] = {
 	{
@@ -270,110 +371,6 @@ static struct alg_template driver_algs[] = {
 #endif
 };
 #endif /* VIRTIO_C2X0 */
-
-/*****************************************************************************
- * Function     : fill_crypto_dev_sess_ctx
- *
- * Arguments    : ctx
- *              : op_type
- *
- * Return Value : void
- *
- * Description  : Fill the cryptodev context.
- *
- *****************************************************************************/
-
-int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
-{
-	uint32_t no_of_app_rings = 0;
-	uint32_t no_of_devices = 0;
-#ifndef HIGH_PERF
-	uint32_t  new_device = 0;
-	int device_status = 0, count = 0, cpu = 0;
-	per_dev_struct_t *dev_stat = NULL;
-	uint32_t loop_cnt = 0;
-#endif
-
-	no_of_devices = get_no_of_devices();
-	if (0 >= no_of_devices) {
-		print_error("No Device configured\n");
-		return -1;
-	}
-
-#ifndef HIGH_PERF
-	while (!device_status && count < no_of_devices) {
-		new_device =
-		    ((atomic_inc_return(&selected_devices) -
-		      1) % no_of_devices) + 1;
-		ctx->c_dev = get_crypto_dev(new_device);
-		if (!ctx->c_dev) {
-			print_error
-			    ("Could not retrieve the device structure.\n");
-			return -1;
-		}
-		cpu = get_cpu();
-		dev_stat = per_cpu_ptr(ctx->c_dev->dev_status, cpu);
-		put_cpu();
-
-		device_status = atomic_read(&(dev_stat->device_status));
-		if (device_status) {
-			count = 0;
-			break;
-		}
-		count++;
-		if (++loop_cnt > 1000000) {
-			print_error("Could not get an active device\n");
-			return -1;
-		}
-	}
-	if (!device_status) {
-		print_error("No Device is ALIVE\n");
-		return -1;
-	}
-#else
-	ctx->c_dev = get_crypto_dev(1);
-	if (!ctx->c_dev) {
-		print_error("Could not retrieve the device structure.\n");
-		return -1;
-	}
-#endif
-
-	no_of_app_rings = ctx->c_dev->num_of_rings - 1;
-
-	/* Select the ring in which this job has to be posted. */
-
-	if (0 < no_of_app_rings) {
-		ctx->r_id = atomic_inc_return(&ctx->c_dev->crypto_dev_sess_cnt);
-		ctx->r_id = (ctx->r_id - 1) % no_of_app_rings + 1;
-	} else {
-		print_error("No application ring configured\n");
-		return -1;
-	}
-
-	print_debug("C dev num of rings [%d] r_id [%d]\n",
-		    ctx->c_dev->num_of_rings, ctx->r_id);
-
-	/* For symmetric algos all the job under same session should
-	 * go to same sec engine. Hence selecting one of the sec engine
-	 * for the ring pair. This sec engine selection will be passed
-	 * to firmware and firmware will enqueue the job to selected sec engine
-	 */
-/*
-#define NO_SEC_ENGINE_ASSIGNED          -1
-	if (SYMMETRIC == op_type) {
-		if (ctx->sec_eng == NO_SEC_ENGINE_ASSIGNED) {
-			fsl_h_rsrc_ring_pair_t *rp;
-			rp = &ctx->c_dev->ring_pairs[ctx->r_id];
-			ctx->sec_eng =
-			    atomic_inc_return(&(rp->sec_eng_sel)) &
-			    (rp->num_of_sec_engines);
-		}
-	}
-*/
-	return 0;
-}
-
-
 
 #ifndef VIRTIO_C2X0
 /*******************************************************************************
