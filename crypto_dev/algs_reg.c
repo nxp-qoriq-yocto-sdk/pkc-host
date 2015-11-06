@@ -35,15 +35,9 @@
 
 #include "algs_reg.h"
 #include "common.h"
-#include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
 #include "algs.h"
-#include "memmgr.h"
-#ifdef VIRTIO_C2X0
-#include "fsl_c2x0_virtio.h"
-#endif
 
-/* Global Varibales*/
 atomic_t selected_devices;
 struct list_head alg_list;
 
