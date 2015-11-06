@@ -457,9 +457,7 @@ static struct alg_template driver_algs[] = {
 	 }
 #endif
 };
-#endif /* VIRTIO_C2X0 */
 
-#ifndef VIRTIO_C2X0
 /*******************************************************************************
  * Function     : pkc_cra_init
  *
@@ -499,10 +497,7 @@ static void pkc_cra_exit(struct crypto_tfm *tfm)
 	/* Nothing to be done */
 
 }
-#endif
 
-
-#ifndef VIRTIO_C2X0
 static struct fsl_crypto_alg *fsl_alg_alloc(struct alg_template *template,
 					    bool keyed)
 {
