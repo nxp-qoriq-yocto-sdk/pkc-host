@@ -3685,6 +3685,8 @@ failed_src:
 #endif
 
 #ifdef SYMMETRIC_OFFLOAD
+extern int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type);
+
 /***********************************************************************
 * Function     : virtio_c2x0_symm_cra_init
 *
@@ -3697,7 +3699,50 @@ failed_src:
 ************************************************************************/
 int virtio_c2x0_symm_cra_init(struct virtio_c2x0_job_ctx *virtio_job)
 {
-	return sym_cra_init(virtio_job);
+	struct virtio_c2x0_crypto_sess_ctx *vc_sess = NULL;
+	crypto_dev_sess_t *ctx = NULL;
+	struct sym_ctx *sym_ctx = NULL;
+	struct vc_symm_cra_init *init = NULL;
+	struct virtio_c2x0_qemu_cmd *qemu_cmd = &virtio_job->qemu_cmd;
+
+	/*
+	 * Creating a special cipher session context
+	 * for each cipher operation from VM
+	 */
+	vc_sess = (struct virtio_c2x0_crypto_sess_ctx *)
+	    kzalloc(sizeof(struct virtio_c2x0_crypto_sess_ctx), GFP_KERNEL);
+	if (!vc_sess) {
+		print_error("virtio_c2x0_crypto_sess_ctx alloc failed\n");
+		return -1;
+	}
+	/*
+	 * Storing the crypto_dev_ctx in VM as the session index
+	 * to uniquely identify defirrent cryptodev hash sessions
+	 */
+	vc_sess->sess_id = qemu_cmd->u.symm.init.sess_id;
+	vc_sess->guest_id = qemu_cmd->guest_id;
+	ctx = &vc_sess->c_sess;
+	sym_ctx = &(ctx->u.symm);
+	print_debug("****** SYMMETRIC CONTEXT ADDRESS FOR OPERATION : %p\n",
+		    sym_ctx);
+
+	init = &(qemu_cmd->u.symm.init);
+
+	if (-1 == fill_crypto_dev_sess_ctx(ctx, init->op_type))
+		return -1;
+
+	print_debug("SYM_CRA_INIT\n");
+
+	sym_ctx->class1_alg_type = OP_TYPE_CLASS1_ALG | init->class1_alg_type;
+	sym_ctx->class2_alg_type = OP_TYPE_CLASS2_ALG | init->class2_alg_type;
+	sym_ctx->alg_op = OP_TYPE_CLASS2_ALG | init->alg_op;
+
+	/*  Adding job to pending job list  */
+	spin_lock(&symm_sess_list_lock);
+	list_add_tail(&vc_sess->list_entry, &virtio_c2x0_symm_sess_list);
+	spin_unlock(&symm_sess_list_lock);
+
+	return 0;
 }
 
 /************************************************************************
@@ -3739,8 +3784,6 @@ int virtio_c2x0_symm_cra_exit(struct virtio_c2x0_qemu_cmd *qemu_cmd)
 	/* Remove the symm session from list */
 	list_del(&vc_sess->list_entry);
 	spin_unlock(&symm_sess_list_lock);
-
-	sym_cra_exit(ctx);
 
 	kfree(vc_sess);
 
