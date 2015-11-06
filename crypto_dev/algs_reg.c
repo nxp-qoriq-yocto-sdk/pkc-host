@@ -148,6 +148,93 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 	return 0;
 }
 
+#ifdef SYMMETRIC_OFFLOAD
+#ifdef VIRTIO_C2X0
+int sym_cra_init(struct virtio_c2x0_job_ctx *virtio_job)
+#else
+static int sym_cra_init(struct crypto_tfm *tfm)
+#endif
+{
+#ifndef VIRTIO_C2X0
+	struct crypto_alg *alg = tfm->__crt_alg;
+
+	struct fsl_crypto_alg *fsl_alg =
+	    container_of(alg, struct fsl_crypto_alg, u.crypto_alg);
+
+	crypto_dev_sess_t *ctx = crypto_tfm_ctx(tfm);
+	struct sym_ctx *sym_ctx = &(ctx->u.symm);
+
+	print_debug("SYM_CRA_INIT\n");
+
+	if (-1 == fill_crypto_dev_sess_ctx(ctx, fsl_alg->op_type))
+		return -1;
+
+	/* copy descriptor header template value */
+	sym_ctx->class1_alg_type =
+	    OP_TYPE_CLASS1_ALG | fsl_alg->class1_alg_type;
+	sym_ctx->class2_alg_type =
+	    OP_TYPE_CLASS2_ALG | fsl_alg->class2_alg_type;
+	sym_ctx->alg_op = OP_TYPE_CLASS2_ALG | fsl_alg->alg_op;
+
+	return 0;
+#else
+	struct virtio_c2x0_crypto_sess_ctx *vc_sess = NULL;
+	crypto_dev_sess_t *ctx = NULL;
+	struct sym_ctx *sym_ctx = NULL;
+	struct vc_symm_cra_init *init = NULL;
+	struct virtio_c2x0_qemu_cmd *qemu_cmd = &virtio_job->qemu_cmd;
+
+	/*
+	 * Creating a special cipher session context
+	 * for each cipher operation from VM
+	 */
+	vc_sess = (struct virtio_c2x0_crypto_sess_ctx *)
+	    kzalloc(sizeof(struct virtio_c2x0_crypto_sess_ctx), GFP_KERNEL);
+	if (!vc_sess) {
+		print_error("virtio_c2x0_crypto_sess_ctx alloc failed\n");
+		return -1;
+	}
+	/*
+	 * Storing the crypto_dev_ctx in VM as the session index
+	 * to uniquely identify defirrent cryptodev hash sessions
+	 */
+	vc_sess->sess_id = qemu_cmd->u.symm.init.sess_id;
+	vc_sess->guest_id = qemu_cmd->guest_id;
+	ctx = &vc_sess->c_sess;
+	sym_ctx = &(ctx->u.symm);
+	print_debug("****** SYMMETRIC CONTEXT ADDRESS FOR OPERATION : %p\n",
+		    sym_ctx);
+
+	init = &(qemu_cmd->u.symm.init);
+
+	if (-1 == fill_crypto_dev_sess_ctx(ctx, init->op_type))
+		return -1;
+
+	print_debug("SYM_CRA_INIT\n");
+
+	sym_ctx->class1_alg_type = OP_TYPE_CLASS1_ALG | init->class1_alg_type;
+	sym_ctx->class2_alg_type = OP_TYPE_CLASS2_ALG | init->class2_alg_type;
+	sym_ctx->alg_op = OP_TYPE_CLASS2_ALG | init->alg_op;
+
+	/*  Adding job to pending job list  */
+	spin_lock(&symm_sess_list_lock);
+	list_add_tail(&vc_sess->list_entry, &virtio_c2x0_symm_sess_list);
+	spin_unlock(&symm_sess_list_lock);
+
+	return 0;
+#endif
+}
+
+#ifdef VIRTIO_C2X0
+void sym_cra_exit(crypto_dev_sess_t *ctx)
+#else
+static void sym_cra_exit(struct crypto_tfm *tfm)
+#endif
+{
+	/* Nothing to be done */
+}
+#endif
+
 #ifndef VIRTIO_C2X0
 static struct alg_template driver_algs[] = {
 	{
@@ -414,92 +501,6 @@ static void pkc_cra_exit(struct crypto_tfm *tfm)
 }
 #endif
 
-#ifdef SYMMETRIC_OFFLOAD
-#ifdef VIRTIO_C2X0
-int sym_cra_init(struct virtio_c2x0_job_ctx *virtio_job)
-#else
-static int sym_cra_init(struct crypto_tfm *tfm)
-#endif
-{
-#ifndef VIRTIO_C2X0
-	struct crypto_alg *alg = tfm->__crt_alg;
-
-	struct fsl_crypto_alg *fsl_alg =
-	    container_of(alg, struct fsl_crypto_alg, u.crypto_alg);
-
-	crypto_dev_sess_t *ctx = crypto_tfm_ctx(tfm);
-	struct sym_ctx *sym_ctx = &(ctx->u.symm);
-
-	print_debug("SYM_CRA_INIT\n");
-
-	if (-1 == fill_crypto_dev_sess_ctx(ctx, fsl_alg->op_type))
-		return -1;
-
-	/* copy descriptor header template value */
-	sym_ctx->class1_alg_type =
-	    OP_TYPE_CLASS1_ALG | fsl_alg->class1_alg_type;
-	sym_ctx->class2_alg_type =
-	    OP_TYPE_CLASS2_ALG | fsl_alg->class2_alg_type;
-	sym_ctx->alg_op = OP_TYPE_CLASS2_ALG | fsl_alg->alg_op;
-
-	return 0;
-#else
-	struct virtio_c2x0_crypto_sess_ctx *vc_sess = NULL;
-	crypto_dev_sess_t *ctx = NULL;
-	struct sym_ctx *sym_ctx = NULL;
-	struct vc_symm_cra_init *init = NULL;
-	struct virtio_c2x0_qemu_cmd *qemu_cmd = &virtio_job->qemu_cmd;
-
-	/*
-	 * Creating a special cipher session context
-	 * for each cipher operation from VM
-	 */
-	vc_sess = (struct virtio_c2x0_crypto_sess_ctx *)
-	    kzalloc(sizeof(struct virtio_c2x0_crypto_sess_ctx), GFP_KERNEL);
-	if (!vc_sess) {
-		print_error("virtio_c2x0_crypto_sess_ctx alloc failed\n");
-		return -1;
-	}
-	/*
-	 * Storing the crypto_dev_ctx in VM as the session index
-	 * to uniquely identify defirrent cryptodev hash sessions
-	 */
-	vc_sess->sess_id = qemu_cmd->u.symm.init.sess_id;
-	vc_sess->guest_id = qemu_cmd->guest_id;
-	ctx = &vc_sess->c_sess;
-	sym_ctx = &(ctx->u.symm);
-	print_debug("****** SYMMETRIC CONTEXT ADDRESS FOR OPERATION : %p\n",
-		    sym_ctx);
-
-	init = &(qemu_cmd->u.symm.init);
-
-	if (-1 == fill_crypto_dev_sess_ctx(ctx, init->op_type))
-		return -1;
-
-	print_debug("SYM_CRA_INIT\n");
-
-	sym_ctx->class1_alg_type = OP_TYPE_CLASS1_ALG | init->class1_alg_type;
-	sym_ctx->class2_alg_type = OP_TYPE_CLASS2_ALG | init->class2_alg_type;
-	sym_ctx->alg_op = OP_TYPE_CLASS2_ALG | init->alg_op;
-
-	/*  Adding job to pending job list  */
-	spin_lock(&symm_sess_list_lock);
-	list_add_tail(&vc_sess->list_entry, &virtio_c2x0_symm_sess_list);
-	spin_unlock(&symm_sess_list_lock);
-
-	return 0;
-#endif
-}
-
-#ifdef VIRTIO_C2X0
-void sym_cra_exit(crypto_dev_sess_t *ctx)
-#else
-static void sym_cra_exit(struct crypto_tfm *tfm)
-#endif
-{
-	/* Nothing to be done */
-}
-#endif
 
 #ifndef VIRTIO_C2X0
 static struct fsl_crypto_alg *fsl_alg_alloc(struct alg_template *template,
