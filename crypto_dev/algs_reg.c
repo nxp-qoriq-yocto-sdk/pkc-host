@@ -151,33 +151,7 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 #ifdef SYMMETRIC_OFFLOAD
 #ifdef VIRTIO_C2X0
 int sym_cra_init(struct virtio_c2x0_job_ctx *virtio_job)
-#else
-static int sym_cra_init(struct crypto_tfm *tfm)
-#endif
 {
-#ifndef VIRTIO_C2X0
-	struct crypto_alg *alg = tfm->__crt_alg;
-
-	struct fsl_crypto_alg *fsl_alg =
-	    container_of(alg, struct fsl_crypto_alg, u.crypto_alg);
-
-	crypto_dev_sess_t *ctx = crypto_tfm_ctx(tfm);
-	struct sym_ctx *sym_ctx = &(ctx->u.symm);
-
-	print_debug("SYM_CRA_INIT\n");
-
-	if (-1 == fill_crypto_dev_sess_ctx(ctx, fsl_alg->op_type))
-		return -1;
-
-	/* copy descriptor header template value */
-	sym_ctx->class1_alg_type =
-	    OP_TYPE_CLASS1_ALG | fsl_alg->class1_alg_type;
-	sym_ctx->class2_alg_type =
-	    OP_TYPE_CLASS2_ALG | fsl_alg->class2_alg_type;
-	sym_ctx->alg_op = OP_TYPE_CLASS2_ALG | fsl_alg->alg_op;
-
-	return 0;
-#else
 	struct virtio_c2x0_crypto_sess_ctx *vc_sess = NULL;
 	crypto_dev_sess_t *ctx = NULL;
 	struct sym_ctx *sym_ctx = NULL;
@@ -222,17 +196,42 @@ static int sym_cra_init(struct crypto_tfm *tfm)
 	spin_unlock(&symm_sess_list_lock);
 
 	return 0;
-#endif
 }
 
-#ifdef VIRTIO_C2X0
 void sym_cra_exit(crypto_dev_sess_t *ctx)
-#else
-static void sym_cra_exit(struct crypto_tfm *tfm)
-#endif
 {
 	/* Nothing to be done */
 }
+#else
+static int sym_cra_init(struct crypto_tfm *tfm)
+{
+	struct crypto_alg *alg = tfm->__crt_alg;
+	struct fsl_crypto_alg *fsl_alg =
+	    container_of(alg, struct fsl_crypto_alg, u.crypto_alg);
+
+	crypto_dev_sess_t *ctx = crypto_tfm_ctx(tfm);
+	struct sym_ctx *sym_ctx = &(ctx->u.symm);
+
+	print_debug("SYM_CRA_INIT\n");
+
+	if (-1 == fill_crypto_dev_sess_ctx(ctx, fsl_alg->op_type))
+		return -1;
+
+	/* copy descriptor header template value */
+	sym_ctx->class1_alg_type =
+	    OP_TYPE_CLASS1_ALG | fsl_alg->class1_alg_type;
+	sym_ctx->class2_alg_type =
+	    OP_TYPE_CLASS2_ALG | fsl_alg->class2_alg_type;
+	sym_ctx->alg_op = OP_TYPE_CLASS2_ALG | fsl_alg->alg_op;
+
+	return 0;
+}
+
+static void sym_cra_exit(struct crypto_tfm *tfm)
+{
+	/* Nothing to be done */
+}
+#endif
 #endif
 
 #ifndef VIRTIO_C2X0
