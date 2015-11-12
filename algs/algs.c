@@ -39,6 +39,7 @@
 #include "algs.h"
 #include "memmgr.h"
 #include "sg_sw_sec4.h"
+#include "error.h"
 
 #define MAX_ERROR_STRING 302
 
@@ -59,7 +60,7 @@ void crypto_op_done(fsl_crypto_dev_t *c_dev, crypto_job_ctx_t *ctx,
 		    int32_t sec_result)
 {
 	enum pkc_req_type crypto_req_type = 0;
-	char outstr[MAX_ERROR_STRING];
+
 	print_debug("Crypto operation complete\n");
 
 	/* For certain commands like SEC-RESET, RESET-DEV for smooth exit,
@@ -70,10 +71,7 @@ void crypto_op_done(fsl_crypto_dev_t *c_dev, crypto_job_ctx_t *ctx,
 	if (JOB_DISCARDED == sec_result) {
 		print_debug("Job is discarded in the firmware\n");
 	} else {
-		sec_jr_strstatus(outstr, sec_result);
-		if (0 != sec_result) {
-			print_error("STATUS FROM SEC ENGINE :%s\n", outstr);
-		}
+		sec_jr_strstatus(&c_dev->priv_dev->dev->dev, sec_result);
 	}
 
 	switch (ctx->oprn) {

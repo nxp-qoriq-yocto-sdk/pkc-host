@@ -72,6 +72,7 @@ ifneq ("$(ARCH)","powerpc")
 $(DRIVER_KOBJ)-objs += crypto/pkc.o
 endif
 $(DRIVER_KOBJ)-objs += host_driver/dma.o
+$(DRIVER_KOBJ)-objs += algs/error.o
 $(DRIVER_KOBJ)-objs += algs/algs.o
 $(DRIVER_KOBJ)-objs += algs/rsa.o
 $(DRIVER_KOBJ)-objs += algs/dsa.o

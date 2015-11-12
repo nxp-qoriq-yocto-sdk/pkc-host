@@ -40,6 +40,7 @@
 #include "command.h"
 #include "memmgr.h"
 #include "algs.h"
+#include "error.h"
 #include "crypto_ctx.h"
 #ifdef VIRTIO_C2X0
 #include "hash.h"		/* hash */
@@ -1525,7 +1526,6 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 	uint32_t ri;
 	uint64_t desc;
 	int32_t res = 0;
-	char outstr[MAX_ERROR_STRING];
 	struct device *my_dev = &dev->priv_dev->dev->dev;
 #ifndef HIGH_PERF
 	uint32_t r_id;
@@ -1566,8 +1566,7 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 					dev_err(my_dev, "INVALID DESC AT RI : %u\n", ri);
 				}
 				if (res) {
-					sec_jr_strstatus(outstr, res);
-					dev_err(my_dev, "SEC Error:%s\n", outstr);
+					sec_jr_strstatus(my_dev, res);
 				}
 #ifndef HIGH_PERF
 				atomic_inc_return(&dev->app_resp_cnt);

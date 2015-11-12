@@ -49,7 +49,6 @@
 #include "rsa.h"
 #include "dsa.h"
 #include "dh.h"
-#include "error.h"
 
 /* extern struct instantiate_result; */
 /* Enum identifying the type of operation :- Symmetric/Asymmetric */
