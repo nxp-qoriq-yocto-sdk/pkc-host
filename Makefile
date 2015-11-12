@@ -5,6 +5,7 @@ C293_EP=y
 #Controls the debug print level
 DEBUG_PRINT=n
 INFO_PRINT=n
+DEBUG_DESC=n
 
 #Enable HASH/SYMMETRIC offloading
 CONFIG_FSL_C2X0_HASH_OFFLOAD=n
@@ -48,6 +49,7 @@ ccflags-$(C293_EP) += -DC293_EP
 
 ccflags-$(DEBUG_PRINT) += -DDEV_PRINT_DBG -DPRINT_DEBUG
 ccflags-$(INFO_PRINT) += -DPRINT_INFO
+ccflags-$(DEBUG_DESC) += -DDEBUG_DESC
 
 ccflags-$(HIGH_PERF_MODE) += -DHIGH_PERF
 ccflags-$(VIRTIO_C2X0) += -DVIRTIO_C2X0

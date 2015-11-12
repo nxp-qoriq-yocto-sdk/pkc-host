@@ -161,10 +161,6 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
 
-#ifdef PRINT_DEBUG
-	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
-#endif
-
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&rsa_pub_desc->desc_hdr,
 		      (start_idx << HDR_START_IDX_SHIFT) | (desc_size &
@@ -197,14 +193,11 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 		    mem->f_buff.dev_buffer.d_p_addr);
 	print_debug("G DMA			:%llx\n",
 		    mem->g_buff.dev_buffer.d_p_addr);
+#endif
 
-	print_debug("[RSA_PUB_OP]	Descriptor words");
-	{
-		uint32_t *words = (uint32_t *) desc_buff;
-		uint32_t i = 0;
-		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d	:	%x\n", i, words[i]);
-	}
+#ifdef DEBUG_DESC
+	print_error("[RSA_PUB_OP]	Descriptor words");
+	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
 #endif
 }
 
@@ -475,14 +468,9 @@ static void constr_rsa_priv3_op_desc(crypto_mem_info_t *mem_info)
 	iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_RSADEC_PRVKEY
 		  | RSA_PRIV_KEY_FRM_3, &rsa_priv_desc->op);
 
-#ifdef PRINT_DEBUG
-	print_debug("[RSA_PRV3_OP]   Descriptor words\n");
-	{
-		uint32_t *words = (uint32_t *) desc_buff;
-		uint32_t i = 0;
-		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d   :   %x\n", i, words[i]);
-	}
+#ifdef DEBUG_DESC
+	print_error("[RSA_PRV3_OP]   Descriptor words\n");
+	dump_desc(desc_buff, desc_size, __func__);
 #endif
 }
 

@@ -220,6 +220,7 @@ typedef struct app_req_job_ctx {
 	dev_p_addr_t r_offset;
 } app_req_job_ctx_t;
 
+void dump_desc(void *buff, uint32_t desc_size, const uint8_t *func);
 void change_desc_endianness(uint32_t *dev_mem,
 			    uint32_t *host_mem, int32_t words);
 void dma_tx_complete_cb(void *ctx);

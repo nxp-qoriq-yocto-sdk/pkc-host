@@ -367,6 +367,20 @@ RETRY:
 	}
 }
 
+#ifdef DEBUG_DESC
+void dump_desc(void *buff, uint32_t desc_size, const uint8_t *func)
+{
+	uint32_t i;
+	/* buff comes usually as a (uint8_t *) and to avoid explicit casts on
+	 * all calls we do the cast here */
+	uint32_t *desc_buff = buff;
+
+	for (i = 0; i < desc_size; i++) {
+		pr_err("DESC: %s: Word %d:\t%08x\n", func, i, ioread32be(&desc_buff[i]));
+	}
+}
+#endif
+
 /* FIXME: this function should not be necessary at all.
  *	In fact it is incorrect since it ignores endianness for 64 bit pointers
  *	used in descriptors and even messes up IMM-ediate byte arrays!

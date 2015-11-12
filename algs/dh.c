@@ -211,9 +211,6 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
-#ifdef PRINT_DEBUG
-	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
-#endif
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&dh_key_desc->desc_hdr,
 		      (start_idx << HDR_START_IDX_SHIFT) | (desc_size &
@@ -241,14 +238,11 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 	print_debug("W DMA: %llx\n", (uint64_t)mem->w_buff.dev_buffer.d_p_addr);
 	print_debug("S DMA: %llx\n", (uint64_t)mem->s_buff.dev_buffer.d_p_addr);
 	print_debug("Z DMA: %llx\n", (uint64_t)mem->z_buff.dev_buffer.d_p_addr);
+#endif
 
-	print_debug("[DH] Descriptor words\n");
-	{
-		uint32_t *words = (uint32_t *) desc_buff;
-		uint32_t i = 0;
-		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d: %x\n", i, words[i]);
-	}
+#ifdef DEBUG_DESC
+	print_error("[DH] Descriptor words\n");
+	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
 #endif
 }
 
@@ -262,9 +256,6 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	    (struct ecdh_key_desc_s *)mem->desc_buff.v_mem;
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
-#ifdef PRINT_DEBUG
-	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
 #endif
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&ecdh_key_desc->desc_hdr,
@@ -301,14 +292,11 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	print_debug("S DMA: %llx\n", (uint64_t)mem->s_buff.dev_buffer.d_p_addr);
 	print_debug("Z DMA: %llx\n", (uint64_t)mem->z_buff.dev_buffer.d_p_addr);
 	print_debug("AB DMA: %llx\n", (uint64_t)mem->ab_buff.dev_buffer.d_p_addr);
+#endif
 
-	print_debug("[ECDH] Descriptor words\n");
-	{
-		uint32_t *words = (uint32_t *) desc_buff;
-		uint32_t i = 0;
-		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d: %x\n", i, words[i]);
-	}
+#ifdef DEBUG_DESC
+	print_error("[ECDH] Descriptor words\n");
+	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
 #endif
 }
 
@@ -321,9 +309,6 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
     struct ecdh_keygen_desc_s  *ecdh_keygen_desc  =   (struct ecdh_keygen_desc_s *)mem->desc_buff.v_mem;
 #ifdef SEC_DMA
     dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
-#ifdef PRINT_DEBUG
-    uint32_t                *desc_buff      =   (uint32_t *)mem->desc_buff.v_mem;
 #endif
     start_idx   &=  HDR_START_IDX_MASK;
     init_job_desc(&ecdh_keygen_desc->desc_hdr, (start_idx << HDR_START_IDX_SHIFT) | (desc_size & HDR_DESCLEN_MASK) | HDR_ONE);
@@ -353,20 +338,17 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
     }
 
 #ifdef PRINT_DEBUG
+	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
+	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
+	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
+	print_debug("PUBKEY DMA: %llx\n", (uint64_t)mem->pubkey_buff.dev_buffer.d_p_addr);
+	print_debug("PRVKEY DMA: %llx\n",(uint64_t) mem->prvkey_buff.dev_buffer.d_p_addr);
+	print_debug("AB DMA: %llx\n", (uint64_t)mem->ab_buff.dev_buffer.d_p_addr);
+#endif
 
-    print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
-    print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
-    print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
-    print_debug("PUBKEY DMA: %llx\n", (uint64_t)mem->pubkey_buff.dev_buffer.d_p_addr);
-    print_debug("PRVKEY DMA: %llx\n",(uint64_t) mem->prvkey_buff.dev_buffer.d_p_addr);
-    print_debug("AB DMA: %llx\n", (uint64_t)mem->ab_buff.dev_buffer.d_p_addr);
-    print_debug("[ECDH] Descriptor words\n");
-    {
-        uint32_t    *words = (uint32_t *)desc_buff;
-        uint32_t    i   =   0;
-        for(i=0; i<desc_size; i++)
-            print_debug("Word %d: %x\n", i, words[i]);
-    }
+#ifdef DEBUG_DESC
+	print_error("[ECDH] Descriptor words\n");
+	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
 #endif
 }
 
@@ -379,9 +361,6 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
     struct dh_keygen_desc_s *dh_keygen_desc =   (struct dh_keygen_desc_s *)mem->desc_buff.v_mem;
 #ifdef SEC_DMA
     dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
-#ifdef PRINT_DEBUG
-    uint32_t                *desc_buff      =   (uint32_t *)mem->desc_buff.v_mem;
 #endif
     start_idx   &=  HDR_START_IDX_MASK;
     init_job_desc(&dh_keygen_desc->desc_hdr, (start_idx << HDR_START_IDX_SHIFT) | (desc_size & HDR_DESCLEN_MASK) | HDR_ONE);
@@ -402,20 +381,16 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
     iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR, &dh_keygen_desc->op);
 
 #ifdef PRINT_DEBUG
+	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
+	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
+	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
+	print_debug("PUBKEY DMA: %llx\n", (uint64_t)mem->pubkey_buff.dev_buffer.d_p_addr);
+	print_debug("PRVKEY DMA: %llx\n", (uint64_t)mem->prvkey_buff.dev_buffer.d_p_addr);
+#endif
 
-    print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
-    print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
-    print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
-    print_debug("PUBKEY DMA: %llx\n", (uint64_t)mem->pubkey_buff.dev_buffer.d_p_addr);
-    print_debug("PRVKEY DMA: %llx\n", (uint64_t)mem->prvkey_buff.dev_buffer.d_p_addr);
-
-    print_debug("[DH] Descriptor words\n");
-    {
-        uint32_t    *words = (uint32_t *)desc_buff;
-        uint32_t    i   =   0;
-        for(i=0; i<desc_size; i++)
-            print_debug("Word %d: %x\n", i, ioread32be(&words[i]));
-    }
+#ifdef DEBUG_DESC
+	print_error("[DH] Descriptor words\n");
+	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
 #endif
 }
 
