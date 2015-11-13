@@ -8,18 +8,23 @@ INFO_PRINT=n
 DEBUG_DESC=n
 
 #Enable HASH/SYMMETRIC offloading
+#NOTE: SYMMETRIC and HASH algorithms are not supported and will be removed from
+#      PKC driver in the future
 CONFIG_FSL_C2X0_HASH_OFFLOAD=n
 CONFIG_FSL_C2X0_HMAC_OFFLOAD=n
 CONFIG_FSL_C2X0_SYMMETRIC_OFFLOAD=n
 
 #Enable RNG offloading
+#NOTE: RNG offloading is not supported
 RNG_OFFLOAD=n
 
 #Specifies whether SEC DMA support to be enabled /disabled in the driver
 #If enabled, then Host DMA support would be always disabled.
+#NOTE: Only USE_SEC_DMA=y configuration is currently supported
 USE_SEC_DMA=y
 
 #Specifies whether host DMA support to be enabled /disabled in the driver
+#NOTE: HOST_DMA is not currently supported
 USE_HOST_DMA=n
 
 #Specifies whether driver/firmware is running high performance mode
@@ -30,6 +35,7 @@ HIGH_PERF_MODE=y
 ENHANCE_KERNEL_TEST=n
 
 #Specify building host-driver to support Virtualization
+#NOTE: VIRTIO configuration is not supported
 VIRTIO_C2X0=n
 
 # do not enable together SEC_DMA and HOST_DMA
