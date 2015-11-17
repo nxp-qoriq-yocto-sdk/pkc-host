@@ -546,14 +546,14 @@ static void constr_ecdsa_verify_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 		      HDR_ONE);
 
 #ifdef SEC_DMA
-	ASSIGN64(ecdsa_verify_desc->q_dma, (mem->q_buff.dev_buffer.d_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->r_dma, (mem->r_buff.dev_buffer.d_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->g_dma, (mem->g_buff.dev_buffer.d_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->w_dma, (mem->pub_key_buff.dev_buffer.d_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->f_dma, (mem->m_buff.dev_buffer.d_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->ab_dma, (mem->ab_buff.dev_buffer.d_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->c_dma, (mem->c_buff.dev_buffer.d_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->d_dma, (mem->d_buff.dev_buffer.d_p_addr + offset));
+	ASSIGN64(ecdsa_verify_desc->q_dma, (mem->q_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(ecdsa_verify_desc->r_dma, (mem->r_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(ecdsa_verify_desc->g_dma, (mem->g_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(ecdsa_verify_desc->w_dma, (mem->pub_key_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(ecdsa_verify_desc->f_dma, (mem->m_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(ecdsa_verify_desc->ab_dma, (mem->ab_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(ecdsa_verify_desc->c_dma, (mem->c_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(ecdsa_verify_desc->d_dma, (mem->d_buff.dev_buffer.h_p_addr + offset));
 #else
 	ASSIGN64(ecdsa_verify_desc->q_dma, mem->q_buff.dev_buffer.d_p_addr);
 	ASSIGN64(ecdsa_verify_desc->r_dma, mem->r_buff.dev_buffer.d_p_addr);
@@ -905,8 +905,7 @@ int dsa_op(struct pkc_request *req)
 
 		/* Constr the hw desc */
 		if (ecdsa) {
-			constr_ecdsa_verify_desc(&crypto_ctx->crypto_mem,
-						 ecc_bin);
+			constr_ecdsa_verify_desc(&crypto_ctx->crypto_mem, ecc_bin);
 		} else {
 			constr_dsa_verify_desc(&crypto_ctx->crypto_mem);
 		}
