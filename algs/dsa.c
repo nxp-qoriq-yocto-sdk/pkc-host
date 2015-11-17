@@ -120,8 +120,7 @@ static void dsa_sign_init_len(struct dsa_sign_req_s *req,
 static void dsa_verify_init_len(struct dsa_verify_req_s *req,
 				crypto_mem_info_t *mem_info, bool ecdsa)
 {
-	dsa_verify_buffers_t *mem =
-	    (dsa_verify_buffers_t *) (mem_info->buffers);
+	dsa_verify_buffers_t *mem = &(mem_info->c_buffers.dsa_verify);
 
 	mem->q_buff.len = req->q_len;
 	mem->r_buff.len = req->r_len;
@@ -207,12 +206,11 @@ static int dsa_sign_cp_req(struct dsa_sign_req_s *req,
 static int dsa_verify_cp_req(struct dsa_verify_req_s *req,
 			     crypto_mem_info_t *mem_info, bool ecdsa)
 {
-	dsa_verify_buffers_t *mem =
-	    (dsa_verify_buffers_t *) (mem_info->buffers);
+	dsa_verify_buffers_t *mem = &(mem_info->c_buffers.dsa_verify);
 	dsa_verify_init_len(req, mem_info, ecdsa);
 
-	/* Alloc mem requrd for crypto operation */
 	print_debug("Calling alloc_crypto_mem\n");
+	mem_info->buffers = (buffer_info_t *) mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
@@ -681,19 +679,16 @@ static void dsa_sign_init_crypto_mem(crypto_mem_info_t *crypto_mem, bool ecdsa)
 static void dsa_verify_init_crypto_mem(crypto_mem_info_t *crypto_mem,
 				       bool ecdsa)
 {
-	dsa_verify_buffers_t *dsa_verify_buffs = NULL;
+	dsa_verify_buffers_t *dsa_verify_buffs;
 
 	crypto_mem->count = sizeof(dsa_verify_buffers_t) / sizeof(buffer_info_t);
-
 	if (!ecdsa) {
 		crypto_mem->count -= 1;
 	}
 
-	crypto_mem->buffers = (buffer_info_t *) (&(crypto_mem->c_buffers.dsa_verify));
-	memset(crypto_mem->buffers, 0, sizeof(dsa_verify_buffers_t));
+	dsa_verify_buffs = &(crypto_mem->c_buffers.dsa_verify);
+	memset(dsa_verify_buffs, 0, sizeof(dsa_verify_buffers_t));
 
-	/* Mark the op buffer */
-	dsa_verify_buffs = (dsa_verify_buffers_t *) crypto_mem->buffers;
 	dsa_verify_buffs->q_buff.bt = BT_IP;
 	dsa_verify_buffs->r_buff.bt = BT_IP;
 	dsa_verify_buffs->g_buff.bt = BT_IP;
@@ -905,9 +900,6 @@ int dsa_op(struct pkc_request *req)
 	case DSA_VERIFY:
 	case ECDSA_VERIFY:
 		dsa_verify_init_crypto_mem(&crypto_ctx->crypto_mem, ecdsa);
-		dsa_verify_buffs =
-		    (dsa_verify_buffers_t *) crypto_ctx->crypto_mem.buffers;
-
 		if (-ENOMEM ==
 		    dsa_verify_cp_req(&req->req_u.dsa_verify,
 				      &crypto_ctx->crypto_mem, ecdsa)) {
@@ -933,7 +925,7 @@ int dsa_op(struct pkc_request *req)
 		}
 
 		print_debug("Desc constr complete...\n");
-
+		dsa_verify_buffs = &(crypto_ctx->crypto_mem.c_buffers.dsa_verify);
 #ifdef SEC_DMA
 		sec_dma = dsa_verify_buffs->desc_buff.dev_buffer.h_p_addr + offset;
 #else
