@@ -143,8 +143,7 @@ static void dsa_verify_init_len(struct dsa_verify_req_s *req,
 static void dsa_keygen_init_len(struct dsa_keygen_req_s *req,
 				crypto_mem_info_t *mem_info, bool ecdsa)
 {
-	dsa_keygen_buffers_t *mem =
-	    (dsa_keygen_buffers_t *) (mem_info->buffers);
+	dsa_keygen_buffers_t *mem = &(mem_info->c_buffers.dsa_keygen);
 
 	mem->q_buff.len = req->q_len;
 	mem->r_buff.len = req->r_len;
@@ -250,12 +249,11 @@ static int dsa_verify_cp_req(struct dsa_verify_req_s *req,
 static int dsa_keygen_cp_req(struct dsa_keygen_req_s *req,
 			     crypto_mem_info_t *mem_info, bool ecdsa)
 {
-	dsa_keygen_buffers_t *mem =
-	    (dsa_keygen_buffers_t *) (mem_info->buffers);
-	dsa_keygen_init_len(req, mem_info, ecdsa);
+	dsa_keygen_buffers_t *mem = &(mem_info->c_buffers.dsa_keygen);
 
-	/* Alloc mem requrd for crypto operation */
+	dsa_keygen_init_len(req, mem_info, ecdsa);
 	print_debug("Calling alloc_crypto_mem\n");
+	mem_info->buffers = (buffer_info_t *) mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA
@@ -703,17 +701,16 @@ static void dsa_verify_init_crypto_mem(crypto_mem_info_t *crypto_mem,
 static void dsa_keygen_init_crypto_mem(crypto_mem_info_t *crypto_mem,
 				       bool ecdsa)
 {
-	dsa_keygen_buffers_t *dsa_keygen_buffs = NULL;
+	dsa_keygen_buffers_t *dsa_keygen_buffs;
 
 	crypto_mem->count = sizeof(dsa_keygen_buffers_t) / sizeof(buffer_info_t);
 	if (!ecdsa) {
 		crypto_mem->count -= 1;
 	}
 
-	crypto_mem->buffers = (buffer_info_t *) (&(crypto_mem->c_buffers.dsa_keygen));
-	memset(crypto_mem->buffers, 0, sizeof(dsa_keygen_buffers_t));
+	dsa_keygen_buffs = &(crypto_mem->c_buffers.dsa_keygen);
+	memset(dsa_keygen_buffs, 0, sizeof(dsa_keygen_buffers_t));
 
-	dsa_keygen_buffs = (dsa_keygen_buffers_t *) crypto_mem->buffers;
 	dsa_keygen_buffs->q_buff.bt = dsa_keygen_buffs->r_buff.bt =
 	    dsa_keygen_buffs->ab_buff.bt = dsa_keygen_buffs->g_buff.bt = BT_IP;
 	dsa_keygen_buffs->prvkey_buff.bt = dsa_keygen_buffs->pubkey_buff.bt =
@@ -811,43 +808,31 @@ int dsa_op(struct pkc_request *req)
 	switch (req->type) {
 	case DSA_KEYGEN:
 	case ECDSA_KEYGEN:
-		print_debug("DSA/ECDSA Key Gen...\n");
 		dsa_keygen_init_crypto_mem(&crypto_ctx->crypto_mem, ecdsa);
-		dsa_keygen_buffs =
-		    (dsa_keygen_buffers_t *) crypto_ctx->crypto_mem.buffers;
-
 		if (-ENOMEM ==
 		    dsa_keygen_cp_req(&req->req_u.dsa_keygen,
 				      &crypto_ctx->crypto_mem, ecdsa)) {
 			ret = -ENOMEM;
 			goto error;
 		}
-
 		print_debug("DSA keygen init mem complete.....\n");
-
-		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
-
 		print_debug("Host to dev convert complete....\n");
-
 #ifdef SEC_DMA
                 map_crypto_mem(&(crypto_ctx->crypto_mem));
 #endif
-
-		/* Constr the hw desc */
 		if (ecdsa) {
 			constr_ecdsa_keygen_desc(&crypto_ctx->crypto_mem, ecc_bin);
 		} else {
 			constr_dsa_keygen_desc(&crypto_ctx->crypto_mem);
 		}
 		print_debug("Desc constr complete...\n");
-
+		dsa_keygen_buffs =  &(crypto_ctx->crypto_mem.c_buffers.dsa_keygen);
 #ifdef SEC_DMA
                 sec_dma = dsa_keygen_buffs->desc_buff.dev_buffer.h_p_addr + offset;
 #else
 		sec_dma = dsa_keygen_buffs->desc_buff.dev_buffer.d_p_addr;
 #endif
-		/* Store the context */
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr:%p Crypto ctx: %p\n",
 			    (uint64_t)dsa_keygen_buffs->desc_buff.dev_buffer.d_p_addr,
 			    dsa_keygen_buffs->desc_buff.v_mem, crypto_ctx);
