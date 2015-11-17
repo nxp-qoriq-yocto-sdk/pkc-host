@@ -695,11 +695,15 @@ static void dsa_verify_init_crypto_mem(crypto_mem_info_t *crypto_mem,
 
 	/* Mark the op buffer */
 	dsa_verify_buffs = (dsa_verify_buffers_t *) crypto_mem->buffers;
-	dsa_verify_buffs->q_buff.bt = dsa_verify_buffs->r_buff.bt =
-	    dsa_verify_buffs->g_buff.bt = dsa_verify_buffs->pub_key_buff.bt =
-	    dsa_verify_buffs->m_buff.bt = dsa_verify_buffs->ab_buff.bt =
-	    dsa_verify_buffs->tmp_buff.bt = dsa_verify_buffs->c_buff.bt =
-	    dsa_verify_buffs->d_buff.bt = BT_IP;
+	dsa_verify_buffs->q_buff.bt = BT_IP;
+	dsa_verify_buffs->r_buff.bt = BT_IP;
+	dsa_verify_buffs->g_buff.bt = BT_IP;
+	dsa_verify_buffs->pub_key_buff.bt = BT_IP;
+	dsa_verify_buffs->m_buff.bt = BT_IP;
+	dsa_verify_buffs->ab_buff.bt = BT_IP;
+	dsa_verify_buffs->tmp_buff.bt = BT_IP;
+	dsa_verify_buffs->c_buff.bt = BT_IP;
+	dsa_verify_buffs->d_buff.bt = BT_IP;
 }
 
 static void dsa_keygen_init_crypto_mem(crypto_mem_info_t *crypto_mem,
