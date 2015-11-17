@@ -294,6 +294,8 @@ void clean_all_test(void)
 	cleanup_ecdh_keygen_test();
 }
 
+/* FIXME: we have a lot of undue faith in success of this function. Fix all
+ * tests to return error codes on initialization */
 void init_all_test(void)
 {
 	init_1k_rsa_pub_op_req();

@@ -176,27 +176,41 @@ void init_ecdsa_verify_test(void)
 {
 	g_ecdsaverifyreq.type = ECDSA_VERIFY;
 
+#ifdef SEC_DMA
+        g_ecdsaverifyreq.req_u.dsa_verify.q = kmalloc(sizeof(Q), GFP_KERNEL | GFP_DMA);
+        g_ecdsaverifyreq.req_u.dsa_verify.r = kmalloc(sizeof(R), GFP_KERNEL | GFP_DMA);
+        g_ecdsaverifyreq.req_u.dsa_verify.ab = kmalloc(sizeof(AB), GFP_KERNEL | GFP_DMA);
+        g_ecdsaverifyreq.req_u.dsa_verify.g = kmalloc(sizeof(G), GFP_KERNEL | GFP_DMA);
+        g_ecdsaverifyreq.req_u.dsa_verify.pub_key = kmalloc(sizeof(PUB_KEY), GFP_KERNEL | GFP_DMA);
+        g_ecdsaverifyreq.req_u.dsa_verify.m = kmalloc(sizeof(M), GFP_KERNEL | GFP_DMA);
+        g_ecdsaverifyreq.req_u.dsa_verify.c = kmalloc(sizeof(C), GFP_KERNEL | GFP_DMA);
+        g_ecdsaverifyreq.req_u.dsa_verify.d = kmalloc(sizeof(D), GFP_KERNEL | GFP_DMA);
+
+        memcpy(g_ecdsaverifyreq.req_u.dsa_verify.q, Q, sizeof(Q));
+        memcpy(g_ecdsaverifyreq.req_u.dsa_verify.r, R, sizeof(R));
+        memcpy(g_ecdsaverifyreq.req_u.dsa_verify.ab, AB, sizeof(AB));
+        memcpy(g_ecdsaverifyreq.req_u.dsa_verify.g, G, sizeof(G));
+        memcpy(g_ecdsaverifyreq.req_u.dsa_verify.pub_key, PUB_KEY, sizeof(PUB_KEY));
+        memcpy(g_ecdsaverifyreq.req_u.dsa_verify.m, M, sizeof(M));
+        memcpy(g_ecdsaverifyreq.req_u.dsa_verify.c, C, sizeof(C));
+        memcpy(g_ecdsaverifyreq.req_u.dsa_verify.d, D, sizeof(D));
+#else
 	g_ecdsaverifyreq.req_u.dsa_verify.q = Q;
-	g_ecdsaverifyreq.req_u.dsa_verify.q_len = sizeof(Q);
-
 	g_ecdsaverifyreq.req_u.dsa_verify.r = R;
-	g_ecdsaverifyreq.req_u.dsa_verify.r_len = sizeof(R);
-
 	g_ecdsaverifyreq.req_u.dsa_verify.ab = AB;
-	g_ecdsaverifyreq.req_u.dsa_verify.ab_len = sizeof(AB);
-
 	g_ecdsaverifyreq.req_u.dsa_verify.g = G;
-	g_ecdsaverifyreq.req_u.dsa_verify.g_len = sizeof(G);
-
 	g_ecdsaverifyreq.req_u.dsa_verify.pub_key = PUB_KEY;
-	g_ecdsaverifyreq.req_u.dsa_verify.pub_key_len = sizeof(PUB_KEY);
-
 	g_ecdsaverifyreq.req_u.dsa_verify.m = M;
-	g_ecdsaverifyreq.req_u.dsa_verify.m_len = sizeof(M);
-
 	g_ecdsaverifyreq.req_u.dsa_verify.c = C;
-
 	g_ecdsaverifyreq.req_u.dsa_verify.d = D;
+#endif
+
+	g_ecdsaverifyreq.req_u.dsa_verify.q_len = sizeof(Q);
+	g_ecdsaverifyreq.req_u.dsa_verify.r_len = sizeof(R);
+	g_ecdsaverifyreq.req_u.dsa_verify.ab_len = sizeof(AB);
+	g_ecdsaverifyreq.req_u.dsa_verify.g_len = sizeof(G);
+	g_ecdsaverifyreq.req_u.dsa_verify.pub_key_len = sizeof(PUB_KEY);
+	g_ecdsaverifyreq.req_u.dsa_verify.m_len = sizeof(M);
 	g_ecdsaverifyreq.req_u.dsa_verify.d_len = sizeof(D);
 }
 
@@ -236,6 +250,40 @@ void cleanup_ecdsa_test(void)
 	if(g_ecdsasignreq.req_u.dsa_sign.d) {
 		kfree(g_ecdsasignreq.req_u.dsa_sign.d);
 	}
+
+#ifdef SEC_DMA
+	if (g_ecdsaverifyreq.req_u.dsa_verify.q) {
+		kfree(g_ecdsaverifyreq.req_u.dsa_verify.q);
+	}
+
+	if (g_ecdsaverifyreq.req_u.dsa_verify.r) {
+		kfree(g_ecdsaverifyreq.req_u.dsa_verify.r);
+        }
+
+	if (g_ecdsaverifyreq.req_u.dsa_verify.g) {
+		kfree(g_ecdsaverifyreq.req_u.dsa_verify.g);
+        }
+
+	if (g_ecdsaverifyreq.req_u.dsa_verify.ab) {
+		kfree(g_ecdsaverifyreq.req_u.dsa_verify.ab);
+        }
+
+	if (g_ecdsaverifyreq.req_u.dsa_verify.pub_key) {
+		kfree(g_ecdsaverifyreq.req_u.dsa_verify.pub_key);
+        }
+
+	if (g_ecdsaverifyreq.req_u.dsa_verify.m) {
+		kfree(g_ecdsaverifyreq.req_u.dsa_verify.m);
+        }
+
+	if (g_ecdsaverifyreq.req_u.dsa_verify.c) {
+		kfree(g_ecdsaverifyreq.req_u.dsa_verify.c);
+        }
+
+	if (g_ecdsaverifyreq.req_u.dsa_verify.d) {
+		kfree(g_ecdsaverifyreq.req_u.dsa_verify.d);
+        }
+#endif
 }
 
 int ecdsa_verify_test(void)
