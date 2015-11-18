@@ -668,11 +668,15 @@ static void dsa_sign_init_crypto_mem(crypto_mem_info_t *crypto_mem, bool ecdsa)
 
 	/* Mark the op buffer */
 	dsa_sign_buffs = (dsa_sign_buffers_t *) crypto_mem->buffers;
-	dsa_sign_buffs->q_buff.bt = dsa_sign_buffs->r_buff.bt =
-	    dsa_sign_buffs->g_buff.bt = dsa_sign_buffs->tmp_buff.bt =
-	    dsa_sign_buffs->priv_key_buff.bt = dsa_sign_buffs->m_buff.bt =
-	    dsa_sign_buffs->ab_buff.bt = BT_IP;
-	dsa_sign_buffs->c_buff.bt = dsa_sign_buffs->d_buff.bt = BT_OP;
+	dsa_sign_buffs->q_buff.bt = BT_IP;
+	dsa_sign_buffs->r_buff.bt = BT_IP;
+	dsa_sign_buffs->g_buff.bt = BT_IP;
+	dsa_sign_buffs->tmp_buff.bt = BT_IP;
+	dsa_sign_buffs->priv_key_buff.bt = BT_IP;
+	dsa_sign_buffs->m_buff.bt = BT_IP;
+	dsa_sign_buffs->ab_buff.bt = BT_IP;
+	dsa_sign_buffs->c_buff.bt = BT_OP;
+	dsa_sign_buffs->d_buff.bt = BT_OP;
 }
 
 static void dsa_verify_init_crypto_mem(crypto_mem_info_t *crypto_mem,
