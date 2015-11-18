@@ -775,9 +775,8 @@ int dsa_op(struct pkc_request *req)
 
 		atomic_inc(&c_dev->active_jobs);
 #else
-        r_id =
-            ((atomic_inc_return(&c_dev->crypto_dev_sess_cnt) -
-                1) % (c_dev->num_of_rings - 1)) + 1;
+        r_id = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
+        r_id = 1 + r_id % (c_dev->num_of_rings - 1);
 
 #endif
 	}
