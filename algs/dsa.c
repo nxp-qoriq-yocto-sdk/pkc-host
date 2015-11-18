@@ -288,7 +288,7 @@ static void constr_dsa_sign_desc(crypto_mem_info_t *mem_info)
 	uint32_t desc_size = sizeof(struct dsa_sign_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 12;
 
-	dsa_sign_buffers_t *mem = (dsa_sign_buffers_t *) (mem_info->buffers);
+	dsa_sign_buffers_t *mem = &(mem_info->c_buffers.dsa_sign);
 	struct dsa_sign_desc_s *dsa_sign_desc =
 	    (struct dsa_sign_desc_s *)mem->desc_buff.v_mem;
 #ifdef SEC_DMA
@@ -352,7 +352,7 @@ static void constr_dsa_verify_desc(crypto_mem_info_t *mem_info)
 	uint32_t desc_size = sizeof(struct dsa_verify_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 1;
 
-	dsa_verify_buffers_t *mem = (dsa_verify_buffers_t *) (mem_info->buffers);
+	dsa_verify_buffers_t *mem = &(mem_info->c_buffers.dsa_verify);
 	struct dsa_verify_desc_s *dsa_verify_desc =
 	    (struct dsa_verify_desc_s *)mem->desc_buff.v_mem;
 #ifdef SEC_DMA
@@ -409,7 +409,7 @@ static void constr_dsa_keygen_desc(crypto_mem_info_t *mem_info)
 	uint32_t desc_size = sizeof(struct dsa_keygen_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 1;
 
-	dsa_keygen_buffers_t *mem = (dsa_keygen_buffers_t *) (mem_info->buffers);
+	dsa_keygen_buffers_t *mem = &(mem_info->c_buffers.dsa_keygen);
 	struct dsa_keygen_desc_s *dsa_keygen_desc =
 	    (struct dsa_keygen_desc_s *)mem->desc_buff.v_mem;
 
