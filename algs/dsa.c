@@ -711,10 +711,12 @@ static void dsa_keygen_init_crypto_mem(crypto_mem_info_t *crypto_mem,
 	dsa_keygen_buffs = &(crypto_mem->c_buffers.dsa_keygen);
 	memset(dsa_keygen_buffs, 0, sizeof(dsa_keygen_buffers_t));
 
-	dsa_keygen_buffs->q_buff.bt = dsa_keygen_buffs->r_buff.bt =
-	    dsa_keygen_buffs->ab_buff.bt = dsa_keygen_buffs->g_buff.bt = BT_IP;
-	dsa_keygen_buffs->prvkey_buff.bt = dsa_keygen_buffs->pubkey_buff.bt =
-	    BT_OP;
+	dsa_keygen_buffs->q_buff.bt = BT_IP;
+	dsa_keygen_buffs->r_buff.bt = BT_IP;
+	dsa_keygen_buffs->ab_buff.bt = BT_IP;
+	dsa_keygen_buffs->g_buff.bt = BT_IP;
+	dsa_keygen_buffs->prvkey_buff.bt = BT_OP;
+	dsa_keygen_buffs->pubkey_buff.bt = BT_OP;
 }
 
 #ifdef VIRTIO_C2X0
