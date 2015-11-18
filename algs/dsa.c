@@ -97,7 +97,7 @@ static void ecdsa_op_done(void *ctx, int32_t res)
 static void dsa_sign_init_len(struct dsa_sign_req_s *req,
 			      crypto_mem_info_t *mem_info, bool ecdsa)
 {
-	dsa_sign_buffers_t *mem = (dsa_sign_buffers_t *) (mem_info->buffers);
+	dsa_sign_buffers_t *mem = &(mem_info->c_buffers.dsa_sign);
 
 	mem->q_buff.len = req->q_len;
 	mem->r_buff.len = req->r_len;
@@ -165,11 +165,12 @@ static void dsa_keygen_init_len(struct dsa_keygen_req_s *req,
 static int dsa_sign_cp_req(struct dsa_sign_req_s *req,
 			   crypto_mem_info_t *mem_info, bool ecdsa)
 {
-	dsa_sign_buffers_t *mem = (dsa_sign_buffers_t *) (mem_info->buffers);
+	dsa_sign_buffers_t *mem = &(mem_info->c_buffers.dsa_sign);
 	dsa_sign_init_len(req, mem_info, ecdsa);
 
 	/* Alloc mem requrd for crypto operation */
 	print_debug("Calling alloc_crypto_mem\n");
+	mem_info->buffers = (buffer_info_t *) mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA
@@ -656,18 +657,16 @@ static void constr_ecdsa_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 static void dsa_sign_init_crypto_mem(crypto_mem_info_t *crypto_mem, bool ecdsa)
 {
-	dsa_sign_buffers_t *dsa_sign_buffs = NULL;
+	dsa_sign_buffers_t *dsa_sign_buffs;
 
 	crypto_mem->count = sizeof(dsa_sign_buffers_t) / sizeof(buffer_info_t);
 	if (!ecdsa) {
 		crypto_mem->count -= 1;
 	}
 
-	crypto_mem->buffers = (buffer_info_t *) (&(crypto_mem->c_buffers.dsa_sign));
-	memset(crypto_mem->buffers, 0, sizeof(dsa_sign_buffers_t));
+	dsa_sign_buffs = &(crypto_mem->c_buffers.dsa_sign);
+	memset(dsa_sign_buffs, 0, sizeof(dsa_sign_buffers_t));
 
-	/* Mark the op buffer */
-	dsa_sign_buffs = (dsa_sign_buffers_t *) crypto_mem->buffers;
 	dsa_sign_buffs->q_buff.bt = BT_IP;
 	dsa_sign_buffs->r_buff.bt = BT_IP;
 	dsa_sign_buffs->g_buff.bt = BT_IP;
@@ -864,9 +863,6 @@ int dsa_op(struct pkc_request *req)
 	case DSA_SIGN:
 	case ECDSA_SIGN:
 		dsa_sign_init_crypto_mem(&crypto_ctx->crypto_mem, ecdsa);
-		dsa_sign_buffs =
-		    (dsa_sign_buffers_t *) crypto_ctx->crypto_mem.buffers;
-
 		if (-ENOMEM ==
 		    dsa_sign_cp_req(&req->req_u.dsa_sign,
 				    &crypto_ctx->crypto_mem, ecdsa)) {
@@ -891,6 +887,7 @@ int dsa_op(struct pkc_request *req)
 		}
 		print_debug("Desc constr complete...\n");
 
+		dsa_sign_buffs = &(crypto_ctx->crypto_mem.c_buffers.dsa_sign);
 #ifdef SEC_DMA
 		sec_dma = dsa_sign_buffs->desc_buff.dev_buffer.h_p_addr + offset;
 #else
