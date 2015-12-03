@@ -201,7 +201,7 @@ static int32_t __init fsl_cryptodev_register(void)
  * Description  : Unregisters the fsl_crypto device
  *
  ******************************************************************************/
-static void __exit fsl_cryptodev_deregister(void)
+static void fsl_cryptodev_deregister(void)
 {
 	misc_deregister(&fsl_cryptodev);
 }
