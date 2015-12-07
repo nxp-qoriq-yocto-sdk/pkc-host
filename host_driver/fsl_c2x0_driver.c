@@ -2053,6 +2053,6 @@ module_init(fsl_crypto_drv_init);
 module_exit(fsl_crypto_drv_exit);
 
 MODULE_AUTHOR("FSL");
-MODULE_DESCRIPTION("FSL c2x0 Device driver ");
+MODULE_DESCRIPTION("FSL c29x Device driver ");
 MODULE_VERSION("Version 1.0.1");
 MODULE_LICENSE("Dual BSD/GPL");
