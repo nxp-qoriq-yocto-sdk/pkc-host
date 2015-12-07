@@ -38,6 +38,8 @@ ENHANCE_KERNEL_TEST=n
 #NOTE: VIRTIO configuration is not supported
 VIRTIO_C2X0=n
 
+GCOV_PROFILE := n
+
 # do not enable together SEC_DMA and HOST_DMA
 ifeq ($(USE_SEC_DMA), y)
 USE_HOST_DMA = n
