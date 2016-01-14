@@ -306,9 +306,7 @@ static void create_src_sg_table(symm_ablk_buffers_t *ablk_ctx,
 			    sg->offset);
 #else
 		/* COPY REQ POINTER */
-		/* FIXME: DO WE NEED TO KMAP OF SG PAGE ??? */
-		ablk_ctx->src_sg[i].req_ptr =
-		    (uint8_t *) sg_page(sg) + sg->offset;
+		ablk_ctx->src_sg[i].req_ptr = kmap(sg_page(sg)) + sg->offset;
 #endif
 		ASSIGN64(sec4_sg_ptr->ptr,
 			 ablk_ctx->src_sg[i].dev_buffer.d_p_addr);
