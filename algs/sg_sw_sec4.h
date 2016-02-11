@@ -86,7 +86,7 @@ static inline int __sg_count(struct scatterlist *sg_list, int nbytes,
 		if (!sg_is_last(sg) && (sg + 1)->length == 0) {
 			*chained = true;
 		}
-		sg = scatterwalk_sg_next(sg);
+		sg = sg_next(sg);
 	}
 
 	return sg_nents;
@@ -113,7 +113,7 @@ static inline int dma_map_sg_chained(struct device *dev, struct scatterlist *sg,
 		int i;
 		for (i = 0; i < nents; i++) {
 			dma_map_sg(dev, sg, 1, dir);
-			sg = scatterwalk_sg_next(sg);
+			sg = sg_next(sg);
 		}
 	} else {
 		dma_map_sg(dev, sg, nents, dir);
@@ -131,7 +131,7 @@ static inline int dma_unmap_sg_chained(struct device *dev,
 		int i;
 		for (i = 0; i < nents; i++) {
 			dma_unmap_sg(dev, sg, 1, dir);
-			sg = scatterwalk_sg_next(sg);
+			sg = sg_next(sg);
 		}
 	} else {
 		dma_unmap_sg(dev, sg, nents, dir);

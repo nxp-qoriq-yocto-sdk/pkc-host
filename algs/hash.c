@@ -386,7 +386,7 @@ static void hash_init_len(struct ahash_request *req, struct hash_lengths *len,
 
 		for (; i < (len->src_nents + len->addon_nents); i++) {
 			mem->input_buffs[i].len = sg->length;
-			sg = scatterwalk_sg_next(sg);
+			sg = sg_next(sg);
 		}
 	} else {
 		mem->sec_sg_buff.len = len->src_len;
@@ -448,7 +448,7 @@ static int hash_cp_req(struct ahash_request *req, struct hash_lengths *len,
 		for (; i < (len->src_nents + len->addon_nents); i++) {
 			sg_map_copy(mem->input_buffs[i].v_mem, sg, sg->length,
 				    sg->offset);
-			sg = scatterwalk_sg_next(sg);
+			sg = sg_next(sg);
 		}
 	} else if (buff && len->buff_len) {
 		memcpy(mem->sec_sg_buff.v_mem, buff, len->buff_len);

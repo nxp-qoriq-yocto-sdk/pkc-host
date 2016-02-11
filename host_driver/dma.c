@@ -399,8 +399,8 @@ int32_t transfer_dma_sg(chnl_info_t *dma_chnl, struct scatterlist *ip,
 		if (prep_dma_tx(sg_dma_address(ip), sg_dma_address(op),
 				sg_dma_len(op), dma_chnl, cb, param))
 			return -1;
-		ip = scatterwalk_sg_next(ip);
-		op = scatterwalk_sg_next(op);
+		ip = sg_next(ip);
+		op = sg_next(op);
 	}
 
 	return 0;
