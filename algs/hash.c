@@ -334,7 +334,6 @@ static int hash_cp_key(const uint8_t *input, uint32_t ip_len,
 	if (-ENOMEM == alloc_crypto_mem(mem_info)) {
 		return -ENOMEM;
 	}
-
 #ifdef USE_HOST_DMA
 	memcpy(mem->input_buff.v_mem, input, ip_len);
 #else
@@ -456,7 +455,8 @@ static int hash_cp_req(struct ahash_request *req, struct hash_lengths *len,
 	} else if (ctx && len->ctx_len) {
 		memcpy(mem->sec_sg_buff.v_mem, ctx, len->ctx_len);
 	} else if (len->src_len) {
-		sg_copy(mem->sec_sg_buff.v_mem, req->src, len->src_len);
+		scatterwalk_map_and_copy(mem->sec_sg_buff.v_mem, req->src, 0,
+					 len->src_len, 0);
 	}
 
 	memcpy(mem->sh_desc_buff.v_mem, sh_desc, len->sh_desc_len);
@@ -822,7 +822,6 @@ int ahash_setkey(struct crypto_ahash *ahash, const uint8_t *key,
 	if (ret) {
 		goto badkey;
 	}
-
 #ifdef VIRTIO_C2X0
 	ret = ahash_set_sh_desc(c_sess, digestsize);
 #else
@@ -1102,7 +1101,7 @@ int ahash_update_ctx(struct ahash_request *req)
 	if (to_hash) {
 		c_dev = c_sess->c_dev;
 		r_id = c_sess->r_id;
-		
+
 		if (-1 == check_device(c_dev)) {
 			return -1;
 		}
@@ -1202,15 +1201,17 @@ int ahash_update_ctx(struct ahash_request *req)
 #endif
 		if (len.src_nents) {
 			if (*next_buflen) {
-				sg_copy_part(next_buf, req->src,
-					     to_hash - *buflen, req->nbytes);
+				scatterwalk_map_and_copy(next_buf, req->src,
+							 to_hash - *buflen,
+							 *next_buflen, 0);
 				state->current_buf = !state->current_buf;
 			}
 		}
 		return -EINPROGRESS;
 
 	} else if (*next_buflen) {
-		sg_copy(buf + *buflen, req->src, req->nbytes);
+		scatterwalk_map_and_copy(buf + *buflen, req->src, 0,
+					 req->nbytes, 0);
 		*buflen = *next_buflen;
 		*next_buflen = last_buflen;
 	}
@@ -2100,8 +2101,9 @@ int ahash_update_no_ctx(struct ahash_request *req)
 		}
 #endif
 		if (*next_buflen) {
-			sg_copy_part(next_buf, req->src, to_hash - *buflen,
-				     req->nbytes);
+			scatterwalk_map_and_copy(next_buf, req->src,
+						 to_hash - *buflen,
+						 *next_buflen, 0);
 			state->current_buf = !state->current_buf;
 		}
 #ifndef VIRTIO_C2X0
@@ -2113,7 +2115,8 @@ int ahash_update_no_ctx(struct ahash_request *req)
 		return -EINPROGRESS;
 
 	} else if (*next_buflen) {
-		sg_copy(buf + *buflen, req->src, req->nbytes);
+		scatterwalk_map_and_copy(buf + *buflen, req->src, 0,
+					 req->nbytes, 0);
 		*buflen = *next_buflen;
 		*next_buflen = 0;
 	}
@@ -2307,9 +2310,9 @@ int ahash_update_first(struct ahash_request *req)
 		}
 #endif
 		if (*next_buflen) {
-			sg_copy_part(next_buf, req->src, to_hash, req->nbytes);
+			scatterwalk_map_and_copy(next_buf, req->src, to_hash,
+						 *next_buflen, 0);
 		}
-
 #ifndef VIRTIO_C2X0
 		state->update = ahash_update_ctx;
 		state->finup = ahash_finup_ctx;
@@ -2323,7 +2326,7 @@ int ahash_update_first(struct ahash_request *req)
 		state->finup = ahash_finup_no_ctx;
 		state->final = ahash_final_no_ctx;
 #endif
-		sg_copy(next_buf, req->src, req->nbytes);
+		scatterwalk_map_and_copy(next_buf, req->src, 0, req->nbytes, 0);
 	}
 
 	return 0;

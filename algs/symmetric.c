@@ -528,7 +528,8 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 	if (!src_sgcnt) {
 		/* NO SRC SG SO COPY INFO AND SRC DIRECT */
 		memcpy(ablk_ctx->info.v_mem, req->info, ivsize);
-		sg_copy(ablk_ctx->info.v_mem + ivsize, req->src, req->nbytes);
+		scatterwalk_map_and_copy(ablk_ctx->info.v_mem + ivsize,
+					 req->src, 0, req->nbytes, 0);
 
 		/* SRC DMA WILL BE INFO DMA */
 		src_dma = ablk_ctx->info.dev_buffer.d_p_addr;
@@ -617,7 +618,6 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 		ret = -1;
 		goto error1;
 	}
-
 #else
 	crypto_mem->dest_buff_dma = ablk_ctx->desc.dev_buffer.h_map_p_addr;
 
