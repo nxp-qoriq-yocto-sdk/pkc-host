@@ -53,12 +53,25 @@ static void ablk_op_done(void *ctx, int32_t res)
 {
 	bool dst_chained;
 	uint32_t dst_sgcnt = 0;
+#ifdef SEC_DMA
+	uint32_t src_sgcnt;
+	bool src_chained;
+#endif
 	crypto_op_ctx_t *crypto_ctx = ctx;
 	struct pci_dev *pci_dev = crypto_ctx->c_dev->priv_dev->dev;
 
 	print_debug("ABLK OP DONE\n");
 	dst_sgcnt = sg_count(crypto_ctx->req.ablk->dst,
 			     crypto_ctx->req.ablk->nbytes, &dst_chained);
+
+#ifdef SEC_DMA
+	src_sgcnt = sg_count(crypto_ctx->req.ablk->src,
+			crypto_ctx->req.ablk->nbytes, &src_chained);
+
+	dma_unmap_sg_chained(&pci_dev->dev,
+			crypto_ctx->req.ablk->src,
+			src_sgcnt ? : 1, DMA_BIDIRECTIONAL, src_chained);
+#endif
 
 	dma_unmap_sg_chained(&pci_dev->dev,
 			     crypto_ctx->req.ablk->dst,
@@ -291,8 +304,14 @@ static void create_setkey_ctx(struct crypto_ablkcipher *ablkcipher,
 #endif
 }
 
+#ifdef SEC_DMA
+static void create_src_sg_table(fsl_crypto_dev_t *c_dev,
+				symm_ablk_buffers_t *ablk_ctx,
+				struct scatterlist *sg, uint32_t sg_cnt)
+#else
 static void create_src_sg_table(symm_ablk_buffers_t *ablk_ctx,
 				struct scatterlist *sg, uint32_t sg_cnt)
+#endif
 {
 	int32_t i = 0;
 	struct sec4_sg_entry *sec4_sg_ptr =
@@ -306,7 +325,13 @@ static void create_src_sg_table(symm_ablk_buffers_t *ablk_ctx,
 			    sg->offset);
 #else
 		/* COPY REQ POINTER */
+#ifdef SEC_DMA
+		ablk_ctx->src_sg[i].dev_buffer.d_p_addr =
+			(dev_dma_addr_t) sg_dma_address(sg) +
+			c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
+#else
 		ablk_ctx->src_sg[i].req_ptr = kmap(sg_page(sg)) + sg->offset;
+#endif
 #endif
 		ASSIGN64(sec4_sg_ptr->ptr,
 			 ablk_ctx->src_sg[i].dev_buffer.d_p_addr);
@@ -542,7 +567,16 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 				       ablk_ctx->info.dev_buffer.d_p_addr,
 				       ivsize, 0);
 
+#ifdef SEC_DMA
+		dma_map_sg_chained(&pci_dev->dev,
+				req->src, src_sgcnt ? : 1,
+				DMA_BIDIRECTIONAL, src_chained);
+
+		create_src_sg_table(c_dev, ablk_ctx, req->src, src_sgcnt);
+#else
 		create_src_sg_table(ablk_ctx, req->src, src_sgcnt);
+#endif
+
 		src_dma = ablk_ctx->src.dev_buffer.d_p_addr;
 		in_options = LDST_SGF;
 	}

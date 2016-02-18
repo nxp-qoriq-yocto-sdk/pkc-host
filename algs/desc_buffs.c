@@ -336,7 +336,9 @@ int32_t memcpy_to_dev(crypto_mem_info_t *mem)
 			memcpy(dst->d_v_addr, src->v_mem, src->len);
 			break;
 		case BT_IP:
+#ifndef SEC_DMA
 			memcpy(dst->d_v_addr, src->req_ptr, src->len);
+#endif
 		case BT_OP:
 			break;
 		}
