@@ -297,6 +297,7 @@ static void create_setkey_ctx(struct crypto_ablkcipher *ablkcipher,
      * NEED TO COPY THE KEY IN LOCAL MEM
      * INSTEAD OF ONLY TAKING REQ POINTER */
     memcpy(ablk_ctx->key.v_mem, (void *)ctx->key, ctx->keylen);
+	print_debug("Key len %u\n", ctx->keylen);
 #ifdef VIRTIO_C2X0
     ablkcipher_setkey_desc(ctx, ivsize, ablk_ctx, encrypt);
 #else
@@ -514,7 +515,7 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 	ablk_ctx = crypto_mem->c_buffers.symm_ablk;
 	ablk_ctx->desc.len = DESC_JOB_IO_LEN * CAAM_CMD_SZ;
 	ablk_ctx->sh_desc.len = DESC_MAX_USED_LEN * CAAM_CMD_SZ;
-	ablk_ctx->key.len = CAAM_MAX_KEY_SIZE;
+	ablk_ctx->key.len = ctx->keylen;
 
 	if (src_sgcnt) {
 		ablk_ctx->info.len = ivsize;
