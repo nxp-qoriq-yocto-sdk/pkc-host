@@ -360,38 +360,6 @@ static struct alg_template driver_algs[] = {
 			 .ivsize = AES_BLOCK_SIZE,
 			 },
 	 .class1_alg_type = OP_ALG_ALGSEL_AES | OP_ALG_AAI_CBC,
-	 },
-	{
-	 .name = "cbc(des3_ede)",
-	 .driver_name = "cbc-3des-fsl",
-	 .blocksize = DES3_EDE_BLOCK_SIZE,
-	 .type = CRYPTO_ALG_TYPE_ABLKCIPHER,
-	 .u.blkcipher = {
-			 .setkey = fsl_ablkcipher_setkey,
-			 .encrypt = fsl_ablkcipher_encrypt,
-			 .decrypt = fsl_ablkcipher_decrypt,
-			 .geniv = "eseqiv",
-			 .min_keysize = DES3_EDE_KEY_SIZE,
-			 .max_keysize = DES3_EDE_KEY_SIZE,
-			 .ivsize = DES3_EDE_BLOCK_SIZE,
-			 },
-	 .class1_alg_type = OP_ALG_ALGSEL_3DES | OP_ALG_AAI_CBC,
-	 },
-	{
-	 .name = "cbc(des)",
-	 .driver_name = "cbc-des-fsl",
-	 .blocksize = DES_BLOCK_SIZE,
-	 .type = CRYPTO_ALG_TYPE_ABLKCIPHER,
-	 .u.blkcipher = {
-			 .setkey = fsl_ablkcipher_setkey,
-			 .encrypt = fsl_ablkcipher_encrypt,
-			 .decrypt = fsl_ablkcipher_decrypt,
-			 .geniv = "eseqiv",
-			 .min_keysize = DES_KEY_SIZE,
-			 .max_keysize = DES_KEY_SIZE,
-			 .ivsize = DES_BLOCK_SIZE,
-			 },
-	 .class1_alg_type = OP_ALG_ALGSEL_DES | OP_ALG_AAI_CBC,
 	 }
 #endif
 };
