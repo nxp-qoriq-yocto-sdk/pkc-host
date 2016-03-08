@@ -51,7 +51,7 @@ $(DRIVER_KOBJ)-objs += host_driver/fsl_c2x0_crypto_layer.o
 $(DRIVER_KOBJ)-objs += host_driver/memmgr.o
 $(DRIVER_KOBJ)-objs += host_driver/command.o
 $(DRIVER_KOBJ)-objs += host_driver/sysfs.o
-ifneq ("$(ARCH)","powerpc")
+ifeq ("$(ARCH)","x86")
 $(DRIVER_KOBJ)-objs += crypto/pkc.o
 endif
 $(DRIVER_KOBJ)-objs += algs/error.o
