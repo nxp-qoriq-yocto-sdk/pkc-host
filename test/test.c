@@ -86,6 +86,11 @@ inline uint64_t get_cpu_ticks(void)
 	__asm__ __volatile__("rdtsc" : "=a"(l), "=d"(h));
 	return ((uint64_t) h << 32) | l;
 }
+#elif defined(CONFIG_ARM64)
+inline uint64_t get_cpu_ticks(void)
+{
+	return 1000;
+}
 #endif
 
 inline void check_test_done(void)
@@ -128,6 +133,8 @@ inline void check_test_done(void)
 	cpu_freq = ppc_proc_freq / 1000000;
 #elif defined(CONFIG_X86)
 	cpu_freq = cpu_khz / 1000;
+#elif defined(CONFIG_ARM64)
+	cpu_freq = 1000;
 #endif
 	print_debug("Cpu Freq: %d\n", cpu_freq);
 	snprintf(cpu_freq_s, sizeof(cpu_freq_s), "%d", cpu_freq);
