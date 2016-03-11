@@ -748,10 +748,10 @@ static void check_ep_bootup(fsl_crypto_dev_t *dev)
 	char stdstr[] = "SUCCESS";
 	char obstr[] = "0000000";
 	int i = 0, bootup = 1;
-	char val = 0;
+	uint8_t val = 0;
 
 	print_debug("======= check_ep_bootup =======\n");
-	print_debug("IB Addr: %0x, OB Addr: %0x\n", ibaddr, obaddr);
+	print_debug("IB Addr: %p, OB Addr: %p\n", ibaddr, obaddr);
 
 	ibaddr += (512 * 1024);
 
@@ -773,10 +773,10 @@ static void check_ep_bootup(fsl_crypto_dev_t *dev)
 	for (i = 0; i < 100; i++) {
 		strncpy(obstr, obaddr, sizeof(stdstr));
 		if (!strcmp(obstr, stdstr)) {
-			print_debug("Got ittttt....");
+			print_debug("Got ittttt....\n");
 			break;
 		} else
-			print_debug("Not yetttt... ");
+			print_debug("Not yetttt...\n");
 
 		set_current_state(TASK_INTERRUPTIBLE);
 		schedule_timeout(msecs_to_jiffies(100));
