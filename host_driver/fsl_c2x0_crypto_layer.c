@@ -841,7 +841,8 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	val = ioread32be(ccsr + 0xc30); /* LAW_LAWAR1 */
 
 	print_debug("======= setup_ep =======\n");
-	print_debug("Ob mem dma_addr: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr));
+	print_debug("Ob mem dma_addr: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr));
+	print_debug("Ob mem p_addr: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr));
 	print_debug("Ob mem len: %pa\n", &dev->priv_dev->bars[MEM_TYPE_DRIVER].len);
 	print_debug("BAR0 V Addr: %p\n", ccsr);
 	print_debug("MSI mem: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_MSI].host_p_addr));
