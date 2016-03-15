@@ -291,8 +291,8 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	print_debug("alloc_ob_mem entered...\n");
 	print_debug("Total ob mem returned: %d\n", ob_mem_len);
 
-	host_v_addr = pci_alloc_consistent(dev->priv_dev->dev,
-			ob_mem_len, &(mem->host_dma_addr));
+	host_v_addr = dma_alloc_coherent(&dev->priv_dev->dev->dev, ob_mem_len,
+					&(mem->host_dma_addr), GFP_KERNEL);
 	if (!host_v_addr) {
 		print_error("Allocating ob mem failed...\n");
 		return -ENOMEM;
