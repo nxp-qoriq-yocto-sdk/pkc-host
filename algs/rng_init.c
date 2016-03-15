@@ -351,13 +351,12 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		constr_personalization_str(pers_str,
 					   sizeof(pers_str) / sizeof(uint32_t),
 					   sec_no);
-
-		if (-ENOMEM ==
-		    rng_init_cp_pers_str(pers_str, sizeof(pers_str),
-					 &crypto_ctx->crypto_mem)) {
-			ret = -ENOMEM;
+		ret = rng_init_cp_pers_str(pers_str, sizeof(pers_str),
+						&crypto_ctx->crypto_mem);
+		if (ret != 0) {
 			goto error;
 		}
+
 		print_debug("RNG init mem complete.....\n");
 
 		/* Convert the buffers to dev */
@@ -391,12 +390,12 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 			goto error;
 		}
 
-		if (-ENOMEM ==
-		    rng_self_test_cp_output(output, output_len,
-					    &crypto_ctx->crypto_mem)) {
-			ret = -ENOMEM;
+		ret = rng_self_test_cp_output(output, output_len,
+						&crypto_ctx->crypto_mem);
+		if (ret != 0) {
 			goto error;
 		}
+
 		print_debug("RNG self test mem complete.....\n");
 
 		/* Convert the buffers to dev */
