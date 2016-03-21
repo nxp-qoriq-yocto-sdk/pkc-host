@@ -216,7 +216,7 @@ static void constr_rng_self_test_desc(crypto_mem_info_t *mem_info)
 		uint32_t *words = (uint32_t *) desc_buff;
 		uint32_t i = 0;
 		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d: %x\n", i, words[i]);
+			print_debug("Word %d: %x\n", i, be32_to_cpu(words[i]));
 	}
 #endif
 }
@@ -255,7 +255,7 @@ static void constr_rng_init_desc(crypto_mem_info_t *mem_info)
 		uint32_t *words = (uint32_t *) desc_buff;
 		uint32_t i = 0;
 		for (i = 0; i < desc_size; i++)
-			print_debug("Word %d: %x\n", i, words[i]);
+			print_debug("Word %d: %x\n", i, be32_to_cpu(words[i]));
 	}
 #endif
 }
