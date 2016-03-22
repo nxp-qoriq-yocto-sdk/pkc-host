@@ -126,10 +126,14 @@ Fields      :	host_p_addr	: Physical address of the BAR.
 		len		: Length of the BAR
 *******************************************************************************/
 struct pci_bar_info {
+	/* the address of the PCI resource mapped into the kernel space */
 	void *host_v_addr;
+	/* physical and dma address where the PCI resource is located */
 	phys_addr_t host_p_addr;
 	dma_addr_t host_dma_addr;
+	/* length in bytes of the PCI resource */
 	resource_size_t len;
+	/* address of the PCI resource as seen from the device point of view */
 	dev_p_addr_t dev_p_addr;
 };
 
