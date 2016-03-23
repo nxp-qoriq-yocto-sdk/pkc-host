@@ -372,7 +372,7 @@ Fields      :	hs_mem	: Handshake memory - 64bytes
 		counters: Memory of the counters per ring
 		shadow_counters: Memory of the shadow counters per ring
 *******************************************************************************/
-struct crypto_h_mem_layout {
+struct host_mem_layout {
 	struct fsl_h_mem_handshake hs_mem;
 
 	struct resp_ring_entry *fw_resp_ring;
@@ -433,7 +433,7 @@ typedef struct fsl_crypto_dev {
 	 * Represents the memory layout on the driver.
 	 * This points to the base of the outbound memory.
 	 */
-	struct crypto_h_mem_layout *host_mem;
+	struct host_mem_layout *host_mem;
 
 	/* Pointer to the device's handshake memory, this will be
 	 * pointing to the inbound memory.
