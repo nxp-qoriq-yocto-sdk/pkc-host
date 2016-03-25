@@ -234,7 +234,7 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	 * 		config->num_of_rings + NUM_OF_RESP_RINGS instead of
 	 * 		config->num_of_rings + 1 */
 	ob_mem_len = cache_line_align(ob_mem_len);
-	dev->ob_mem.l_idxs_mem = ob_mem_len;
+	dev->ob_mem.idxs_mem = ob_mem_len;
 	ob_mem_len += (config->num_of_rings + 1) * (sizeof(struct ring_idxs_mem));
 
 	ob_mem_len = cache_line_align(ob_mem_len);
@@ -311,7 +311,7 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	dev->host_mem = host_v_addr;
 	dev->host_mem->fw_resp_ring = host_v_addr + dev->ob_mem.fw_resp_ring;
 	dev->host_mem->drv_resp_rings = host_v_addr + dev->ob_mem.drv_resp_rings;
-	dev->host_mem->l_idxs_mem = host_v_addr + dev->ob_mem.l_idxs_mem;
+	dev->host_mem->idxs_mem = host_v_addr + dev->ob_mem.idxs_mem;
 	dev->host_mem->cntrs_mem = host_v_addr + dev->ob_mem.cntrs_mem;
 	dev->host_mem->s_c_r_cntrs_mem = host_v_addr + dev->ob_mem.s_c_r_cntrs_mem;
 	dev->host_mem->op_pool = host_v_addr + dev->ob_mem.op_pool;
@@ -322,7 +322,7 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	print_debug("H HS Mem		: %p\n", &(dev->host_mem->hs_mem));
 	print_debug("Fw resp ring	: %p\n", dev->host_mem->fw_resp_ring);
 	print_debug("Drv resp rings	: %p\n", dev->host_mem->drv_resp_rings);
-	print_debug("L Idxs mem		: %p\n", dev->host_mem->l_idxs_mem);
+	print_debug("Idxs mem	        : %p\n", dev->host_mem->idxs_mem);
 	print_debug("cntrs mem          : %p\n", dev->host_mem->cntrs_mem);
 	print_debug("S C R cntrs mem	: %p\n", dev->host_mem->s_c_r_cntrs_mem);
 	print_debug("OP pool		: %p\n", dev->host_mem->op_pool);
@@ -383,7 +383,7 @@ void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 		/* We allocated "config->num_of_rings + 1" in alloc_ob_mem and
 		 * id is the last one in this array of rings. But if
 		 * NUM_OF_RESP_RINGS is not 1, we've got ourself a mess here */
-		fw_ring->idxs = &(dev->host_mem->l_idxs_mem[id]);
+		fw_ring->idxs = &(dev->host_mem->idxs_mem[id]);
 		fw_ring->cntrs = &(dev->host_mem->cntrs_mem[id]);
 		fw_ring->s_c_cntrs = &(dev->host_mem->s_c_r_cntrs_mem[id]);
 		fw_ring->s_cntrs = NULL;
@@ -415,7 +415,7 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 		resp_r += rp->depth;
 
 		rp->intr_ctrl_flag = NULL;
-		rp->indexes = &(dev->host_mem->l_idxs_mem[i]);
+		rp->indexes = &(dev->host_mem->idxs_mem[i]);
 		rp->counters = &(dev->host_mem->cntrs_mem[i]);
 		rp->s_c_counters = &(dev->host_mem->s_c_r_cntrs_mem[i]);
 		rp->shadow_counters = NULL;
