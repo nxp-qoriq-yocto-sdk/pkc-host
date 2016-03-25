@@ -371,7 +371,7 @@ struct host_mem_layout {
 	struct resp_ring_entry *fw_resp_ring;
 	struct resp_ring_entry *drv_resp_rings;
 	struct ring_idxs_mem *l_idxs_mem;
-	struct ring_counters_mem *l_r_cntrs_mem;
+	struct ring_counters_mem *cntrs_mem;
 	struct ring_counters_mem *s_c_r_cntrs_mem;
 	void *op_pool;
 	void *ip_pool;
@@ -384,7 +384,7 @@ struct driver_ob_mem {
 	uint32_t ip_pool;
 	uint32_t op_pool;
 	uint32_t l_idxs_mem;
-	uint32_t l_r_cntrs_mem;
+	uint32_t cntrs_mem;
 	uint32_t s_c_r_cntrs_mem;
 };
 
