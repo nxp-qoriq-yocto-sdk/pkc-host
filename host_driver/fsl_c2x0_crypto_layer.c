@@ -251,10 +251,6 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	ob_mem_len += (config->num_of_rings + 1) * sizeof(struct ring_counters_mem);
 
 	ob_mem_len = cache_line_align(ob_mem_len);
-	dev->ob_mem.cntrs_mem = ob_mem_len;
-	ob_mem_len += sizeof(struct counters_mem);
-
-	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.s_c_cntrs_mem = ob_mem_len;
 	ob_mem_len += sizeof(struct counters_mem);
 
@@ -329,7 +325,6 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	dev->host_mem->s_c_idxs_mem = host_v_addr + dev->ob_mem.s_c_idxs_mem;
 	dev->host_mem->l_r_cntrs_mem = host_v_addr + dev->ob_mem.l_r_cntrs_mem;
 	dev->host_mem->s_c_r_cntrs_mem = host_v_addr + dev->ob_mem.s_c_r_cntrs_mem;
-	dev->host_mem->cntrs_mem = host_v_addr + dev->ob_mem.cntrs_mem;
 	dev->host_mem->s_c_cntrs_mem = host_v_addr + dev->ob_mem.s_c_cntrs_mem;
 	dev->host_mem->op_pool = host_v_addr + dev->ob_mem.op_pool;
 	dev->host_mem->ip_pool = host_v_addr + dev->ob_mem.ip_pool;
@@ -343,7 +338,6 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	print_debug("S C Idxs mem	: %p\n", dev->host_mem->s_c_idxs_mem);
 	print_debug("L R cntrs mem	: %p\n", dev->host_mem->l_r_cntrs_mem);
 	print_debug("S C R cntrs mem	: %p\n", dev->host_mem->s_c_r_cntrs_mem);
-	print_debug("Cntrs mem		: %p\n", dev->host_mem->cntrs_mem);
 	print_debug("S C cntrs mem	: %p\n", dev->host_mem->s_c_cntrs_mem);
 	print_debug("OP pool		: %p\n", dev->host_mem->op_pool);
 	print_debug("IP pool		: %p\n", dev->host_mem->ip_pool);
@@ -1050,16 +1044,6 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 	print_debug("Ring: %d	Shadow counter address	%p\n", jr_id,
 		    &(rp->shadow_counters->jobs_added));
 	rp->shadow_counters->jobs_added = be32_to_cpu(rp->counters->jobs_added);
-
-/*
- * No more need to update total counters ...
-
-	c_dev->host_mem->cntrs_mem->tot_jobs_added += 1;
-	print_debug("Tot jobs added	:%d\n",
-	c_dev->host_mem->cntrs_mem->tot_jobs_added);
-	iowrite32be(c_dev->host_mem->cntrs_mem->tot_jobs_added,
-		&c_dev->s_mem.s_cntrs->tot_jobs_added);
-*/
 
 	spin_unlock_bh(&(rp->ring_lock));
 	return 0;
