@@ -137,16 +137,18 @@ struct dev_handshake_mem {
 	uint8_t pad;
 
 	union cmd_data {
+		/* these are communicated by the host to the device.
+		 * Addresses are dma addresses on host for data located in OB mem */
 		struct c_config_data {
-			uint8_t num_of_rps;
+			uint8_t num_of_rps;  /* total number of rings, in and out */
 			uint8_t max_pri;
-			uint8_t num_of_fwresp_rings;
-			uint32_t req_mem_size;
-			uint32_t drv_resp_ring;
-			uint32_t fw_resp_ring;
+			uint8_t num_of_fwresp_rings; /* number of output rings */
+			uint32_t req_mem_size;  /* memory required for requests by all rings */
+			uint32_t drv_resp_ring; /* dma address for responses for all rings */
+			uint32_t fw_resp_ring; /* dma address for another response ring (512 entries)*/
 			uint32_t padding1; /* not used by the firmware */
-			uint32_t r_s_cntrs;
-			uint32_t fw_resp_ring_depth;
+			uint32_t r_s_cntrs;/* dma address for other shadow counters */
+			uint32_t fw_resp_ring_depth; /* defaults to 512 - size of ring fw_resp_ring */
 		} config;
 		struct c_ring_data {
 			uint8_t rid;
