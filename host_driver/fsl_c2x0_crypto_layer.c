@@ -445,12 +445,16 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 
 void send_hs_init_config(fsl_crypto_dev_t *dev)
 {
+	const char *str_state = "HS_INIT_CONFIG\n";
 	phys_addr_t host_p_addr = dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr;
 	phys_addr_t drv_resp_rings = dev->ob_mem.drv_resp_rings + host_p_addr;
 	phys_addr_t fw_resp_ring   = dev->ob_mem.fw_resp_ring + host_p_addr;
 	phys_addr_t s_cntrs        = dev->ob_mem.s_c_cntrs_mem + host_p_addr;
 	phys_addr_t r_s_cntrs      = dev->ob_mem.s_c_r_cntrs_mem + host_p_addr;
 	volatile struct c_config_data *config = &dev->c_hs_mem->data.config;
+
+	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
+			(uint8_t *) str_state, strlen(str_state));
 
 	iowrite8(HS_INIT_CONFIG, (void *) &dev->c_hs_mem->command);
 	iowrite8(dev->num_of_rings, (void *) &config->num_of_rps);
@@ -486,12 +490,6 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 	phys_addr_t resp_r, s_r_cntrs;
 
 	switch (cmd) {
-	case HS_INIT_CONFIG:
-		str_state = "HS_INIT_CONFIG\n";
-		set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
-				(uint8_t *) str_state, strlen(str_state));
-		send_hs_init_config(dev);
-		break;
 	case HS_INIT_RING_PAIR:
 		str_state = "HS_INIT_RING_PAIR\n";
 		set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
@@ -559,7 +557,7 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 	return;
 }
 
-void hs_firmware_up(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
+void hs_firmware_up(fsl_crypto_dev_t *dev)
 {
 	char *str_state = "FIRMWARE_UP\n";
 	volatile struct fw_up_data *hsdev = &dev->host_mem->hs_mem.data.device;
@@ -593,7 +591,7 @@ void hs_firmware_up(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	print_debug("Formed dev ob mem phys address: %llx\n",
 			(uint64_t)dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr);
 
-	send_hs_command(HS_INIT_CONFIG, dev, config);
+	send_hs_init_config(dev);
 }
 
 void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
@@ -691,7 +689,7 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	while (true) {
 		switch (dev->host_mem->hs_mem.state) {
 		case FIRMWARE_UP:
-			hs_firmware_up(dev, config);
+			hs_firmware_up(dev);
 			break;
 		case FW_INIT_CONFIG_COMPLETE:
 			hs_fw_init_complete(dev, config, rid);
