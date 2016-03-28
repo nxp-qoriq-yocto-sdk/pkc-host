@@ -451,24 +451,24 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	phys_addr_t fw_resp_ring   = dev->ob_mem.fw_resp_ring + host_p_addr;
 	phys_addr_t s_cntrs        = dev->ob_mem.s_c_cntrs_mem + host_p_addr;
 	phys_addr_t r_s_cntrs      = dev->ob_mem.s_c_r_cntrs_mem + host_p_addr;
-	volatile struct c_config_data *config = &dev->c_hs_mem->data.config;
+	struct c_config_data *config = &dev->c_hs_mem->data.config;
 
 	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
 			(uint8_t *) str_state, strlen(str_state));
 
-	iowrite8(HS_INIT_CONFIG, (void *) &dev->c_hs_mem->command);
-	iowrite8(dev->num_of_rings, (void *) &config->num_of_rps);
-	iowrite8(1, (void *) &config->max_pri);
-	iowrite8(NUM_OF_RESP_RINGS, (void *) &config->num_of_fwresp_rings);
-	iowrite32be(dev->tot_req_mem_size, (void *) &config->req_mem_size);
+	iowrite8(HS_INIT_CONFIG, &dev->c_hs_mem->command);
+	iowrite8(dev->num_of_rings, &config->num_of_rps);
+	iowrite8(1, &config->max_pri);
+	iowrite8(NUM_OF_RESP_RINGS, &config->num_of_fwresp_rings);
+	iowrite32be(dev->tot_req_mem_size, &config->req_mem_size);
 	/* TODO: These iowrite32be truncate 64bit addresses on 64bit machines.
 	 * The DMA space is indeed limited to 32/36 bit but what about the
 	 * physical addresses on the host? */
-	iowrite32be(drv_resp_rings, (void *) &config->drv_resp_ring);
-	iowrite32be(fw_resp_ring, (void *) &config->fw_resp_ring);
-	iowrite32be(s_cntrs, (void *) &config->s_cntrs);
-	iowrite32be(r_s_cntrs, (void *) &config->r_s_cntrs);
-	iowrite32be(DEFAULT_FIRMWARE_RESP_RING_DEPTH, (void *) &config->fw_resp_ring_depth);
+	iowrite32be(drv_resp_rings, &config->drv_resp_ring);
+	iowrite32be(fw_resp_ring, &config->fw_resp_ring);
+	iowrite32be(s_cntrs, &config->s_cntrs);
+	iowrite32be(r_s_cntrs, &config->r_s_cntrs);
+	iowrite32be(DEFAULT_FIRMWARE_RESP_RING_DEPTH, &config->fw_resp_ring_depth);
 
 	print_debug("HS_INIT_CONFIG Details\n");
 	print_debug("Num of rps: %d\n", dev->num_of_rings);
@@ -479,8 +479,8 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	print_debug("R S C counters: %pa\n", &r_s_cntrs);
 	print_debug("Sending FW_INIT_CONFIG command at addr: %p\n",
 			&(dev->c_hs_mem->state));
-
-	iowrite8(FW_INIT_CONFIG, (void *) &dev->c_hs_mem->state);
+	barrier();
+	iowrite8(FW_INIT_CONFIG, &dev->c_hs_mem->state);
 }
 
 static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
@@ -498,15 +498,15 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 		resp_r = __pa(dev->ring_pairs[ring->ring_id].resp_r);
 		s_r_cntrs = __pa(dev->ring_pairs[ring->ring_id].s_c_counters);
 
-		iowrite8(HS_INIT_RING_PAIR, (void *) &dev->c_hs_mem->command);
-		iowrite8(ring->ring_id, (void *) &dev->c_hs_mem->data.ring.rid);
-		iowrite8(ring->flags, (void *) &dev->c_hs_mem->data.ring.props);
-		iowrite16be(ring->msi_data, (void *) &dev->c_hs_mem->data.ring.msi_data);
-		iowrite32be(ring->depth, (void *) &dev->c_hs_mem->data.ring.depth);
-		iowrite32be(resp_r, (void *) &dev->c_hs_mem->data.ring.resp_ring);
-		iowrite32be(ring->msi_addr_l, (void *) &dev->c_hs_mem->data.ring.msi_addr_l);
-		iowrite32be(ring->msi_addr_h, (void *) &dev->c_hs_mem->data.ring.msi_addr_h);
-		iowrite32be(s_r_cntrs, (void *) &dev->c_hs_mem->data.ring.s_r_cntrs);
+		iowrite8(HS_INIT_RING_PAIR, &dev->c_hs_mem->command);
+		iowrite8(ring->ring_id, &dev->c_hs_mem->data.ring.rid);
+		iowrite8(ring->flags, &dev->c_hs_mem->data.ring.props);
+		iowrite16be(ring->msi_data, &dev->c_hs_mem->data.ring.msi_data);
+		iowrite32be(ring->depth, &dev->c_hs_mem->data.ring.depth);
+		iowrite32be(resp_r, &dev->c_hs_mem->data.ring.resp_ring);
+		iowrite32be(ring->msi_addr_l, &dev->c_hs_mem->data.ring.msi_addr_l);
+		iowrite32be(ring->msi_addr_h, &dev->c_hs_mem->data.ring.msi_addr_h);
+		iowrite32be(s_r_cntrs, &dev->c_hs_mem->data.ring.s_r_cntrs);
 
 		print_debug("HS_INIT_RING_PAIR Details\n");
 		print_debug("Rid: %d\n", ring->ring_id);
@@ -515,8 +515,8 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 		print_debug("MSI Addr L: %x\n", ring->msi_addr_l);
 		print_debug("MSI Addr H: %x\n", ring->msi_addr_h);
 		print_debug("Ring counters addr: %pa\n", &(s_r_cntrs));
-
-		iowrite8(FW_INIT_RING_PAIR, (void *) &dev->c_hs_mem->state);
+		barrier();
+		iowrite8(FW_INIT_RING_PAIR, &dev->c_hs_mem->state);
 		break;
 	case HS_COMPLETE:
 		str_state = "HS_COMPLETE\n";
@@ -525,8 +525,9 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 		set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
 				(uint8_t *) str_state, strlen(str_state));
 
-		iowrite8(HS_COMPLETE, (void *) &dev->c_hs_mem->command);
-		iowrite8(FW_HS_COMPLETE, (void *) &dev->c_hs_mem->state);
+		iowrite8(HS_COMPLETE, &dev->c_hs_mem->command);
+		barrier();
+		iowrite8(FW_HS_COMPLETE, &dev->c_hs_mem->state);
 		break;
 	case WAIT_FOR_RNG:
 		str_state = "WAIT_FOR_RNG\n";
@@ -535,9 +536,9 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 		set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
 				(uint8_t *) str_state, strlen(str_state));
 
-		iowrite8(WAIT_FOR_RNG, (void *) &dev->c_hs_mem->command);
-		iowrite8(FW_WAIT_FOR_RNG, (void *) &dev->c_hs_mem->state);
-
+		iowrite8(WAIT_FOR_RNG, &dev->c_hs_mem->command);
+		barrier();
+		iowrite8(FW_WAIT_FOR_RNG, &dev->c_hs_mem->state);
 		break;
 	case RNG_DONE:
 		str_state = "RNG_DONE\n";
@@ -546,9 +547,9 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 		set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
 				(uint8_t *) str_state, strlen(str_state));
 
-		iowrite8(RNG_DONE, (void *) &dev->c_hs_mem->command);
-		iowrite8(FW_RNG_DONE, (void *) &dev->c_hs_mem->state);
-
+		iowrite8(RNG_DONE, &dev->c_hs_mem->command);
+		barrier();
+		iowrite8(FW_RNG_DONE, &dev->c_hs_mem->state);
 		break;
 	default:
 		print_error("Invalid command: %d\n", cmd);

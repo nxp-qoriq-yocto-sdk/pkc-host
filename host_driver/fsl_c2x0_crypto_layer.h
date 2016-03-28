@@ -440,7 +440,7 @@ typedef struct fsl_crypto_dev {
 	 * This data structure helps in structured access of raw bytes
 	 * in the device memory during the handshake.
 	 */
-	volatile struct crypto_c_hs_mem *c_hs_mem;
+	struct crypto_c_hs_mem *c_hs_mem;
 
 	/* Pointer to the shadow ring counters memory */
 	struct ring_counters_mem *s_r_cntrs;
