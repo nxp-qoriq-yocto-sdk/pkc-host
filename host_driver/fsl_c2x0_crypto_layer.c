@@ -561,7 +561,7 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 void hs_firmware_up(fsl_crypto_dev_t *dev)
 {
 	char *str_state = "FIRMWARE_UP\n";
-	volatile struct fw_up_data *hsdev = &dev->host_mem->hs_mem.data.device;
+	struct fw_up_data *hsdev = &dev->host_mem->hs_mem.data.device;
 	uint32_t p_ib_l;
 	uint32_t p_ib_h;
 	uint32_t p_ob_l;
@@ -598,7 +598,7 @@ void hs_firmware_up(fsl_crypto_dev_t *dev)
 void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
 {
 	char *str_state = "FW_INIT_CONFIG_COMPLETE\n";
-	volatile struct config_data *hscfg = &dev->host_mem->hs_mem.data.config;
+	struct config_data *hscfg = &dev->host_mem->hs_mem.data.config;
 	void *ptr;
 	uint32_t s_r_cntrs;
 	uint32_t s_cntrs;
@@ -647,7 +647,7 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 uint8_t hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
 {
 	char *str_state = "FW_INIT_RING_PAIR_COMPLETE\n";
-	volatile struct ring_data *hsring = &dev->host_mem->hs_mem.data.ring;
+	struct ring_data *hsring = &dev->host_mem->hs_mem.data.ring;
 	uint32_t req_r;
 	uint32_t intr_ctrl_flag;
 
@@ -803,7 +803,7 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	 * which will hold the firmware and operand data */
 	unsigned int l2_sram_start = 0xfff00000;
 	unsigned int p_sram_start  = 0xfff80000;
-	volatile unsigned int val;
+	unsigned int val;
 
 	/* CCSR base address is obtained from BAR0 device register */
 	void *ccsr = dev->priv_dev->bars[MEM_TYPE_CONFIG].host_v_addr;
