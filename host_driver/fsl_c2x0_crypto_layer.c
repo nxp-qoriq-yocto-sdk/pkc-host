@@ -795,32 +795,45 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	/* Set L2 SRAM memory-mapped address and enable the whole 512KB block */
 	iowrite32be(l2_sram_start,	ccsr + 0x20100); /* L2_Cache_L2SRBAR0 */
 	iowrite32be(0,			ccsr + 0x20104); /* L2_Cache_L2SRBAREA0 */
+
 	iowrite32be(0x80010000,		ccsr + 0x20000); /* L2_Cache_L2CTL */
 
 	/* Set memory map for platform SRAM and PCIe. The window addresses are
 	 * specified right shifted by 12 bits (the minimum window size is 4K)
 	 *
-	 * Set LAW for target platform SRAM, size 2^0x13 = 512KB */
+	 * Set LAW0 for target platform SRAM, size 2^0x13 = 512KB
+	 * We don't overlap this window with the one for Cache SRAM as recommended
+	 * by the reference manual:
+	 * "Overlapping SRAM and local access windows is discouraged because
+	 * processor and snoopable I/O transactions would map to the SRAM while
+	 * non-snooped I/O transactions would be mapped by the local access
+	 * windows */
+
 	iowrite32be(p_sram_start >> 12,	ccsr + 0xc08); /* LAW_LAWBAR0 */
 	iowrite32be(0x80a00012,		ccsr + 0xc10); /* LAW_LAWAR0 */
 
-	/* Set LAW for target PCIe, size 2^0x22 = 16G, starting address 32G */
+	/* Set LAW1 for target PCIe, size 2^0x22 = 16G, starting address 32G */
 	iowrite32be(0x800000000 >> 12,	ccsr + 0xc28); /* LAW_LAWBAR1 */
 	iowrite32be(0x80200021,		ccsr + 0xc30); /* LAW_LAWAR1 */
 
 	/* Set PEX inbound and outbound window translations. These must match
 	 * the LAWs defined earlier
 	 *
-	 * Set PEX inbound transactions to local memory
-	 * Addresses in the window of size 2^0x14 = 1MB starting at 0 are
-	 * translated with an offset of l2_sram_start in device space */
+	 * Set inbound address translation:
+	 * 	Host		Device
+	 *	0x00000 --- 0xfff00000
+	 *	0xfffff --- 0xffffffff
+	 */
 	iowrite32be(l2_sram_start >> 12, ccsr + 0xadc0); /* PEX_PEXITAR1 */
 	iowrite32be(0,			ccsr + 0xadc8);  /* PEX_PEXIWBAR1 */
 	iowrite32be(0xa0f55013,		ccsr + 0xadd0);  /* PEX_PEXIWAR1 */
 
-	/* Set PEX outbound transactions from device to host
-	 * Addresses in the window of size 2^0x22 = 16G starting at 32G
-	 * go to host untranslated */
+	/* Set outbound address translation
+	 * 	Device		Host
+	 *	0x800000000	0x800000000
+	 * 	0xBFFFFFFFF	0xBFFFFFFFF
+	 */
+
 	iowrite32be(0,			ccsr + 0xac20); /* PEX_PEXOTAR1 */
 	iowrite32be(0,			ccsr + 0xac24); /* PEX_PEXOTEAR1 */
 	iowrite32be(0x800000000 >> 12,	ccsr + 0xac28); /* PEX_PEXOWBAR1 */
@@ -831,25 +844,36 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 
 	print_debug("======= setup_ep =======\n");
 	print_debug("Ob mem dma_addr: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr));
+	print_debug("Ob mem dev_p_addr: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr));
 	print_debug("Ob mem len: %pa\n", &dev->priv_dev->bars[MEM_TYPE_DRIVER].len);
 	print_debug("BAR0 V Addr: %p\n", ccsr);
 	print_debug("MSI mem: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_MSI].host_p_addr));
 
 	/* Dumping the registers set */
 	print_debug(" ==== EP REGISTERS ====\n");
+	print_debug("L2CACHE CSRBAR\n");
 	print_debug("0X20100 :- %0x\n", ioread32be(ccsr + 0x20100));
 	print_debug("0X20104 :- %0x\n", ioread32be(ccsr + 0x20104));
 	print_debug("0X20000 :- %0x\n", ioread32be(ccsr + 0x20000));
-
+	print_debug("\n");
+	print_debug("LAW 0\n");
 	print_debug("0xc08  :- :%0x\n", ioread32be(ccsr + 0xc08));
 	print_debug("0xc10  :- :%0x\n", ioread32be(ccsr + 0xc10));
-
+	print_debug("\n");
+	print_debug("LAW 1\n");
 	print_debug("0xc28  :- :%0x\n", ioread32be(ccsr + 0xc28));
 	print_debug("0xc30  :- :%0x\n", ioread32be(ccsr + 0xc30));
-
+	print_debug("\n");
+	print_debug("inbound window 0\n");
+	print_debug("0xadf0 :- :%0x\n", ioread32be(ccsr + 0xadf0));
+	print_debug("0xadc0 :- :%0x\n", ioread32be(ccsr + 0xade0));
+	print_debug("\n");
+	print_debug("inbound window 1\n");
 	print_debug("0xadd0 :- :%0x\n", ioread32be(ccsr + 0xadd0));
+	print_debug("0xadc8 :- :%0x\n", ioread32be(ccsr + 0xadc8));
 	print_debug("0xadc0 :- :%0x\n", ioread32be(ccsr + 0xadc0));
-
+	print_debug("\n");
+	print_debug("outbound window 1\n");
 	print_debug("0xac20 :- :%0x\n", ioread32be(ccsr + 0xac20));
 	print_debug("0xac24 :- :%0x\n", ioread32be(ccsr + 0xac24));
 	print_debug("0xac28 :- :%0x\n", ioread32be(ccsr + 0xac28));
