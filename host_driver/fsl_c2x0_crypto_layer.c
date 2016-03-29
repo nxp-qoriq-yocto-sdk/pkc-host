@@ -350,11 +350,18 @@ void init_handshake(fsl_crypto_dev_t *dev)
 	uint32_t l_val = (uint32_t) (ob_mem & PHYS_ADDR_L_32_BIT_MASK);
 	uint32_t h_val = (ob_mem & PHYS_ADDR_H_32_BIT_MASK) >> 32;
 
+	/* Reset driver handshake state so it loops until signaled by the
+	 * device firmware */
 	dev->host_mem->hs_mem.state = DEFAULT;
 
 	print_debug("C HS mem addr: %p\n", &(dev->c_hs_mem->h_ob_mem_l));
 	print_debug("Host ob mem addr	L: %0x	H: %0x\n", l_val, h_val);
 
+	/* First phase of communication:
+	 * When the device is started it will look for these addresses to get
+	 * back to us: interrupt and host memory (at the base of which there is
+	 * the host handshake area)
+	 */
 	iowrite32be(l_val, (void *) &dev->c_hs_mem->h_ob_mem_l);
 	iowrite32be(h_val, (void *) &dev->c_hs_mem->h_ob_mem_h);
 
@@ -668,6 +675,10 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	while (true) {
 		switch (dev->host_mem->hs_mem.state) {
 		case FIRMWARE_UP:
+			/* This is the first thing communicated by the firmware:
+			 * The device is UP and converted the MSI and OB_MEM
+			 * addresses into device space.
+			 */
 			hs_firmware_up(dev);
 			break;
 		case FW_INIT_CONFIG_COMPLETE:
