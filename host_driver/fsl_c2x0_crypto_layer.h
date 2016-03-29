@@ -155,7 +155,7 @@ struct dev_handshake_mem {
 			uint32_t req_mem_size;
 			uint32_t drv_resp_ring;
 			uint32_t fw_resp_ring;
-			uint32_t s_cntrs;
+			uint32_t padding1; /* not used by the firmware */
 			uint32_t r_s_cntrs;
 			uint32_t fw_resp_ring_depth;
 		} config;
@@ -380,7 +380,6 @@ struct host_mem_layout {
 	struct ring_idxs_mem *l_idxs_mem;
 	struct ring_counters_mem *l_r_cntrs_mem;
 	struct ring_counters_mem *s_c_r_cntrs_mem;
-	struct counters_mem *s_c_cntrs_mem;
 	void *op_pool;
 	void *ip_pool;
 
@@ -394,7 +393,6 @@ struct driver_ob_mem {
 	uint32_t l_idxs_mem;
 	uint32_t l_r_cntrs_mem;
 	uint32_t s_c_r_cntrs_mem;
-	uint32_t s_c_cntrs_mem;
 };
 
 /* Per dev status structure */

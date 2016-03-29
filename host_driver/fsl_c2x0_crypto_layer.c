@@ -246,10 +246,6 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	dev->ob_mem.s_c_r_cntrs_mem = ob_mem_len;
 	ob_mem_len += (config->num_of_rings + 1) * sizeof(struct ring_counters_mem);
 
-	ob_mem_len = cache_line_align(ob_mem_len);
-	dev->ob_mem.s_c_cntrs_mem = ob_mem_len;
-	ob_mem_len += sizeof(struct counters_mem);
-
 	/* We have to make sure that we align the output buffer pool to DMA */
 	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.op_pool = ob_mem_len;
@@ -320,7 +316,6 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	dev->host_mem->l_idxs_mem = host_v_addr + dev->ob_mem.l_idxs_mem;
 	dev->host_mem->l_r_cntrs_mem = host_v_addr + dev->ob_mem.l_r_cntrs_mem;
 	dev->host_mem->s_c_r_cntrs_mem = host_v_addr + dev->ob_mem.s_c_r_cntrs_mem;
-	dev->host_mem->s_c_cntrs_mem = host_v_addr + dev->ob_mem.s_c_cntrs_mem;
 	dev->host_mem->op_pool = host_v_addr + dev->ob_mem.op_pool;
 	dev->host_mem->ip_pool = host_v_addr + dev->ob_mem.ip_pool;
 
@@ -332,7 +327,6 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	print_debug("L Idxs mem		: %p\n", dev->host_mem->l_idxs_mem);
 	print_debug("L R cntrs mem	: %p\n", dev->host_mem->l_r_cntrs_mem);
 	print_debug("S C R cntrs mem	: %p\n", dev->host_mem->s_c_r_cntrs_mem);
-	print_debug("S C cntrs mem	: %p\n", dev->host_mem->s_c_cntrs_mem);
 	print_debug("OP pool		: %p\n", dev->host_mem->op_pool);
 	print_debug("IP pool		: %p\n", dev->host_mem->ip_pool);
 	print_debug("Total req mem size : %d\n", dev->tot_req_mem_size);
@@ -452,7 +446,6 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	iowrite8(NUM_OF_RESP_RINGS, &config->num_of_fwresp_rings);
 	iowrite32be(dev->tot_req_mem_size, &config->req_mem_size);
 	iowrite32be(dev->ob_mem.fw_resp_ring, &config->fw_resp_ring);
-	iowrite32be(dev->ob_mem.s_c_cntrs_mem, &config->s_cntrs);
 	iowrite32be(dev->ob_mem.s_c_r_cntrs_mem, &config->r_s_cntrs);
 	iowrite32be(DEFAULT_FIRMWARE_RESP_RING_DEPTH, &config->fw_resp_ring_depth);
 
@@ -460,7 +453,6 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	print_debug("Num of rps    : %d\n", dev->num_of_rings);
 	print_debug("Req mem size  : %d\n", dev->tot_req_mem_size);
 	print_debug("Fw resp ring  : %x\n", dev->ob_mem.fw_resp_ring);
-	print_debug("S C Counters  : %x\n", dev->ob_mem.s_c_cntrs_mem);
 	print_debug("R S C counters: %x\n", dev->ob_mem.s_c_r_cntrs_mem);
 	print_debug("Sending FW_INIT_CONFIG command at addr: %p\n",
 			&(dev->c_hs_mem->state));
