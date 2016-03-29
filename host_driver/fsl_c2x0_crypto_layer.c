@@ -446,10 +446,6 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 void send_hs_init_config(fsl_crypto_dev_t *dev)
 {
 	const char *str_state = "HS_INIT_CONFIG\n";
-	phys_addr_t host_p_addr = dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr;
-	phys_addr_t fw_resp_ring   = dev->ob_mem.fw_resp_ring + host_p_addr;
-	phys_addr_t s_cntrs        = dev->ob_mem.s_c_cntrs_mem + host_p_addr;
-	phys_addr_t r_s_cntrs      = dev->ob_mem.s_c_r_cntrs_mem + host_p_addr;
 	struct c_config_data *config = &dev->c_hs_mem->data.config;
 
 	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
@@ -460,20 +456,17 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	iowrite8(1, &config->max_pri);
 	iowrite8(NUM_OF_RESP_RINGS, &config->num_of_fwresp_rings);
 	iowrite32be(dev->tot_req_mem_size, &config->req_mem_size);
-	/* TODO: These iowrite32be truncate 64bit addresses on 64bit machines.
-	 * The DMA space is indeed limited to 32/36 bit but what about the
-	 * physical addresses on the host? */
-	iowrite32be(fw_resp_ring, &config->fw_resp_ring);
-	iowrite32be(s_cntrs, &config->s_cntrs);
-	iowrite32be(r_s_cntrs, &config->r_s_cntrs);
+	iowrite32be(dev->ob_mem.fw_resp_ring, &config->fw_resp_ring);
+	iowrite32be(dev->ob_mem.s_c_cntrs_mem, &config->s_cntrs);
+	iowrite32be(dev->ob_mem.s_c_r_cntrs_mem, &config->r_s_cntrs);
 	iowrite32be(DEFAULT_FIRMWARE_RESP_RING_DEPTH, &config->fw_resp_ring_depth);
 
 	print_debug("HS_INIT_CONFIG Details\n");
-	print_debug("Num of rps: %d\n", dev->num_of_rings);
-	print_debug("Req mem size: %d\n", dev->tot_req_mem_size);
-	print_debug("Fw resp ring: %pa\n", &fw_resp_ring);
-	print_debug("S C Counters: %pa\n", &s_cntrs);
-	print_debug("R S C counters: %pa\n", &r_s_cntrs);
+	print_debug("Num of rps    : %d\n", dev->num_of_rings);
+	print_debug("Req mem size  : %d\n", dev->tot_req_mem_size);
+	print_debug("Fw resp ring  : %x\n", dev->ob_mem.fw_resp_ring);
+	print_debug("S C Counters  : %x\n", dev->ob_mem.s_c_cntrs_mem);
+	print_debug("R S C counters: %x\n", dev->ob_mem.s_c_r_cntrs_mem);
 	print_debug("Sending FW_INIT_CONFIG command at addr: %p\n",
 			&(dev->c_hs_mem->state));
 	barrier();
