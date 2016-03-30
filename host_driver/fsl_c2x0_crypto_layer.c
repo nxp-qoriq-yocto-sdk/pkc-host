@@ -385,7 +385,7 @@ void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 		 * NUM_OF_RESP_RINGS is not 1, we've got ourself a mess here */
 		fw_ring->idxs = &(dev->host_mem->idxs_mem[id]);
 		fw_ring->cntrs = &(dev->host_mem->cntrs_mem[id]);
-		fw_ring->s_c_cntrs = &(dev->host_mem->r_s_cntrs_mem[id]);
+		fw_ring->r_s_cntrs = &(dev->host_mem->r_s_cntrs_mem[id]);
 		fw_ring->r_s_c_cntrs = NULL;
 
 		/* FIXME: clean-up leftovers. It probably makes sense to actually
@@ -1388,7 +1388,7 @@ void demux_fw_responses(fsl_crypto_dev_t *dev)
 
 	struct resp_ring_entry *resp_ring = dev->fw_resp_ring.v_addr;
 
-	jobs_added = be32_to_cpu(dev->fw_resp_ring.s_c_cntrs->jobs_added);
+	jobs_added = be32_to_cpu(dev->fw_resp_ring.r_s_cntrs->jobs_added);
 	count = jobs_added - dev->fw_resp_ring.cntrs->jobs_processed;
 
 	if (!count)

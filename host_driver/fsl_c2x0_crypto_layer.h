@@ -350,7 +350,7 @@ struct fw_resp_ring {
 	uint32_t *intr_ctrl_flag;
 	struct ring_idxs_mem *idxs;
 	struct ring_counters_mem *cntrs;
-	struct ring_counters_mem *s_c_cntrs;
+	struct ring_counters_mem *r_s_cntrs;
 	struct ring_counters_mem *r_s_c_cntrs;
 };
 

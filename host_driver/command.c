@@ -782,7 +782,7 @@ static void flush_app_resp_rings(fsl_crypto_dev_t *dev)
 	}
 	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
 		dev->fw_resp_rings[i].cntrs->jobs_processed = 0;
-		dev->fw_resp_rings[i].s_c_cntrs->jobs_added = 0;
+		dev->fw_resp_rings[i].r_s_cntrs->jobs_added = 0;
 		dev->fw_resp_rings[i].idxs->r_index = 0;
 		print_debug("dev->fw_resp_ring.cntrs->jobs_processed: %d\n",
 		     dev->fw_resp_rings[i].cntrs->jobs_processed);
