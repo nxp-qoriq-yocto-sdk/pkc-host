@@ -167,7 +167,7 @@ struct dev_handshake_mem {
 			uint32_t resp_ring;
 			uint32_t msi_addr_l;
 			uint32_t msi_addr_h;
-			uint32_t s_r_cntrs;
+			uint32_t padding1; /* not used by the firmware */
 		} ring;
 	} data;
 };

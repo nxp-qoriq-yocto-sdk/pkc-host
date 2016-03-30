@@ -464,7 +464,7 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 {
 	const char *str_state = NULL;
 	struct ring_info *ring = data;
-	phys_addr_t resp_r, s_r_cntrs;
+	phys_addr_t resp_r;
 
 	switch (cmd) {
 	case HS_INIT_RING_PAIR:
@@ -473,7 +473,6 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 				(uint8_t *) str_state, strlen(str_state));
 
 		resp_r = __pa(dev->ring_pairs[ring->ring_id].resp_r);
-		s_r_cntrs = __pa(dev->ring_pairs[ring->ring_id].s_c_counters);
 
 		iowrite8(HS_INIT_RING_PAIR, &dev->c_hs_mem->command);
 		iowrite8(ring->ring_id, &dev->c_hs_mem->data.ring.rid);
@@ -483,7 +482,6 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 		iowrite32be(resp_r, &dev->c_hs_mem->data.ring.resp_ring);
 		iowrite32be(ring->msi_addr_l, &dev->c_hs_mem->data.ring.msi_addr_l);
 		iowrite32be(ring->msi_addr_h, &dev->c_hs_mem->data.ring.msi_addr_h);
-		iowrite32be(s_r_cntrs, &dev->c_hs_mem->data.ring.s_r_cntrs);
 
 		print_debug("HS_INIT_RING_PAIR Details\n");
 		print_debug("Rid: %d\n", ring->ring_id);
@@ -491,7 +489,7 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 		print_debug("MSI Data: %x\n", ring->msi_data);
 		print_debug("MSI Addr L: %x\n", ring->msi_addr_l);
 		print_debug("MSI Addr H: %x\n", ring->msi_addr_h);
-		print_debug("Ring counters addr: %pa\n", &(s_r_cntrs));
+
 		barrier();
 		iowrite8(FW_INIT_RING_PAIR, &dev->c_hs_mem->state);
 		break;
