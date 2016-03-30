@@ -312,7 +312,7 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	 * then communicate them to the device in the handshake operation */
 	dev->host_mem = host_v_addr;
 	dev->host_mem->fw_resp_ring = host_v_addr + dev->ob_mem.fw_resp_ring;
-	dev->host_mem->drv_resp_ring = host_v_addr + dev->ob_mem.drv_resp_rings;
+	dev->host_mem->drv_resp_rings = host_v_addr + dev->ob_mem.drv_resp_rings;
 	dev->host_mem->l_idxs_mem = host_v_addr + dev->ob_mem.l_idxs_mem;
 	dev->host_mem->l_r_cntrs_mem = host_v_addr + dev->ob_mem.l_r_cntrs_mem;
 	dev->host_mem->s_c_r_cntrs_mem = host_v_addr + dev->ob_mem.s_c_r_cntrs_mem;
@@ -323,7 +323,7 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	print_debug("Hmem		: %p\n", dev->host_mem);
 	print_debug("H HS Mem		: %p\n", &(dev->host_mem->hs_mem));
 	print_debug("Fw resp ring	: %p\n", dev->host_mem->fw_resp_ring);
-	print_debug("Drv resp ring	: %p\n", dev->host_mem->drv_resp_ring);
+	print_debug("Drv resp rings	: %p\n", dev->host_mem->drv_resp_rings);
 	print_debug("L Idxs mem		: %p\n", dev->host_mem->l_idxs_mem);
 	print_debug("L R cntrs mem	: %p\n", dev->host_mem->l_r_cntrs_mem);
 	print_debug("S C R cntrs mem	: %p\n", dev->host_mem->s_c_r_cntrs_mem);
@@ -402,7 +402,7 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 	fsl_h_rsrc_ring_pair_t *rp;
 	uint32_t i;
 	/* all response ring entries start here. Each ring has rp->depth entries */
-	struct resp_ring_entry *resp_r = dev->host_mem->drv_resp_ring;
+	struct resp_ring_entry *resp_r = dev->host_mem->drv_resp_rings;
 
 	for (i = 0; i < dev->num_of_rings; i++) {
 		rp = &(dev->ring_pairs[i]);

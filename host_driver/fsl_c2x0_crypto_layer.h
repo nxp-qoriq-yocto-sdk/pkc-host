@@ -376,7 +376,7 @@ struct host_mem_layout {
 	struct host_handshake_mem hs_mem;
 
 	struct resp_ring_entry *fw_resp_ring;
-	struct resp_ring_entry *drv_resp_ring;
+	struct resp_ring_entry *drv_resp_rings;
 	struct ring_idxs_mem *l_idxs_mem;
 	struct ring_counters_mem *l_r_cntrs_mem;
 	struct ring_counters_mem *s_c_r_cntrs_mem;
