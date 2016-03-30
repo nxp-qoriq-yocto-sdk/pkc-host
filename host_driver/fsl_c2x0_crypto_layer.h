@@ -351,7 +351,7 @@ struct fw_resp_ring {
 	struct ring_idxs_mem *idxs;
 	struct ring_counters_mem *cntrs;
 	struct ring_counters_mem *s_c_cntrs;
-	struct ring_counters_mem *s_cntrs;
+	struct ring_counters_mem *r_s_c_cntrs;
 };
 
 /*******************************************************************************

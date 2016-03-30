@@ -386,7 +386,7 @@ void init_fw_resp_ring(fsl_crypto_dev_t *dev)
 		fw_ring->idxs = &(dev->host_mem->idxs_mem[id]);
 		fw_ring->cntrs = &(dev->host_mem->cntrs_mem[id]);
 		fw_ring->s_c_cntrs = &(dev->host_mem->r_s_cntrs_mem[id]);
-		fw_ring->s_cntrs = NULL;
+		fw_ring->r_s_c_cntrs = NULL;
 
 		/* FIXME: clean-up leftovers. It probably makes sense to actually
 		 * use offset variable when NUM_OF_RESP_RINGS != 1
@@ -613,7 +613,7 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 		 * performance
 		 */
 		dev->fw_resp_rings[i].intr_ctrl_flag = ptr + (i * sizeof(uint32_t *));
-		dev->fw_resp_rings[i].s_cntrs = &(dev->r_s_c_cntrs[dev->num_of_rings + i]);
+		dev->fw_resp_rings[i].r_s_c_cntrs = &(dev->r_s_c_cntrs[dev->num_of_rings + i]);
 		print_debug("FW Intrl Ctrl Flag: %p\n", dev->fw_resp_rings[i].intr_ctrl_flag);
 	}
 
