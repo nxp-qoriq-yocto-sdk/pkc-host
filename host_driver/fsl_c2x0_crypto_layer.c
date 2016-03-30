@@ -652,9 +652,10 @@ uint8_t hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *con
 	dev->ring_pairs[rid].intr_ctrl_flag = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr +
 			intr_ctrl_flag;
 
-	print_debug("Ring id: %d\n", rid);
+	print_debug("Ring id     : %d\n", rid);
 	print_debug("Shadow cntrs: %p\n", dev->ring_pairs[rid].shadow_counters);
-	print_debug("Req r: %p\n", dev->ring_pairs[rid].req_r);
+	print_debug("Req r       : %p\n", dev->ring_pairs[rid].req_r);
+	print_debug("Interrupt   : %p\n", dev->ring_pairs[rid].intr_ctrl_flag);
 
 	rid++;
 	if (rid < dev->num_of_rings) {
