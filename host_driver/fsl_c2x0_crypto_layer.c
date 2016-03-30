@@ -457,70 +457,69 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	iowrite8(FW_INIT_CONFIG, &dev->c_hs_mem->state);
 }
 
-static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, struct ring_info *ring)
+void send_hs_init_ring_pair(fsl_crypto_dev_t *dev, struct ring_info *ring)
 {
-	const char *str_state = NULL;
+	const char *str_state = "HS_INIT_RING_PAIR\n";
 	uint32_t resp_r_offset;
 
-	switch (cmd) {
-	case HS_INIT_RING_PAIR:
-		str_state = "HS_INIT_RING_PAIR\n";
-		set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
-				(uint8_t *) str_state, strlen(str_state));
+	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
+			(uint8_t *) str_state, strlen(str_state));
 
-		resp_r_offset = (void *)dev->ring_pairs[ring->ring_id].resp_r -
-				(void *)dev->host_mem;
+	resp_r_offset = (void *)dev->ring_pairs[ring->ring_id].resp_r -
+			(void *)dev->host_mem;
 
-		iowrite8(ring->ring_id, &dev->c_hs_mem->data.ring.rid);
-		iowrite8(ring->flags, &dev->c_hs_mem->data.ring.props);
-		iowrite16be(ring->msi_data, &dev->c_hs_mem->data.ring.msi_data);
-		iowrite32be(ring->depth, &dev->c_hs_mem->data.ring.depth);
-		iowrite32be(resp_r_offset, &dev->c_hs_mem->data.ring.resp_ring_offset);
-		iowrite32be(ring->msi_addr_l, &dev->c_hs_mem->data.ring.msi_addr_l);
-		iowrite32be(ring->msi_addr_h, &dev->c_hs_mem->data.ring.msi_addr_h);
+	iowrite8(ring->ring_id, &dev->c_hs_mem->data.ring.rid);
+	iowrite8(ring->flags, &dev->c_hs_mem->data.ring.props);
+	iowrite16be(ring->msi_data, &dev->c_hs_mem->data.ring.msi_data);
+	iowrite32be(ring->depth, &dev->c_hs_mem->data.ring.depth);
+	iowrite32be(resp_r_offset, &dev->c_hs_mem->data.ring.resp_ring_offset);
+	iowrite32be(ring->msi_addr_l, &dev->c_hs_mem->data.ring.msi_addr_l);
+	iowrite32be(ring->msi_addr_h, &dev->c_hs_mem->data.ring.msi_addr_h);
 
-		print_debug("HS_INIT_RING_PAIR Details\n");
-		print_debug("Rid: %d\n", ring->ring_id);
-		print_debug("Depth: %d\n", ring->depth);
-		print_debug("MSI Data: %x\n", ring->msi_data);
-		print_debug("MSI Addr L: %x\n", ring->msi_addr_l);
-		print_debug("MSI Addr H: %x\n", ring->msi_addr_h);
+	print_debug("HS_INIT_RING_PAIR Details\n");
+	print_debug("Rid: %d\n", ring->ring_id);
+	print_debug("Depth: %d\n", ring->depth);
+	print_debug("MSI Data: %x\n", ring->msi_data);
+	print_debug("MSI Addr L: %x\n", ring->msi_addr_l);
+	print_debug("MSI Addr H: %x\n", ring->msi_addr_h);
 
-		barrier();
-		iowrite8(FW_INIT_RING_PAIR, &dev->c_hs_mem->state);
-		break;
-	case HS_COMPLETE:
-		str_state = "HS_COMPLETE\n";
-		set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
-				(uint8_t *) str_state, strlen(str_state));
-		set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
-				(uint8_t *) str_state, strlen(str_state));
+	barrier();
+	iowrite8(FW_INIT_RING_PAIR, &dev->c_hs_mem->state);
+}
 
-		iowrite8(FW_HS_COMPLETE, &dev->c_hs_mem->state);
-		break;
-	case WAIT_FOR_RNG:
-		str_state = "WAIT_FOR_RNG\n";
-		set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
-				(uint8_t *) str_state, strlen(str_state));
-		set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
-				(uint8_t *) str_state, strlen(str_state));
+void send_hs_complete(fsl_crypto_dev_t *dev)
+{
+	const char *str_state = "HS_COMPLETE\n";
+	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
+			(uint8_t *) str_state, strlen(str_state));
+	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
+			(uint8_t *) str_state, strlen(str_state));
 
-		iowrite8(FW_WAIT_FOR_RNG, &dev->c_hs_mem->state);
-		break;
-	case RNG_DONE:
-		str_state = "RNG_DONE\n";
-		set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
-				(uint8_t *) str_state, strlen(str_state));
-		set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
-				(uint8_t *) str_state, strlen(str_state));
+	iowrite8(FW_HS_COMPLETE, &dev->c_hs_mem->state);
+}
 
-		iowrite8(FW_RNG_DONE, &dev->c_hs_mem->state);
-		break;
-	default:
-		print_error("Invalid command: %d\n", cmd);
-	}
+void send_hs_wait_for_rng(fsl_crypto_dev_t *dev)
+{
+	const char *str_state = "WAIT_FOR_RNG\n";
 
-	return;
+	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
+			(uint8_t *) str_state, strlen(str_state));
+	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
+			(uint8_t *) str_state, strlen(str_state));
+
+	iowrite8(FW_WAIT_FOR_RNG, &dev->c_hs_mem->state);
+}
+
+void send_hs_rng_done(fsl_crypto_dev_t *dev)
+{
+	const char *str_state = "RNG_DONE\n";
+
+	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
+			(uint8_t *) str_state, strlen(str_state));
+	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
+			(uint8_t *) str_state, strlen(str_state));
+
+	iowrite8(FW_RNG_DONE, &dev->c_hs_mem->state);
 }
 
 void hs_firmware_up(fsl_crypto_dev_t *dev)
@@ -621,7 +620,7 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 #endif
 	print_debug("FW Pool host V addr: %p\n", dev->dev_ip_pool.h_v_addr);
 
-	send_hs_command(HS_INIT_RING_PAIR, dev,	&(config->ring[rid]));
+	send_hs_init_ring_pair(dev, &(config->ring[rid]));
 }
 
 uint8_t hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
@@ -651,9 +650,9 @@ uint8_t hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *con
 
 	rid++;
 	if (rid < dev->num_of_rings) {
-		send_hs_command(HS_INIT_RING_PAIR, dev,	&(config->ring[rid]));
+		send_hs_init_ring_pair(dev, &(config->ring[rid]));
 	} else {
-		send_hs_command(HS_COMPLETE, dev, NULL);
+		send_hs_complete(dev);
 	}
 
 	return rid;
@@ -690,12 +689,12 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 			rid = hs_init_rp_complete(dev, config, rid);
 			break;
 		case FW_INIT_RNG:
-			send_hs_command(WAIT_FOR_RNG, dev, NULL);
+			send_hs_wait_for_rng(dev);
 			if (rng_instantiation(dev)) {
 				print_error("RNG Instantiation Failed!\n");
 				goto error;
 			} else {
-				send_hs_command(RNG_DONE, dev, NULL);
+				send_hs_rng_done(dev);
 				goto exit;
 			}
 			break;

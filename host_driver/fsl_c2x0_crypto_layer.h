@@ -60,19 +60,6 @@ typedef enum handshake_state {
 } handshake_state_t;
 
 /* Identifies different commands to be sent to the firmware */
-typedef enum h_handshake_commands {
-	HS_GET_SEC_INFO,
-	HS_INIT_CONFIG,
-	HS_INIT_RING_PAIR,
-	HS_INIT_MSI_INFO,
-	HS_INIT_IDX_MEM,
-	HS_INIT_COUNTERS_MEM,
-	HS_COMPLETE,
-	WAIT_FOR_RNG,
-	RNG_DONE
-} h_handshake_commands_t;
-
-/* Identifies different commands to be sent to the firmware */
 typedef enum fw_handshake_commands {
 	FW_GET_SEC_INFO,
 	FW_INIT_CONFIG,
