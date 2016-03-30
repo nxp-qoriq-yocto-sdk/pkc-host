@@ -145,7 +145,7 @@ struct dev_handshake_mem {
 	uint32_t h_msi_mem_h;
 
 	uint8_t state;
-	uint8_t command;
+	uint8_t padding1; /* this field is not used inside firmware */
 	uint8_t data_len;
 	uint8_t pad;
 

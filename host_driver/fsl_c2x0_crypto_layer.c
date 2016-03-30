@@ -438,7 +438,6 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
 			(uint8_t *) str_state, strlen(str_state));
 
-	iowrite8(HS_INIT_CONFIG, &dev->c_hs_mem->command);
 	iowrite8(dev->num_of_rings, &config->num_of_rps);
 	iowrite8(1, &config->max_pri);
 	iowrite8(NUM_OF_RESP_RINGS, &config->num_of_fwresp_rings);
@@ -472,7 +471,6 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, struct ring_info
 		resp_r_offset = (void *)dev->ring_pairs[ring->ring_id].resp_r -
 				(void *)dev->host_mem;
 
-		iowrite8(HS_INIT_RING_PAIR, &dev->c_hs_mem->command);
 		iowrite8(ring->ring_id, &dev->c_hs_mem->data.ring.rid);
 		iowrite8(ring->flags, &dev->c_hs_mem->data.ring.props);
 		iowrite16be(ring->msi_data, &dev->c_hs_mem->data.ring.msi_data);
@@ -498,8 +496,6 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, struct ring_info
 		set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
 				(uint8_t *) str_state, strlen(str_state));
 
-		iowrite8(HS_COMPLETE, &dev->c_hs_mem->command);
-		barrier();
 		iowrite8(FW_HS_COMPLETE, &dev->c_hs_mem->state);
 		break;
 	case WAIT_FOR_RNG:
@@ -509,8 +505,6 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, struct ring_info
 		set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
 				(uint8_t *) str_state, strlen(str_state));
 
-		iowrite8(WAIT_FOR_RNG, &dev->c_hs_mem->command);
-		barrier();
 		iowrite8(FW_WAIT_FOR_RNG, &dev->c_hs_mem->state);
 		break;
 	case RNG_DONE:
@@ -520,8 +514,6 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, struct ring_info
 		set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
 				(uint8_t *) str_state, strlen(str_state));
 
-		iowrite8(RNG_DONE, &dev->c_hs_mem->command);
-		barrier();
 		iowrite8(FW_RNG_DONE, &dev->c_hs_mem->state);
 		break;
 	default:
