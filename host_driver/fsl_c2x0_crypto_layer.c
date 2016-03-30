@@ -575,7 +575,7 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	struct config_data *hscfg = &dev->host_mem->hs_mem.data.config;
 	void *ptr;
 	uint32_t r_s_c_cntrs;
-	uint32_t s_cntrs;
+	uint32_t s_c_cntrs;
 	uint32_t ip_pool;
 	uint32_t resp_intr_ctrl_flag;
 	int i;
@@ -587,12 +587,12 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	dev->host_mem->hs_mem.state = DEFAULT;
 
 	r_s_c_cntrs = be32_to_cpu(hscfg->r_s_c_cntrs);
-	s_cntrs = be32_to_cpu(hscfg->s_cntrs);
+	s_c_cntrs = be32_to_cpu(hscfg->s_c_cntrs);
 	ip_pool = be32_to_cpu(hscfg->ip_pool);
 	resp_intr_ctrl_flag = be32_to_cpu(hscfg->resp_intr_ctrl_flag);
 
 	dev->r_s_c_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + r_s_c_cntrs;
-	dev->s_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_cntrs;
+	dev->s_c_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_c_cntrs;
 	dev->dev_ip_pool.d_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr + ip_pool;
 #ifdef USE_HOST_DMA
 	dev->dev_ip_pool.host_map_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_p_addr + ip_pool;
@@ -609,10 +609,10 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	print_debug(" ----- Details from firmware  -------\n");
 	print_debug("SRAM H V ADDR: %p\n", dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr);
 	print_debug("R S C CNTRS OFFSET: %x\n", r_s_c_cntrs);
-	print_debug("S CNTRS OFFSET: %x\n", s_cntrs);
+	print_debug("S C CNTRS OFFSET: %x\n", s_c_cntrs);
 	print_debug("-----------------------------------\n");
 	print_debug("R S C Cntrs: %p\n", dev->r_s_c_cntrs);
-	print_debug("S Cntrs: %p\n", dev->s_cntrs);
+	print_debug("S C Cntrs: %p\n", dev->s_c_cntrs);
 	print_debug("FW Pool Dev P addr : %pa\n", &dev->dev_ip_pool.d_p_addr);
 #ifdef USE_HOST_DMA
 	print_debug("FW Pool host P addr: %pa\n", &(dev->dev_ip_pool.host_map_p_addr));

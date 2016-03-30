@@ -122,7 +122,7 @@ struct host_handshake_mem {
 		} device;
 		struct config_data {
 			uint32_t r_s_c_cntrs;
-			uint32_t s_cntrs;
+			uint32_t s_c_cntrs;
 			uint32_t ip_pool;
 			uint32_t resp_intr_ctrl_flag;
 		} config;
@@ -433,7 +433,7 @@ typedef struct fsl_crypto_dev {
 	struct ring_counters_mem *r_s_c_cntrs;
 
 	/* Pointer to the shadow total counters memory */
-	struct counters_mem *s_cntrs;
+	struct counters_mem *s_c_cntrs;
 
 	/* Structure defining the input pool */
 	struct pool_info host_ip_pool;
