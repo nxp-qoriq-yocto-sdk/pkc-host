@@ -601,6 +601,17 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 
 	ptr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + resp_intr_ctrl_flag;
 	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
+		/* FIXME: this assignment is wrong. There is an inconsistency about
+		 * the total number of response rings. In some places it is simply
+		 * assumed there is only one. In other places as in here more than
+		 * one can be the case.
+		 * Here, the addresses of intr_ctrl_flag are _not_ uint32_t away
+		 * one from another. Instead they are distanced by fw_resp_ring
+		 * away from each other (or probably driver_resp_ring in firmware ?)
+		 * Even so, playing with pointers like this asks for trouble.
+		 * And we might need more than one response ring for increased
+		 * performance
+		 */
 		dev->fw_resp_rings[i].intr_ctrl_flag = ptr + (i * sizeof(uint32_t *));
 		dev->fw_resp_rings[i].s_cntrs = &(dev->r_s_c_cntrs[dev->num_of_rings + i]);
 		print_debug("FW Intrl Ctrl Flag: %p\n", dev->fw_resp_rings[i].intr_ctrl_flag);
