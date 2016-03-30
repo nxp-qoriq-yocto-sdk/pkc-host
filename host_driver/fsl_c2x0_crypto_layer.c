@@ -464,7 +464,7 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 {
 	const char *str_state = NULL;
 	struct ring_info *ring = data;
-	phys_addr_t resp_r;
+	uint32_t resp_r_offset;
 
 	switch (cmd) {
 	case HS_INIT_RING_PAIR:
@@ -472,14 +472,15 @@ static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
 		set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
 				(uint8_t *) str_state, strlen(str_state));
 
-		resp_r = __pa(dev->ring_pairs[ring->ring_id].resp_r);
+		resp_r_offset = (void *)dev->ring_pairs[ring->ring_id].resp_r -
+				(void *)dev->host_mem;
 
 		iowrite8(HS_INIT_RING_PAIR, &dev->c_hs_mem->command);
 		iowrite8(ring->ring_id, &dev->c_hs_mem->data.ring.rid);
 		iowrite8(ring->flags, &dev->c_hs_mem->data.ring.props);
 		iowrite16be(ring->msi_data, &dev->c_hs_mem->data.ring.msi_data);
 		iowrite32be(ring->depth, &dev->c_hs_mem->data.ring.depth);
-		iowrite32be(resp_r, &dev->c_hs_mem->data.ring.resp_ring);
+		iowrite32be(resp_r_offset, &dev->c_hs_mem->data.ring.resp_ring_offset);
 		iowrite32be(ring->msi_addr_l, &dev->c_hs_mem->data.ring.msi_addr_l);
 		iowrite32be(ring->msi_addr_h, &dev->c_hs_mem->data.ring.msi_addr_h);
 

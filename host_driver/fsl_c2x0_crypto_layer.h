@@ -164,7 +164,7 @@ struct dev_handshake_mem {
 			uint8_t props;
 			uint16_t msi_data;
 			uint32_t depth;
-			uint32_t resp_ring;
+			uint32_t resp_ring_offset;
 			uint32_t msi_addr_l;
 			uint32_t msi_addr_h;
 			uint32_t padding1; /* not used by the firmware */
