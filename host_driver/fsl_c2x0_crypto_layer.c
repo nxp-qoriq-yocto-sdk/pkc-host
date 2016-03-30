@@ -555,8 +555,6 @@ void hs_firmware_up(fsl_crypto_dev_t *dev)
 			(uint64_t)dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr);
 	print_debug("Formed dev ob mem phys address: %llx\n",
 			(uint64_t)dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr);
-
-	send_hs_init_config(dev);
 }
 
 void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
@@ -619,11 +617,9 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	print_debug("FW Pool host P addr: %pa\n", &(dev->dev_ip_pool.host_map_p_addr));
 #endif
 	print_debug("FW Pool host V addr: %p\n", dev->dev_ip_pool.h_v_addr);
-
-	send_hs_init_ring_pair(dev, &(config->ring[rid]));
 }
 
-uint8_t hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
+void hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
 {
 	char *str_state = "FW_INIT_RING_PAIR_COMPLETE\n";
 	struct ring_data *hsring = &dev->host_mem->hs_mem.data.ring;
@@ -647,15 +643,6 @@ uint8_t hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *con
 	print_debug("Shadow cntrs: %p\n", dev->ring_pairs[rid].shadow_counters);
 	print_debug("Req r       : %p\n", dev->ring_pairs[rid].req_r);
 	print_debug("Interrupt   : %p\n", dev->ring_pairs[rid].intr_ctrl_flag);
-
-	rid++;
-	if (rid < dev->num_of_rings) {
-		send_hs_init_ring_pair(dev, &(config->ring[rid]));
-	} else {
-		send_hs_complete(dev);
-	}
-
-	return rid;
 }
 
 int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
@@ -675,9 +662,11 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 			 * addresses into device space.
 			 */
 			hs_firmware_up(dev);
+			send_hs_init_config(dev);
 			break;
 		case FW_INIT_CONFIG_COMPLETE:
 			hs_fw_init_complete(dev, config, rid);
+			send_hs_init_ring_pair(dev, &(config->ring[rid]));
 			break;
 		case FW_INIT_RING_PAIR_COMPLETE:
 			no_secs = be32_to_cpu(dev->host_mem->hs_mem.data.device.no_secs);
@@ -686,7 +675,13 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 				print_error("No of SECs are %d\n", no_secs);
 				goto error;
 			}
-			rid = hs_init_rp_complete(dev, config, rid);
+			hs_init_rp_complete(dev, config, rid);
+			rid++;
+			if (rid < dev->num_of_rings) {
+				send_hs_init_ring_pair(dev, &(config->ring[rid]));
+			} else {
+				send_hs_complete(dev);
+			}
 			break;
 		case FW_INIT_RNG:
 			send_hs_wait_for_rng(dev);
