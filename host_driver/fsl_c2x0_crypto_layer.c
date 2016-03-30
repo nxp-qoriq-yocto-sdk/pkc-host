@@ -574,7 +574,7 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	char *str_state = "FW_INIT_CONFIG_COMPLETE\n";
 	struct config_data *hscfg = &dev->host_mem->hs_mem.data.config;
 	void *ptr;
-	uint32_t s_r_cntrs;
+	uint32_t r_s_c_cntrs;
 	uint32_t s_cntrs;
 	uint32_t ip_pool;
 	uint32_t resp_intr_ctrl_flag;
@@ -586,12 +586,12 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 
 	dev->host_mem->hs_mem.state = DEFAULT;
 
-	s_r_cntrs = be32_to_cpu(hscfg->s_r_cntrs);
+	r_s_c_cntrs = be32_to_cpu(hscfg->r_s_c_cntrs);
 	s_cntrs = be32_to_cpu(hscfg->s_cntrs);
 	ip_pool = be32_to_cpu(hscfg->ip_pool);
 	resp_intr_ctrl_flag = be32_to_cpu(hscfg->resp_intr_ctrl_flag);
 
-	dev->s_r_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_r_cntrs;
+	dev->r_s_c_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + r_s_c_cntrs;
 	dev->s_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_cntrs;
 	dev->dev_ip_pool.d_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr + ip_pool;
 #ifdef USE_HOST_DMA
@@ -602,16 +602,16 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	ptr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + resp_intr_ctrl_flag;
 	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
 		dev->fw_resp_rings[i].intr_ctrl_flag = ptr + (i * sizeof(uint32_t *));
-		dev->fw_resp_rings[i].s_cntrs = &(dev->s_r_cntrs[dev->num_of_rings + i]);
+		dev->fw_resp_rings[i].s_cntrs = &(dev->r_s_c_cntrs[dev->num_of_rings + i]);
 		print_debug("FW Intrl Ctrl Flag: %p\n", dev->fw_resp_rings[i].intr_ctrl_flag);
 	}
 
 	print_debug(" ----- Details from firmware  -------\n");
 	print_debug("SRAM H V ADDR: %p\n", dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr);
-	print_debug("S R CNTRS OFFSET: %x\n", s_r_cntrs);
+	print_debug("R S C CNTRS OFFSET: %x\n", r_s_c_cntrs);
 	print_debug("S CNTRS OFFSET: %x\n", s_cntrs);
 	print_debug("-----------------------------------\n");
-	print_debug("R S Cntrs: %p\n", dev->s_r_cntrs);
+	print_debug("R S C Cntrs: %p\n", dev->r_s_c_cntrs);
 	print_debug("S Cntrs: %p\n", dev->s_cntrs);
 	print_debug("FW Pool Dev P addr : %pa\n", &dev->dev_ip_pool.d_p_addr);
 #ifdef USE_HOST_DMA
@@ -637,7 +637,7 @@ uint8_t hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *con
 	req_r = be32_to_cpu(hsring->req_r);
 	intr_ctrl_flag = be32_to_cpu(hsring->intr_ctrl_flag);
 
-	dev->ring_pairs[rid].shadow_counters = &(dev->s_r_cntrs[rid]);
+	dev->ring_pairs[rid].shadow_counters = &(dev->r_s_c_cntrs[rid]);
 	dev->ring_pairs[rid].req_r =dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + req_r;
 	dev->ring_pairs[rid].intr_ctrl_flag = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr +
 			intr_ctrl_flag;
