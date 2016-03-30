@@ -777,7 +777,7 @@ static void flush_app_resp_rings(fsl_crypto_dev_t *dev)
 
 	for (i = 1; i < dev->num_of_rings; ++i) {
 		dev->ring_pairs[i].counters->jobs_processed = 0;
-		dev->ring_pairs[i].s_c_counters->jobs_added = 0;
+		dev->ring_pairs[i].r_s_cntrs->jobs_added = 0;
 		dev->ring_pairs[i].indexes->r_index = 0;
 	}
 	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
@@ -800,7 +800,7 @@ static void flush_app_req_rings(fsl_crypto_dev_t *c_dev)
 		c_dev->ring_pairs[i].indexes->w_index = 0;
 
 		c_dev->ring_pairs[i].counters->jobs_added = 0;
-		c_dev->ring_pairs[i].s_c_counters->jobs_processed = 0;
+		c_dev->ring_pairs[i].r_s_cntrs->jobs_processed = 0;
 	}
 }
 
@@ -836,7 +836,7 @@ static int32_t flush_app_jobs(fsl_crypto_dev_t *dev)
 	/* Wait if there are pending resps to be handled */
 	while (j < 5) {
 		for (i = 1; i < dev->num_of_rings; i++) {
-			jobs_added = be32_to_cpu(dev->ring_pairs[i].s_c_counters->jobs_added);
+			jobs_added = be32_to_cpu(dev->ring_pairs[i].r_s_cntrs->jobs_added);
 			while (0 != (jobs_added - dev->ring_pairs[i].counters->jobs_processed)) {
 				print_debug("%d, jobs pending resps on ring: %d\n",
 				     (jobs_added - dev->ring_pairs[i].counters->jobs_processed), i);

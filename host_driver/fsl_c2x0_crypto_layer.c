@@ -417,7 +417,7 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 		rp->intr_ctrl_flag = NULL;
 		rp->indexes = &(dev->host_mem->idxs_mem[i]);
 		rp->counters = &(dev->host_mem->cntrs_mem[i]);
-		rp->s_c_counters = &(dev->host_mem->r_s_cntrs_mem[i]);
+		rp->r_s_cntrs = &(dev->host_mem->r_s_cntrs_mem[i]);
 		rp->shadow_counters = NULL;
 
 		INIT_LIST_HEAD(&(rp->isr_ctx_list_node));
@@ -986,7 +986,7 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 	/* Acquire the lock on current ring */
 	spin_lock_bh(&rp->ring_lock);
 
-	jobs_processed = be32_to_cpu(rp->s_c_counters->jobs_processed);
+	jobs_processed = be32_to_cpu(rp->r_s_cntrs->jobs_processed);
 
 	if (rp->counters->jobs_added - jobs_processed >= rp->depth) {
 		print_error("Ring: %d is full\n", jr_id);
@@ -1491,7 +1491,7 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 	pollcount = 0;
 
 	while (pollcount++ < napi_poll_count) {
-		jobs_added = be32_to_cpu(ring_cursor->s_c_counters->jobs_added);
+		jobs_added = be32_to_cpu(ring_cursor->r_s_cntrs->jobs_added);
 		resp_cnt = jobs_added - ring_cursor->counters->jobs_processed;
 		if (!resp_cnt)
 			continue;
