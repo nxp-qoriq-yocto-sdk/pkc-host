@@ -458,10 +458,9 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	iowrite8(FW_INIT_CONFIG, &dev->c_hs_mem->state);
 }
 
-static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, void *data)
+static void send_hs_command(uint8_t cmd, fsl_crypto_dev_t *dev, struct ring_info *ring)
 {
 	const char *str_state = NULL;
-	struct ring_info *ring = data;
 	uint32_t resp_r_offset;
 
 	switch (cmd) {
