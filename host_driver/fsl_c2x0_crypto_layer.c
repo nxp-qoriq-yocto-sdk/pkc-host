@@ -688,11 +688,9 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 			if (rng_instantiation(dev)) {
 				print_error("RNG Instantiation Failed!\n");
 				goto error;
-			} else {
-				send_hs_rng_done(dev);
-				goto exit;
 			}
-			break;
+			send_hs_rng_done(dev);
+			goto exit;
 		case FW_RNG_COMPLETE:
 			goto exit;
 
