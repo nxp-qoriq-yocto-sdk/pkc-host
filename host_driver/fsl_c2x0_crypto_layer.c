@@ -596,7 +596,9 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	dev->s_r_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_r_cntrs;
 	dev->s_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_cntrs;
 	dev->ip_pool.fw_pool.dev_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr + ip_pool;
+#ifdef USE_HOST_DMA
 	dev->ip_pool.fw_pool.host_map_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_p_addr + ip_pool;
+#endif
 	dev->ip_pool.fw_pool.host_map_v_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + ip_pool;
 
 	ptr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + resp_intr_ctrl_flag;
@@ -614,7 +616,9 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	print_debug("R S Cntrs: %p\n", dev->s_r_cntrs);
 	print_debug("S Cntrs: %p\n", dev->s_cntrs);
 	print_debug("FW Pool Dev P addr: %llx\n", (uint64_t)dev->ip_pool.fw_pool.dev_p_addr);
+#ifdef USE_HOST_DMA
 	print_debug("FW Pool host P addr: %pa\n", &(dev->ip_pool.fw_pool.host_map_p_addr));
+#endif
 	print_debug("FW Pool host V addr: %p\n", dev->ip_pool.fw_pool.host_map_v_addr);
 
 	send_hs_command(HS_INIT_RING_PAIR, dev,	&(config->ring[rid]));

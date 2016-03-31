@@ -204,11 +204,13 @@ static inline dev_dma_addr_t op_buf_d_dma_addr(fsl_crypto_dev_t *dev,
 	return d_dma + dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 }
 
+#ifdef USE_HOST_DMA
 static phys_addr_t h_map_p_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
 	unsigned long offset = h_v_addr - dev->ip_pool.drv_map_pool.v_addr;
 	return dev->ip_pool.fw_pool.host_map_p_addr + offset;
 }
+#endif
 
 /******************************************************************************
 Description :	Calculate all the related addresses from the device memory
@@ -233,8 +235,9 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 		case BT_DESC:
 		case BT_IP:
 			buffers[i].dev_buffer.h_dma_addr = buffers[i].dev_buffer.h_p_addr;
+#ifdef USE_HOST_DMA
 			buffers[i].dev_buffer.h_map_p_addr = h_map_p_addr(mem_info->dev, buffers[i].v_mem);
-
+#endif
 			buffers[i].dev_buffer.d_v_addr = desc_d_v_addr(mem_info->dev, buffers[i].v_mem);
 			buffers[i].dev_buffer.d_p_addr = desc_d_p_addr(mem_info->dev, buffers[i].v_mem);
 			break;

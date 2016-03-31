@@ -328,7 +328,9 @@ typedef struct ip_pool_info {
 	/* Information about the pool in firmware */
 	struct fw_pool_t {
 		dev_dma_addr_t dev_p_addr;
+#ifdef USE_HOST_DMA
 		phys_addr_t host_map_p_addr;
+#endif
 		void *host_map_v_addr;
 	} fw_pool;
 	/* Information about the shadow pool in driver */
