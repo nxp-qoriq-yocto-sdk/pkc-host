@@ -85,9 +85,6 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 			     crypto_mem_info_t *mem_info)
 {
 	rsa_pub_op_buffers_t *mem = &(mem_info->c_buffers.rsa_pub_op);
-#ifdef PRINT_DEBUG
-	int i;
-#endif
 
 	rsa_pub_op_init_len(pub_req, mem);
 	/* Alloc mem requrd for crypto operation */
@@ -107,7 +104,6 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 
 	mem->g_buff.v_mem = pub_req->g;
 
-#ifdef PRINT_DEBUG
 	print_debug("[RSA PUB OP] Request details:\n");
 	print_debug("N Len: %d\n", mem->n_buff.len);
 	print_debug("E Len: %d\n", mem->e_buff.len);
@@ -124,26 +120,6 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 	print_debug("G Buffer: %p\n", mem->g_buff.v_mem);
 	print_debug("DESC Buffer: %p\n", mem->desc_buff.v_mem);
 
-	print_debug("N:\n");
-	for (i = 0; i < mem->n_buff.len; i++) {
-		if (pub_req->n[i] != mem->n_buff.v_mem[i])
-			print_debug("pub_req %x buff %x index %d ",
-				    pub_req->n[i], mem->n_buff.v_mem[i], i);
-
-	}
-	print_debug("E:\n");
-	for (i = 0; i < mem->e_buff.len; i++) {
-		if (pub_req->e[i] != mem->e_buff.v_mem[i])
-			print_debug("pub_req %x buff %x index %d ",
-				    pub_req->e[i], mem->e_buff.v_mem[i], i);
-	}
-	print_debug("F:\n");
-	for (i = 0; i < mem->f_buff.len; i++) {
-		if (pub_req->f[i] != mem->f_buff.v_mem[i])
-			print_debug("pub_req %x buff %x index %d ",
-				    pub_req->f[i], mem->f_buff.v_mem[i], i);
-	}
-#endif
 	return 0;
 }
 
