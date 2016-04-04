@@ -57,7 +57,6 @@ struct buffer_info {
 #endif
 
 	/* Host related fields */
-	void *h_v_addr;
 	phys_addr_t h_p_addr;
 	dma_addr_t h_dma_addr;
 

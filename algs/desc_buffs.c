@@ -229,8 +229,7 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 	buffer_info_t *buffers = mem_info->buffers;
 
 	for (i = 0; i < mem_info->count; i++) {
-		buffers[i].h_v_addr = buffers[i].v_mem;
-		buffers[i].h_p_addr = __pa(buffers[i].h_v_addr);
+		buffers[i].h_p_addr = __pa(buffers[i].v_mem);
 
 		switch (buffers[i].bt) {
 		case BT_DESC:
