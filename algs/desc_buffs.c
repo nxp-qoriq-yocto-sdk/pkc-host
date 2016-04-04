@@ -165,10 +165,11 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 			}
 			break;
 		case BT_OP:
-			if (buffers[i].dev_buffer.h_dma_addr) {
-				pci_unmap_single(pci_dev->dev, buffers[i].dev_buffer.
-						 h_dma_addr, buffers[i].len,
-						 PCI_DMA_BIDIRECTIONAL);
+			if (buffers[i].h_dma_addr) {
+				pci_unmap_single(pci_dev->dev,
+						buffers[i].h_dma_addr,
+						buffers[i].len,
+						PCI_DMA_BIDIRECTIONAL);
 			}
 		default:
 			break;
@@ -228,24 +229,24 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 	buffer_info_t *buffers = mem_info->buffers;
 
 	for (i = 0; i < mem_info->count; i++) {
-		buffers[i].dev_buffer.h_v_addr = buffers[i].v_mem;
-		buffers[i].dev_buffer.h_p_addr = __pa(buffers[i].dev_buffer.h_v_addr);
+		buffers[i].h_v_addr = buffers[i].v_mem;
+		buffers[i].h_p_addr = __pa(buffers[i].h_v_addr);
 
 		switch (buffers[i].bt) {
 		case BT_DESC:
 		case BT_IP:
-			buffers[i].dev_buffer.h_dma_addr = buffers[i].dev_buffer.h_p_addr;
+			buffers[i].h_dma_addr = buffers[i].h_p_addr;
 #ifdef USE_HOST_DMA
-			buffers[i].dev_buffer.h_map_p_addr = h_map_p_addr(mem_info->dev, buffers[i].v_mem);
+			buffers[i].h_map_p_addr = h_map_p_addr(mem_info->dev, buffers[i].v_mem);
 #endif
-			buffers[i].dev_buffer.d_v_addr = desc_d_v_addr(mem_info->dev, buffers[i].v_mem);
-			buffers[i].dev_buffer.d_p_addr = desc_d_p_addr(mem_info->dev, buffers[i].v_mem);
+			buffers[i].d_v_addr = desc_d_v_addr(mem_info->dev, buffers[i].v_mem);
+			buffers[i].d_p_addr = desc_d_p_addr(mem_info->dev, buffers[i].v_mem);
 			break;
 		case BT_OP:
-			buffers[i].dev_buffer.h_dma_addr = op_buf_h_dma_addr(mem_info->dev,
+			buffers[i].h_dma_addr = op_buf_h_dma_addr(mem_info->dev,
 					buffers[i].v_mem, buffers[i].len);
-			buffers[i].dev_buffer.d_p_addr = op_buf_d_dma_addr(mem_info->dev,
-					      buffers[i].dev_buffer.h_dma_addr);
+			buffers[i].d_p_addr = op_buf_d_dma_addr(mem_info->dev,
+					      buffers[i].h_dma_addr);
 			break;
 		}
 	}
@@ -274,7 +275,7 @@ int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
 			continue;
 		}
 
-		buffers[i].dev_buffer.h_p_addr = (phys_addr_t)pci_map_single(
+		buffers[i].h_p_addr = (phys_addr_t)pci_map_single(
 			g_fsl_pci_dev->dev, buffers[i].req_ptr, buffers[i].len,
 			PCI_DMA_BIDIRECTIONAL);
 	}
@@ -306,7 +307,7 @@ int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
 		}
 
 		pci_unmap_single(g_fsl_pci_dev->dev,
-			(dma_addr_t)buffers[i].dev_buffer.h_p_addr, buffers[i].len,
+			(dma_addr_t)buffers[i].h_p_addr, buffers[i].len,
 			PCI_DMA_BIDIRECTIONAL);
 	}
 
@@ -326,21 +327,17 @@ Returns     :	SUCCESS/ FAILURE
 int32_t memcpy_to_dev(crypto_mem_info_t *mem)
 {
 	uint32_t i = 0;
-	buffer_info_t *src;
 	buffer_info_t *buffers = mem->buffers;
-	dev_buffer_t *dst;
 
 	/* This function will take care of endian conversions across pcie */
 	for (i = 0; i < (mem->count); i++) {
-		src = &buffers[i];
-		dst = &buffers[i].dev_buffer;
-		switch (src->bt) {
+		switch (buffers[i].bt) {
 		case BT_DESC:
-			memcpy(dst->d_v_addr, src->v_mem, src->len);
+			memcpy(buffers[i].d_v_addr, buffers[i].v_mem, buffers[i].len);
 			break;
 		case BT_IP:
 #ifndef SEC_DMA
-			memcpy(dst->d_v_addr, src->req_ptr, src->len);
+			memcpy(buffers[i].d_v_addr, buffers[i].req_ptr, buffers[i].len);
 #endif
 		case BT_OP:
 			break;

@@ -168,15 +168,15 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 		      HDR_ONE);
 
 #ifdef SEC_DMA
-	ASSIGN64(rsa_pub_desc->n_dma, (mem->n_buff.dev_buffer.h_p_addr + offset));
-	ASSIGN64(rsa_pub_desc->e_dma, (mem->e_buff.dev_buffer.h_p_addr + offset));
-	ASSIGN64(rsa_pub_desc->f_dma, (mem->f_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(rsa_pub_desc->n_dma, (mem->n_buff.h_p_addr + offset));
+	ASSIGN64(rsa_pub_desc->e_dma, (mem->e_buff.h_p_addr + offset));
+	ASSIGN64(rsa_pub_desc->f_dma, (mem->f_buff.h_p_addr + offset));
 #else
-	ASSIGN64(rsa_pub_desc->n_dma, mem->n_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_pub_desc->e_dma, mem->e_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_pub_desc->f_dma, mem->f_buff.dev_buffer.d_p_addr);
+	ASSIGN64(rsa_pub_desc->n_dma, mem->n_buff.d_p_addr);
+	ASSIGN64(rsa_pub_desc->e_dma, mem->e_buff.d_p_addr);
+	ASSIGN64(rsa_pub_desc->f_dma, mem->f_buff.d_p_addr);
 #endif
-	ASSIGN64(rsa_pub_desc->g_dma, mem->g_buff.dev_buffer.d_p_addr);
+	ASSIGN64(rsa_pub_desc->g_dma, mem->g_buff.d_p_addr);
 
 	iowrite32be((mem->e_buff.len << 12) | mem->n_buff.len, &rsa_pub_desc->sgf_flg);
 	iowrite32be(mem->f_buff.len, &rsa_pub_desc->msg_len);
@@ -186,13 +186,13 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 #ifdef PRINT_DEBUG
 
 	print_debug("N DMA			:%llx\n",
-		    mem->n_buff.dev_buffer.d_p_addr);
+		    mem->n_buff.d_p_addr);
 	print_debug("E DMA			:%llx\n",
-		    mem->e_buff.dev_buffer.d_p_addr);
+		    mem->e_buff.d_p_addr);
 	print_debug("F DMA			:%llx\n",
-		    mem->f_buff.dev_buffer.d_p_addr);
+		    mem->f_buff.d_p_addr);
 	print_debug("G DMA			:%llx\n",
-		    mem->g_buff.dev_buffer.d_p_addr);
+		    mem->g_buff.d_p_addr);
 #endif
 
 #ifdef DEBUG_DESC
@@ -233,10 +233,10 @@ static void constr_rsa_priv1_op_desc(crypto_mem_info_t *mem_info)
 							    HDR_DESCLEN_MASK) |
 		      HDR_ONE);
 
-	ASSIGN64(rsa_priv_desc->n_dma, mem->n_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->d_dma, mem->d_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->g_dma, mem->g_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->f_dma, mem->f_buff.dev_buffer.d_p_addr);
+	ASSIGN64(rsa_priv_desc->n_dma, mem->n_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->d_dma, mem->d_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->g_dma, mem->g_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->f_dma, mem->f_buff.d_p_addr);
 
 	iowrite32be((mem->d_buff.len << 12) | mem->n_buff.len, &rsa_priv_desc->sgf_flg);
 	iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_RSADEC_PRVKEY
@@ -323,13 +323,13 @@ static void constr_rsa_priv2_op_desc(crypto_mem_info_t *mem_info)
 							    HDR_DESCLEN_MASK) |
 		      HDR_ONE);
 
-	ASSIGN64(rsa_priv_desc->p_dma, mem->p_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->q_dma, mem->q_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->d_dma, mem->d_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->f_dma, mem->f_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->g_dma, mem->g_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->tmp1_dma, mem->tmp1_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->tmp2_dma, mem->tmp2_buff.dev_buffer.d_p_addr);
+	ASSIGN64(rsa_priv_desc->p_dma, mem->p_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->q_dma, mem->q_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->d_dma, mem->d_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->f_dma, mem->f_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->g_dma, mem->g_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->tmp1_dma, mem->tmp1_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->tmp2_dma, mem->tmp2_buff.d_p_addr);
 
 	iowrite32be((mem->d_buff.len << 12) | mem->f_buff.len, &rsa_priv_desc->sgf_flg);
 	iowrite32be((mem->q_buff.len << 12) | mem->p_buff.len, &rsa_priv_desc->p_q_len);
@@ -445,23 +445,23 @@ static void constr_rsa_priv3_op_desc(crypto_mem_info_t *mem_info)
 		      HDR_ONE);
 
 #ifdef SEC_DMA
-	ASSIGN64(rsa_priv_desc->p_dma, (mem->p_buff.dev_buffer.h_p_addr + offset));
-	ASSIGN64(rsa_priv_desc->q_dma, (mem->q_buff.dev_buffer.h_p_addr + offset));
-	ASSIGN64(rsa_priv_desc->dp_dma, (mem->dp_buff.dev_buffer.h_p_addr + offset));
-	ASSIGN64(rsa_priv_desc->dq_dma, (mem->dq_buff.dev_buffer.h_p_addr + offset));
-	ASSIGN64(rsa_priv_desc->c_dma, (mem->c_buff.dev_buffer.h_p_addr + offset));
-	ASSIGN64(rsa_priv_desc->g_dma, (mem->g_buff.dev_buffer.h_p_addr + offset));
+	ASSIGN64(rsa_priv_desc->p_dma, (mem->p_buff.h_p_addr + offset));
+	ASSIGN64(rsa_priv_desc->q_dma, (mem->q_buff.h_p_addr + offset));
+	ASSIGN64(rsa_priv_desc->dp_dma, (mem->dp_buff.h_p_addr + offset));
+	ASSIGN64(rsa_priv_desc->dq_dma, (mem->dq_buff.h_p_addr + offset));
+	ASSIGN64(rsa_priv_desc->c_dma, (mem->c_buff.h_p_addr + offset));
+	ASSIGN64(rsa_priv_desc->g_dma, (mem->g_buff.h_p_addr + offset));
 #else
-	ASSIGN64(rsa_priv_desc->p_dma, mem->p_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->q_dma, mem->q_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->dp_dma, mem->dp_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->dq_dma, mem->dq_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->c_dma, mem->c_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->g_dma, mem->g_buff.dev_buffer.d_p_addr);
+	ASSIGN64(rsa_priv_desc->p_dma, mem->p_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->q_dma, mem->q_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->dp_dma, mem->dp_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->dq_dma, mem->dq_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->c_dma, mem->c_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->g_dma, mem->g_buff.d_p_addr);
 #endif
-	ASSIGN64(rsa_priv_desc->tmp1_dma, mem->tmp1_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->tmp2_dma, mem->tmp2_buff.dev_buffer.d_p_addr);
-	ASSIGN64(rsa_priv_desc->f_dma, mem->f_buff.dev_buffer.d_p_addr);
+	ASSIGN64(rsa_priv_desc->tmp1_dma, mem->tmp1_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->tmp2_dma, mem->tmp2_buff.d_p_addr);
+	ASSIGN64(rsa_priv_desc->f_dma, mem->f_buff.d_p_addr);
 
 	iowrite32be(mem->f_buff.len, &rsa_priv_desc->sgf_flg);
 	iowrite32be((mem->q_buff.len << 12) | mem->p_buff.len, &rsa_priv_desc->p_q_len);
@@ -681,14 +681,14 @@ int rsa_op(struct pkc_request *req)
 
 		pub_op_buffs = &(crypto_ctx->crypto_mem.c_buffers.rsa_pub_op);
 #ifdef SEC_DMA
-		sec_dma = pub_op_buffs->desc_buff.dev_buffer.h_p_addr + offset;
+		sec_dma = pub_op_buffs->desc_buff.h_p_addr + offset;
 #else
-		sec_dma = pub_op_buffs->desc_buff.dev_buffer.d_p_addr;
+		sec_dma = pub_op_buffs->desc_buff.d_p_addr;
 #endif
 
 		/* Store the context */
 		print_debug("[Enq] Desc addr:%llx Hbuffer addr:%p Crypto ctx: %p\n",
-		     (uint64_t)pub_op_buffs->desc_buff.dev_buffer.d_p_addr,
+		     (uint64_t)pub_op_buffs->desc_buff.d_p_addr,
 		     pub_op_buffs->desc_buff.v_mem, crypto_ctx);
 
 		store_priv_data(pub_op_buffs->desc_buff.v_mem,
@@ -714,11 +714,11 @@ int rsa_op(struct pkc_request *req)
 		print_debug("Desc constr complete...\n");
 
 		priv1_op_buffs = &(crypto_ctx->crypto_mem.c_buffers.rsa_priv1_op);
-		sec_dma = priv1_op_buffs->desc_buff.dev_buffer.d_p_addr;
+		sec_dma = priv1_op_buffs->desc_buff.d_p_addr;
 
 		/* Store the context */
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p Crypto ctx: %p\n",
-			    (uint64_t)priv1_op_buffs->desc_buff.dev_buffer.d_p_addr,
+			    (uint64_t)priv1_op_buffs->desc_buff.d_p_addr,
 			    priv1_op_buffs->desc_buff.v_mem, crypto_ctx);
 
 		store_priv_data(priv1_op_buffs->desc_buff.v_mem,
@@ -745,11 +745,11 @@ int rsa_op(struct pkc_request *req)
 		print_debug("Desc constr complete...\n");
 
 		priv2_op_buffs = &(crypto_ctx->crypto_mem.c_buffers.rsa_priv2_op);
-		sec_dma = priv2_op_buffs->desc_buff.dev_buffer.d_p_addr;
+		sec_dma = priv2_op_buffs->desc_buff.d_p_addr;
 
 		/* Store the context */
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p Crypto ctx: %p\n",
-			    (uint64_t)priv2_op_buffs->desc_buff.dev_buffer.d_p_addr,
+			    (uint64_t)priv2_op_buffs->desc_buff.d_p_addr,
 			    priv2_op_buffs->desc_buff.v_mem, crypto_ctx);
 
 		store_priv_data(priv2_op_buffs->desc_buff.v_mem,
@@ -780,14 +780,14 @@ int rsa_op(struct pkc_request *req)
 
 		priv3_op_buffs = &(crypto_ctx->crypto_mem.c_buffers.rsa_priv3_op);
 #ifdef SEC_DMA
-		sec_dma = priv3_op_buffs->desc_buff.dev_buffer.h_p_addr + offset;
+		sec_dma = priv3_op_buffs->desc_buff.h_p_addr + offset;
 #else
-		sec_dma = priv3_op_buffs->desc_buff.dev_buffer.d_p_addr;
+		sec_dma = priv3_op_buffs->desc_buff.d_p_addr;
 #endif
 
 		/* Store the context */
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p Crypto ctx: %p\n",
-		     (uint64_t)priv3_op_buffs->desc_buff.dev_buffer.d_p_addr,
+		     (uint64_t)priv3_op_buffs->desc_buff.d_p_addr,
 		     priv3_op_buffs->desc_buff.v_mem, crypto_ctx);
 
 		store_priv_data(priv3_op_buffs->desc_buff.v_mem,
@@ -805,7 +805,7 @@ int rsa_op(struct pkc_request *req)
 	 * source for the complete transfer.
 	 */
 	crypto_ctx->crypto_mem.dest_buff_dma =
-	    crypto_ctx->crypto_mem.buffers[BT_DESC].dev_buffer.h_map_p_addr;
+	    crypto_ctx->crypto_mem.buffers[BT_DESC].h_map_p_addr;
 #endif
 
 #ifndef SEC_DMA

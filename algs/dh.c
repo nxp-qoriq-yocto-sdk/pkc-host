@@ -218,15 +218,15 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 		      HDR_ONE);
 
 #ifdef SEC_DMA
-        ASSIGN64(dh_key_desc->q_dma, (mem->q_buff.dev_buffer.h_p_addr + offset));
-        ASSIGN64(dh_key_desc->w_dma, (mem->w_buff.dev_buffer.h_p_addr + offset));
-        ASSIGN64(dh_key_desc->s_dma, (mem->s_buff.dev_buffer.h_p_addr + offset));
+        ASSIGN64(dh_key_desc->q_dma, (mem->q_buff.h_p_addr + offset));
+        ASSIGN64(dh_key_desc->w_dma, (mem->w_buff.h_p_addr + offset));
+        ASSIGN64(dh_key_desc->s_dma, (mem->s_buff.h_p_addr + offset));
 #else
-	ASSIGN64(dh_key_desc->q_dma, mem->q_buff.dev_buffer.d_p_addr);
-	ASSIGN64(dh_key_desc->w_dma, mem->w_buff.dev_buffer.d_p_addr);
-	ASSIGN64(dh_key_desc->s_dma, mem->s_buff.dev_buffer.d_p_addr);
+	ASSIGN64(dh_key_desc->q_dma, mem->q_buff.d_p_addr);
+	ASSIGN64(dh_key_desc->w_dma, mem->w_buff.d_p_addr);
+	ASSIGN64(dh_key_desc->s_dma, mem->s_buff.d_p_addr);
 #endif
-	ASSIGN64(dh_key_desc->z_dma, mem->z_buff.dev_buffer.d_p_addr);
+	ASSIGN64(dh_key_desc->z_dma, mem->z_buff.d_p_addr);
 
 	iowrite32be((mem->q_buff.len << 7) | mem->s_buff.len,
 			&dh_key_desc->sgf_ln);
@@ -234,10 +234,10 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 			&dh_key_desc->op);
 
 #ifdef PRINT_DEBUG
-	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
-	print_debug("W DMA: %llx\n", (uint64_t)mem->w_buff.dev_buffer.d_p_addr);
-	print_debug("S DMA: %llx\n", (uint64_t)mem->s_buff.dev_buffer.d_p_addr);
-	print_debug("Z DMA: %llx\n", (uint64_t)mem->z_buff.dev_buffer.d_p_addr);
+	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.d_p_addr);
+	print_debug("W DMA: %llx\n", (uint64_t)mem->w_buff.d_p_addr);
+	print_debug("S DMA: %llx\n", (uint64_t)mem->s_buff.d_p_addr);
+	print_debug("Z DMA: %llx\n", (uint64_t)mem->z_buff.d_p_addr);
 #endif
 
 #ifdef DEBUG_DESC
@@ -264,17 +264,17 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 		      HDR_ONE);
 
 #ifdef SEC_DMA
-        ASSIGN64(ecdh_key_desc->q_dma, (mem->q_buff.dev_buffer.h_p_addr + offset));
-        ASSIGN64(ecdh_key_desc->w_dma, (mem->w_buff.dev_buffer.h_p_addr + offset));
-        ASSIGN64(ecdh_key_desc->s_dma, (mem->s_buff.dev_buffer.h_p_addr + offset));
-        ASSIGN64(ecdh_key_desc->ab_dma, (mem->ab_buff.dev_buffer.h_p_addr + offset));
+        ASSIGN64(ecdh_key_desc->q_dma, (mem->q_buff.h_p_addr + offset));
+        ASSIGN64(ecdh_key_desc->w_dma, (mem->w_buff.h_p_addr + offset));
+        ASSIGN64(ecdh_key_desc->s_dma, (mem->s_buff.h_p_addr + offset));
+        ASSIGN64(ecdh_key_desc->ab_dma, (mem->ab_buff.h_p_addr + offset));
 #else
-	ASSIGN64(ecdh_key_desc->q_dma, mem->q_buff.dev_buffer.d_p_addr);
-	ASSIGN64(ecdh_key_desc->w_dma, mem->w_buff.dev_buffer.d_p_addr);
-	ASSIGN64(ecdh_key_desc->s_dma, mem->s_buff.dev_buffer.d_p_addr);
-	ASSIGN64(ecdh_key_desc->ab_dma, mem->ab_buff.dev_buffer.d_p_addr);
+	ASSIGN64(ecdh_key_desc->q_dma, mem->q_buff.d_p_addr);
+	ASSIGN64(ecdh_key_desc->w_dma, mem->w_buff.d_p_addr);
+	ASSIGN64(ecdh_key_desc->s_dma, mem->s_buff.d_p_addr);
+	ASSIGN64(ecdh_key_desc->ab_dma, mem->ab_buff.d_p_addr);
 #endif
-	ASSIGN64(ecdh_key_desc->z_dma, mem->z_buff.dev_buffer.d_p_addr);
+	ASSIGN64(ecdh_key_desc->z_dma, mem->z_buff.d_p_addr);
 
 	iowrite32be((mem->q_buff.len << 7) | mem->s_buff.len,
 			&ecdh_key_desc->sgf_ln);
@@ -287,11 +287,11 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	}
 
 #ifdef PRINT_DEBUG
-	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
-	print_debug("W DMA: %llx\n", (uint64_t)mem->w_buff.dev_buffer.d_p_addr);
-	print_debug("S DMA: %llx\n", (uint64_t)mem->s_buff.dev_buffer.d_p_addr);
-	print_debug("Z DMA: %llx\n", (uint64_t)mem->z_buff.dev_buffer.d_p_addr);
-	print_debug("AB DMA: %llx\n", (uint64_t)mem->ab_buff.dev_buffer.d_p_addr);
+	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.d_p_addr);
+	print_debug("W DMA: %llx\n", (uint64_t)mem->w_buff.d_p_addr);
+	print_debug("S DMA: %llx\n", (uint64_t)mem->s_buff.d_p_addr);
+	print_debug("Z DMA: %llx\n", (uint64_t)mem->z_buff.d_p_addr);
+	print_debug("AB DMA: %llx\n", (uint64_t)mem->ab_buff.d_p_addr);
 #endif
 
 #ifdef DEBUG_DESC
@@ -314,18 +314,18 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
     init_job_desc(&ecdh_keygen_desc->desc_hdr, (start_idx << HDR_START_IDX_SHIFT) | (desc_size & HDR_DESCLEN_MASK) | HDR_ONE);
 
 #ifdef SEC_DMA
-    ASSIGN64(ecdh_keygen_desc->q_dma, (mem->q_buff.dev_buffer.h_p_addr + offset));
-    ASSIGN64(ecdh_keygen_desc->r_dma, (mem->r_buff.dev_buffer.h_p_addr + offset));
-    ASSIGN64(ecdh_keygen_desc->g_dma, (mem->g_buff.dev_buffer.h_p_addr + offset));
-    ASSIGN64(ecdh_keygen_desc->ab_dma, (mem->ab_buff.dev_buffer.h_p_addr + offset));
+    ASSIGN64(ecdh_keygen_desc->q_dma, (mem->q_buff.h_p_addr + offset));
+    ASSIGN64(ecdh_keygen_desc->r_dma, (mem->r_buff.h_p_addr + offset));
+    ASSIGN64(ecdh_keygen_desc->g_dma, (mem->g_buff.h_p_addr + offset));
+    ASSIGN64(ecdh_keygen_desc->ab_dma, (mem->ab_buff.h_p_addr + offset));
 #else
-    ASSIGN64(ecdh_keygen_desc->q_dma, mem->q_buff.dev_buffer.d_p_addr);
-    ASSIGN64(ecdh_keygen_desc->r_dma, mem->r_buff.dev_buffer.d_p_addr);
-    ASSIGN64(ecdh_keygen_desc->g_dma, mem->g_buff.dev_buffer.d_p_addr);
-    ASSIGN64(ecdh_keygen_desc->ab_dma, mem->ab_buff.dev_buffer.d_p_addr);
+    ASSIGN64(ecdh_keygen_desc->q_dma, mem->q_buff.d_p_addr);
+    ASSIGN64(ecdh_keygen_desc->r_dma, mem->r_buff.d_p_addr);
+    ASSIGN64(ecdh_keygen_desc->g_dma, mem->g_buff.d_p_addr);
+    ASSIGN64(ecdh_keygen_desc->ab_dma, mem->ab_buff.d_p_addr);
 #endif
-    ASSIGN64(ecdh_keygen_desc->pubkey_dma, mem->pubkey_buff.dev_buffer.d_p_addr);
-    ASSIGN64(ecdh_keygen_desc->prvkey_dma, mem->prvkey_buff.dev_buffer.d_p_addr);
+    ASSIGN64(ecdh_keygen_desc->pubkey_dma, mem->pubkey_buff.d_p_addr);
+    ASSIGN64(ecdh_keygen_desc->prvkey_dma, mem->prvkey_buff.d_p_addr);
 
     iowrite32be((mem->q_buff.len<<7) | mem->r_buff.len, &ecdh_keygen_desc->sgf_ln);
     if(ecc_bin) {
@@ -338,12 +338,12 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
     }
 
 #ifdef PRINT_DEBUG
-	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
-	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
-	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
-	print_debug("PUBKEY DMA: %llx\n", (uint64_t)mem->pubkey_buff.dev_buffer.d_p_addr);
-	print_debug("PRVKEY DMA: %llx\n",(uint64_t) mem->prvkey_buff.dev_buffer.d_p_addr);
-	print_debug("AB DMA: %llx\n", (uint64_t)mem->ab_buff.dev_buffer.d_p_addr);
+	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.d_p_addr);
+	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.d_p_addr);
+	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.d_p_addr);
+	print_debug("PUBKEY DMA: %llx\n", (uint64_t)mem->pubkey_buff.d_p_addr);
+	print_debug("PRVKEY DMA: %llx\n",(uint64_t) mem->prvkey_buff.d_p_addr);
+	print_debug("AB DMA: %llx\n", (uint64_t)mem->ab_buff.d_p_addr);
 #endif
 
 #ifdef DEBUG_DESC
@@ -366,26 +366,26 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
     init_job_desc(&dh_keygen_desc->desc_hdr, (start_idx << HDR_START_IDX_SHIFT) | (desc_size & HDR_DESCLEN_MASK) | HDR_ONE);
 
 #ifdef SEC_DMA
-    ASSIGN64(dh_keygen_desc->q_dma, (mem->q_buff.dev_buffer.h_p_addr + offset));
-    ASSIGN64(dh_keygen_desc->r_dma, (mem->r_buff.dev_buffer.h_p_addr + offset));
-    ASSIGN64(dh_keygen_desc->g_dma, (mem->g_buff.dev_buffer.h_p_addr + offset));
+    ASSIGN64(dh_keygen_desc->q_dma, (mem->q_buff.h_p_addr + offset));
+    ASSIGN64(dh_keygen_desc->r_dma, (mem->r_buff.h_p_addr + offset));
+    ASSIGN64(dh_keygen_desc->g_dma, (mem->g_buff.h_p_addr + offset));
 #else
-    ASSIGN64(dh_keygen_desc->q_dma, mem->q_buff.dev_buffer.d_p_addr);
-    ASSIGN64(dh_keygen_desc->r_dma, mem->r_buff.dev_buffer.d_p_addr);
-    ASSIGN64(dh_keygen_desc->g_dma, mem->g_buff.dev_buffer.d_p_addr);
+    ASSIGN64(dh_keygen_desc->q_dma, mem->q_buff.d_p_addr);
+    ASSIGN64(dh_keygen_desc->r_dma, mem->r_buff.d_p_addr);
+    ASSIGN64(dh_keygen_desc->g_dma, mem->g_buff.d_p_addr);
 #endif
-    ASSIGN64(dh_keygen_desc->pubkey_dma, mem->pubkey_buff.dev_buffer.d_p_addr);
-    ASSIGN64(dh_keygen_desc->prvkey_dma, mem->prvkey_buff.dev_buffer.d_p_addr);
+    ASSIGN64(dh_keygen_desc->pubkey_dma, mem->pubkey_buff.d_p_addr);
+    ASSIGN64(dh_keygen_desc->prvkey_dma, mem->prvkey_buff.d_p_addr);
 
     iowrite32be((mem->q_buff.len<<7) | mem->r_buff.len, &dh_keygen_desc->sgf_ln);
     iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR, &dh_keygen_desc->op);
 
 #ifdef PRINT_DEBUG
-	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.dev_buffer.d_p_addr);
-	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.dev_buffer.d_p_addr);
-	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.dev_buffer.d_p_addr);
-	print_debug("PUBKEY DMA: %llx\n", (uint64_t)mem->pubkey_buff.dev_buffer.d_p_addr);
-	print_debug("PRVKEY DMA: %llx\n", (uint64_t)mem->prvkey_buff.dev_buffer.d_p_addr);
+	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.d_p_addr);
+	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.d_p_addr);
+	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.d_p_addr);
+	print_debug("PUBKEY DMA: %llx\n", (uint64_t)mem->pubkey_buff.d_p_addr);
+	print_debug("PRVKEY DMA: %llx\n", (uint64_t)mem->prvkey_buff.d_p_addr);
 #endif
 
 #ifdef DEBUG_DESC
@@ -555,14 +555,14 @@ int dh_op(struct pkc_request *req)
             print_debug("Desc constr complete... \n");
 
 #ifdef SEC_DMA
-            sec_dma = dh_keygen_buffs->desc_buff.dev_buffer.h_p_addr + offset;
+            sec_dma = dh_keygen_buffs->desc_buff.h_p_addr + offset;
 #else
-            sec_dma =   dh_keygen_buffs->desc_buff.dev_buffer.d_p_addr;
+            sec_dma =   dh_keygen_buffs->desc_buff.d_p_addr;
 #endif
 
             /* Store the context */
             print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p    Crypto ctx: %p \n",
-		(uint64_t)dh_keygen_buffs->desc_buff.dev_buffer.d_p_addr,
+		(uint64_t)dh_keygen_buffs->desc_buff.d_p_addr,
 		dh_keygen_buffs->desc_buff.v_mem, crypto_ctx);
 
             store_priv_data(dh_keygen_buffs->desc_buff.v_mem, (unsigned long)crypto_ctx);
@@ -601,14 +601,14 @@ int dh_op(struct pkc_request *req)
 		print_debug("Desc constr complete...\n");
 
 #ifdef SEC_DMA
-                sec_dma = dh_key_buffs->desc_buff.dev_buffer.h_p_addr + offset;
+                sec_dma = dh_key_buffs->desc_buff.h_p_addr + offset;
 #else
-		sec_dma = dh_key_buffs->desc_buff.dev_buffer.d_p_addr;
+		sec_dma = dh_key_buffs->desc_buff.d_p_addr;
 #endif
 
 		/* Store the context */
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p	Crypto ctx: %p\n",
-			    (uint64_t)dh_key_buffs->desc_buff.dev_buffer.d_p_addr,
+			    (uint64_t)dh_key_buffs->desc_buff.d_p_addr,
 			    dh_key_buffs->desc_buff.v_mem, crypto_ctx);
 
 		store_priv_data(dh_key_buffs->desc_buff.v_mem,
@@ -625,7 +625,7 @@ int dh_op(struct pkc_request *req)
 	 * source for the complete transfer.
 	 */
 	crypto_ctx->crypto_mem.dest_buff_dma =
-	    crypto_ctx->crypto_mem.buffers[BT_DESC].dev_buffer.h_map_p_addr;
+	    crypto_ctx->crypto_mem.buffers[BT_DESC].h_map_p_addr;
 #endif
 
 #ifndef SEC_DMA

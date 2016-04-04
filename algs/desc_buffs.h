@@ -42,7 +42,13 @@ typedef enum buffer_type {
 	BT_OP
 } buffer_type_t;
 
-typedef struct dev_buffer {
+struct buffer_info {
+	buffer_type_t bt;
+	uint32_t len;
+
+	uint8_t *v_mem;
+	uint8_t *req_ptr;
+
 	/* Device related fields */
 	void *d_v_addr;
 	dev_p_addr_t d_p_addr;
@@ -54,15 +60,7 @@ typedef struct dev_buffer {
 	void *h_v_addr;
 	phys_addr_t h_p_addr;
 	dma_addr_t h_dma_addr;
-} dev_buffer_t;
 
-struct buffer_info {
-	buffer_type_t bt;
-	uint32_t len;
-
-	uint8_t *v_mem;
-	uint8_t *req_ptr;
-	dev_buffer_t dev_buffer;
 	unsigned long priv;
 } __packed;
 

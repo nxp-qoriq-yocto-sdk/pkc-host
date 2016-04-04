@@ -205,13 +205,13 @@ static void constr_rng_self_test_desc(crypto_mem_info_t *mem_info)
 		0x8250000D
 	};
 
-	l_desc[49] = (uint32_t) (mem->output_buff.dev_buffer.d_p_addr >> 32);
-	l_desc[50] = (uint32_t) mem->output_buff.dev_buffer.d_p_addr;
+	l_desc[49] = (uint32_t) (mem->output_buff.d_p_addr >> 32);
+	l_desc[50] = (uint32_t) mem->output_buff.d_p_addr;
 	desc_size = desc_len(l_desc);
 	change_desc_endianness(desc_buff, l_desc, desc_size);
 
 #ifdef PRINT_DEBUG
-	print_debug("OUTPUT DMA: %llx\n", (uint64_t)mem->output_buff.dev_buffer.d_p_addr);
+	print_debug("OUTPUT DMA: %llx\n", (uint64_t)mem->output_buff.d_p_addr);
 	print_debug("[RNG INIT] Descriptor words\n");
 	{
 		uint32_t *words = (uint32_t *) desc_buff;
@@ -243,14 +243,14 @@ static void constr_rng_init_desc(crypto_mem_info_t *mem_info)
 		0x82501000
 	};
 
-	desc[2] = (uint32_t) (mem->pers_str_buff.dev_buffer.d_p_addr >> 32);
-	desc[3] = (uint32_t) mem->pers_str_buff.dev_buffer.d_p_addr;
+	desc[2] = (uint32_t) (mem->pers_str_buff.d_p_addr >> 32);
+	desc[3] = (uint32_t) mem->pers_str_buff.d_p_addr;
 
 	desc_size = desc_len(desc);
 	change_desc_endianness(desc_buff, desc, desc_size);
 
 #ifdef PRINT_DEBUG
-	print_debug("PERS_STR DMA: %llx\n", (uint64_t)mem->pers_str_buff.dev_buffer.d_p_addr);
+	print_debug("PERS_STR DMA: %llx\n", (uint64_t)mem->pers_str_buff.d_p_addr);
 	print_debug("[RNG INIT] Descriptor words\n");
 	{
 		uint32_t *words = (uint32_t *) desc_buff;
@@ -368,11 +368,11 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		constr_rng_init_desc(&crypto_ctx->crypto_mem);
 		print_debug("Desc constr complete...\n");
 
-		sec_dma = rng_init_buffs->desc_buff.dev_buffer.d_p_addr;
+		sec_dma = rng_init_buffs->desc_buff.d_p_addr;
 
 		/* Store the context */
 		print_debug("[Enq]Desc addr: %llx Hbuff addr: %p Crypto ctx: %p\n",
-		     (uint64_t)rng_init_buffs->desc_buff.dev_buffer.d_p_addr,
+		     (uint64_t)rng_init_buffs->desc_buff.d_p_addr,
 		     rng_init_buffs->desc_buff.v_mem, crypto_ctx);
 
 		store_priv_data(rng_init_buffs->desc_buff.v_mem,
@@ -407,11 +407,11 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		constr_rng_self_test_desc(&crypto_ctx->crypto_mem);
 		print_debug("Desc constr complete...\n");
 
-		sec_dma = rng_self_test_buffs->desc_buff.dev_buffer.d_p_addr;
+		sec_dma = rng_self_test_buffs->desc_buff.d_p_addr;
 
 		/* Store the context */
 		print_debug("[Enq]Desc addr: %llx Hbuff addr: %p Crypto ctx: %p\n",
-		     (uint64_t) rng_self_test_buffs->desc_buff.dev_buffer.d_p_addr,
+		     (uint64_t) rng_self_test_buffs->desc_buff.d_p_addr,
 		     rng_self_test_buffs->desc_buff.v_mem, crypto_ctx);
 
 		store_priv_data(rng_self_test_buffs->desc_buff.v_mem,
