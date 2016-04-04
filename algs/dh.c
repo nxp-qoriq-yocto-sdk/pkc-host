@@ -142,14 +142,14 @@ static int dh_key_cp_req(struct dh_key_req_s *req, crypto_mem_info_t *mem_info,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA
-	memcpy(mem->q_buff.v_mem, req->q, mem->q_buff.len);
-	memcpy(mem->w_buff.v_mem, req->pub_key, mem->w_buff.len);
-	memcpy(mem->s_buff.v_mem, req->s, mem->s_buff.len);
+	memcpy(mem->q_buff.h_v_addr, req->q, mem->q_buff.len);
+	memcpy(mem->w_buff.h_v_addr, req->pub_key, mem->w_buff.len);
+	memcpy(mem->s_buff.h_v_addr, req->s, mem->s_buff.len);
 
 	if (ecdh)
-		memcpy(mem->ab_buff.v_mem, req->ab, mem->ab_buff.len);
+		memcpy(mem->ab_buff.h_v_addr, req->ab, mem->ab_buff.len);
 	else
-		mem->ab_buff.v_mem = NULL;
+		mem->ab_buff.h_v_addr = NULL;
 #else
 	mem->q_buff.req_ptr = req->q;
 	mem->w_buff.req_ptr = req->pub_key;
@@ -161,7 +161,7 @@ static int dh_key_cp_req(struct dh_key_req_s *req, crypto_mem_info_t *mem_info,
 		mem->ab_buff.req_ptr = NULL;
 	}
 #endif
-	mem->z_buff.v_mem = req->z;
+	mem->z_buff.h_v_addr = req->z;
 	return 0;
 }
 
@@ -175,14 +175,14 @@ static int dh_keygen_cp_req(struct dh_keygen_req_s *req, crypto_mem_info_t *mem_
     if(-ENOMEM == alloc_crypto_mem(mem_info))
         return -ENOMEM;
 #ifdef USE_HOST_DMA
-    memcpy(mem->q_buff.v_mem, req->q, mem->q_buff.len);
-    memcpy(mem->r_buff.v_mem, req->r, mem->r_buff.len);
-    memcpy(mem->g_buff.v_mem, req->g, mem->g_buff.len);
+    memcpy(mem->q_buff.h_v_addr, req->q, mem->q_buff.len);
+    memcpy(mem->r_buff.h_v_addr, req->r, mem->r_buff.len);
+    memcpy(mem->g_buff.h_v_addr, req->g, mem->g_buff.len);
 
     if(ecdh)
-       memcpy(mem->ab_buff.v_mem, req->ab, mem->ab_buff.len);
+       memcpy(mem->ab_buff.h_v_addr, req->ab, mem->ab_buff.len);
     else
-       mem->ab_buff.v_mem     =   NULL;
+       mem->ab_buff.h_v_addr     =   NULL;
 #else
     mem->q_buff.req_ptr         =   req->q;
     mem->r_buff.req_ptr         =   req->r;
@@ -194,8 +194,8 @@ static int dh_keygen_cp_req(struct dh_keygen_req_s *req, crypto_mem_info_t *mem_
        mem->ab_buff.req_ptr     =   NULL;
     }
 #endif
-    mem->prvkey_buff.v_mem     =   req->prvkey;
-    mem->pubkey_buff.v_mem     =   req->pubkey;
+    mem->prvkey_buff.h_v_addr     =   req->prvkey;
+    mem->pubkey_buff.h_v_addr     =   req->pubkey;
     return 0;
 }
 
@@ -207,7 +207,7 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 
 	dh_key_buffers_t *mem = (dh_key_buffers_t *) (mem_info->buffers);
 	struct dh_key_desc_s *dh_key_desc =
-	    (struct dh_key_desc_s *)mem->desc_buff.v_mem;
+	    (struct dh_key_desc_s *)mem->desc_buff.h_v_addr;
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
@@ -242,7 +242,7 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 
 #ifdef DEBUG_DESC
 	print_error("[DH] Descriptor words\n");
-	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
+	dump_desc(mem->desc_buff.h_v_addr, desc_size, __func__);
 #endif
 }
 
@@ -253,7 +253,7 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 	dh_key_buffers_t *mem = (dh_key_buffers_t *) (mem_info->buffers);
 	struct ecdh_key_desc_s *ecdh_key_desc =
-	    (struct ecdh_key_desc_s *)mem->desc_buff.v_mem;
+	    (struct ecdh_key_desc_s *)mem->desc_buff.h_v_addr;
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
@@ -296,7 +296,7 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 #ifdef DEBUG_DESC
 	print_error("[ECDH] Descriptor words\n");
-	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
+	dump_desc(mem->desc_buff.h_v_addr, desc_size, __func__);
 #endif
 }
 
@@ -306,7 +306,7 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
     uint32_t    start_idx   =   desc_size - 1;
 
     dh_keygen_buffers_t   *mem            =   (dh_keygen_buffers_t *)(mem_info->buffers);
-    struct ecdh_keygen_desc_s  *ecdh_keygen_desc  =   (struct ecdh_keygen_desc_s *)mem->desc_buff.v_mem;
+    struct ecdh_keygen_desc_s  *ecdh_keygen_desc  =   (struct ecdh_keygen_desc_s *)mem->desc_buff.h_v_addr;
 #ifdef SEC_DMA
     dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
@@ -348,7 +348,7 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 #ifdef DEBUG_DESC
 	print_error("[ECDH] Descriptor words\n");
-	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
+	dump_desc(mem->desc_buff.h_v_addr, desc_size, __func__);
 #endif
 }
 
@@ -358,7 +358,7 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
     uint32_t    start_idx   =   desc_size - 1;
 
     dh_keygen_buffers_t *mem            =   (dh_keygen_buffers_t *)(mem_info->buffers);
-    struct dh_keygen_desc_s *dh_keygen_desc =   (struct dh_keygen_desc_s *)mem->desc_buff.v_mem;
+    struct dh_keygen_desc_s *dh_keygen_desc =   (struct dh_keygen_desc_s *)mem->desc_buff.h_v_addr;
 #ifdef SEC_DMA
     dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
@@ -390,7 +390,7 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
 
 #ifdef DEBUG_DESC
 	print_error("[DH] Descriptor words\n");
-	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
+	dump_desc(mem->desc_buff.h_v_addr, desc_size, __func__);
 #endif
 }
 
@@ -563,9 +563,9 @@ int dh_op(struct pkc_request *req)
             /* Store the context */
             print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p    Crypto ctx: %p \n",
 		(uint64_t)dh_keygen_buffs->desc_buff.d_p_addr,
-		dh_keygen_buffs->desc_buff.v_mem, crypto_ctx);
+		dh_keygen_buffs->desc_buff.h_v_addr, crypto_ctx);
 
-            store_priv_data(dh_keygen_buffs->desc_buff.v_mem, (unsigned long)crypto_ctx);
+            store_priv_data(dh_keygen_buffs->desc_buff.h_v_addr, (unsigned long)crypto_ctx);
 
             break;
 
@@ -609,9 +609,9 @@ int dh_op(struct pkc_request *req)
 		/* Store the context */
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p	Crypto ctx: %p\n",
 			    (uint64_t)dh_key_buffs->desc_buff.d_p_addr,
-			    dh_key_buffs->desc_buff.v_mem, crypto_ctx);
+			    dh_key_buffs->desc_buff.h_v_addr, crypto_ctx);
 
-		store_priv_data(dh_key_buffs->desc_buff.v_mem,
+		store_priv_data(dh_key_buffs->desc_buff.h_v_addr,
 				(unsigned long)crypto_ctx);
 		break;
 

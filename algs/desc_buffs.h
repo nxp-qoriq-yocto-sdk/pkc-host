@@ -46,7 +46,7 @@ struct buffer_info {
 	buffer_type_t bt;
 	uint32_t len;
 
-	uint8_t *v_mem;
+	void *h_v_addr;
 	uint8_t *req_ptr;
 
 	/* Device related fields */

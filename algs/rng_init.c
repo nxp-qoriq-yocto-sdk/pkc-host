@@ -121,7 +121,7 @@ static int rng_self_test_cp_output(uint32_t *output, uint32_t length,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-	mem->output_buff.v_mem = (uint8_t *) output;
+	mem->output_buff.h_v_addr = (uint8_t *) output;
 	return 0;
 }
 
@@ -145,7 +145,7 @@ static void constr_rng_self_test_desc(crypto_mem_info_t *mem_info)
 
 	rng_self_test_buffers_t *mem =
 	    (rng_self_test_buffers_t *) (mem_info->buffers);
-	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
+	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.h_v_addr;
 
 	uint32_t l_desc[55] = {
 		0xB0800037,
@@ -227,7 +227,7 @@ static void constr_rng_init_desc(crypto_mem_info_t *mem_info)
 	uint32_t desc_size = 0;
 
 	rng_init_buffers_t *mem = (rng_init_buffers_t *) (mem_info->buffers);
-	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
+	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.h_v_addr;
 
 	uint32_t desc[11] = {
 		0xB080000B,
@@ -373,9 +373,9 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		/* Store the context */
 		print_debug("[Enq]Desc addr: %llx Hbuff addr: %p Crypto ctx: %p\n",
 		     (uint64_t)rng_init_buffs->desc_buff.d_p_addr,
-		     rng_init_buffs->desc_buff.v_mem, crypto_ctx);
+		     rng_init_buffs->desc_buff.h_v_addr, crypto_ctx);
 
-		store_priv_data(rng_init_buffs->desc_buff.v_mem,
+		store_priv_data(rng_init_buffs->desc_buff.h_v_addr,
 				(unsigned long)crypto_ctx);
 		break;
 	case RNG_SELF_TEST:
@@ -412,9 +412,9 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		/* Store the context */
 		print_debug("[Enq]Desc addr: %llx Hbuff addr: %p Crypto ctx: %p\n",
 		     (uint64_t) rng_self_test_buffs->desc_buff.d_p_addr,
-		     rng_self_test_buffs->desc_buff.v_mem, crypto_ctx);
+		     rng_self_test_buffs->desc_buff.h_v_addr, crypto_ctx);
 
-		store_priv_data(rng_self_test_buffs->desc_buff.v_mem,
+		store_priv_data(rng_self_test_buffs->desc_buff.h_v_addr,
 				(unsigned long)crypto_ctx);
 		break;
 	default:

@@ -146,7 +146,7 @@ static void ablkcipher_setkey_desc(struct crypto_ablkcipher *ablkcipher,
 		ablkcipher_append_src_dst(enc_desc);
 
 		/* COPY THE DESCRIPTORS IN THE LOCAL MEMORY */
-		change_desc_endianness((uint32_t *)ablk_ctx->sh_desc.v_mem,
+		change_desc_endianness((uint32_t *)ablk_ctx->sh_desc.h_v_addr,
 				enc_desc, desc_len(enc_desc));
 
 		ctx->sh_desc_len = desc_len(enc_desc);
@@ -188,7 +188,7 @@ static void ablkcipher_setkey_desc(struct crypto_ablkcipher *ablkcipher,
 		/* Wait for key to load before allowing propagating error */
 		append_dec_shr_done(dec_desc);
 
-		change_desc_endianness((uint32_t *)ablk_ctx->sh_desc.v_mem,
+		change_desc_endianness((uint32_t *)ablk_ctx->sh_desc.h_v_addr,
 				dec_desc, desc_len(dec_desc));
 
 		ctx->sh_desc_len = desc_len(dec_desc);
@@ -296,7 +296,7 @@ static void create_setkey_ctx(struct crypto_ablkcipher *ablkcipher,
      * AS KEY IS TAKEN AS DESC BT TYPE
      * NEED TO COPY THE KEY IN LOCAL MEM
      * INSTEAD OF ONLY TAKING REQ POINTER */
-    memcpy(ablk_ctx->key.v_mem, (void *)ctx->key, ctx->keylen);
+    memcpy(ablk_ctx->key.h_v_addr, (void *)ctx->key, ctx->keylen);
 	print_debug("Key len %u\n", ctx->keylen);
 #ifdef VIRTIO_C2X0
     ablkcipher_setkey_desc(ctx, ivsize, ablk_ctx, encrypt);
@@ -316,13 +316,13 @@ static void create_src_sg_table(symm_ablk_buffers_t *ablk_ctx,
 {
 	int32_t i = 0;
 	struct sec4_sg_entry *sec4_sg_ptr =
-	    (struct sec4_sg_entry *)ablk_ctx->src.v_mem;
+	    (struct sec4_sg_entry *)ablk_ctx->src.h_v_addr;
 	sec4_sg_ptr += 1;
 
 	for (i = 0; i < sg_cnt; ++i) {
 #ifdef USE_HOST_DMA
 		/* COPY SG BUFF IN LOCAL MEM */
-		sg_map_copy(ablk_ctx->src_sg[i].v_mem, sg, sg->length,
+		sg_map_copy(ablk_ctx->src_sg[i].h_v_addr, sg, sg->length,
 			    sg->offset);
 #else
 		/* COPY REQ POINTER */
@@ -357,7 +357,7 @@ static void create_dst_sg_table(fsl_crypto_dev_t *c_dev,
 	int32_t length = 0;
 	dev_dma_addr_t dma_addr = 0;
 	struct sec4_sg_entry *sec4_sg_ptr =
-	    (struct sec4_sg_entry *)ablk_ctx->dst.v_mem;
+	    (struct sec4_sg_entry *)ablk_ctx->dst.h_v_addr;
 
 	while (sg_cnt--) {
 		dma_addr = (dev_dma_addr_t) sg_dma_address(sg) +
@@ -553,8 +553,8 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 
 	if (!src_sgcnt) {
 		/* NO SRC SG SO COPY INFO AND SRC DIRECT */
-		memcpy(ablk_ctx->info.v_mem, req->info, ivsize);
-		scatterwalk_map_and_copy(ablk_ctx->info.v_mem + ivsize,
+		memcpy(ablk_ctx->info.h_v_addr, req->info, ivsize);
+		scatterwalk_map_and_copy(ablk_ctx->info.h_v_addr + ivsize,
 					 req->src, 0, req->nbytes, 0);
 
 		/* SRC DMA WILL BE INFO DMA */
@@ -562,9 +562,9 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 		in_options = 0;
 	} else {
 		/* CREATE SG TABLE */
-		memcpy(ablk_ctx->info.v_mem, req->info, ivsize);
+		memcpy(ablk_ctx->info.h_v_addr, req->info, ivsize);
 		dev_dma_to_sec4_sg_one((struct sec4_sg_entry *)ablk_ctx->src.
-				       v_mem,
+				       h_v_addr,
 				       ablk_ctx->info.dev_buffer.d_p_addr,
 				       ivsize, 0);
 
@@ -622,11 +622,11 @@ static int32_t fsl_ablkcipher(struct ablkcipher_request *req, bool encrypt)
 #endif
 
 	/* CONVERT THE DESC TO BE */
-	change_desc_endianness((uint32_t *) ablk_ctx->desc.v_mem,
+	change_desc_endianness((uint32_t *) ablk_ctx->desc.h_v_addr,
 			       (uint32_t *) desc, desc_len(desc));
 	kfree(desc);
 
-	store_priv_data(ablk_ctx->desc.v_mem, (unsigned long)crypto_ctx);
+	store_priv_data(ablk_ctx->desc.h_v_addr, (unsigned long)crypto_ctx);
 
 	/* STORE CRYPTO CTX */
 	crypto_ctx->req.ablk = req;

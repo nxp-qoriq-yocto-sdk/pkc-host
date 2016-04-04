@@ -52,12 +52,12 @@ static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 	for (i = 0; i < mem_info->count; i++) {
 		switch (buffers[i].bt) {
 		case BT_DESC:
-			buffers[i].v_mem = mem;
+			buffers[i].h_v_addr = mem;
 			mem += ALIGN_LEN_TO_DMA(buffers[i].len);
 			break;
 		case BT_IP:
 			if (!mem_info->split_ip) {
-				buffers[i].v_mem = mem;
+				buffers[i].h_v_addr = mem;
 				mem += ALIGN_LEN_TO_DMA(buffers[i].len);
 			}
 			break;
@@ -95,9 +95,9 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 			break;
 		case BT_IP:
 			if (mem_info->split_ip) {
-				buffers[i].v_mem = alloc_buffer(mem_info->pool,
+				buffers[i].h_v_addr = alloc_buffer(mem_info->pool,
 								aligned_len, 1);
-				if (unlikely(!buffers[i].v_mem)) {
+				if (unlikely(!buffers[i].h_v_addr)) {
 					print_error("Alloc mem for buff :%d type :%d failed\n",
 						     i, buffers[i].bt);
 					goto error;
@@ -130,7 +130,7 @@ no_mem:
 error:
 	while (i--) {
 		if (buffers[i].bt == BT_IP) {
-			free_buffer(mem_info->pool, buffers[i].v_mem);
+			free_buffer(mem_info->pool, buffers[i].h_v_addr);
 			mem_info->sg_cnt--;
 		}
 	}
@@ -153,15 +153,15 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 	buffer_info_t *buffers = mem_info->buffers;
 	uint32_t i = 0;
 
-	if (buffers[0].v_mem) {
-		free_buffer(mem_info->pool, buffers[0].v_mem);
+	if (buffers[0].h_v_addr) {
+		free_buffer(mem_info->pool, buffers[0].h_v_addr);
 	}
 
 	for (i = 1; i < mem_info->count; i++) {
 		switch (buffers[i].bt) {
 		case BT_IP:
-			if (mem_info->split_ip && buffers[i].v_mem) {
-				free_buffer(mem_info->pool, buffers[i].v_mem);
+			if (mem_info->split_ip && buffers[i].h_v_addr) {
+				free_buffer(mem_info->pool, buffers[i].h_v_addr);
 			}
 			break;
 		case BT_OP:
@@ -229,21 +229,21 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 	buffer_info_t *buffers = mem_info->buffers;
 
 	for (i = 0; i < mem_info->count; i++) {
-		buffers[i].h_p_addr = __pa(buffers[i].v_mem);
+		buffers[i].h_p_addr = __pa(buffers[i].h_v_addr);
 
 		switch (buffers[i].bt) {
 		case BT_DESC:
 		case BT_IP:
 			buffers[i].h_dma_addr = buffers[i].h_p_addr;
 #ifdef USE_HOST_DMA
-			buffers[i].h_map_p_addr = h_map_p_addr(mem_info->dev, buffers[i].v_mem);
+			buffers[i].h_map_p_addr = h_map_p_addr(mem_info->dev, buffers[i].h_v_addr);
 #endif
-			buffers[i].d_v_addr = desc_d_v_addr(mem_info->dev, buffers[i].v_mem);
-			buffers[i].d_p_addr = desc_d_p_addr(mem_info->dev, buffers[i].v_mem);
+			buffers[i].d_v_addr = desc_d_v_addr(mem_info->dev, buffers[i].h_v_addr);
+			buffers[i].d_p_addr = desc_d_p_addr(mem_info->dev, buffers[i].h_v_addr);
 			break;
 		case BT_OP:
 			buffers[i].h_dma_addr = op_buf_h_dma_addr(mem_info->dev,
-					buffers[i].v_mem, buffers[i].len);
+					buffers[i].h_v_addr, buffers[i].len);
 			buffers[i].d_p_addr = op_buf_d_dma_addr(mem_info->dev,
 					      buffers[i].h_dma_addr);
 			break;
@@ -332,7 +332,7 @@ int32_t memcpy_to_dev(crypto_mem_info_t *mem)
 	for (i = 0; i < (mem->count); i++) {
 		switch (buffers[i].bt) {
 		case BT_DESC:
-			memcpy(buffers[i].d_v_addr, buffers[i].v_mem, buffers[i].len);
+			memcpy(buffers[i].d_v_addr, buffers[i].h_v_addr, buffers[i].len);
 			break;
 		case BT_IP:
 #ifndef SEC_DMA

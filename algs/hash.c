@@ -335,12 +335,12 @@ static int hash_cp_key(const uint8_t *input, uint32_t ip_len,
 		return -ENOMEM;
 	}
 #ifdef USE_HOST_DMA
-	memcpy(mem->input_buff.v_mem, input, ip_len);
+	memcpy(mem->input_buff.h_v_addr, input, ip_len);
 #else
 	mem->input_buff.req_ptr = (uint8_t *) input;
 #endif
 
-	mem->output_buff.v_mem = output;
+	mem->output_buff.h_v_addr = output;
 	return 0;
 }
 
@@ -407,7 +407,7 @@ static void create_sg_table(crypto_mem_info_t *mem_info, uint32_t count)
 	}
 
 	mem = (hash_buffers_t *) (mem_info->buffers);
-	sec4_sg_ptr = (struct sec4_sg_entry *)mem->sec_sg_buff.v_mem;
+	sec4_sg_ptr = (struct sec4_sg_entry *)mem->sec_sg_buff.h_v_addr;
 
 	for (i = 0; i < count; i++) {
 		ASSIGN64(sec4_sg_ptr->ptr,
@@ -438,34 +438,34 @@ static int hash_cp_req(struct ahash_request *req, struct hash_lengths *len,
 	}
 	if (len->src_nents || len->addon_nents) {
 		if (ctx && len->ctx_len) {
-			memcpy(mem->input_buffs[i++].v_mem, ctx, len->ctx_len);
+			memcpy(mem->input_buffs[i++].h_v_addr, ctx, len->ctx_len);
 		}
 
 		if (buff && len->buff_len) {
-			memcpy(mem->input_buffs[i++].v_mem, buff, len->buff_len);
+			memcpy(mem->input_buffs[i++].h_v_addr, buff, len->buff_len);
 		}
 
 		for (; i < (len->src_nents + len->addon_nents); i++) {
-			sg_map_copy(mem->input_buffs[i].v_mem, sg, sg->length,
+			sg_map_copy(mem->input_buffs[i].h_v_addr, sg, sg->length,
 				    sg->offset);
 			sg = sg_next(sg);
 		}
 	} else if (buff && len->buff_len) {
-		memcpy(mem->sec_sg_buff.v_mem, buff, len->buff_len);
+		memcpy(mem->sec_sg_buff.h_v_addr, buff, len->buff_len);
 	} else if (ctx && len->ctx_len) {
-		memcpy(mem->sec_sg_buff.v_mem, ctx, len->ctx_len);
+		memcpy(mem->sec_sg_buff.h_v_addr, ctx, len->ctx_len);
 	} else if (len->src_len) {
-		scatterwalk_map_and_copy(mem->sec_sg_buff.v_mem, req->src, 0,
+		scatterwalk_map_and_copy(mem->sec_sg_buff.h_v_addr, req->src, 0,
 					 len->src_len, 0);
 	}
 
-	memcpy(mem->sh_desc_buff.v_mem, sh_desc, len->sh_desc_len);
+	memcpy(mem->sh_desc_buff.h_v_addr, sh_desc, len->sh_desc_len);
 
-	mem->output_buff.v_mem = output;
+	mem->output_buff.h_v_addr = output;
 
 #ifndef USE_HOST_DMA
 	for (i = 0; i < (mem_info->count); i++)
-		mem_info->buffers[i].req_ptr = mem_info->buffers[i].v_mem;
+		mem_info->buffers[i].req_ptr = mem_info->buffers[i].h_v_addr;
 #endif
 	return 0;
 }
@@ -574,11 +574,11 @@ static int32_t gen_split_hash_key(crypto_dev_sess_t *c_sess,
 			      mem->input_buff.dev_buffer.d_p_addr, keylen,
 			      mem->output_buff.dev_buffer.d_p_addr,
 			      ctx->split_key_len);
-	change_desc_endianness((uint32_t *) mem->desc_buff.v_mem, desc,
+	change_desc_endianness((uint32_t *) mem->desc_buff.h_v_addr, desc,
 			       desc_len(desc));
 
 	kfree(desc);
-	store_priv_data(mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
+	store_priv_data(mem->desc_buff.h_v_addr, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 
 #ifdef USE_HOST_DMA
@@ -684,11 +684,11 @@ static uint32_t hash_digest_key(crypto_dev_sess_t *c_sess,
 	hash_digestkey_desc(desc, ctx->alg_type,
 			    mem->input_buff.dev_buffer.d_p_addr, *keylen,
 			    mem->output_buff.dev_buffer.d_p_addr, digestsize);
-	change_desc_endianness((uint32_t *) mem->desc_buff.v_mem, desc,
+	change_desc_endianness((uint32_t *) mem->desc_buff.h_v_addr, desc,
 			       desc_len(desc));
 	kfree(desc);
 
-	store_priv_data(mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
+	store_priv_data(mem->desc_buff.h_v_addr, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 
 #ifdef USE_HOST_DMA
@@ -948,11 +948,11 @@ int ahash_digest(struct ahash_request *req)
 		     ctx->len_desc_digest, mem->sec_sg_buff.dev_buffer.d_p_addr,
 		     req->nbytes, options, mem->output_buff.dev_buffer.d_p_addr,
 		     mem->output_buff.len);
-	change_desc_endianness((uint32_t *) mem->desc_buff.v_mem, desc,
+	change_desc_endianness((uint32_t *) mem->desc_buff.h_v_addr, desc,
 			       desc_len(desc));
 	kfree(desc);
 
-	store_priv_data(mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
+	store_priv_data(mem->desc_buff.h_v_addr, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 
 #ifdef USE_HOST_DMA
@@ -1150,11 +1150,11 @@ int ahash_update_ctx(struct ahash_request *req)
 			     ctx->ctx_len + to_hash, LDST_SGF,
 			     mem->output_buff.dev_buffer.d_p_addr,
 			     mem->output_buff.len);
-		change_desc_endianness((uint32_t *) mem->desc_buff.v_mem, desc,
+		change_desc_endianness((uint32_t *) mem->desc_buff.h_v_addr, desc,
 				       desc_len(desc));
 		kfree(desc);
 
-		store_priv_data(mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
+		store_priv_data(mem->desc_buff.h_v_addr, (unsigned long)crypto_ctx);
 		sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 #ifdef USE_HOST_DMA
 		crypto_ctx->crypto_mem.dest_buff_dma =
@@ -1342,11 +1342,11 @@ int ahash_finup_ctx(struct ahash_request *req)
 		     ctx->ctx_len + buflen + req->nbytes, LDST_SGF,
 		     mem->output_buff.dev_buffer.d_p_addr,
 		     mem->output_buff.len);
-	change_desc_endianness((uint32_t *) mem->desc_buff.v_mem, desc,
+	change_desc_endianness((uint32_t *) mem->desc_buff.h_v_addr, desc,
 			       desc_len(desc));
 	kfree(desc);
 
-	store_priv_data(mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
+	store_priv_data(mem->desc_buff.h_v_addr, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 
 #ifdef USE_HOST_DMA
@@ -1520,11 +1520,11 @@ int ahash_final_ctx(struct ahash_request *req)
 		     ctx->len_desc_fin, mem->sec_sg_buff.dev_buffer.d_p_addr,
 		     ctx->ctx_len + buflen, options,
 		     mem->output_buff.dev_buffer.d_p_addr, digestsize);
-	change_desc_endianness((uint32_t *) mem->desc_buff.v_mem, desc,
+	change_desc_endianness((uint32_t *) mem->desc_buff.h_v_addr, desc,
 			       desc_len(desc));
 	kfree(desc);
 
-	store_priv_data(mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
+	store_priv_data(mem->desc_buff.h_v_addr, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 
 #ifdef USE_HOST_DMA
@@ -1691,11 +1691,11 @@ int ahash_final_no_ctx(struct ahash_request *req)
 		     buflen, 0, mem->output_buff.dev_buffer.d_p_addr,
 		     mem->output_buff.len);
 
-	change_desc_endianness((uint32_t *) mem->desc_buff.v_mem, desc,
+	change_desc_endianness((uint32_t *) mem->desc_buff.h_v_addr, desc,
 			       desc_len(desc));
 	kfree(desc);
 
-	store_priv_data(mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
+	store_priv_data(mem->desc_buff.h_v_addr, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 #ifdef USE_HOST_DMA
 	crypto_ctx->crypto_mem.dest_buff_dma =
@@ -1867,11 +1867,11 @@ int ahash_finup_no_ctx(struct ahash_request *req)
 		     mem->output_buff.dev_buffer.d_p_addr,
 		     mem->output_buff.len);
 
-	change_desc_endianness((uint32_t *) mem->desc_buff.v_mem, desc,
+	change_desc_endianness((uint32_t *) mem->desc_buff.h_v_addr, desc,
 			       desc_len(desc));
 	kfree(desc);
 
-	store_priv_data(mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
+	store_priv_data(mem->desc_buff.h_v_addr, (unsigned long)crypto_ctx);
 	sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 
 #ifdef USE_HOST_DMA
@@ -2052,11 +2052,11 @@ int ahash_update_no_ctx(struct ahash_request *req)
 			     LDST_SGF, mem->output_buff.dev_buffer.d_p_addr,
 			     mem->output_buff.len);
 
-		change_desc_endianness((uint32_t *) mem->desc_buff.v_mem, desc,
+		change_desc_endianness((uint32_t *) mem->desc_buff.h_v_addr, desc,
 				       desc_len(desc));
 		kfree(desc);
 
-		store_priv_data(mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
+		store_priv_data(mem->desc_buff.h_v_addr, (unsigned long)crypto_ctx);
 		sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 #ifdef USE_HOST_DMA
 		crypto_ctx->crypto_mem.dest_buff_dma =
@@ -2261,11 +2261,11 @@ int ahash_update_first(struct ahash_request *req)
 			     mem->sec_sg_buff.dev_buffer.d_p_addr, to_hash,
 			     options, mem->output_buff.dev_buffer.d_p_addr,
 			     mem->output_buff.len);
-		change_desc_endianness((uint32_t *) mem->desc_buff.v_mem, desc,
+		change_desc_endianness((uint32_t *) mem->desc_buff.h_v_addr, desc,
 				       desc_len(desc));
 		kfree(desc);
 
-		store_priv_data(mem->desc_buff.v_mem, (unsigned long)crypto_ctx);
+		store_priv_data(mem->desc_buff.h_v_addr, (unsigned long)crypto_ctx);
 		sec_dma = mem->desc_buff.dev_buffer.d_p_addr;
 #ifdef USE_HOST_DMA
 		crypto_ctx->crypto_mem.dest_buff_dma =

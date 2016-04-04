@@ -93,16 +93,16 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA
-	memcpy(mem->n_buff.v_mem, pub_req->n, mem->n_buff.len);
-	memcpy(mem->e_buff.v_mem, pub_req->e, mem->e_buff.len);
-	memcpy(mem->f_buff.v_mem, pub_req->f, mem->f_buff.len);
+	memcpy(mem->n_buff.h_v_addr, pub_req->n, mem->n_buff.len);
+	memcpy(mem->e_buff.h_v_addr, pub_req->e, mem->e_buff.len);
+	memcpy(mem->f_buff.h_v_addr, pub_req->f, mem->f_buff.len);
 #else
 	mem->n_buff.req_ptr = pub_req->n;
 	mem->e_buff.req_ptr = pub_req->e;
 	mem->f_buff.req_ptr = pub_req->f;
 #endif
 
-	mem->g_buff.v_mem = pub_req->g;
+	mem->g_buff.h_v_addr = pub_req->g;
 
 	print_debug("[RSA PUB OP] Request details:\n");
 	print_debug("N Len: %d\n", mem->n_buff.len);
@@ -110,15 +110,15 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 	print_debug("F Len: %d\n", mem->f_buff.len);
 	print_debug("G Len: %d\n", mem->g_buff.len);
 	print_debug("Desc Len: %d\n", mem->desc_buff.len);
-	print_debug("G Buff addr: %p\n", mem->g_buff.v_mem);
+	print_debug("G Buff addr: %p\n", mem->g_buff.h_v_addr);
 	print_debug("[RSA PUB OP]\n");
 
 	print_debug("[RSA_PUB_OP] Allocated memory details:\n");
-	print_debug("N Buffer: %p\n", mem->n_buff.v_mem);
-	print_debug("E Buffer: %p\n", mem->e_buff.v_mem);
-	print_debug("F Buffer: %p\n", mem->f_buff.v_mem);
-	print_debug("G Buffer: %p\n", mem->g_buff.v_mem);
-	print_debug("DESC Buffer: %p\n", mem->desc_buff.v_mem);
+	print_debug("N Buffer: %p\n", mem->n_buff.h_v_addr);
+	print_debug("E Buffer: %p\n", mem->e_buff.h_v_addr);
+	print_debug("F Buffer: %p\n", mem->f_buff.h_v_addr);
+	print_debug("G Buffer: %p\n", mem->g_buff.h_v_addr);
+	print_debug("DESC Buffer: %p\n", mem->desc_buff.h_v_addr);
 
 	return 0;
 }
@@ -131,7 +131,7 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 
 	rsa_pub_op_buffers_t *mem = &(mem_info->c_buffers.rsa_pub_op);
 	struct rsa_pub_desc_s *rsa_pub_desc =
-	    (struct rsa_pub_desc_s *)mem->desc_buff.v_mem;
+	    (struct rsa_pub_desc_s *)mem->desc_buff.h_v_addr;
 
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
@@ -173,7 +173,7 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 
 #ifdef DEBUG_DESC
 	print_error("[RSA_PUB_OP]	Descriptor words");
-	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
+	dump_desc(mem->desc_buff.h_v_addr, desc_size, __func__);
 #endif
 }
 
@@ -201,7 +201,7 @@ static void constr_rsa_priv1_op_desc(crypto_mem_info_t *mem_info)
 
 	rsa_priv1_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv1_op);
 	struct rsa_priv_frm1_desc_s *rsa_priv_desc =
-	    (struct rsa_priv_frm1_desc_s *)mem->desc_buff.v_mem;
+	    (struct rsa_priv_frm1_desc_s *)mem->desc_buff.h_v_addr;
 
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&desc_hdr,
@@ -244,16 +244,16 @@ static int rsa_priv1_op_cp_req(struct rsa_priv_frm1_req_s *priv1_req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA
-	memcpy(mem->n_buff.v_mem, priv1_req->n, mem->n_buff.len);
-	memcpy(mem->d_buff.v_mem, priv1_req->d, mem->d_buff.len);
-	memcpy(mem->g_buff.v_mem, priv1_req->g, mem->g_buff.len);
+	memcpy(mem->n_buff.h_v_addr, priv1_req->n, mem->n_buff.len);
+	memcpy(mem->d_buff.h_v_addr, priv1_req->d, mem->d_buff.len);
+	memcpy(mem->g_buff.h_v_addr, priv1_req->g, mem->g_buff.len);
 #else
 	mem->n_buff.req_ptr = priv1_req->n;
 	mem->d_buff.req_ptr = priv1_req->d;
 	mem->g_buff.req_ptr = priv1_req->g;
 #endif
 
-	mem->f_buff.v_mem = priv1_req->f;
+	mem->f_buff.h_v_addr = priv1_req->f;
 #ifdef PRINT_DEBUG
 	print_debug("[RSA PUB OP] Request details:\n");
 	print_debug("N Len: %d\n", mem->n_buff.len);
@@ -261,7 +261,7 @@ static int rsa_priv1_op_cp_req(struct rsa_priv_frm1_req_s *priv1_req,
 	print_debug("G Len: %d\n", mem->g_buff.len);
 	print_debug("F Len: %d\n", mem->f_buff.len);
 	print_debug("Desc Len: %d\n", mem->desc_buff.len);
-	print_debug("F Buff addr: %p\n", mem->f_buff.v_mem);
+	print_debug("F Buff addr: %p\n", mem->f_buff.h_v_addr);
 	print_debug("[RSA PUB OP]\n");
 #endif
 	return 0;
@@ -290,8 +290,8 @@ static void constr_rsa_priv2_op_desc(crypto_mem_info_t *mem_info)
 
 	rsa_priv2_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv2_op);
 	struct rsa_priv_frm2_desc_s *rsa_priv_desc =
-	    (struct rsa_priv_frm2_desc_s *)mem->desc_buff.v_mem;
-	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
+	    (struct rsa_priv_frm2_desc_s *)mem->desc_buff.h_v_addr;
+	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.h_v_addr;
 
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(desc_buff,
@@ -344,17 +344,17 @@ static int rsa_priv2_op_cp_req(struct rsa_priv_frm2_req_s *priv2_req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA
-	memcpy(mem->p_buff.v_mem, priv2_req->p, mem->p_buff.len);
-	memcpy(mem->q_buff.v_mem, priv2_req->q, mem->q_buff.len);
-	memcpy(mem->d_buff.v_mem, priv2_req->d, mem->d_buff.len);
-	memcpy(mem->g_buff.v_mem, priv2_req->g, mem->g_buff.len);
+	memcpy(mem->p_buff.h_v_addr, priv2_req->p, mem->p_buff.len);
+	memcpy(mem->q_buff.h_v_addr, priv2_req->q, mem->q_buff.len);
+	memcpy(mem->d_buff.h_v_addr, priv2_req->d, mem->d_buff.len);
+	memcpy(mem->g_buff.h_v_addr, priv2_req->g, mem->g_buff.len);
 #else
 	mem->p_buff.req_ptr = priv2_req->p;
 	mem->q_buff.req_ptr = priv2_req->q;
 	mem->d_buff.req_ptr = priv2_req->d;
 	mem->g_buff.req_ptr = priv2_req->g;
 #endif
-	mem->f_buff.v_mem = priv2_req->f;
+	mem->f_buff.h_v_addr = priv2_req->f;
 
 #ifdef PRINT_DEBUG
 	print_debug("[RSA PRIV2 OP] Request details:\n");
@@ -365,18 +365,18 @@ static int rsa_priv2_op_cp_req(struct rsa_priv_frm2_req_s *priv2_req,
 	print_debug("TMP1 Len: %d\n", mem->tmp1_buff.len);
 	print_debug("TMP2 Len: %d\n", mem->tmp2_buff.len);
 	print_debug("Desc Len: %d\n", mem->desc_buff.len);
-	print_debug("F Buff addr: %p\n", mem->f_buff.v_mem);
+	print_debug("F Buff addr: %p\n", mem->f_buff.h_v_addr);
 	print_debug("[RSA PRIV2 OP]\n");
 
 	print_debug("[RSA_PUB_OP] Allocated memory details:\n");
-	print_debug("P Buffer: %p\n", priv2_op_buffs->p_buff.v_mem);
-	print_debug("Q Buffer: %p\n", priv2_op_buffs->q_buff.v_mem);
-	print_debug("D Buffer: %p\n", priv2_op_buffs->d_buff.v_mem);
-	print_debug("G Buffer: %p\n", priv2_op_buffs->g_buff.v_mem);
-	print_debug("TMP1 Buffer: %p\n", priv2_op_buffs->tmp1_buff.v_mem);
-	print_debug("TMP2 Buffer: %p\n", priv2_op_buffs->tmp2_buff.v_mem);
-	print_debug("F Buffer: %p\n", priv2_op_buffs->f_buff.v_mem);
-	print_debug("DESC Buffer: %p\n", priv2_op_buffs->desc_buff.v_mem);
+	print_debug("P Buffer: %p\n", priv2_op_buffs->p_buff.h_v_addr);
+	print_debug("Q Buffer: %p\n", priv2_op_buffs->q_buff.h_v_addr);
+	print_debug("D Buffer: %p\n", priv2_op_buffs->d_buff.h_v_addr);
+	print_debug("G Buffer: %p\n", priv2_op_buffs->g_buff.h_v_addr);
+	print_debug("TMP1 Buffer: %p\n", priv2_op_buffs->tmp1_buff.h_v_addr);
+	print_debug("TMP2 Buffer: %p\n", priv2_op_buffs->tmp2_buff.h_v_addr);
+	print_debug("F Buffer: %p\n", priv2_op_buffs->f_buff.h_v_addr);
+	print_debug("DESC Buffer: %p\n", priv2_op_buffs->desc_buff.h_v_addr);
 #endif
 	return 0;
 }
@@ -407,8 +407,8 @@ static void constr_rsa_priv3_op_desc(crypto_mem_info_t *mem_info)
 
 	rsa_priv3_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv3_op);
 	struct rsa_priv_frm3_desc_s *rsa_priv_desc =
-	    (struct rsa_priv_frm3_desc_s *)mem->desc_buff.v_mem;
-	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.v_mem;
+	    (struct rsa_priv_frm3_desc_s *)mem->desc_buff.h_v_addr;
+	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.h_v_addr;
 
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
@@ -483,12 +483,12 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 #ifdef USE_HOST_DMA
-	memcpy(mem->p_buff.v_mem, priv3_req->p, mem->p_buff.len);
-	memcpy(mem->q_buff.v_mem, priv3_req->q, mem->q_buff.len);
-	memcpy(mem->dp_buff.v_mem, priv3_req->dp, mem->dp_buff.len);
-	memcpy(mem->dq_buff.v_mem, priv3_req->dq, mem->dq_buff.len);
-	memcpy(mem->g_buff.v_mem, priv3_req->g, mem->g_buff.len);
-	memcpy(mem->c_buff.v_mem, priv3_req->c, mem->c_buff.len);
+	memcpy(mem->p_buff.h_v_addr, priv3_req->p, mem->p_buff.len);
+	memcpy(mem->q_buff.h_v_addr, priv3_req->q, mem->q_buff.len);
+	memcpy(mem->dp_buff.h_v_addr, priv3_req->dp, mem->dp_buff.len);
+	memcpy(mem->dq_buff.h_v_addr, priv3_req->dq, mem->dq_buff.len);
+	memcpy(mem->g_buff.h_v_addr, priv3_req->g, mem->g_buff.len);
+	memcpy(mem->c_buff.h_v_addr, priv3_req->c, mem->c_buff.len);
 #else
 	mem->p_buff.req_ptr = priv3_req->p;
 	mem->q_buff.req_ptr = priv3_req->q;
@@ -497,10 +497,10 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 	mem->g_buff.req_ptr = priv3_req->g;
 	mem->c_buff.req_ptr = priv3_req->c;
 #endif
-	mem->tmp1_buff.req_ptr = mem->tmp1_buff.v_mem;
-	mem->tmp2_buff.req_ptr = mem->tmp2_buff.v_mem;
+	mem->tmp1_buff.req_ptr = mem->tmp1_buff.h_v_addr;
+	mem->tmp2_buff.req_ptr = mem->tmp2_buff.h_v_addr;
 
-	mem->f_buff.v_mem = priv3_req->f;
+	mem->f_buff.h_v_addr = priv3_req->f;
 
 #ifdef PRINT_DEBUG
 	print_debug("[RSA PRIV3 OP] Request details:\n");
@@ -513,20 +513,20 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 	print_debug("TMP1 Len: %d\n", mem->tmp1_buff.len);
 	print_debug("TMP2 Len: %d\n", mem->tmp2_buff.len);
 	print_debug("Desc Len: %d\n", mem->desc_buff.len);
-	print_debug("F Buff addr: %p\n", mem->f_buff.v_mem);
+	print_debug("F Buff addr: %p\n", mem->f_buff.h_v_addr);
 	print_debug("[RSA PRIV3 OP]\n");
 
 	print_debug("[RSA3_PRIV_OP] Allocated memory details:\n");
-	print_debug("P Buffer: %p\n", priv3_op_buffs->p_buff.v_mem);
-	print_debug("Q Buffer: %p\n", priv3_op_buffs->q_buff.v_mem);
-	print_debug("G Buffer: %p\n", priv3_op_buffs->g_buff.v_mem);
-	print_debug("C Buffer: %p\n", priv3_op_buffs->c_buff.v_mem);
-	print_debug("DPBuffer: %p\n", priv3_op_buffs->dp_buff.v_mem);
-	print_debug("DQBuffer: %p\n", priv3_op_buffs->dq_buff.v_mem);
-	print_debug("TMP1 Buffer: %p\n", priv3_op_buffs->tmp1_buff.v_mem);
-	print_debug("TMP2 Buffer: %p\n", priv3_op_buffs->tmp2_buff.v_mem);
-	print_debug("F Buffer: %p\n", priv3_op_buffs->f_buff.v_mem);
-	print_debug("DESC Buffer: %p\n", priv3_op_buffs->desc_buff.v_mem);
+	print_debug("P Buffer: %p\n", priv3_op_buffs->p_buff.h_v_addr);
+	print_debug("Q Buffer: %p\n", priv3_op_buffs->q_buff.h_v_addr);
+	print_debug("G Buffer: %p\n", priv3_op_buffs->g_buff.h_v_addr);
+	print_debug("C Buffer: %p\n", priv3_op_buffs->c_buff.h_v_addr);
+	print_debug("DPBuffer: %p\n", priv3_op_buffs->dp_buff.h_v_addr);
+	print_debug("DQBuffer: %p\n", priv3_op_buffs->dq_buff.h_v_addr);
+	print_debug("TMP1 Buffer: %p\n", priv3_op_buffs->tmp1_buff.h_v_addr);
+	print_debug("TMP2 Buffer: %p\n", priv3_op_buffs->tmp2_buff.h_v_addr);
+	print_debug("F Buffer: %p\n", priv3_op_buffs->f_buff.h_v_addr);
+	print_debug("DESC Buffer: %p\n", priv3_op_buffs->desc_buff.h_v_addr);
 #endif
 	return 0;
 }
@@ -665,9 +665,9 @@ int rsa_op(struct pkc_request *req)
 		/* Store the context */
 		print_debug("[Enq] Desc addr:%llx Hbuffer addr:%p Crypto ctx: %p\n",
 		     (uint64_t)pub_op_buffs->desc_buff.d_p_addr,
-		     pub_op_buffs->desc_buff.v_mem, crypto_ctx);
+		     pub_op_buffs->desc_buff.h_v_addr, crypto_ctx);
 
-		store_priv_data(pub_op_buffs->desc_buff.v_mem,
+		store_priv_data(pub_op_buffs->desc_buff.h_v_addr,
 				(unsigned long)crypto_ctx);
 		break;
 	case RSA_PRIV_FORM1:
@@ -695,9 +695,9 @@ int rsa_op(struct pkc_request *req)
 		/* Store the context */
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p Crypto ctx: %p\n",
 			    (uint64_t)priv1_op_buffs->desc_buff.d_p_addr,
-			    priv1_op_buffs->desc_buff.v_mem, crypto_ctx);
+			    priv1_op_buffs->desc_buff.h_v_addr, crypto_ctx);
 
-		store_priv_data(priv1_op_buffs->desc_buff.v_mem,
+		store_priv_data(priv1_op_buffs->desc_buff.h_v_addr,
 				(unsigned long)crypto_ctx);
 		break;
 
@@ -726,9 +726,9 @@ int rsa_op(struct pkc_request *req)
 		/* Store the context */
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p Crypto ctx: %p\n",
 			    (uint64_t)priv2_op_buffs->desc_buff.d_p_addr,
-			    priv2_op_buffs->desc_buff.v_mem, crypto_ctx);
+			    priv2_op_buffs->desc_buff.h_v_addr, crypto_ctx);
 
-		store_priv_data(priv2_op_buffs->desc_buff.v_mem,
+		store_priv_data(priv2_op_buffs->desc_buff.h_v_addr,
 				(unsigned long)crypto_ctx);
 		break;
 
@@ -764,9 +764,9 @@ int rsa_op(struct pkc_request *req)
 		/* Store the context */
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p Crypto ctx: %p\n",
 		     (uint64_t)priv3_op_buffs->desc_buff.d_p_addr,
-		     priv3_op_buffs->desc_buff.v_mem, crypto_ctx);
+		     priv3_op_buffs->desc_buff.h_v_addr, crypto_ctx);
 
-		store_priv_data(priv3_op_buffs->desc_buff.v_mem,
+		store_priv_data(priv3_op_buffs->desc_buff.h_v_addr,
 				(unsigned long)crypto_ctx);
 
 		break;

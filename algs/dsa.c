@@ -172,23 +172,23 @@ static int dsa_sign_cp_req(struct dsa_sign_req_s *req,
 		return -ENOMEM;
 
 #ifdef USE_HOST_DMA
-	memcpy(mem->q_buff.v_mem, req->q, mem->q_buff.len);
-	memcpy(mem->r_buff.v_mem, req->r, mem->r_buff.len);
-	memcpy(mem->g_buff.v_mem, req->g, mem->g_buff.len);
-	memcpy(mem->priv_key_buff.v_mem, req->priv_key, mem->priv_key_buff.len);
-	memcpy(mem->m_buff.v_mem, req->m, mem->m_buff.len);
+	memcpy(mem->q_buff.h_v_addr, req->q, mem->q_buff.len);
+	memcpy(mem->r_buff.h_v_addr, req->r, mem->r_buff.len);
+	memcpy(mem->g_buff.h_v_addr, req->g, mem->g_buff.len);
+	memcpy(mem->priv_key_buff.h_v_addr, req->priv_key, mem->priv_key_buff.len);
+	memcpy(mem->m_buff.h_v_addr, req->m, mem->m_buff.len);
 
 	if (ecdsa)
-		memcpy(mem->ab_buff.v_mem, req->ab, mem->ab_buff.len);
+		memcpy(mem->ab_buff.h_v_addr, req->ab, mem->ab_buff.len);
 	else
-		mem->ab_buff.v_mem = NULL;
+		mem->ab_buff.h_v_addr = NULL;
 #else
 	mem->q_buff.req_ptr = req->q;
 	mem->r_buff.req_ptr = req->r;
 	mem->g_buff.req_ptr = req->g;
 	mem->priv_key_buff.req_ptr = req->priv_key;
 	mem->m_buff.req_ptr = req->m;
-	mem->tmp_buff.req_ptr = mem->tmp_buff.v_mem;
+	mem->tmp_buff.req_ptr = mem->tmp_buff.h_v_addr;
 
 	if (ecdsa) {
 		mem->ab_buff.req_ptr = req->ab;
@@ -196,8 +196,8 @@ static int dsa_sign_cp_req(struct dsa_sign_req_s *req,
 		mem->ab_buff.req_ptr = NULL;
 	}
 #endif
-	mem->c_buff.v_mem = req->c;
-	mem->d_buff.v_mem = req->d;
+	mem->c_buff.h_v_addr = req->c;
+	mem->d_buff.h_v_addr = req->d;
 
 	return 0;
 }
@@ -214,18 +214,18 @@ static int dsa_verify_cp_req(struct dsa_verify_req_s *req,
 		return -ENOMEM;
 
 #ifdef USE_HOST_DMA
-	memcpy(mem->q_buff.v_mem, req->q, mem->q_buff.len);
-	memcpy(mem->r_buff.v_mem, req->r, mem->r_buff.len);
-	memcpy(mem->g_buff.v_mem, req->g, mem->g_buff.len);
-	memcpy(mem->pub_key_buff.v_mem, req->pub_key, mem->pub_key_buff.len);
-	memcpy(mem->m_buff.v_mem, req->m, mem->m_buff.len);
-	memcpy(mem->c_buff.v_mem, req->c, mem->c_buff.len);
-	memcpy(mem->d_buff.v_mem, req->d, mem->d_buff.len);
+	memcpy(mem->q_buff.h_v_addr, req->q, mem->q_buff.len);
+	memcpy(mem->r_buff.h_v_addr, req->r, mem->r_buff.len);
+	memcpy(mem->g_buff.h_v_addr, req->g, mem->g_buff.len);
+	memcpy(mem->pub_key_buff.h_v_addr, req->pub_key, mem->pub_key_buff.len);
+	memcpy(mem->m_buff.h_v_addr, req->m, mem->m_buff.len);
+	memcpy(mem->c_buff.h_v_addr, req->c, mem->c_buff.len);
+	memcpy(mem->d_buff.h_v_addr, req->d, mem->d_buff.len);
 
 	if (ecdsa)
-		memcpy(mem->ab_buff.v_mem, req->ab, mem->ab_buff.len);
+		memcpy(mem->ab_buff.h_v_addr, req->ab, mem->ab_buff.len);
 	else
-		mem->ab_buff.v_mem = NULL;
+		mem->ab_buff.h_v_addr = NULL;
 
 #else
 	mem->q_buff.req_ptr = req->q;
@@ -235,7 +235,7 @@ static int dsa_verify_cp_req(struct dsa_verify_req_s *req,
 	mem->m_buff.req_ptr = req->m;
 	mem->c_buff.req_ptr = req->c;
 	mem->d_buff.req_ptr = req->d;
-	mem->tmp_buff.req_ptr = mem->tmp_buff.v_mem;
+	mem->tmp_buff.req_ptr = mem->tmp_buff.h_v_addr;
 
 	if (ecdsa) {
 		mem->ab_buff.req_ptr = req->ab;
@@ -258,14 +258,14 @@ static int dsa_keygen_cp_req(struct dsa_keygen_req_s *req,
 		return -ENOMEM;
 
 #ifdef USE_HOST_DMA
-	memcpy(mem->q_buff.v_mem, req->q, mem->q_buff.len);
-	memcpy(mem->r_buff.v_mem, req->r, mem->r_buff.len);
-	memcpy(mem->g_buff.v_mem, req->g, mem->g_buff.len);
+	memcpy(mem->q_buff.h_v_addr, req->q, mem->q_buff.len);
+	memcpy(mem->r_buff.h_v_addr, req->r, mem->r_buff.len);
+	memcpy(mem->g_buff.h_v_addr, req->g, mem->g_buff.len);
 
 	if (ecdsa)
-		memcpy(mem->ab_buff.v_mem, req->ab, mem->ab_buff.len);
+		memcpy(mem->ab_buff.h_v_addr, req->ab, mem->ab_buff.len);
 	else
-		mem->ab_buff.v_mem = NULL;
+		mem->ab_buff.h_v_addr = NULL;
 #else
 	mem->q_buff.req_ptr = req->q;
 	mem->r_buff.req_ptr = req->r;
@@ -277,8 +277,8 @@ static int dsa_keygen_cp_req(struct dsa_keygen_req_s *req,
 		mem->ab_buff.req_ptr = NULL;
 	}
 #endif
-	mem->prvkey_buff.v_mem = req->prvkey;
-	mem->pubkey_buff.v_mem = req->pubkey;
+	mem->prvkey_buff.h_v_addr = req->prvkey;
+	mem->pubkey_buff.h_v_addr = req->pubkey;
 
 	return 0;
 }
@@ -290,7 +290,7 @@ static void constr_dsa_sign_desc(crypto_mem_info_t *mem_info)
 
 	dsa_sign_buffers_t *mem = &(mem_info->c_buffers.dsa_sign);
 	struct dsa_sign_desc_s *dsa_sign_desc =
-	    (struct dsa_sign_desc_s *)mem->desc_buff.v_mem;
+	    (struct dsa_sign_desc_s *)mem->desc_buff.h_v_addr;
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
@@ -343,7 +343,7 @@ static void constr_dsa_sign_desc(crypto_mem_info_t *mem_info)
 
 #ifdef DEBUG_DESC
 	print_error("[DSA_SIGN] Descriptor words\n");
-	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
+	dump_desc(mem->desc_buff.h_v_addr, desc_size, __func__);
 #endif
 }
 
@@ -354,7 +354,7 @@ static void constr_dsa_verify_desc(crypto_mem_info_t *mem_info)
 
 	dsa_verify_buffers_t *mem = &(mem_info->c_buffers.dsa_verify);
 	struct dsa_verify_desc_s *dsa_verify_desc =
-	    (struct dsa_verify_desc_s *)mem->desc_buff.v_mem;
+	    (struct dsa_verify_desc_s *)mem->desc_buff.h_v_addr;
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
@@ -400,7 +400,7 @@ static void constr_dsa_verify_desc(crypto_mem_info_t *mem_info)
 
 #ifdef DEBUG_DESC
 	print_error("[DSA_VERIFY] Descriptor words\n");
-	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
+	dump_desc(mem->desc_buff.h_v_addr, desc_size, __func__);
 #endif
 }
 
@@ -411,7 +411,7 @@ static void constr_dsa_keygen_desc(crypto_mem_info_t *mem_info)
 
 	dsa_keygen_buffers_t *mem = &(mem_info->c_buffers.dsa_keygen);
 	struct dsa_keygen_desc_s *dsa_keygen_desc =
-	    (struct dsa_keygen_desc_s *)mem->desc_buff.v_mem;
+	    (struct dsa_keygen_desc_s *)mem->desc_buff.h_v_addr;
 
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
@@ -447,7 +447,7 @@ static void constr_dsa_keygen_desc(crypto_mem_info_t *mem_info)
 
 #ifdef DEBUG_DESC
 	print_error("[DSA_KEYGEN] Descriptor words\n");
-	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
+	dump_desc(mem->desc_buff.h_v_addr, desc_size, __func__);
 #endif
 }
 
@@ -458,7 +458,7 @@ static void constr_ecdsa_sign_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 	dsa_sign_buffers_t *mem = (dsa_sign_buffers_t *) (mem_info->buffers);
 	struct ecdsa_sign_desc_s *ecdsa_sign_desc =
-	    (struct ecdsa_sign_desc_s *)mem->desc_buff.v_mem;
+	    (struct ecdsa_sign_desc_s *)mem->desc_buff.h_v_addr;
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 #endif
@@ -523,7 +523,7 @@ static void constr_ecdsa_sign_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 #ifdef DEBUG_DESC
 	print_error("[ECDSA_SIGN] Descriptor words\n");
-	dump_desc((uint32_t *) mem->desc_buff.v_mem, desc_size, __func__);
+	dump_desc((uint32_t *) mem->desc_buff.h_v_addr, desc_size, __func__);
 #endif
 }
 
@@ -534,7 +534,7 @@ static void constr_ecdsa_verify_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 	dsa_verify_buffers_t *mem = (dsa_verify_buffers_t *) (mem_info->buffers);
 	struct ecdsa_verify_desc_s *ecdsa_verify_desc =
-		(struct ecdsa_verify_desc_s *)mem->desc_buff.v_mem;
+		(struct ecdsa_verify_desc_s *)mem->desc_buff.h_v_addr;
 
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
@@ -592,7 +592,7 @@ static void constr_ecdsa_verify_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 #ifdef DEBUG_DESC
 	print_error("[ECDSA_VERIFY]  Descriptor words\n");
-	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
+	dump_desc(mem->desc_buff.h_v_addr, desc_size, __func__);
 #endif
 }
 
@@ -602,7 +602,7 @@ static void constr_ecdsa_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	uint32_t start_idx = desc_size - 1;
 	dsa_keygen_buffers_t *mem = (dsa_keygen_buffers_t *) (mem_info->buffers);
 	struct ecdsa_keygen_desc_s *ecdsa_keygen_desc =
-	    (struct ecdsa_keygen_desc_s *)mem->desc_buff.v_mem;
+	    (struct ecdsa_keygen_desc_s *)mem->desc_buff.h_v_addr;
 
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
@@ -647,7 +647,7 @@ static void constr_ecdsa_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 #ifdef DEBUG_DESC
 	print_error("[DSA_KEYGEN] Descriptor words\n");
-	dump_desc(mem->desc_buff.v_mem, desc_size, __func__);
+	dump_desc(mem->desc_buff.h_v_addr, desc_size, __func__);
 #endif
 }
 
@@ -837,8 +837,8 @@ int dsa_op(struct pkc_request *req)
 #endif
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr:%p Crypto ctx: %p\n",
 			    (uint64_t)dsa_keygen_buffs->desc_buff.d_p_addr,
-			    dsa_keygen_buffs->desc_buff.v_mem, crypto_ctx);
-		store_priv_data(dsa_keygen_buffs->desc_buff.v_mem,
+			    dsa_keygen_buffs->desc_buff.h_v_addr, crypto_ctx);
+		store_priv_data(dsa_keygen_buffs->desc_buff.h_v_addr,
 				(unsigned long)crypto_ctx);
 		break;
 	case DSA_SIGN:
@@ -871,9 +871,9 @@ int dsa_op(struct pkc_request *req)
 #endif
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p	Crypto ctx: %p\n",
 			    (uint64_t)dsa_sign_buffs->desc_buff.d_p_addr,
-			    dsa_sign_buffs->desc_buff.v_mem, crypto_ctx);
+			    dsa_sign_buffs->desc_buff.h_v_addr, crypto_ctx);
 
-		store_priv_data(dsa_sign_buffs->desc_buff.v_mem,
+		store_priv_data(dsa_sign_buffs->desc_buff.h_v_addr,
 				(unsigned long)crypto_ctx);
 		break;
 	case DSA_VERIFY:
@@ -905,9 +905,9 @@ int dsa_op(struct pkc_request *req)
 #endif
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p Crypto ctx :%p\n",
 		     (uint64_t)dsa_verify_buffs->desc_buff.d_p_addr,
-		     dsa_verify_buffs->desc_buff.v_mem, crypto_ctx);
+		     dsa_verify_buffs->desc_buff.h_v_addr, crypto_ctx);
 
-		store_priv_data(dsa_verify_buffs->desc_buff.v_mem,
+		store_priv_data(dsa_verify_buffs->desc_buff.h_v_addr,
 				(unsigned long)crypto_ctx);
 		break;
 
