@@ -181,7 +181,7 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 static inline dev_dma_addr_t desc_d_p_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
 	unsigned long offset = h_v_addr - dev->host_ip_pool.v_addr;
-	return dev->dev_ip_pool.dev_p_addr + offset;
+	return dev->dev_ip_pool.d_p_addr + offset;
 }
 
 static inline void *desc_d_v_addr(fsl_crypto_dev_t *dev, void *h_v_addr)

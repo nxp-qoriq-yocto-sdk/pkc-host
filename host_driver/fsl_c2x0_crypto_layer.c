@@ -594,7 +594,7 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 
 	dev->s_r_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_r_cntrs;
 	dev->s_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_cntrs;
-	dev->dev_ip_pool.dev_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr + ip_pool;
+	dev->dev_ip_pool.d_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr + ip_pool;
 #ifdef USE_HOST_DMA
 	dev->dev_ip_pool.host_map_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_p_addr + ip_pool;
 #endif
@@ -614,7 +614,7 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	print_debug("-----------------------------------\n");
 	print_debug("R S Cntrs: %p\n", dev->s_r_cntrs);
 	print_debug("S Cntrs: %p\n", dev->s_cntrs);
-	print_debug("FW Pool Dev P addr : %pa\n", &dev->dev_ip_pool.dev_p_addr);
+	print_debug("FW Pool Dev P addr : %pa\n", &dev->dev_ip_pool.d_p_addr);
 #ifdef USE_HOST_DMA
 	print_debug("FW Pool host P addr: %pa\n", &(dev->dev_ip_pool.host_map_p_addr));
 #endif
@@ -1323,7 +1323,7 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 #ifdef SEC_DMA
         if (desc < offset) {
 #endif
-            h_desc = dev->host_ip_pool.v_addr + (desc - dev->dev_ip_pool.dev_p_addr);
+            h_desc = dev->host_ip_pool.v_addr + (desc - dev->dev_ip_pool.d_p_addr);
 #ifdef SEC_DMA
         } else {
             h_desc = dev->host_ip_pool.v_addr + (desc - offset - dev->host_ip_pool.p_addr);
