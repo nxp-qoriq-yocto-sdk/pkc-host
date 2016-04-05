@@ -323,23 +323,19 @@ typedef struct fsl_h_rsrc_ring_pair {
 
 } fsl_h_rsrc_ring_pair_t;
 
-/* Structure defining the input pool */
-typedef struct ip_pool_info {
-	/* Information about the pool in firmware */
-	struct fw_pool_t {
-		dev_dma_addr_t dev_p_addr;
+struct dev_pool_info {
+	dev_dma_addr_t dev_p_addr;
+	void *host_map_v_addr;
 #ifdef USE_HOST_DMA
-		phys_addr_t host_map_p_addr;
+	phys_addr_t host_map_p_addr;
 #endif
-		void *host_map_v_addr;
-	} fw_pool;
-	/* Information about the shadow pool in driver */
-	struct drv_map_pool_t {
-		phys_addr_t p_addr;
-		void *v_addr;
-		void *pool;
-	} drv_map_pool;
-} ip_pool_info_t;
+};
+
+struct host_pool_info {
+	phys_addr_t p_addr;
+	void *v_addr;
+	void *pool;
+};
 
 /* Structure defining the output pool */
 typedef struct op_pool_info {
@@ -445,7 +441,8 @@ typedef struct fsl_crypto_dev {
 	struct counters_mem *s_cntrs;
 
 	/* Structure defining the input pool */
-	ip_pool_info_t ip_pool;
+	struct host_pool_info host_ip_pool;
+	struct dev_pool_info dev_ip_pool;
 
 	/* Output pool - Currently used by command ring to avoid
 	 * dynamic mem allocations */

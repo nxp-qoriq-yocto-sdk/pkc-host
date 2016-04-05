@@ -411,7 +411,7 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 		rp->depth = rp->info.depth;
 		rp->num_of_sec_engines = 1;
 
-		rp->ip_pool = dev->ip_pool.drv_map_pool.pool;
+		rp->ip_pool = dev->host_ip_pool.pool;
 		rp->req_r = NULL;
 		rp->resp_r = resp_r;
 		resp_r += rp->depth;
@@ -595,11 +595,11 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 
 	dev->s_r_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_r_cntrs;
 	dev->s_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_cntrs;
-	dev->ip_pool.fw_pool.dev_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr + ip_pool;
+	dev->dev_ip_pool.dev_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr + ip_pool;
 #ifdef USE_HOST_DMA
-	dev->ip_pool.fw_pool.host_map_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_p_addr + ip_pool;
+	dev->dev_ip_pool.host_map_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_p_addr + ip_pool;
 #endif
-	dev->ip_pool.fw_pool.host_map_v_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + ip_pool;
+	dev->dev_ip_pool.host_map_v_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + ip_pool;
 
 	ptr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + resp_intr_ctrl_flag;
 	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
@@ -615,11 +615,11 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	print_debug("-----------------------------------\n");
 	print_debug("R S Cntrs: %p\n", dev->s_r_cntrs);
 	print_debug("S Cntrs: %p\n", dev->s_cntrs);
-	print_debug("FW Pool Dev P addr: %llx\n", (uint64_t)dev->ip_pool.fw_pool.dev_p_addr);
+	print_debug("FW Pool Dev P addr : %pa\n", &dev->dev_ip_pool.dev_p_addr);
 #ifdef USE_HOST_DMA
-	print_debug("FW Pool host P addr: %pa\n", &(dev->ip_pool.fw_pool.host_map_p_addr));
+	print_debug("FW Pool host P addr: %pa\n", &(dev->dev_ip_pool.host_map_p_addr));
 #endif
-	print_debug("FW Pool host V addr: %p\n", dev->ip_pool.fw_pool.host_map_v_addr);
+	print_debug("FW Pool host V addr: %p\n", dev->dev_ip_pool.host_map_v_addr);
 
 	send_hs_command(HS_INIT_RING_PAIR, dev,	&(config->ring[rid]));
 }
@@ -929,9 +929,9 @@ int init_ip_pool(fsl_crypto_dev_t *dev)
 	if (!pool)
 		return -ENOMEM;
 
-	dev->ip_pool.drv_map_pool.v_addr = dev->host_mem->ip_pool;
-	dev->ip_pool.drv_map_pool.p_addr = __pa(dev->host_mem->ip_pool);
-	dev->ip_pool.drv_map_pool.pool = pool;
+	dev->host_ip_pool.v_addr = dev->host_mem->ip_pool;
+	dev->host_ip_pool.p_addr = __pa(dev->host_mem->ip_pool);
+	dev->host_ip_pool.pool = pool;
 	print_debug("Registered Pool Address: %p\n", pool);
 	return 0;
 }
@@ -1003,10 +1003,10 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 #ifdef SEC_DMA
                 if (ctx_desc < offset) {
 #endif
-                    h_desc = c_dev->ip_pool.fw_pool.host_map_v_addr + (ctx_desc - c_dev->ip_pool.fw_pool.dev_p_addr);
+                    h_desc = c_dev->dev_ip_pool.host_map_v_addr + (ctx_desc - c_dev->dev_ip_pool.dev_p_addr);
 #ifdef SEC_DMA
                 } else {
-                    h_desc = c_dev->ip_pool.fw_pool.host_map_v_addr + (ctx_desc - offset -  c_dev->ip_pool.drv_map_pool.p_addr);
+                    h_desc = c_dev->dev_ip_pool.host_map_v_addr + (ctx_desc - offset - c_dev->host_ip_pool.p_addr);
 		}
 #endif
 
@@ -1253,7 +1253,7 @@ error:
 ctx_pool_fail:
 	kfree(c_dev->op_pool.pool);
 op_pool_fail:
-	kfree(c_dev->ip_pool.drv_map_pool.pool);
+	kfree(c_dev->host_ip_pool.pool);
 ip_pool_fail:
 	pci_free_consistent(c_dev->priv_dev->dev,
 			    c_dev->priv_dev->bars[MEM_TYPE_DRIVER].len,
@@ -1295,7 +1295,7 @@ void cleanup_crypto_device(fsl_crypto_dev_t *dev)
 #endif
 
 	kfree(dev->ctx_pool);
-	kfree(dev->ip_pool.drv_map_pool.pool);
+	kfree(dev->host_ip_pool.pool);
 	kfree(dev->op_pool.pool);
 
 	/* Free the pci alloc consistent mem */
@@ -1350,15 +1350,15 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 #ifdef SEC_DMA
         if (desc < offset) {
 #endif
-            h_desc = dev->ip_pool.drv_map_pool.v_addr + (desc - dev->ip_pool.fw_pool.dev_p_addr);
+            h_desc = dev->host_ip_pool.v_addr + (desc - dev->dev_ip_pool.dev_p_addr);
 #ifdef SEC_DMA
         } else {
-            h_desc = dev->ip_pool.drv_map_pool.v_addr + (desc - offset - dev->ip_pool.drv_map_pool.p_addr);
+            h_desc = dev->host_ip_pool.v_addr + (desc - offset - dev->host_ip_pool.p_addr);
         }
 #endif
 
 #ifndef HIGH_PERF
-	if (get_flag(dev->ip_pool.drv_map_pool.pool, h_desc))
+	if (get_flag(dev->host_ip_pool.pool, h_desc))
 #endif
 		ctx0 = (crypto_op_ctx_t *) get_priv_data(h_desc);
 #ifndef HIGH_PERF
@@ -1585,8 +1585,8 @@ int32_t process_rings(fsl_crypto_dev_t *dev,
 /* Backward compatible functions for other algorithms */
 static inline void *ip_buf_d_v_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
-	unsigned long offset = h_v_addr - dev->ip_pool.drv_map_pool.v_addr;
-	return dev->ip_pool.fw_pool.host_map_v_addr + offset;
+	unsigned long offset = h_v_addr - dev->host_ip_pool.v_addr;
+	return dev->dev_ip_pool.host_map_v_addr + offset;
 }
 
 cmd_ring_entry_desc_t *get_buffer(fsl_crypto_dev_t *c_dev, void *id, uint32_t len,
@@ -1604,8 +1604,8 @@ cmd_ring_entry_desc_t *get_buffer(fsl_crypto_dev_t *c_dev, void *id, uint32_t le
 
 void put_buffer(fsl_crypto_dev_t *c_dev, void *id, void *addr)
 {
-	addr += c_dev->ip_pool.drv_map_pool.v_addr -
-		c_dev->ip_pool.fw_pool.host_map_v_addr;
+	addr += c_dev->host_ip_pool.v_addr -
+		c_dev->dev_ip_pool.host_map_v_addr;
 	free_buffer(id, addr);
 }
 

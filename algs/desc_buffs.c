@@ -181,14 +181,14 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 
 static inline dev_dma_addr_t desc_d_p_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
-	unsigned long offset = h_v_addr - dev->ip_pool.drv_map_pool.v_addr;
-	return dev->ip_pool.fw_pool.dev_p_addr + offset;
+	unsigned long offset = h_v_addr - dev->host_ip_pool.v_addr;
+	return dev->dev_ip_pool.dev_p_addr + offset;
 }
 
 static inline void *desc_d_v_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
-	unsigned long offset = h_v_addr - dev->ip_pool.drv_map_pool.v_addr;
-	return dev->ip_pool.fw_pool.host_map_v_addr + offset;
+	unsigned long offset = h_v_addr - dev->host_ip_pool.v_addr;
+	return dev->dev_ip_pool.host_map_v_addr + offset;
 }
 
 static inline dma_addr_t
@@ -209,7 +209,7 @@ static inline dev_dma_addr_t op_buf_d_dma_addr(fsl_crypto_dev_t *dev,
 static phys_addr_t h_map_p_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
 	unsigned long offset = h_v_addr - dev->ip_pool.drv_map_pool.v_addr;
-	return dev->ip_pool.fw_pool.host_map_p_addr + offset;
+	return dev->dev_ip_pool.host_map_p_addr + offset;
 }
 #endif
 

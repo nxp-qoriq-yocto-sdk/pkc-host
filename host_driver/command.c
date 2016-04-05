@@ -65,8 +65,8 @@ void process_cmd_response(fsl_crypto_dev_t *c_dev, dev_dma_addr_t desc,
 {
 	cmd_op_t *op_mem = NULL;
 	dma_addr_t *h_desc =
-	    (dma_addr_t *) (c_dev->ip_pool.fw_pool.host_map_v_addr +
-			    (desc - c_dev->ip_pool.fw_pool.dev_p_addr));
+	    (dma_addr_t *) (c_dev->dev_ip_pool.host_map_v_addr +
+			    (desc - c_dev->dev_ip_pool.dev_p_addr));
 	dev_dma_addr_t op_buf_addr = 0;
 
 	cmd_ring_entry_desc_t *cmd_desc = NULL;
