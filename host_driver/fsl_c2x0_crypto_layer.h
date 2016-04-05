@@ -331,18 +331,11 @@ struct dev_pool_info {
 #endif
 };
 
-struct host_pool_info {
+struct pool_info {
 	phys_addr_t p_addr;
 	void *v_addr;
 	void *pool;
 };
-
-/* Structure defining the output pool */
-typedef struct op_pool_info {
-	phys_addr_t p_addr;
-	void *v_addr;
-	void *pool;
-} op_pool_info_t;
 
 /* This structure defines the resp ring interfacing with the firmware */
 struct fw_resp_ring {
@@ -441,12 +434,12 @@ typedef struct fsl_crypto_dev {
 	struct counters_mem *s_cntrs;
 
 	/* Structure defining the input pool */
-	struct host_pool_info host_ip_pool;
+	struct pool_info host_ip_pool;
 	struct dev_pool_info dev_ip_pool;
 
 	/* Output pool - Currently used by command ring to avoid
 	 * dynamic mem allocations */
-	op_pool_info_t op_pool;
+	struct pool_info op_pool;
 
 	/* Ctx pool - Will be used during data path to allocate one
 	 * of the available static contexts */
