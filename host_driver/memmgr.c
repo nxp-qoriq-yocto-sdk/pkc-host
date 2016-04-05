@@ -91,7 +91,7 @@ Fields      :
 Returns		:	None.
 ******************************************************************************/
 
-void *create_pool(void *buf, uint32_t len)
+struct buffer_pool *create_pool(void *buf, uint32_t len)
 {
 	bp *pool;
 	bh *header;
