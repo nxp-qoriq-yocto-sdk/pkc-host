@@ -165,7 +165,7 @@ void *alloc_buffer(struct buffer_pool *pool, uint32_t len, uint8_t flag)
 	}
 
 	/* If the requested length does not fit to overall available free mem */
-	if (len > pool->tot_free_mem/*-sizeof(bh)*/) {
+	if (len > pool->tot_free_mem) {
 		print_info("Not enough space...  asked: %d Left: %d\n", len,
 			    pool->tot_free_mem);
 		goto error;
