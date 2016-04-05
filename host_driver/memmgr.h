@@ -36,27 +36,24 @@
 #ifndef FSL_PKC_MEMMGR_H
 #define FSL_PKC_MEMMGR_H
 
-struct buffer_header {
+typedef struct buffer_header {
 	struct buffer_header *prev_link;
 	struct buffer_header *next_link;
 	uint32_t len;
 	uint8_t in_use;
 	uint8_t flag;
 	unsigned long priv;
-};
-
-typedef struct buffer_header bh;
+} bh;
 
 typedef struct buffer_pool {
 	uint32_t tot_free_mem;
 	bh *free_list;
-
 	void *buff;
 	uint32_t len;
 	spinlock_t mem_lock;
 } bp;
 
-struct buffer_pool *create_pool(void *, uint32_t);
+void create_pool(struct buffer_pool *, void *, uint32_t);
 void *alloc_buffer(struct buffer_pool *, uint32_t, uint8_t);
 void free_buffer(struct buffer_pool *, void *);
 void reset_pool(struct buffer_pool *);

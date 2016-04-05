@@ -39,7 +39,6 @@
 #include "algs.h"
 #include "pkc_desc.h"
 #include "desc.h"
-#include "memmgr.h"
 #include "command.h"
 #include "crypto_ctx.h"
 

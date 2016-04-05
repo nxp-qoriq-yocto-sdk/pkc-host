@@ -41,7 +41,6 @@
 #include "rsa.h"
 #include "pkc_desc.h"
 #include "desc.h"
-#include "memmgr.h"
 #include "crypto_ctx.h"
 #ifdef VIRTIO_C2X0
 #include "fsl_c2x0_virtio.h"

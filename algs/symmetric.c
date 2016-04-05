@@ -38,7 +38,6 @@
 #include "fsl_c2x0_driver.h"
 #include "desc_buffs.h"
 #include "algs.h"
-#include "memmgr.h"
 #include "sg_sw_sec4.h"
 #include "crypto_ctx.h"
 #ifdef VIRTIO_C2X0

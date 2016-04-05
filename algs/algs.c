@@ -37,7 +37,6 @@
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
 #include "algs.h"
-#include "memmgr.h"
 #include "sg_sw_sec4.h"
 #include "error.h"
 

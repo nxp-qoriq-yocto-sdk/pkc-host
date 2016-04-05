@@ -90,26 +90,17 @@ Fields      :
 			len		:	total length of the device memory for the mempool.
 Returns		:	None.
 ******************************************************************************/
-
-struct buffer_pool *create_pool(void *buf, uint32_t len)
+void create_pool(struct buffer_pool *pool, void *buf, uint32_t len)
 {
-	bp *pool;
 	bh *header;
 
 	print_debug("Creating Pool\n");
-
 	print_debug("Buffer: %p\n", buf);
 	print_debug("Len   : %d\n", len);
 
 	if (len < MIN_QUANT_SIZE) {
 		print_error("Cannot register a buffer less the quant size\n");
-		return NULL;
-	}
-
-	pool = kzalloc(sizeof(bp), GFP_KERNEL);
-	if (!pool) {
-		print_error("Mem allocation for pool failed\n");
-		return NULL;
+		return;
 	}
 
 	pool->buff = buf;
@@ -134,8 +125,6 @@ struct buffer_pool *create_pool(void *buf, uint32_t len)
 
 	print_debug("Total free mem: %d\n", pool->tot_free_mem);
 	print_debug("Creating pool done\n");
-
-	return pool;
 }
 
 /******************************************************************************

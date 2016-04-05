@@ -37,7 +37,6 @@
 #define FSL_PKC_SG_SW_SEC4_H
 
 #include"common.h"
-#include "memmgr.h"
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
 #ifdef VIRTIO_C2X0

@@ -36,6 +36,8 @@
 #ifndef FSL_PKC_CRYPTO_LAYER_H
 #define FSL_PKC_CRYPTO_LAYER_H
 
+#include "memmgr.h"
+
 extern int napi_poll_count;
 
 /* the number of context pools is arbitrary and NR_CPUS is a good default
@@ -334,7 +336,7 @@ struct dev_pool_info {
 struct pool_info {
 	phys_addr_t p_addr;
 	void *v_addr;
-	struct buffer_pool *buf_pool;
+	struct buffer_pool buf_pool;
 };
 
 /* This structure defines the resp ring interfacing with the firmware */
@@ -479,8 +481,8 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
 void rearrange_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
 void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
 int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
-int init_ip_pool(fsl_crypto_dev_t *dev);
-int init_op_pool(fsl_crypto_dev_t *dev);
+void init_ip_pool(fsl_crypto_dev_t *dev);
+void init_op_pool(fsl_crypto_dev_t *dev);
 int init_crypto_ctx_pool(fsl_crypto_dev_t *dev);
 void init_handshake(fsl_crypto_dev_t *dev);
 void init_fw_resp_ring(fsl_crypto_dev_t *dev);

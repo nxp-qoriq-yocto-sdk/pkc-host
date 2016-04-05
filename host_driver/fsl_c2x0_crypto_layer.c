@@ -38,7 +38,6 @@
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
 #include "command.h"
-#include "memmgr.h"
 #include "algs.h"
 #include "error.h"
 #include "crypto_ctx.h"
@@ -411,7 +410,7 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 		rp->depth = rp->info.depth;
 		rp->num_of_sec_engines = 1;
 
-		rp->buf_pool = dev->host_ip_pool.buf_pool;
+		rp->buf_pool = &dev->host_ip_pool.buf_pool;
 		rp->req_r = NULL;
 		rp->resp_r = resp_r;
 		resp_r += rp->depth;
@@ -907,33 +906,22 @@ static int32_t load_firmware(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 	return 0;
 }
 
-int init_op_pool(fsl_crypto_dev_t *dev)
+void init_op_pool(fsl_crypto_dev_t *dev)
 {
-	struct buffer_pool *pool;
-
-	pool = create_pool(dev->host_mem->op_pool, DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
-	if (!pool)
-		return -ENOMEM;
+	create_pool(&dev->op_pool.buf_pool, dev->host_mem->op_pool,
+			DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
 
 	dev->op_pool.v_addr = dev->host_mem->op_pool;
 	dev->op_pool.p_addr = __pa(dev->host_mem->op_pool);
-	dev->op_pool.buf_pool = pool;
-	return 0;
 }
 
-int init_ip_pool(fsl_crypto_dev_t *dev)
+void init_ip_pool(fsl_crypto_dev_t *dev)
 {
-	struct buffer_pool *pool;
-
-	pool = create_pool(dev->host_mem->ip_pool, FIRMWARE_IP_BUFFER_POOL_SIZE);
-	if (!pool)
-		return -ENOMEM;
+	create_pool(&dev->host_ip_pool.buf_pool, dev->host_mem->ip_pool,
+			FIRMWARE_IP_BUFFER_POOL_SIZE);
 
 	dev->host_ip_pool.v_addr = dev->host_mem->ip_pool;
 	dev->host_ip_pool.p_addr = __pa(dev->host_mem->ip_pool);
-	dev->host_ip_pool.buf_pool = pool;
-	print_debug("Registered Pool Address: %p\n", pool);
-	return 0;
 }
 
 int init_crypto_ctx_pool(fsl_crypto_dev_t *dev)
@@ -1168,17 +1156,8 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 		goto ob_mem_fail;
 	}
 
-	err = init_ip_pool(c_dev);
-	if (err) {
-		print_error("Failed to create device input pool\n");
-		goto ip_pool_fail;
-	}
-
-	err = init_op_pool(c_dev);
-	if (err) {
-		print_error("Failed to create device output pool\n");
-		goto op_pool_fail;
-	}
+	init_ip_pool(c_dev);
+	init_op_pool(c_dev);
 
 	err = init_crypto_ctx_pool(c_dev);
 	if (err) {
@@ -1251,10 +1230,6 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 error:
 	kfree(c_dev->ctx_pool);
 ctx_pool_fail:
-	kfree(c_dev->op_pool.buf_pool);
-op_pool_fail:
-	kfree(c_dev->host_ip_pool.buf_pool);
-ip_pool_fail:
 	pci_free_consistent(c_dev->priv_dev->dev,
 			    c_dev->priv_dev->bars[MEM_TYPE_DRIVER].len,
 			    c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr,
@@ -1295,8 +1270,6 @@ void cleanup_crypto_device(fsl_crypto_dev_t *dev)
 #endif
 
 	kfree(dev->ctx_pool);
-	kfree(dev->host_ip_pool.buf_pool);
-	kfree(dev->op_pool.buf_pool);
 
 	/* Free the pci alloc consistent mem */
 	if (dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr) {

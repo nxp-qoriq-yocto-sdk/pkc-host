@@ -106,7 +106,6 @@ struct fsl_crypto_alg {
 	} u;
 };
 
-
 /*******************************************************************************
 Description :   Defines the crypto dev session context. This context is created
 		at the time of new crypto dev session.

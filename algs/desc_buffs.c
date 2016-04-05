@@ -38,7 +38,6 @@
 #include "fsl_c2x0_driver.h"
 #include "desc_buffs.h"
 #include "pkc_desc.h"
-#include "memmgr.h"
 
 #ifdef SEC_DMA
 extern struct c29x_dev *g_fsl_pci_dev;

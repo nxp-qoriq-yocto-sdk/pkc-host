@@ -37,7 +37,6 @@
 #include "algs.h"
 #include "pkc_desc.h"
 #include "desc.h"
-#include "memmgr.h"
 #include "test.h"
 #include "rsa_test.h"
 

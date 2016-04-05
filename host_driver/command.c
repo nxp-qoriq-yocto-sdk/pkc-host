@@ -38,7 +38,6 @@
 #include "fsl_c2x0_driver.h"
 #include "command.h"
 #include "sysfs.h"
-#include "memmgr.h"
 
 /* Functions used in case of reset commands for smooth exit */
 static int32_t wait_for_cmd_response(cmd_op_t *cmd_op);
@@ -575,8 +574,7 @@ static cmd_op_t *get_cmd_op_ctx(fsl_crypto_dev_t *c_dev,
 	cmd_op_t *cmd_op = NULL;
 	dev_dma_addr_t op_dev_addr = 0;
 
-	print_debug("c_dev->op_pool.pool: %p\n", c_dev->op_pool.buf_pool);
-	cmd_op = alloc_buffer(c_dev->op_pool.buf_pool, sizeof(cmd_op_t), 0);
+	cmd_op = alloc_buffer(&c_dev->op_pool.buf_pool, sizeof(cmd_op_t), 0);
 
 	if (NULL == cmd_op) {
 		print_error("Op buffer alloc failed !!!!\n");
@@ -615,7 +613,7 @@ error:
 		if (NULL != cmd_op->cmd_ctx) {
 			kfree(cmd_op->cmd_ctx);
 		}
-		put_buffer(c_dev, c_dev->op_pool.buf_pool, cmd_op);
+		put_buffer(c_dev, &c_dev->op_pool.buf_pool, cmd_op);
 	}
 
 	return NULL;
@@ -747,7 +745,7 @@ exit:
 
 	if (NULL != cmd_op) {
 		kfree(cmd_op->cmd_ctx);
-		free_buffer(c_dev->op_pool.buf_pool, cmd_op);
+		free_buffer(&c_dev->op_pool.buf_pool, cmd_op);
 	}
 
 	return ret;
