@@ -911,8 +911,8 @@ void init_op_pool(fsl_crypto_dev_t *dev)
 	create_pool(&dev->op_pool.buf_pool, dev->host_mem->op_pool,
 			DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
 
-	dev->op_pool.v_addr = dev->host_mem->op_pool;
-	dev->op_pool.p_addr = __pa(dev->host_mem->op_pool);
+	dev->op_pool.h_v_addr = dev->host_mem->op_pool;
+	dev->op_pool.h_p_addr = __pa(dev->host_mem->op_pool);
 }
 
 void init_ip_pool(fsl_crypto_dev_t *dev)
@@ -920,8 +920,8 @@ void init_ip_pool(fsl_crypto_dev_t *dev)
 	create_pool(&dev->host_ip_pool.buf_pool, dev->host_mem->ip_pool,
 			FIRMWARE_IP_BUFFER_POOL_SIZE);
 
-	dev->host_ip_pool.v_addr = dev->host_mem->ip_pool;
-	dev->host_ip_pool.p_addr = __pa(dev->host_mem->ip_pool);
+	dev->host_ip_pool.h_v_addr = dev->host_mem->ip_pool;
+	dev->host_ip_pool.h_p_addr = __pa(dev->host_mem->ip_pool);
 }
 
 int init_crypto_ctx_pool(fsl_crypto_dev_t *dev)
@@ -1323,10 +1323,10 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 #ifdef SEC_DMA
         if (desc < offset) {
 #endif
-            h_desc = dev->host_ip_pool.v_addr + (desc - dev->dev_ip_pool.d_p_addr);
+            h_desc = dev->host_ip_pool.h_v_addr + (desc - dev->dev_ip_pool.d_p_addr);
 #ifdef SEC_DMA
         } else {
-            h_desc = dev->host_ip_pool.v_addr + (desc - offset - dev->host_ip_pool.p_addr);
+            h_desc = dev->host_ip_pool.h_v_addr + (desc - offset - dev->host_ip_pool.h_p_addr);
         }
 #endif
 
@@ -1558,7 +1558,7 @@ int32_t process_rings(fsl_crypto_dev_t *dev,
 /* Backward compatible functions for other algorithms */
 static inline void *ip_buf_d_v_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
-	unsigned long offset = h_v_addr - dev->host_ip_pool.v_addr;
+	unsigned long offset = h_v_addr - dev->host_ip_pool.h_v_addr;
 	return dev->dev_ip_pool.h_v_addr + offset;
 }
 
@@ -1577,7 +1577,7 @@ struct cmd_ring_entry_desc *get_buffer(fsl_crypto_dev_t *c_dev, void *id,
 
 void put_buffer(fsl_crypto_dev_t *c_dev, struct buffer_pool *pool, void *addr)
 {
-	addr += c_dev->host_ip_pool.v_addr - c_dev->dev_ip_pool.h_v_addr;
+	addr += c_dev->host_ip_pool.h_v_addr - c_dev->dev_ip_pool.h_v_addr;
 	free_buffer(pool, addr);
 }
 
