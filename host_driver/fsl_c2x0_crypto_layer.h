@@ -464,6 +464,8 @@ typedef struct fsl_crypto_dev {
 	atomic_t app_resp_cnt;
 } fsl_crypto_dev_t;
 
+struct cmd_ring_entry_desc *get_buffer(fsl_crypto_dev_t *, void *, uint32_t, uint8_t);
+void put_buffer(fsl_crypto_dev_t *, struct buffer_pool *, void *);
 int32_t app_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 			 dev_dma_addr_t sec_desc);
 int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
