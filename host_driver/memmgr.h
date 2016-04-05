@@ -59,7 +59,6 @@ typedef struct buffer_pool {
 typedef struct cmd_ring_entry_desc cmd_ring_entry_desc_t;
 
 void *create_pool(void *, uint32_t);
-void destroy_pool(void *);
 cmd_ring_entry_desc_t *get_buffer(fsl_crypto_dev_t *, void *, uint32_t, uint8_t);
 void put_buffer(fsl_crypto_dev_t *, struct buffer_pool *, void *);
 void *alloc_buffer(struct buffer_pool *, uint32_t, uint8_t);
