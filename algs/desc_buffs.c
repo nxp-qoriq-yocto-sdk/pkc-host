@@ -187,7 +187,7 @@ static inline dev_dma_addr_t desc_d_p_addr(fsl_crypto_dev_t *dev, void *h_v_addr
 static inline void *desc_d_v_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
 	unsigned long offset = h_v_addr - dev->host_ip_pool.v_addr;
-	return dev->dev_ip_pool.host_map_v_addr + offset;
+	return dev->dev_ip_pool.h_v_addr + offset;
 }
 
 static inline dma_addr_t

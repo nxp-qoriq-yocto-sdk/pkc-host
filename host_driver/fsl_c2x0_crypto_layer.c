@@ -598,7 +598,7 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 #ifdef USE_HOST_DMA
 	dev->dev_ip_pool.host_map_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_p_addr + ip_pool;
 #endif
-	dev->dev_ip_pool.host_map_v_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + ip_pool;
+	dev->dev_ip_pool.h_v_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + ip_pool;
 
 	ptr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + resp_intr_ctrl_flag;
 	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
@@ -618,7 +618,7 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 #ifdef USE_HOST_DMA
 	print_debug("FW Pool host P addr: %pa\n", &(dev->dev_ip_pool.host_map_p_addr));
 #endif
-	print_debug("FW Pool host V addr: %p\n", dev->dev_ip_pool.host_map_v_addr);
+	print_debug("FW Pool host V addr: %p\n", dev->dev_ip_pool.h_v_addr);
 
 	send_hs_command(HS_INIT_RING_PAIR, dev,	&(config->ring[rid]));
 }
@@ -1559,7 +1559,7 @@ int32_t process_rings(fsl_crypto_dev_t *dev,
 static inline void *ip_buf_d_v_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
 	unsigned long offset = h_v_addr - dev->host_ip_pool.v_addr;
-	return dev->dev_ip_pool.host_map_v_addr + offset;
+	return dev->dev_ip_pool.h_v_addr + offset;
 }
 
 struct cmd_ring_entry_desc *get_buffer(fsl_crypto_dev_t *c_dev, void *id,
@@ -1577,7 +1577,7 @@ struct cmd_ring_entry_desc *get_buffer(fsl_crypto_dev_t *c_dev, void *id,
 
 void put_buffer(fsl_crypto_dev_t *c_dev, struct buffer_pool *pool, void *addr)
 {
-	addr += c_dev->host_ip_pool.v_addr - c_dev->dev_ip_pool.host_map_v_addr;
+	addr += c_dev->host_ip_pool.v_addr - c_dev->dev_ip_pool.h_v_addr;
 	free_buffer(pool, addr);
 }
 
