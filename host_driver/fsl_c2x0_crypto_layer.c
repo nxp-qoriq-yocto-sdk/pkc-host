@@ -411,7 +411,7 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 		rp->depth = rp->info.depth;
 		rp->num_of_sec_engines = 1;
 
-		rp->ip_pool = dev->host_ip_pool.pool;
+		rp->buf_pool = dev->host_ip_pool.buf_pool;
 		rp->req_r = NULL;
 		rp->resp_r = resp_r;
 		resp_r += rp->depth;
@@ -909,7 +909,7 @@ static int32_t load_firmware(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 
 int init_op_pool(fsl_crypto_dev_t *dev)
 {
-	void *pool;
+	struct buffer_pool *pool;
 
 	pool = create_pool(dev->host_mem->op_pool, DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
 	if (!pool)
@@ -917,13 +917,13 @@ int init_op_pool(fsl_crypto_dev_t *dev)
 
 	dev->op_pool.v_addr = dev->host_mem->op_pool;
 	dev->op_pool.p_addr = __pa(dev->host_mem->op_pool);
-	dev->op_pool.pool = pool;
+	dev->op_pool.buf_pool = pool;
 	return 0;
 }
 
 int init_ip_pool(fsl_crypto_dev_t *dev)
 {
-	void *pool;
+	struct buffer_pool *pool;
 
 	pool = create_pool(dev->host_mem->ip_pool, FIRMWARE_IP_BUFFER_POOL_SIZE);
 	if (!pool)
@@ -931,7 +931,7 @@ int init_ip_pool(fsl_crypto_dev_t *dev)
 
 	dev->host_ip_pool.v_addr = dev->host_mem->ip_pool;
 	dev->host_ip_pool.p_addr = __pa(dev->host_mem->ip_pool);
-	dev->host_ip_pool.pool = pool;
+	dev->host_ip_pool.buf_pool = pool;
 	print_debug("Registered Pool Address: %p\n", pool);
 	return 0;
 }
@@ -1251,9 +1251,9 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 error:
 	kfree(c_dev->ctx_pool);
 ctx_pool_fail:
-	kfree(c_dev->op_pool.pool);
+	kfree(c_dev->op_pool.buf_pool);
 op_pool_fail:
-	kfree(c_dev->host_ip_pool.pool);
+	kfree(c_dev->host_ip_pool.buf_pool);
 ip_pool_fail:
 	pci_free_consistent(c_dev->priv_dev->dev,
 			    c_dev->priv_dev->bars[MEM_TYPE_DRIVER].len,
@@ -1295,8 +1295,8 @@ void cleanup_crypto_device(fsl_crypto_dev_t *dev)
 #endif
 
 	kfree(dev->ctx_pool);
-	kfree(dev->host_ip_pool.pool);
-	kfree(dev->op_pool.pool);
+	kfree(dev->host_ip_pool.buf_pool);
+	kfree(dev->op_pool.buf_pool);
 
 	/* Free the pci alloc consistent mem */
 	if (dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr) {
@@ -1602,11 +1602,10 @@ cmd_ring_entry_desc_t *get_buffer(fsl_crypto_dev_t *c_dev, void *id, uint32_t le
 	return addr;
 }
 
-void put_buffer(fsl_crypto_dev_t *c_dev, void *id, void *addr)
+void put_buffer(fsl_crypto_dev_t *c_dev, struct buffer_pool *pool, void *addr)
 {
-	addr += c_dev->host_ip_pool.v_addr -
-		c_dev->dev_ip_pool.host_map_v_addr;
-	free_buffer(id, addr);
+	addr += c_dev->host_ip_pool.v_addr - c_dev->dev_ip_pool.host_map_v_addr;
+	free_buffer(pool, addr);
 }
 
 #ifdef VIRTIO_C2X0

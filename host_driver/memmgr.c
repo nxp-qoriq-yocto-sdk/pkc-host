@@ -63,9 +63,8 @@ Fields      :
 Returns		:	None.
 ******************************************************************************/
 
-void reset_pool(void *id)
+void reset_pool(struct buffer_pool *pool)
 {
-	bp *pool = id;
 	bh *header = NULL;
 
 	spin_lock_bh(&pool->mem_lock);
@@ -148,9 +147,8 @@ Fields      :
 Return		:	None.
 ******************************************************************************/
 
-void *alloc_buffer(void *id, uint32_t len, uint8_t flag)
+void *alloc_buffer(struct buffer_pool *pool, uint32_t len, uint8_t flag)
 {
-	bp *pool = id;
 	bh *f_node;
 	bh *a_node;
 	bh *new_node;
@@ -242,9 +240,8 @@ Fields      :
 Returns		:	None.
 ******************************************************************************/
 
-void free_buffer(void *id, void *buffer)
+void free_buffer(struct buffer_pool *pool, void *buffer)
 {
-	bp *pool = id;
 	bh *header = NULL;
 
 	print_debug(" Free Buffer\n");

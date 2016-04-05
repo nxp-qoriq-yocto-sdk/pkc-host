@@ -339,8 +339,8 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 	print_debug("Ring selected: %d\n", r_id);
 	crypto_ctx->ctx_pool = c_dev->ctx_pool;
 	crypto_ctx->crypto_mem.dev = c_dev;
-	crypto_ctx->crypto_mem.pool = c_dev->ring_pairs[r_id].ip_pool;
-	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.pool);
+	crypto_ctx->crypto_mem.buf_pool = c_dev->ring_pairs[r_id].buf_pool;
+	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.buf_pool);
 
 	switch (op) {
 	case RNG_INIT:

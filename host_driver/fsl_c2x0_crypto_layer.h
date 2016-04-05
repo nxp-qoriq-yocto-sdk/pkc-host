@@ -302,7 +302,7 @@ typedef struct fsl_h_rsrc_ring_pair {
 	struct list_head bh_ctx_list_node;
 
 	uint32_t *intr_ctrl_flag;
-	void *ip_pool;
+	struct buffer_pool *buf_pool;
 	struct req_ring_entry *req_r;
 	struct resp_ring_entry *resp_r;
 	struct ring_idxs_mem *indexes;
@@ -334,7 +334,7 @@ struct dev_pool_info {
 struct pool_info {
 	phys_addr_t p_addr;
 	void *v_addr;
-	void *pool;
+	struct buffer_pool *buf_pool;
 };
 
 /* This structure defines the resp ring interfacing with the firmware */

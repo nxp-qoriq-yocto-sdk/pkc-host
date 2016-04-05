@@ -575,9 +575,8 @@ static cmd_op_t *get_cmd_op_ctx(fsl_crypto_dev_t *c_dev,
 	cmd_op_t *cmd_op = NULL;
 	dev_dma_addr_t op_dev_addr = 0;
 
-	print_debug("c_dev->op_pool.pool: %p\n", c_dev->op_pool.pool);
-	cmd_op =
-	    (cmd_op_t *) alloc_buffer(c_dev->op_pool.pool, sizeof(cmd_op_t), 0);
+	print_debug("c_dev->op_pool.pool: %p\n", c_dev->op_pool.buf_pool);
+	cmd_op = alloc_buffer(c_dev->op_pool.buf_pool, sizeof(cmd_op_t), 0);
 
 	if (NULL == cmd_op) {
 		print_error("Op buffer alloc failed !!!!\n");
@@ -616,7 +615,7 @@ error:
 		if (NULL != cmd_op->cmd_ctx) {
 			kfree(cmd_op->cmd_ctx);
 		}
-		put_buffer(c_dev, c_dev->op_pool.pool, cmd_op);
+		put_buffer(c_dev, c_dev->op_pool.buf_pool, cmd_op);
 	}
 
 	return NULL;
@@ -634,7 +633,7 @@ int32_t send_command_to_fw(fsl_crypto_dev_t *c_dev, commands_t command,
 	int32_t ret = 0;
 	print_debug("Sending command: %d to firmware\n", command);
 
-	pci_cmd_desc = get_buffer(c_dev, c_dev->ring_pairs[0].ip_pool,
+	pci_cmd_desc = get_buffer(c_dev, c_dev->ring_pairs[0].buf_pool,
 			sizeof(cmd_ring_entry_desc_t), 0);
 	if (!pci_cmd_desc) {
 		print_error("Cmd desc alloc failed!!!\n");
@@ -743,12 +742,12 @@ int32_t send_command_to_fw(fsl_crypto_dev_t *c_dev, commands_t command,
 exit:
 
 	if (NULL != pci_cmd_desc) {
-		put_buffer(c_dev, c_dev->ring_pairs[0].ip_pool, pci_cmd_desc);
+		put_buffer(c_dev, c_dev->ring_pairs[0].buf_pool, pci_cmd_desc);
 	}
 
 	if (NULL != cmd_op) {
 		kfree(cmd_op->cmd_ctx);
-		free_buffer(c_dev->op_pool.pool, cmd_op);
+		free_buffer(c_dev->op_pool.buf_pool, cmd_op);
 	}
 
 	return ret;

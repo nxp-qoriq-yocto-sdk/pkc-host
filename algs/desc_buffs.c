@@ -95,7 +95,7 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 			break;
 		case BT_IP:
 			if (mem_info->split_ip) {
-				buffers[i].h_v_addr = alloc_buffer(mem_info->pool,
+				buffers[i].h_v_addr = alloc_buffer(mem_info->buf_pool,
 								aligned_len, 1);
 				if (unlikely(!buffers[i].h_v_addr)) {
 					print_error("Alloc mem for buff :%d type :%d failed\n",
@@ -112,7 +112,7 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 		}
 	}
 
-	mem = alloc_buffer(mem_info->pool, tot_mem, 1);
+	mem = alloc_buffer(mem_info->buf_pool, tot_mem, 1);
 	if (!mem)
 		goto no_mem;
 
@@ -130,7 +130,7 @@ no_mem:
 error:
 	while (i--) {
 		if (buffers[i].bt == BT_IP) {
-			free_buffer(mem_info->pool, buffers[i].h_v_addr);
+			free_buffer(mem_info->buf_pool, buffers[i].h_v_addr);
 			mem_info->sg_cnt--;
 		}
 	}
@@ -154,14 +154,14 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 	uint32_t i = 0;
 
 	if (buffers[0].h_v_addr) {
-		free_buffer(mem_info->pool, buffers[0].h_v_addr);
+		free_buffer(mem_info->buf_pool, buffers[0].h_v_addr);
 	}
 
 	for (i = 1; i < mem_info->count; i++) {
 		switch (buffers[i].bt) {
 		case BT_IP:
 			if (mem_info->split_ip && buffers[i].h_v_addr) {
-				free_buffer(mem_info->pool, buffers[i].h_v_addr);
+				free_buffer(mem_info->buf_pool, buffers[i].h_v_addr);
 			}
 			break;
 		case BT_OP:
