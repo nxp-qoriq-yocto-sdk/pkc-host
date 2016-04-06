@@ -129,8 +129,7 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 	uint32_t start_idx = desc_size - 1;
 
 	rsa_pub_op_buffers_t *mem = &(mem_info->c_buffers.rsa_pub_op);
-	struct rsa_pub_desc_s *rsa_pub_desc =
-	    (struct rsa_pub_desc_s *)mem->desc_buff.h_v_addr;
+	struct rsa_pub_desc_s *rsa_pub_desc = mem->desc_buff.h_v_addr;
 
 #ifdef SEC_DMA
         dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
