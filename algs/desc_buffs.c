@@ -190,13 +190,6 @@ static inline void *desc_d_v_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 	return dev->dev_ip_pool.h_v_addr + offset;
 }
 
-static inline dma_addr_t
-op_buf_h_dma_addr(fsl_crypto_dev_t *crypto_dev, void *h_v_addr, uint32_t len)
-{
-	struct pci_dev *dev = crypto_dev->priv_dev->dev;
-	return pci_map_single(dev, h_v_addr, len, PCI_DMA_BIDIRECTIONAL);
-}
-
 static inline dev_dma_addr_t op_buf_d_dma_addr(fsl_crypto_dev_t *dev,
 					       dma_addr_t h_dma_addr)
 {
@@ -226,6 +219,8 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 {
 	uint32_t i;
 	buffer_info_t *buffers = mem_info->buffers;
+	struct fsl_crypto_dev *c_dev = mem_info->dev;
+	struct pci_dev *dev = c_dev->priv_dev->dev;
 
 	for (i = 0; i < mem_info->count; i++) {
 		buffers[i].h_p_addr = __pa(buffers[i].h_v_addr);
@@ -241,8 +236,9 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 			buffers[i].d_p_addr = desc_d_p_addr(mem_info->dev, buffers[i].h_v_addr);
 			break;
 		case BT_OP:
-			buffers[i].h_dma_addr = op_buf_h_dma_addr(mem_info->dev,
-					buffers[i].h_v_addr, buffers[i].len);
+			buffers[i].h_dma_addr = pci_map_single(dev,
+					buffers[i].h_v_addr, buffers[i].len,
+					PCI_DMA_BIDIRECTIONAL);
 			buffers[i].d_p_addr = op_buf_d_dma_addr(mem_info->dev,
 					      buffers[i].h_dma_addr);
 			break;
