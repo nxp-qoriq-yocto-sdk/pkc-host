@@ -190,13 +190,6 @@ static inline void *desc_d_v_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 	return dev->dev_ip_pool.h_v_addr + offset;
 }
 
-static inline dev_dma_addr_t op_buf_d_dma_addr(fsl_crypto_dev_t *dev,
-					       dma_addr_t h_dma_addr)
-{
-	dev_dma_addr_t d_dma = (dev_dma_addr_t) h_dma_addr;
-	return d_dma + dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-}
-
 #ifdef USE_HOST_DMA
 static phys_addr_t h_map_p_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
@@ -221,6 +214,7 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 	buffer_info_t *buffers = mem_info->buffers;
 	struct fsl_crypto_dev *c_dev = mem_info->dev;
 	struct pci_dev *dev = c_dev->priv_dev->dev;
+	struct pci_bar_info *bars = c_dev->priv_dev->bars;
 
 	for (i = 0; i < mem_info->count; i++) {
 		buffers[i].h_p_addr = __pa(buffers[i].h_v_addr);
@@ -239,8 +233,8 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 			buffers[i].h_dma_addr = pci_map_single(dev,
 					buffers[i].h_v_addr, buffers[i].len,
 					PCI_DMA_BIDIRECTIONAL);
-			buffers[i].d_p_addr = op_buf_d_dma_addr(mem_info->dev,
-					      buffers[i].h_dma_addr);
+			buffers[i].d_p_addr = buffers[i].h_dma_addr +
+					bars[MEM_TYPE_DRIVER].dev_p_addr;
 			break;
 		}
 	}
