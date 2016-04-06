@@ -143,15 +143,15 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 		      HDR_ONE);
 
 #ifdef SEC_DMA
-	ASSIGN64(rsa_pub_desc->n_dma, (mem->n_buff.h_p_addr + offset));
-	ASSIGN64(rsa_pub_desc->e_dma, (mem->e_buff.h_p_addr + offset));
-	ASSIGN64(rsa_pub_desc->f_dma, (mem->f_buff.h_p_addr + offset));
+	IOWRITE64BE(mem->n_buff.h_p_addr + offset, &rsa_pub_desc->n_dma);
+	IOWRITE64BE(mem->e_buff.h_p_addr + offset, &rsa_pub_desc->e_dma);
+	IOWRITE64BE(mem->f_buff.h_p_addr + offset, &rsa_pub_desc->f_dma);
 #else
-	ASSIGN64(rsa_pub_desc->n_dma, mem->n_buff.d_p_addr);
-	ASSIGN64(rsa_pub_desc->e_dma, mem->e_buff.d_p_addr);
-	ASSIGN64(rsa_pub_desc->f_dma, mem->f_buff.d_p_addr);
+	IOWRITE64BE(mem->n_buff.d_p_addr, &rsa_pub_desc->n_dma);
+	IOWRITE64BE(mem->e_buff.d_p_addr, &rsa_pub_desc->e_dma);
+	IOWRITE64BE(mem->f_buff.d_p_addr, &rsa_pub_desc->f_dma);
 #endif
-	ASSIGN64(rsa_pub_desc->g_dma, mem->g_buff.d_p_addr);
+	IOWRITE64BE(mem->g_buff.d_p_addr, &rsa_pub_desc->g_dma);
 
 	iowrite32be((mem->e_buff.len << 12) | mem->n_buff.len, &rsa_pub_desc->sgf_flg);
 	iowrite32be(mem->f_buff.len, &rsa_pub_desc->msg_len);
@@ -208,10 +208,10 @@ static void constr_rsa_priv1_op_desc(crypto_mem_info_t *mem_info)
 							    HDR_DESCLEN_MASK) |
 		      HDR_ONE);
 
-	ASSIGN64(rsa_priv_desc->n_dma, mem->n_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->d_dma, mem->d_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->g_dma, mem->g_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->f_dma, mem->f_buff.d_p_addr);
+	IOWRITE64BE(mem->n_buff.d_p_addr, &rsa_priv_desc->n_dma);
+	IOWRITE64BE(mem->d_buff.d_p_addr, &rsa_priv_desc->d_dma);
+	IOWRITE64BE(mem->g_buff.d_p_addr, &rsa_priv_desc->g_dma);
+	IOWRITE64BE(mem->f_buff.d_p_addr, &rsa_priv_desc->f_dma);
 
 	iowrite32be((mem->d_buff.len << 12) | mem->n_buff.len, &rsa_priv_desc->sgf_flg);
 	iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_RSADEC_PRVKEY
@@ -298,13 +298,13 @@ static void constr_rsa_priv2_op_desc(crypto_mem_info_t *mem_info)
 							    HDR_DESCLEN_MASK) |
 		      HDR_ONE);
 
-	ASSIGN64(rsa_priv_desc->p_dma, mem->p_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->q_dma, mem->q_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->d_dma, mem->d_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->f_dma, mem->f_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->g_dma, mem->g_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->tmp1_dma, mem->tmp1_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->tmp2_dma, mem->tmp2_buff.d_p_addr);
+	IOWRITE64BE(mem->p_buff.d_p_addr, &rsa_priv_desc->p_dma);
+	IOWRITE64BE(mem->q_buff.d_p_addr, &rsa_priv_desc->q_dma);
+	IOWRITE64BE(mem->d_buff.d_p_addr, &rsa_priv_desc->d_dma);
+	IOWRITE64BE(mem->f_buff.d_p_addr, &rsa_priv_desc->f_dma);
+	IOWRITE64BE(mem->g_buff.d_p_addr, &rsa_priv_desc->g_dma);
+	IOWRITE64BE(mem->tmp1_buff.d_p_addr, &rsa_priv_desc->tmp1_dma);
+	IOWRITE64BE(mem->tmp2_buff.d_p_addr, &rsa_priv_desc->tmp2_dma);
 
 	iowrite32be((mem->d_buff.len << 12) | mem->f_buff.len, &rsa_priv_desc->sgf_flg);
 	iowrite32be((mem->q_buff.len << 12) | mem->p_buff.len, &rsa_priv_desc->p_q_len);
@@ -420,23 +420,23 @@ static void constr_rsa_priv3_op_desc(crypto_mem_info_t *mem_info)
 		      HDR_ONE);
 
 #ifdef SEC_DMA
-	ASSIGN64(rsa_priv_desc->p_dma, (mem->p_buff.h_p_addr + offset));
-	ASSIGN64(rsa_priv_desc->q_dma, (mem->q_buff.h_p_addr + offset));
-	ASSIGN64(rsa_priv_desc->dp_dma, (mem->dp_buff.h_p_addr + offset));
-	ASSIGN64(rsa_priv_desc->dq_dma, (mem->dq_buff.h_p_addr + offset));
-	ASSIGN64(rsa_priv_desc->c_dma, (mem->c_buff.h_p_addr + offset));
-	ASSIGN64(rsa_priv_desc->g_dma, (mem->g_buff.h_p_addr + offset));
+	IOWRITE64BE(mem->p_buff.h_p_addr + offset, &rsa_priv_desc->p_dma);
+	IOWRITE64BE(mem->q_buff.h_p_addr + offset, &rsa_priv_desc->q_dma);
+	IOWRITE64BE(mem->dp_buff.h_p_addr + offset, &rsa_priv_desc->dp_dma);
+	IOWRITE64BE(mem->dq_buff.h_p_addr + offset, &rsa_priv_desc->dq_dma);
+	IOWRITE64BE(mem->c_buff.h_p_addr + offset, &rsa_priv_desc->c_dma);
+	IOWRITE64BE(mem->g_buff.h_p_addr + offset, &rsa_priv_desc->g_dma);
 #else
-	ASSIGN64(rsa_priv_desc->p_dma, mem->p_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->q_dma, mem->q_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->dp_dma, mem->dp_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->dq_dma, mem->dq_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->c_dma, mem->c_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->g_dma, mem->g_buff.d_p_addr);
+	IOWRITE64BE(mem->p_buff.d_p_addr, &rsa_priv_desc->p_dma);
+	IOWRITE64BE(mem->q_buff.d_p_addr, &rsa_priv_desc->q_dma);
+	IOWRITE64BE(mem->dp_buff.d_p_addr, &rsa_priv_desc->dp_dma);
+	IOWRITE64BE(mem->dq_buff.d_p_addr, &rsa_priv_desc->dq_dma);
+	IOWRITE64BE(mem->c_buff.d_p_addr, &rsa_priv_desc->c_dma);
+	IOWRITE64BE(mem->g_buff.d_p_addr, &rsa_priv_desc->g_dma);
 #endif
-	ASSIGN64(rsa_priv_desc->tmp1_dma, mem->tmp1_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->tmp2_dma, mem->tmp2_buff.d_p_addr);
-	ASSIGN64(rsa_priv_desc->f_dma, mem->f_buff.d_p_addr);
+	IOWRITE64BE(mem->tmp1_buff.d_p_addr, &rsa_priv_desc->tmp1_dma);
+	IOWRITE64BE(mem->tmp2_buff.d_p_addr, &rsa_priv_desc->tmp2_dma);
+	IOWRITE64BE(mem->f_buff.d_p_addr, &rsa_priv_desc->f_dma);
 
 	iowrite32be(mem->f_buff.len, &rsa_priv_desc->sgf_flg);
 	iowrite32be((mem->q_buff.len << 12) | mem->p_buff.len, &rsa_priv_desc->p_q_len);
