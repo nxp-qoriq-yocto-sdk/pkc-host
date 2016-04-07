@@ -326,7 +326,7 @@ struct dev_pool_info {
 };
 
 struct pool_info {
-	phys_addr_t h_p_addr;
+	dma_addr_t h_dma_addr;
 	void *h_v_addr;
 	struct buffer_pool buf_pool;
 };
