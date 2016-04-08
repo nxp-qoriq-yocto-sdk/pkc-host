@@ -18,15 +18,6 @@ CONFIG_FSL_C2X0_SYMMETRIC_OFFLOAD=n
 #NOTE: RNG offloading is not supported
 RNG_OFFLOAD=n
 
-#Specifies whether SEC DMA support to be enabled /disabled in the driver
-#If enabled, then Host DMA support would be always disabled.
-#NOTE: Only USE_SEC_DMA=y configuration is currently supported
-USE_SEC_DMA=y
-
-#Specifies whether host DMA support to be enabled /disabled in the driver
-#NOTE: HOST_DMA is not currently supported
-USE_HOST_DMA=n
-
 #Specifies whether driver/firmware is running high performance mode
 HIGH_PERF_MODE=y
 
@@ -39,11 +30,6 @@ ENHANCE_KERNEL_TEST=n
 VIRTIO_C2X0=n
 
 GCOV_PROFILE := n
-
-# do not enable together SEC_DMA and HOST_DMA
-ifeq ($(USE_SEC_DMA), y)
-USE_HOST_DMA = n
-endif
 
 KERNEL_DIR ?=/lib/modules/$(shell uname -r)/build
 CONFIG_FSL_C2X0_CRYPTO_DRV ?= m
@@ -65,9 +51,8 @@ ccflags-$(CONFIG_FSL_C2X0_HASH_OFFLOAD) += -DHASH_OFFLOAD
 ccflags-$(CONFIG_FSL_C2X0_HMAC_OFFLOAD) += -DHMAC_OFFLOAD
 ccflags-$(CONFIG_FSL_C2X0_SYMMETRIC_OFFLOAD) += -DSYMMETRIC_OFFLOAD
 ccflags-$(RNG_OFFLOAD) += -DRNG_OFFLOAD
-ccflags-$(USE_SEC_DMA) += -DSEC_DMA
-ccflags-$(USE_HOST_DMA) += -DUSE_HOST_DMA
 ccflags-$(ENHANCE_KERNEL_TEST) += -DENHANCE_KERNEL_TEST
+ccflags-y += -DSEC_DMA
 
 DRIVER_KOBJ = fsl_pkc_crypto_offload_drv
 obj-$(CONFIG_FSL_C2X0_CRYPTO_DRV) := $(DRIVER_KOBJ).o
