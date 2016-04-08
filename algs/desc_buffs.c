@@ -131,50 +131,27 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 	struct fsl_crypto_dev *c_dev = mem_info->dev;
 	struct pci_dev *dev = c_dev->priv_dev->dev;
 	struct pci_bar_info *bars = c_dev->priv_dev->bars;
-	uint64_t offset;
 
 	for (i = 0; i < mem_info->count; i++) {
-		buffers[i].h_p_addr = __pa(buffers[i].h_v_addr);
-
 		switch (buffers[i].bt) {
 		case BT_DESC:
+			buffers[i].h_dma_addr = c_dev->host_ip_pool.h_dma_addr +
+				(buffers[i].h_v_addr - c_dev->host_ip_pool.h_v_addr);
+			break;
 		case BT_IP:
-			buffers[i].h_dma_addr = buffers[i].h_p_addr;
-			offset = buffers[i].h_v_addr - c_dev->host_ip_pool.h_v_addr;
-			buffers[i].d_v_addr = c_dev->dev_ip_pool.h_v_addr + offset;
-			buffers[i].d_p_addr = c_dev->dev_ip_pool.d_p_addr + offset;
+			buffers[i].h_dma_addr = pci_map_single(dev,
+					buffers[i].req_ptr, buffers[i].len,
+					PCI_DMA_BIDIRECTIONAL);
 			break;
 		case BT_OP:
 			buffers[i].h_dma_addr = pci_map_single(dev,
 					buffers[i].h_v_addr, buffers[i].len,
 					PCI_DMA_BIDIRECTIONAL);
-			buffers[i].d_p_addr = buffers[i].h_dma_addr +
-					bars[MEM_TYPE_DRIVER].dev_p_addr;
 			break;
 		}
+		buffers[i].d_p_addr = bars[MEM_TYPE_DRIVER].dev_p_addr +
+					buffers[i].h_dma_addr;
 	}
-}
-
-int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
-	int32_t i;
-	buffer_info_t *buffers;
-	struct pci_dev *dev = crypto_mem->dev->priv_dev->dev;
-
-	if (!crypto_mem) {
-		return -1;
-	}
-
-	buffers = crypto_mem->buffers;
-	for (i = 0; i < crypto_mem->count; i++) {
-		if (buffers[i].bt != BT_IP) {
-			continue;
-		}
-
-		buffers[i].h_p_addr = pci_map_single(dev, buffers[i].req_ptr,
-				buffers[i].len, PCI_DMA_BIDIRECTIONAL);
-	}
-
-	return 0;
 }
 
 int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
@@ -191,9 +168,7 @@ int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
 		if (buffers[i].bt != BT_IP) {
 			continue;
 		}
-
-		pci_unmap_single(dev,
-			(dma_addr_t)buffers[i].h_p_addr, buffers[i].len,
+		pci_unmap_single(dev, buffers[i].h_dma_addr, buffers[i].len,
 			PCI_DMA_BIDIRECTIONAL);
 	}
 

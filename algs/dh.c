@@ -537,10 +537,6 @@ int dh_op(struct pkc_request *req)
 		host_to_dev(&crypto_ctx->crypto_mem);
 		print_debug("Host to dev convert complete.... \n");
 
-#ifdef SEC_DMA
-		map_crypto_mem(&(crypto_ctx->crypto_mem));
-#endif
-
 		/* Constr the hw desc */
 		if(ecdh) {
 			constr_ecdh_keygen_desc(&crypto_ctx->crypto_mem, ecc_bin);
@@ -578,10 +574,6 @@ int dh_op(struct pkc_request *req)
 		host_to_dev(&crypto_ctx->crypto_mem);
 
 		print_debug("Host to dev convert complete....\n");
-
-#ifdef SEC_DMA
-            map_crypto_mem(&(crypto_ctx->crypto_mem));
-#endif
 
 		/* Constr the hw desc */
 		if (ecdh) {

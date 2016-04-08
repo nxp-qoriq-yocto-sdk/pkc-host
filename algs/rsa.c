@@ -643,10 +643,6 @@ int rsa_op(struct pkc_request *req)
 
 		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
-#ifdef SEC_DMA
-		map_crypto_mem(&(crypto_ctx->crypto_mem));
-#endif
-
 		print_debug("Host to dev convert complete....\n");
 
 		/* Constr the hw desc */
@@ -736,10 +732,6 @@ int rsa_op(struct pkc_request *req)
 
 		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
-#ifdef SEC_DMA
-                map_crypto_mem(&(crypto_ctx->crypto_mem));
-#endif
-
 		print_debug("Host to dev convert complete....\n");
 
 		/* Constr the hw desc */

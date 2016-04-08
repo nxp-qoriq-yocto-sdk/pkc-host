@@ -816,9 +816,7 @@ int dsa_op(struct pkc_request *req)
 		print_debug("DSA keygen init mem complete.....\n");
 		host_to_dev(&crypto_ctx->crypto_mem);
 		print_debug("Host to dev convert complete....\n");
-#ifdef SEC_DMA
-                map_crypto_mem(&(crypto_ctx->crypto_mem));
-#endif
+
 		if (ecdsa) {
 			constr_ecdsa_keygen_desc(&crypto_ctx->crypto_mem, ecc_bin);
 		} else {
@@ -847,9 +845,6 @@ int dsa_op(struct pkc_request *req)
 		}
 		print_debug("DSA Sign init mem complete.....\n");
 		host_to_dev(&crypto_ctx->crypto_mem);
-#ifdef SEC_DMA
-                map_crypto_mem(&(crypto_ctx->crypto_mem));
-#endif
 
 		print_debug("Host to dev convert complete....\n");
 		if (ecdsa) {
@@ -881,9 +876,6 @@ int dsa_op(struct pkc_request *req)
 		}
 		print_debug("DSA Verify init mem complete.....\n");
 		host_to_dev(&crypto_ctx->crypto_mem);
-#ifdef SEC_DMA
-                map_crypto_mem(&(crypto_ctx->crypto_mem));
-#endif
 		print_debug("Host to dev convert complete....\n");
 		if (ecdsa) {
 			constr_ecdsa_verify_desc(&crypto_ctx->crypto_mem, ecc_bin);

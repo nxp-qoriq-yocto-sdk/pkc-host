@@ -44,18 +44,17 @@ typedef enum buffer_type {
 
 struct buffer_info {
 	buffer_type_t bt;
+
 	uint32_t len;
 
-	void *h_v_addr;
 	uint8_t *req_ptr;
+	void *h_v_addr;
+	dma_addr_t h_dma_addr;
+	/* FIXME: convert all descriptors to use dma address */
+	phys_addr_t h_p_addr;
 
-	/* Device related fields */
 	void *d_v_addr;
 	dev_p_addr_t d_p_addr;
-
-	/* Host related fields */
-	phys_addr_t h_p_addr;
-	dma_addr_t h_dma_addr;
 
 	unsigned long priv;
 } __packed;
@@ -201,7 +200,6 @@ typedef struct crypto_mem_info {
 int32_t memcpy_to_dev(crypto_mem_info_t *mem);
 void host_to_dev(crypto_mem_info_t *mem_info);
 #ifdef SEC_DMA
-int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem);
 int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem);
 #endif
 int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info);
