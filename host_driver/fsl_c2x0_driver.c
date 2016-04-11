@@ -960,6 +960,9 @@ void fsl_free_bar_map(struct pci_bar_info *bar, int bar_max)
 {
 	int i;
 
+	/* This function makes sense only for CONFIG and SRAM bars */
+	bar_max = max(bar_max, MEM_TYPE_DRIVER);
+
 	for (i = 0; i < bar_max; i++) {
 		iounmap(bar->host_v_addr);
 		release_mem_region(bar->host_p_addr, bar->len);
