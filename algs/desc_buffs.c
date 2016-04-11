@@ -39,9 +39,7 @@
 #include "desc_buffs.h"
 #include "pkc_desc.h"
 
-#ifdef SEC_DMA
 extern struct c29x_dev *g_fsl_pci_dev;
-#endif
 
 static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 {
@@ -178,13 +176,6 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 	return 0;
 }
 
-#ifdef USE_HOST_DMA
-static phys_addr_t h_map_p_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
-{
-	unsigned long offset = h_v_addr - dev->ip_pool.drv_map_pool.v_addr;
-	return dev->dev_ip_pool.host_map_p_addr + offset;
-}
-#endif
 
 /******************************************************************************
 Description :	Calculate all the related addresses from the device memory
@@ -213,9 +204,6 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 		case BT_IP:
 			buffers[i].h_dma_addr = buffers[i].h_p_addr;
 			offset = buffers[i].h_v_addr - c_dev->host_ip_pool.h_v_addr;
-#ifdef USE_HOST_DMA
-			buffers[i].h_map_p_addr = h_map_p_addr(mem_info->dev, buffers[i].h_v_addr);
-#endif
 			buffers[i].d_v_addr = c_dev->dev_ip_pool.h_v_addr + offset;
 			buffers[i].d_p_addr = c_dev->dev_ip_pool.d_p_addr + offset;
 			break;
@@ -230,7 +218,6 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 	}
 }
 
-#ifdef SEC_DMA
 /**
  * Map Crypto Memory.
  *
@@ -291,7 +278,6 @@ int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
 
 	return 0;
 }
-#endif
 
 /******************************************************************************
 Description : Copy the data from host memory to device memory.   
@@ -314,9 +300,6 @@ int32_t memcpy_to_dev(crypto_mem_info_t *mem)
 			memcpy(buffers[i].d_v_addr, buffers[i].h_v_addr, buffers[i].len);
 			break;
 		case BT_IP:
-#ifndef SEC_DMA
-			memcpy(buffers[i].d_v_addr, buffers[i].req_ptr, buffers[i].len);
-#endif
 		case BT_OP:
 			break;
 		}
