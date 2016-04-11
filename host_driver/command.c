@@ -94,7 +94,7 @@ void process_cmd_response(fsl_crypto_dev_t *c_dev, dev_dma_addr_t desc,
 	op_buf_addr = (dev_dma_addr_t) (op_buf_addr - c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr);
 	print_debug("Offset in device domain: %llx\n", (uint64_t)op_buf_addr);
 
-	op_buf_addr = (op_buf_addr - c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr);
+	op_buf_addr = (op_buf_addr - c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr);
 	print_debug("Offset in host domain: %llx\n", (uint64_t)op_buf_addr);
 
 	op_mem = (cmd_op_t *) (c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr +
@@ -591,13 +591,13 @@ static cmd_op_t *get_cmd_op_ctx(fsl_crypto_dev_t *c_dev,
 
 	init_completion(&(cmd_op->cmd_ctx->cmd_completion));
 
-	print_debug("host_p_addr: %pa\n", &(c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr));
+	print_debug("host_dma_addr: %pa\n", &(c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr));
 	print_debug("host_v_addr: %p\n", c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr);
 	print_debug("get_cmd_op_ctx: cmd_op adr: %p\n", cmd_op);
 	print_debug("cmd_trace_ctx_t size: %zu\n", sizeof(cmd_trace_ctx_t));
 
 	op_dev_addr = (dev_dma_addr_t)
-	    (c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr) +
+	    (c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr) +
 	    (((unsigned long)cmd_op + sizeof(cmd_trace_ctx_t *)) -
 	     ((unsigned long)c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr));
 

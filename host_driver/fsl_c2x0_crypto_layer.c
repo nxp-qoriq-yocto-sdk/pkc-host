@@ -299,12 +299,11 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	}
 
 	mem->host_v_addr = host_v_addr;
-	mem->host_p_addr = __pa(host_v_addr);
+	mem->host_p_addr = (phys_addr_t)0xdeadbeefdeadbeef;
 	mem->len = ob_mem_len;
 
 	print_debug("OB Mem address	: %p\n", mem->host_v_addr);
 	print_debug("OB Mem dma address	: %pad\n", &(mem->host_dma_addr));
-	print_debug("OB Mem physical address: %pa\n", &(mem->host_p_addr));
 
 	/* The outbound pointers are locations where the device is supposed to
 	 * write to. We calculate the addresses with the correct offset and
@@ -335,7 +334,7 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 
 void init_handshake(fsl_crypto_dev_t *dev)
 {
-	phys_addr_t ob_mem = dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr;
+	dma_addr_t ob_mem = dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr;
 	phys_addr_t msi_mem = dev->priv_dev->bars[MEM_TYPE_MSI].host_p_addr;
 
 	/* Write our address to the firmware -
@@ -835,7 +834,6 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 
 	print_debug("======= setup_ep =======\n");
 	print_debug("Ob mem dma_addr: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr));
-	print_debug("Ob mem p_addr: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_DRIVER].host_p_addr));
 	print_debug("Ob mem len: %pa\n", &dev->priv_dev->bars[MEM_TYPE_DRIVER].len);
 	print_debug("BAR0 V Addr: %p\n", ccsr);
 	print_debug("MSI mem: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_MSI].host_p_addr));
