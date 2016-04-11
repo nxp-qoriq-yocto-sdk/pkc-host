@@ -65,16 +65,6 @@ static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 	return;
 }
 
-/******************************************************************************
-Description :	Allocates device memory as specified in the given structure
-				crypto_mem_info_t.    
-Fields      :   
-			mem_info	:	Contains all the information needed to allocate 
-							the memory (like, how much memory needed, how
-							many buffers need memory etc).   
-Returns		:	SUCCESS/FAILURE
-******************************************************************************/
-
 int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 {
 	uint32_t i;
@@ -134,15 +124,6 @@ error:
 	return -ENOMEM;
 }
 
-/******************************************************************************
-Description :	Deallocates the device memory from the structure
-				crypto_mem_info_t.   
-Fields      :
-			mem_info	:	Contains all the information needed to deallocate 
-							the memory (like, how much memory needed, how
-							many buffers need memory etc).   
-Returns     :	SUCCESS/FAILURE
-******************************************************************************/
 
 int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 {
@@ -176,17 +157,6 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 	return 0;
 }
 
-
-/******************************************************************************
-Description :	Calculate all the related addresses from the device memory
-				allocated.   
-Fields      :   
-			mem_info	:	The data structure which contains all the
-							information related to the device memory allocated
-							for any particular job.
-Returns     :	SUCCESS/ FAILURE
-******************************************************************************/
-
 void host_to_dev(crypto_mem_info_t *mem_info)
 {
 	uint32_t i;
@@ -218,14 +188,6 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 	}
 }
 
-/**
- * Map Crypto Memory.
- *
- * @param  crypto_mem crypto memory
- * @return            error code
- *                    0:  success
- *                    -1: failure
- */
 int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
 	int32_t i;
 	buffer_info_t *buffers;
@@ -248,15 +210,6 @@ int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
 	return 0;
 }
 
-
-/**
- * Unmap Crypto Memory.
- *
- * @param  crypto_mem crypto memory
- * @return            error code
- *                    0:  success
- *                    -1: failure
- */
 int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
 	int32_t i;
 	buffer_info_t *buffers;
@@ -278,15 +231,6 @@ int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
 
 	return 0;
 }
-
-/******************************************************************************
-Description : Copy the data from host memory to device memory.   
-Fields      :   
-			mem	:	The data structure which contains all the
-					information related to the device memory allocated
-					for any particular job.	
-Returns     :	SUCCESS/ FAILURE
-******************************************************************************/
 
 int32_t memcpy_to_dev(crypto_mem_info_t *mem)
 {
