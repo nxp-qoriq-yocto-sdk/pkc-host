@@ -174,23 +174,3 @@ int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
 
 	return 0;
 }
-
-int32_t memcpy_to_dev(crypto_mem_info_t *mem)
-{
-	uint32_t i = 0;
-	buffer_info_t *buffers = mem->buffers;
-
-	/* This function will take care of endian conversions across pcie */
-	for (i = 0; i < (mem->count); i++) {
-		switch (buffers[i].bt) {
-		case BT_DESC:
-			memcpy(buffers[i].d_v_addr, buffers[i].h_v_addr, buffers[i].len);
-			break;
-		case BT_IP:
-		case BT_OP:
-			break;
-		}
-	}
-
-	return 0;
-}
