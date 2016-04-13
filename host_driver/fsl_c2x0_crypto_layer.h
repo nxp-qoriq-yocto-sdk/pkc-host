@@ -163,9 +163,15 @@ struct dev_handshake_mem {
 	} data;
 };
 
-/********************************************/
-
-#define MULTIPLE_RESP_RINGS
+/* FIXME: We had this one defined but fortunately the code it enables is
+ * with other defines (HIGH_PERF). Note that the driver is inconsistent about
+ * the number of response rings. Ideally the code should be agnostic and
+ * configurable. However some parts of the code are written assuming only one
+ * response ring and other parts assuming more than one. Do not count on
+ * working code for multiple response rings
+ * Undefine it to be safe!
+ */
+#undef MULTIPLE_RESP_RINGS
 
 #ifdef MULTIPLE_RESP_RINGS
 struct dev_ctx {
@@ -485,7 +491,7 @@ void start_device(fsl_crypto_dev_t *dev);
 
 int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set);
 
-#ifdef MULTIPLE_RESP_RINGS
+#ifndef MULTIPLE_RESP_RINGS
 int32_t process_rings(fsl_crypto_dev_t *, struct list_head *);
 #endif
 

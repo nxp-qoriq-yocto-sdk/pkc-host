@@ -1362,7 +1362,7 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 
 }
 
-#ifndef MULTIPLE_RESP_RINGS
+#ifdef MULTIPLE_RESP_RINGS
 void demux_fw_responses(fsl_crypto_dev_t *dev)
 {
 	uint32_t ri = 0;
