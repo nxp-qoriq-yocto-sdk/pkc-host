@@ -89,36 +89,18 @@ static void rng_init_done(void *ctx, int32_t res)
 	free_crypto_ctx(crypto_ctx->ctx_pool, crypto_ctx);
 }
 
-/* Memory copy functions */
-static void rng_init_init_len(uint32_t length, crypto_mem_info_t *mem_info)
-{
-	rng_init_buffers_t *mem = (rng_init_buffers_t *) (mem_info->buffers);
-
-	mem->pers_str_buff.len = length;
-	mem->desc_buff.len = 11 * sizeof(uint32_t);
-}
-
-static void rng_self_test_init_len(uint32_t length,
-				   crypto_mem_info_t *mem_info)
-{
-	rng_self_test_buffers_t *mem =
-	    (rng_self_test_buffers_t *) (mem_info->buffers);
-
-	mem->output_buff.len = length;
-	mem->desc_buff.len = 55 * sizeof(uint32_t);
-}
 
 static int rng_self_test_cp_output(uint32_t *output, uint32_t length,
 				   crypto_mem_info_t *mem_info)
 {
-	rng_self_test_buffers_t *mem =
-	    (rng_self_test_buffers_t *) (mem_info->buffers);
-	rng_self_test_init_len(length, mem_info);
+	rng_self_test_buffers_t *mem = &mem_info->c_buffers.rng_self_test;
 
-	/* Alloc mem requrd for crypto operation */
-	print_debug("Calling alloc_crypto_mem\n");
-	if (-ENOMEM == alloc_crypto_mem(mem_info))
+	mem->desc_buff.len = 55 * sizeof(uint32_t);
+	mem->output_buff.len = length;
+
+	if (-ENOMEM == alloc_crypto_mem(mem_info)) {
 		return -ENOMEM;
+	}
 
 	mem->output_buff.h_v_addr = (uint8_t *) output;
 	return 0;
@@ -127,13 +109,14 @@ static int rng_self_test_cp_output(uint32_t *output, uint32_t length,
 static int rng_init_cp_pers_str(uint32_t *pers_str, uint32_t length,
 				crypto_mem_info_t *mem_info)
 {
-	rng_init_buffers_t *mem = (rng_init_buffers_t *) (mem_info->buffers);
-	rng_init_init_len(length, mem_info);
+	rng_init_buffers_t *mem = &mem_info->c_buffers.rng_init;
 
-	/* Alloc mem requrd for crypto operation */
-	print_debug("Calling alloc_crypto_mem\n");
-	if (-ENOMEM == alloc_crypto_mem(mem_info))
+	mem->desc_buff.len = 11 * sizeof(uint32_t);
+	mem->pers_str_buff.len = length;
+
+	if (-ENOMEM == alloc_crypto_mem(mem_info)) {
 		return -ENOMEM;
+	}
 	mem->pers_str_buff.req_ptr = (uint8_t *) pers_str;
 	return 0;
 }
@@ -271,7 +254,6 @@ static void rng_self_test_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 	    (buffer_info_t *) (&(crypto_mem->c_buffers.rng_self_test));
 	memset(crypto_mem->buffers, 0, sizeof(rng_self_test_buffers_t));
 
-	/* Mark the op buffer */
 	rng_self_test_buffs = (rng_self_test_buffers_t *) crypto_mem->buffers;
 	rng_self_test_buffs->output_buff.bt = BT_OP;
 }
@@ -286,7 +268,6 @@ static void rng_init_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 	    (buffer_info_t *) (&(crypto_mem->c_buffers.rng_init));
 	memset(crypto_mem->buffers, 0, sizeof(rng_init_buffers_t));
 
-	/* Mark the op buffer */
 	rng_init_buffs = (rng_init_buffers_t *) crypto_mem->buffers;
 	rng_init_buffs->pers_str_buff.bt = BT_IP;
 }
