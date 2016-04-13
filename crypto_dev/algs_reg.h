@@ -68,11 +68,6 @@ extern int ahash_init(struct ahash_request *req);
 extern int ahash_digest(struct ahash_request *req);
 extern int ahash_setkey(struct crypto_ahash *ahash,
 			const uint8_t *key, unsigned int keylen);
-
-extern int fsl_ablkcipher_setkey(struct crypto_ablkcipher *ablkcipher,
-				 const u8 *key, unsigned int keylen);
-extern int fsl_ablkcipher_decrypt(struct ablkcipher_request *req);
-extern int fsl_ablkcipher_encrypt(struct ablkcipher_request *req);
 #endif
 
 struct alg_template {
@@ -86,8 +81,6 @@ struct alg_template {
 	union {
 		struct pkc_alg pkc;
 		struct ahash_alg ahash;
-		struct aead_alg aead;
-		struct ablkcipher_alg blkcipher;
 	} u;
 	uint32_t alg_type;
 	uint32_t alg_op;

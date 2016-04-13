@@ -120,7 +120,6 @@ typedef struct crypto_dev_sess {
 	uint8_t sec_eng;
 	union {
 		struct hash_ctx hash;
-		struct sym_ctx symm;
 	} u;
 } crypto_dev_sess_t;
 
@@ -163,16 +162,12 @@ typedef struct crypto_job_ctx {
 	union {
 		struct pkc_request *pkc;
 		struct ahash_request *ahash;
-		struct aead_request *aead;
-		struct ablkcipher_request *ablk;
 	} req;
 	union {
 		rsa_dev_mem_t *rsa;
 		dsa_dev_mem_t *dsa;
 		dh_key_dev_mem_t *dh;
 		struct instantiate_result *rng_init;
-		/* ahash_dev_mem_t *ahash; */
-		ablkcipher_dev_mem_t *ablk;
 		struct buf_data *rng;
 	} dev_mem;
 	struct split_key_result *result;
@@ -198,8 +193,6 @@ typedef struct crypto_op_ctx {
 		struct pkc_request *pkc;
 		struct rng_init_compl *rng_init;
 		struct buf_data *rng;
-		struct ahash_request *ahash;
-		struct ablkcipher_request *ablk;
 	} req;
 	struct split_key_result *result;
 	void (*op_done) (void *ctx, int32_t result);

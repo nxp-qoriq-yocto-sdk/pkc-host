@@ -127,53 +127,10 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 	 * for the ring pair. This sec engine selection will be passed
 	 * to firmware and firmware will enqueue the job to selected sec engine
 	 */
-/*
-#define NO_SEC_ENGINE_ASSIGNED          -1
-	if (SYMMETRIC == op_type) {
-		if (ctx->sec_eng == NO_SEC_ENGINE_ASSIGNED) {
-			fsl_h_rsrc_ring_pair_t *rp;
-			rp = &ctx->c_dev->ring_pairs[ctx->r_id];
-			ctx->sec_eng =
-			    atomic_inc_return(&(rp->sec_eng_sel)) &
-			    (rp->num_of_sec_engines);
-		}
-	}
-*/
 	return 0;
 }
 
 #ifndef VIRTIO_C2X0
-#ifdef SYMMETRIC_OFFLOAD
-static int sym_cra_init(struct crypto_tfm *tfm)
-{
-	struct crypto_alg *alg = tfm->__crt_alg;
-	struct fsl_crypto_alg *fsl_alg =
-	    container_of(alg, struct fsl_crypto_alg, u.crypto_alg);
-
-	crypto_dev_sess_t *ctx = crypto_tfm_ctx(tfm);
-	struct sym_ctx *sym_ctx = &(ctx->u.symm);
-
-	print_debug("SYM_CRA_INIT\n");
-
-	if (-1 == fill_crypto_dev_sess_ctx(ctx, fsl_alg->op_type))
-		return -1;
-
-	/* copy descriptor header template value */
-	sym_ctx->class1_alg_type =
-	    OP_TYPE_CLASS1_ALG | fsl_alg->class1_alg_type;
-	sym_ctx->class2_alg_type =
-	    OP_TYPE_CLASS2_ALG | fsl_alg->class2_alg_type;
-	sym_ctx->alg_op = OP_TYPE_CLASS2_ALG | fsl_alg->alg_op;
-
-	return 0;
-}
-
-static void sym_cra_exit(struct crypto_tfm *tfm)
-{
-	/* Nothing to be done */
-}
-#endif /* SYMMETRIC_OFFLOAD */
-
 static struct alg_template driver_algs[] = {
 	{
 	 .name = "pkc(rsa)",
@@ -343,25 +300,6 @@ static struct alg_template driver_algs[] = {
 			     .alg_op = OP_ALG_ALGSEL_MD5 | OP_ALG_AAI_HMAC,
 			     },
 #endif
-#ifdef SYMMETRIC_OFFLOAD
-	/* ablkcipher descriptor */
-	{
-	 .name = "cbc(aes)",
-	 .driver_name = "cbc-aes-fsl",
-	 .blocksize = AES_BLOCK_SIZE,
-	 .type = CRYPTO_ALG_TYPE_ABLKCIPHER,
-	 .u.blkcipher = {
-			 .setkey = fsl_ablkcipher_setkey,
-			 .encrypt = fsl_ablkcipher_encrypt,
-			 .decrypt = fsl_ablkcipher_decrypt,
-			 .geniv = "eseqiv",
-			 .min_keysize = AES_MIN_KEY_SIZE,
-			 .max_keysize = AES_MAX_KEY_SIZE,
-			 .ivsize = AES_BLOCK_SIZE,
-			 },
-	 .class1_alg_type = OP_ALG_ALGSEL_AES | OP_ALG_AAI_CBC,
-	 }
-#endif
 };
 
 /*******************************************************************************
@@ -460,32 +398,6 @@ static struct fsl_crypto_alg *fsl_alg_alloc(struct alg_template *template,
 		f_alg->alg_type = template->alg_type;
 		f_alg->alg_op = template->alg_op;
 		f_alg->ahash = true;
-		f_alg->op_type = SYMMETRIC;
-#endif
-		break;
-
-	case CRYPTO_ALG_TYPE_AEAD:
-	case CRYPTO_ALG_TYPE_ABLKCIPHER:
-#ifdef SYMMETRIC_OFFLOAD
-		alg->cra_init = sym_cra_init;
-		alg->cra_exit = sym_cra_exit;
-
-		switch (template->type) {
-#if 0
-		case CRYPTO_ALG_TYPE_AEAD:
-			alg->cra_type = &crypto_aead_type;
-			alg->cra_aead = template->u.aead;
-			break;
-#endif
-		case CRYPTO_ALG_TYPE_ABLKCIPHER:
-			alg->cra_type = &crypto_ablkcipher_type;
-			alg->cra_ablkcipher = template->u.blkcipher;
-			break;
-		}
-		f_alg->class1_alg_type = template->class1_alg_type;
-		f_alg->class2_alg_type = template->class2_alg_type;
-		f_alg->alg_op = template->alg_op;
-		f_alg->ahash = false;
 		f_alg->op_type = SYMMETRIC;
 #endif
 		break;
