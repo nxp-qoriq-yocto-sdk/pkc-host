@@ -181,7 +181,7 @@ static int pkc_cra_init(struct crypto_tfm *tfm)
 {
 	struct crypto_alg *alg = tfm->__crt_alg;
 	struct fsl_crypto_alg *fsl_alg =
-	    container_of(alg, struct fsl_crypto_alg, u.crypto_alg);
+	    container_of(alg, struct fsl_crypto_alg, crypto_alg);
 
 	crypto_dev_sess_t *ctx = crypto_tfm_ctx(tfm);
 	if (-1 == fill_crypto_dev_sess_ctx(ctx, fsl_alg->op_type))
@@ -217,7 +217,7 @@ static struct fsl_crypto_alg *fsl_alg_alloc(struct alg_template *template)
 		return NULL;
 	}
 
-	alg = &f_alg->u.crypto_alg;
+	alg = &f_alg->crypto_alg;
 
 	snprintf(alg->cra_name, CRYPTO_MAX_ALG_NAME, "%s", template->name);
 	snprintf(alg->cra_driver_name, CRYPTO_MAX_ALG_NAME, "%s", template->driver_name);
@@ -273,8 +273,8 @@ int32_t fsl_algapi_init(void)
 		print_debug("%s alg allocation successful\n",
 				driver_algs[loop].driver_name);
 
-		err = crypto_register_alg(&f_alg->u.crypto_alg);
-		driver_alg_name = f_alg->u.crypto_alg.cra_driver_name;
+		err = crypto_register_alg(&f_alg->crypto_alg);
+		driver_alg_name = f_alg->crypto_alg.cra_driver_name;
 
 		if (err) {
 			print_error("%s alg registration failed\n",
@@ -313,7 +313,7 @@ void fsl_algapi_exit(void)
 		return;
 
 	list_for_each_entry_safe(f_alg, temp, &alg_list, entry) {
-		alg = &f_alg->u.crypto_alg;
+		alg = &f_alg->crypto_alg;
 		crypto_unregister_alg(alg);
 		list_del(&f_alg->entry);
 		kfree(f_alg);

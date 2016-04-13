@@ -98,9 +98,7 @@ struct fsl_crypto_alg {
 	uint32_t alg_op;
 	uint32_t class1_alg_type;
 	uint32_t class2_alg_type;
-	union {
-		struct crypto_alg crypto_alg;
-	} u;
+	struct crypto_alg crypto_alg;
 };
 
 /*******************************************************************************
