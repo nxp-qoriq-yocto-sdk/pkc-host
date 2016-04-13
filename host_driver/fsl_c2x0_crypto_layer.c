@@ -974,9 +974,7 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 #ifdef MULTIPLE_RESP_RINGS
 	dev_dma_addr_t ctx_desc = 0;
 	void *h_desc = 0;
-#ifdef SEC_DMA
         dev_p_addr_t offset = c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
 #endif
 #endif
 
@@ -999,15 +997,11 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 #ifdef MULTIPLE_RESP_RINGS
 	if (jr_id != 0) {
 		ctx_desc = sec_desc & ~((uint64_t) 0x03);
-#ifdef SEC_DMA
                 if (ctx_desc < offset) {
-#endif
                     h_desc = c_dev->dev_ip_pool.host_map_v_addr + (ctx_desc - c_dev->dev_ip_pool.dev_p_addr);
-#ifdef SEC_DMA
                 } else {
                     h_desc = c_dev->dev_ip_pool.host_map_v_addr + (ctx_desc - offset - c_dev->host_ip_pool.p_addr);
 		}
-#endif
 
 		if (f_get_o(rp->info.flags)) {
 			print_debug("Order bit is set: %d, Desc: %llx\n", rp->indexes->w_index, sec_desc);
@@ -1327,19 +1321,13 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 	crypto_job_ctx_t *ctx1 = NULL;
 #endif
 
-#ifdef SEC_DMA
         dev_p_addr_t offset = dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
 
-#ifdef SEC_DMA
         if (desc < offset) {
-#endif
             h_desc = dev->host_ip_pool.h_v_addr + (desc - dev->dev_ip_pool.d_p_addr);
-#ifdef SEC_DMA
         } else {
             h_desc = dev->host_ip_pool.h_v_addr + (desc - offset - dev->host_ip_pool.h_p_addr);
         }
-#endif
 
 #ifndef HIGH_PERF
 	if (get_flag(dev->host_ip_pool.pool, h_desc))
@@ -1357,11 +1345,9 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 #endif
 
 	if (ctx0) {
-#ifdef SEC_DMA
                 if (desc >= offset) {
                     unmap_crypto_mem(&ctx0->crypto_mem);
                 }
-#endif
 		ctx0->op_done(ctx0, res);
         } else {
 		print_debug("NULL Context!!\n");
