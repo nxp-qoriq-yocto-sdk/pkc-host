@@ -7,12 +7,6 @@ DEBUG_PRINT=n
 INFO_PRINT=n
 DEBUG_DESC=n
 
-#Enable HASH/SYMMETRIC offloading
-#NOTE: SYMMETRIC and HASH algorithms are not supported and will be removed from
-#      PKC driver in the future
-CONFIG_FSL_C2X0_HASH_OFFLOAD=n
-CONFIG_FSL_C2X0_HMAC_OFFLOAD=n
-
 #Enable RNG offloading
 #NOTE: RNG offloading is not supported
 RNG_OFFLOAD=n
@@ -46,8 +40,6 @@ ccflags-$(DEBUG_DESC) += -DDEBUG_DESC
 
 ccflags-$(HIGH_PERF_MODE) += -DHIGH_PERF
 ccflags-$(VIRTIO_C2X0) += -DVIRTIO_C2X0
-ccflags-$(CONFIG_FSL_C2X0_HASH_OFFLOAD) += -DHASH_OFFLOAD
-ccflags-$(CONFIG_FSL_C2X0_HMAC_OFFLOAD) += -DHMAC_OFFLOAD
 ccflags-$(RNG_OFFLOAD) += -DRNG_OFFLOAD
 ccflags-$(ENHANCE_KERNEL_TEST) += -DENHANCE_KERNEL_TEST
 ccflags-y += -DSEC_DMA
@@ -70,9 +62,6 @@ $(DRIVER_KOBJ)-objs += algs/dh.o
 $(DRIVER_KOBJ)-objs += algs/desc_buffs.o
 $(DRIVER_KOBJ)-objs += algs/rng_init.o
 $(DRIVER_KOBJ)-objs += crypto_dev/algs_reg.o
-ifeq ($(CONFIG_FSL_C2X0_HASH_OFFLOAD),y)
-$(DRIVER_KOBJ)-objs += algs/hash.o
-endif
 $(DRIVER_KOBJ)-objs += algs/rng.o
 
 ifeq ($(VIRTIO_C2X0),n)
