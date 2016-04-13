@@ -34,6 +34,8 @@
  */
 
 #include "common.h"
+
+#ifndef HIGH_PERF
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
 #include "command.h"
@@ -866,3 +868,12 @@ static int32_t flush_app_jobs(fsl_crypto_dev_t *dev)
 
 	return 0;
 }
+#else
+void set_device(char *fname, char *device, int32_t size)
+{
+	/* TODO:
+	 * We don't want to do anything here. Keep it as a null callback for
+	 * firmware sysfs files until we clean-up that area
+	 */
+}
+#endif

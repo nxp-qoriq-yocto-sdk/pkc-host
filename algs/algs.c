@@ -42,6 +42,7 @@
 
 #define MAX_ERROR_STRING 302
 
+#ifndef HIGH_PERF
 /*******************************************************************************
  * Function     : crypto_op_done
  *
@@ -54,7 +55,6 @@
  *                back to the kernel crypto framework and does the cleanup.
  *
  ******************************************************************************/
-
 void crypto_op_done(fsl_crypto_dev_t *c_dev, crypto_job_ctx_t *ctx,
 		    int32_t sec_result)
 {
@@ -229,6 +229,7 @@ void crypto_op_done(fsl_crypto_dev_t *c_dev, crypto_job_ctx_t *ctx,
 #endif
 	}
 }
+#endif
 
 int32_t check_device(fsl_crypto_dev_t *c_dev)
 {

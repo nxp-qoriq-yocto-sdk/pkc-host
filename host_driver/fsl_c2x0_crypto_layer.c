@@ -1552,6 +1552,7 @@ int32_t process_rings(fsl_crypto_dev_t *dev,
 }
 #endif
 
+#ifndef HIGH_PERF
 /* Backward compatible functions for other algorithms */
 static inline void *ip_buf_d_v_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
 {
@@ -1577,6 +1578,7 @@ void put_buffer(fsl_crypto_dev_t *c_dev, struct buffer_pool *pool, void *addr)
 	addr += c_dev->host_ip_pool.h_v_addr - c_dev->dev_ip_pool.h_v_addr;
 	free_buffer(pool, addr);
 }
+#endif
 
 #ifdef VIRTIO_C2X0
 /* For debug purpose */
