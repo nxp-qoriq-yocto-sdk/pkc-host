@@ -42,7 +42,6 @@
 #ifdef VIRTIO_C2X0
 #include <crypto/hash.h>	/* VIRTIO_C2X0 */
 #endif
-#include "hash.h"
 #include "rng.h"
 #include "common.h"
 #include "desc_constr.h"
@@ -62,21 +61,6 @@ typedef enum crypto_op {
 	RSA,
 	DSA,
 	DH,
-	HASH_SPLIT_KEY,
-	HASH_DIGEST_KEY,
-	AHASH_DIGEST,
-	AHASH_UPDATE_CTX,
-	AHASH_FINUP_CTX,
-	AHASH_FINAL_CTX,
-	AHASH_FINAL_NO_CTX,
-	AHASH_FINUP_NO_CTX,
-	AHASH_UPDATE_NO_CTX,
-	AHASH_UPDATE_FIRST,
-	AEAD_SETKEY,
-	AEAD_ENCRYPT,
-	AEAD_DECRYPT,
-	ABLK_ENCRYPT,
-	ABLK_DECRYPT,
 	RNG,
 	RNG_INIT,
 	RNG_SELF_TEST,
@@ -99,11 +83,7 @@ struct fsl_crypto_alg {
 	uint32_t alg_op;
 	uint32_t class1_alg_type;
 	uint32_t class2_alg_type;
-	bool ahash;
-	union {
-		struct crypto_alg crypto_alg;
-		struct ahash_alg ahash_alg;
-	} u;
+	struct crypto_alg crypto_alg;
 };
 
 /*******************************************************************************
@@ -118,10 +98,6 @@ typedef struct crypto_dev_sess {
 	fsl_crypto_dev_t *c_dev;
 	uint32_t r_id;
 	uint8_t sec_eng;
-	union {
-		struct hash_ctx hash;
-		struct sym_ctx symm;
-	} u;
 } crypto_dev_sess_t;
 
 #ifdef VIRTIO_C2X0
@@ -132,16 +108,6 @@ struct virtio_c2x0_crypto_sess_ctx {
 
 	struct list_head list_entry;
 } __packed;
-
-#if 0
-struct virtio_c2x0_hash_sess_ctx {
-	crypto_dev_sess_t c_sess;
-	unsigned long sess_id;
-	int32_t guest_id;
-
-	struct list_head list_entry;
-} __packed;
-#endif
 #endif
 /******************************************************************************
 Description :	Defines the context for the crypto job
@@ -162,17 +128,12 @@ typedef struct crypto_job_ctx {
 	crypto_op_t oprn;
 	union {
 		struct pkc_request *pkc;
-		struct ahash_request *ahash;
-		struct aead_request *aead;
-		struct ablkcipher_request *ablk;
 	} req;
 	union {
 		rsa_dev_mem_t *rsa;
 		dsa_dev_mem_t *dsa;
 		dh_key_dev_mem_t *dh;
 		struct instantiate_result *rng_init;
-		/* ahash_dev_mem_t *ahash; */
-		ablkcipher_dev_mem_t *ablk;
 		struct buf_data *rng;
 	} dev_mem;
 	struct split_key_result *result;
@@ -198,8 +159,6 @@ typedef struct crypto_op_ctx {
 		struct pkc_request *pkc;
 		struct rng_init_compl *rng_init;
 		struct buf_data *rng;
-		struct ahash_request *ahash;
-		struct ablkcipher_request *ablk;
 	} req;
 	struct split_key_result *result;
 	void (*op_done) (void *ctx, int32_t result);

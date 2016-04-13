@@ -252,12 +252,6 @@ int ahash_digest(struct ahash_request *req,
 		 struct virtio_c2x0_job_ctx *virtio_job);
 int virtio_c2x0_ahash_setkey(const uint8_t *key,
 			     struct virtio_c2x0_qemu_cmd *qemu_cmd);
-/* HASH */
-
-int32_t fsl_ablkcipher_setkey(struct virtio_c2x0_qemu_cmd *qemu_cmd,
-			      const uint8_t *key, uint32_t keylen);
-int32_t fsl_ablkcipher(struct ablkcipher_request *req,
-		       bool encrypt, struct virtio_c2x0_job_ctx *virtio_job);
 
 /* RNG Functions */
 int rng_init(void);
@@ -268,8 +262,6 @@ extern int virtio_c2x0_hash_cra_exit(struct virtio_c2x0_qemu_cmd *qemu_cmd);
 
 int virtio_c2x0_symm_cra_init(struct virtio_c2x0_job_ctx *virtio_job);
 int virtio_c2x0_symm_cra_exit(struct virtio_c2x0_qemu_cmd *qemu_cmd);
-int sym_cra_init(struct virtio_c2x0_job_ctx *virtio_job);
-void sym_cra_exit(crypto_dev_sess_t *ctx);
 
 void print_sess_list(void);	/* Debug */
 

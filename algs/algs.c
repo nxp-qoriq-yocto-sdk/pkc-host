@@ -218,27 +218,7 @@ void crypto_op_done(fsl_crypto_dev_t *c_dev, crypto_job_ctx_t *ctx,
 		kfree(ctx);
 #endif
 		break;
-	case HASH_SPLIT_KEY:
-	case HASH_DIGEST_KEY:
-	case AHASH_DIGEST:
-	case AHASH_UPDATE_CTX:
-	case AHASH_FINUP_CTX:
-	case AHASH_FINAL_CTX:
-	case AHASH_FINAL_NO_CTX:
-	case AHASH_FINUP_NO_CTX:
-	case AHASH_UPDATE_NO_CTX:
-	case AHASH_UPDATE_FIRST:
-	case AEAD_SETKEY:
-	case AEAD_ENCRYPT:
-	case AEAD_DECRYPT:
-	case ABLK_ENCRYPT:
-	case ABLK_DECRYPT:
-		break;
-
 	case RNG:
-		break;
-
-		/* AVOID WARNINGS */
 	case RNG_INIT:
 	case RNG_SELF_TEST:
 		break;

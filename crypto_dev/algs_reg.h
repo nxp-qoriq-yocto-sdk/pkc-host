@@ -47,8 +47,6 @@ struct virtio_c2x0_job_ctx;
 struct virtio_c2x0_qemu_cmd;
 typedef struct crypto_dev_sess crypto_dev_sess_t;
 
-extern int hash_cra_init(struct virtio_c2x0_job_ctx *);
-extern int hash_cra_exit(crypto_dev_sess_t *);
 #else
 extern int32_t fsl_algapi_init(void);
 extern void fsl_algapi_exit(void);
@@ -57,22 +55,6 @@ extern int rsa_op(struct pkc_request *req);
 extern int dsa_op(struct pkc_request *req);
 extern int dh_op(struct pkc_request *req);
 
-extern int hash_cra_init(struct crypto_tfm *tfm);
-extern void hash_cra_exit(struct crypto_tfm *tfm);
-extern int ahash_import(struct ahash_request *req, const void *in);
-extern int ahash_export(struct ahash_request *req, void *out);
-extern int ahash_final(struct ahash_request *req);
-extern int ahash_finup(struct ahash_request *req);
-extern int ahash_update(struct ahash_request *req);
-extern int ahash_init(struct ahash_request *req);
-extern int ahash_digest(struct ahash_request *req);
-extern int ahash_setkey(struct crypto_ahash *ahash,
-			const uint8_t *key, unsigned int keylen);
-
-extern int fsl_ablkcipher_setkey(struct crypto_ablkcipher *ablkcipher,
-				 const u8 *key, unsigned int keylen);
-extern int fsl_ablkcipher_decrypt(struct ablkcipher_request *req);
-extern int fsl_ablkcipher_encrypt(struct ablkcipher_request *req);
 #endif
 
 struct alg_template {
@@ -85,9 +67,6 @@ struct alg_template {
 	uint32_t type;
 	union {
 		struct pkc_alg pkc;
-		struct ahash_alg ahash;
-		struct aead_alg aead;
-		struct ablkcipher_alg blkcipher;
 	} u;
 	uint32_t alg_type;
 	uint32_t alg_op;

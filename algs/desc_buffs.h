@@ -173,32 +173,6 @@ typedef struct rng_buffers {
 	buffer_info_t sh_desc_buff;
 } rng_buffers_t;
 
-typedef struct hash_buffers {
-	buffer_info_t desc_buff;
-	buffer_info_t sh_desc_buff;
-	buffer_info_t output_buff;
-	buffer_info_t sec_sg_buff;
-	buffer_info_t input_buffs[0];
-} hash_buffers_t;
-
-typedef struct hash_key_buffers {
-	buffer_info_t desc_buff;
-	buffer_info_t output_buff;
-	buffer_info_t input_buff;
-} hash_key_buffers_t;
-
-typedef struct symm_ablk_buffers {
-	buffer_info_t desc;
-	buffer_info_t info;
-	buffer_info_t src;
-	buffer_info_t dst;
-	/* SETKEY CTX */
-	buffer_info_t sh_desc;
-	buffer_info_t key;
-	/* ---------- */
-	buffer_info_t src_sg[0];
-} symm_ablk_buffers_t;
-
 typedef union crypto_buffers {
 	rsa_pub_op_buffers_t rsa_pub_op;
 	rsa_priv1_op_buffers_t rsa_priv1_op;
@@ -212,18 +186,11 @@ typedef union crypto_buffers {
 	rng_init_buffers_t rng_init;
 	rng_self_test_buffers_t rng_self_test;
 	rng_buffers_t rng;
-	hash_buffers_t *hash;
-	hash_key_buffers_t hash_key;
-	symm_ablk_buffers_t *symm_ablk;
 } crypto_buffers_t;
 
 typedef struct crypto_mem_info {
 	uint32_t count;
 	uint32_t alloc_len;
-	uint32_t split_ip;
-	uint32_t sg_cnt;
-	struct scatterlist *ip_sg;
-	struct scatterlist *op_sg;
 	void *src_buff;
 	buffer_info_t *buffers;
 	struct buffer_pool *buf_pool;

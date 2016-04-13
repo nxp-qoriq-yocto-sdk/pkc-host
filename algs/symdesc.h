@@ -110,41 +110,6 @@
 #define GIV_DST_CONTIG      (1 << 1)
 
 /*
- * per-session context
- */
-struct sym_ctx {
-	char key[CAAM_MAX_KEY_SIZE];
-	uint32_t keylen;
-
-	uint32_t class1_alg_type;
-	uint32_t class2_alg_type;
-	uint32_t alg_op;
-
-	uint32_t sh_desc_len;
-};
-
-typedef struct ablkcipher_dev_mem {
-	crypto_mem_info_t ablk_ctx;
-#if 0
-	uint8_t **src_dev_sg;
-	struct sec4_sg_entry *src;
-	bool src_chained;
-	uint32_t src_sgcnt;
-
-	uint8_t *info;
-	dev_dma_addr_t info_dma;
-
-	struct sec4_sg_entry *dst;
-	bool dst_chained;
-	uint32_t dst_sgcnt;
-
-	dev_dma_addr_t sec4_sg_dma;
-
-	uint32_t *hw_desc;
-#endif
-} ablkcipher_dev_mem_t;
-
-/*
  * Wait for completion of class 1 key loading before allowing
  * error propagation
  */

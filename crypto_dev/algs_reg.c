@@ -127,53 +127,10 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 	 * for the ring pair. This sec engine selection will be passed
 	 * to firmware and firmware will enqueue the job to selected sec engine
 	 */
-/*
-#define NO_SEC_ENGINE_ASSIGNED          -1
-	if (SYMMETRIC == op_type) {
-		if (ctx->sec_eng == NO_SEC_ENGINE_ASSIGNED) {
-			fsl_h_rsrc_ring_pair_t *rp;
-			rp = &ctx->c_dev->ring_pairs[ctx->r_id];
-			ctx->sec_eng =
-			    atomic_inc_return(&(rp->sec_eng_sel)) &
-			    (rp->num_of_sec_engines);
-		}
-	}
-*/
 	return 0;
 }
 
 #ifndef VIRTIO_C2X0
-#ifdef SYMMETRIC_OFFLOAD
-static int sym_cra_init(struct crypto_tfm *tfm)
-{
-	struct crypto_alg *alg = tfm->__crt_alg;
-	struct fsl_crypto_alg *fsl_alg =
-	    container_of(alg, struct fsl_crypto_alg, u.crypto_alg);
-
-	crypto_dev_sess_t *ctx = crypto_tfm_ctx(tfm);
-	struct sym_ctx *sym_ctx = &(ctx->u.symm);
-
-	print_debug("SYM_CRA_INIT\n");
-
-	if (-1 == fill_crypto_dev_sess_ctx(ctx, fsl_alg->op_type))
-		return -1;
-
-	/* copy descriptor header template value */
-	sym_ctx->class1_alg_type =
-	    OP_TYPE_CLASS1_ALG | fsl_alg->class1_alg_type;
-	sym_ctx->class2_alg_type =
-	    OP_TYPE_CLASS2_ALG | fsl_alg->class2_alg_type;
-	sym_ctx->alg_op = OP_TYPE_CLASS2_ALG | fsl_alg->alg_op;
-
-	return 0;
-}
-
-static void sym_cra_exit(struct crypto_tfm *tfm)
-{
-	/* Nothing to be done */
-}
-#endif /* SYMMETRIC_OFFLOAD */
-
 static struct alg_template driver_algs[] = {
 	{
 	 .name = "pkc(rsa)",
@@ -208,160 +165,6 @@ static struct alg_template driver_algs[] = {
 		   .max_keysize = 4096,
 		   },
 	 },
-#ifdef HASH_OFFLOAD
-	{
-	 .name = "sha1",
-	 .driver_name = "sha1-fsl",
-	 .hmac_name = "hmac(sha1)",
-	 .hmac_driver_name = "hmac-sha1-fsl",
-	 .blocksize = SHA1_BLOCK_SIZE,
-	 .type = CRYPTO_ALG_TYPE_AHASH,
-	 .u.ahash = {
-		     .init = ahash_init,
-		     .update = ahash_update,
-		     .final = ahash_final,
-		     .finup = ahash_finup,
-		     .digest = ahash_digest,
-		     .export = ahash_export,
-		     .import = ahash_import,
-		     .setkey = ahash_setkey,
-		     .halg = {
-			      .digestsize = SHA1_DIGEST_SIZE,
-			      },
-		     },
-	 .alg_type = OP_ALG_ALGSEL_SHA1,
-	 .alg_op = OP_ALG_ALGSEL_SHA1 | OP_ALG_AAI_HMAC,
-	 }, {
-	     .name = "sha224",
-	     .driver_name = "sha224-fsl",
-	     .hmac_name = "hmac(sha224)",
-	     .hmac_driver_name = "hmac-sha224-fsl",
-	     .blocksize = SHA224_BLOCK_SIZE,
-	     .type = CRYPTO_ALG_TYPE_AHASH,
-	     .u.ahash = {
-			 .init = ahash_init,
-			 .update = ahash_update,
-			 .final = ahash_final,
-			 .finup = ahash_finup,
-			 .digest = ahash_digest,
-			 .export = ahash_export,
-			 .import = ahash_import,
-			 .setkey = ahash_setkey,
-			 .halg = {
-				  .digestsize = SHA224_DIGEST_SIZE,
-				  },
-			 },
-	     .alg_type = OP_ALG_ALGSEL_SHA224,
-	     .alg_op = OP_ALG_ALGSEL_SHA224 | OP_ALG_AAI_HMAC,
-	     }, {
-		 .name = "sha256",
-		 .driver_name = "sha256-fsl",
-		 .hmac_name = "hmac(sha256)",
-		 .hmac_driver_name = "hmac-sha256-fsl",
-		 .blocksize = SHA256_BLOCK_SIZE,
-		 .type = CRYPTO_ALG_TYPE_AHASH,
-		 .u.ahash = {
-			     .init = ahash_init,
-			     .update = ahash_update,
-			     .final = ahash_final,
-			     .finup = ahash_finup,
-			     .digest = ahash_digest,
-			     .export = ahash_export,
-			     .import = ahash_import,
-			     .setkey = ahash_setkey,
-			     .halg = {
-				      .digestsize = SHA256_DIGEST_SIZE,
-				      },
-			     },
-		 .alg_type = OP_ALG_ALGSEL_SHA256,
-		 .alg_op = OP_ALG_ALGSEL_SHA256 | OP_ALG_AAI_HMAC,
-		 }, {
-		     .name = "sha384",
-		     .driver_name = "sha384-fsl",
-		     .hmac_name = "hmac(sha384)",
-		     .hmac_driver_name = "hmac-sha384-fsl",
-		     .blocksize = SHA384_BLOCK_SIZE,
-		     .type = CRYPTO_ALG_TYPE_AHASH,
-		     .u.ahash = {
-				 .init = ahash_init,
-				 .update = ahash_update,
-				 .final = ahash_final,
-				 .finup = ahash_finup,
-				 .digest = ahash_digest,
-				 .export = ahash_export,
-				 .import = ahash_import,
-				 .setkey = ahash_setkey,
-				 .halg = {
-					  .digestsize = SHA384_DIGEST_SIZE,
-					  },
-				 },
-		     .alg_type = OP_ALG_ALGSEL_SHA384,
-		     .alg_op = OP_ALG_ALGSEL_SHA384 | OP_ALG_AAI_HMAC,
-		     }, {
-			 .name = "sha512",
-			 .driver_name = "sha512-fsl",
-			 .hmac_name = "hmac(sha512)",
-			 .hmac_driver_name = "hmac-sha512-fsl",
-			 .blocksize = SHA512_BLOCK_SIZE,
-			 .type = CRYPTO_ALG_TYPE_AHASH,
-			 .u.ahash = {
-				     .init = ahash_init,
-				     .update = ahash_update,
-				     .final = ahash_final,
-				     .finup = ahash_finup,
-				     .digest = ahash_digest,
-				     .export = ahash_export,
-				     .import = ahash_import,
-				     .setkey = ahash_setkey,
-				     .halg = {
-					      .digestsize = SHA512_DIGEST_SIZE,
-					      },
-				     },
-			 .alg_type = OP_ALG_ALGSEL_SHA512,
-			 .alg_op = OP_ALG_ALGSEL_SHA512 | OP_ALG_AAI_HMAC,
-			 }, {
-			     .name = "md5",
-			     .driver_name = "md5-fsl",
-			     .hmac_name = "hmac(md5)",
-			     .hmac_driver_name = "hmac-md5-fsl",
-			     .blocksize = MD5_BLOCK_WORDS * 4,
-			     .type = CRYPTO_ALG_TYPE_AHASH,
-			     .u.ahash = {
-					 .init = ahash_init,
-					 .update = ahash_update,
-					 .final = ahash_final,
-					 .finup = ahash_finup,
-					 .digest = ahash_digest,
-					 .export = ahash_export,
-					 .import = ahash_import,
-					 .setkey = ahash_setkey,
-					 .halg = {
-						  .digestsize = MD5_DIGEST_SIZE,
-						  },
-					 },
-			     .alg_type = OP_ALG_ALGSEL_MD5,
-			     .alg_op = OP_ALG_ALGSEL_MD5 | OP_ALG_AAI_HMAC,
-			     },
-#endif
-#ifdef SYMMETRIC_OFFLOAD
-	/* ablkcipher descriptor */
-	{
-	 .name = "cbc(aes)",
-	 .driver_name = "cbc-aes-fsl",
-	 .blocksize = AES_BLOCK_SIZE,
-	 .type = CRYPTO_ALG_TYPE_ABLKCIPHER,
-	 .u.blkcipher = {
-			 .setkey = fsl_ablkcipher_setkey,
-			 .encrypt = fsl_ablkcipher_encrypt,
-			 .decrypt = fsl_ablkcipher_decrypt,
-			 .geniv = "eseqiv",
-			 .min_keysize = AES_MIN_KEY_SIZE,
-			 .max_keysize = AES_MAX_KEY_SIZE,
-			 .ivsize = AES_BLOCK_SIZE,
-			 },
-	 .class1_alg_type = OP_ALG_ALGSEL_AES | OP_ALG_AAI_CBC,
-	 }
-#endif
 };
 
 /*******************************************************************************
@@ -378,7 +181,7 @@ static int pkc_cra_init(struct crypto_tfm *tfm)
 {
 	struct crypto_alg *alg = tfm->__crt_alg;
 	struct fsl_crypto_alg *fsl_alg =
-	    container_of(alg, struct fsl_crypto_alg, u.crypto_alg);
+	    container_of(alg, struct fsl_crypto_alg, crypto_alg);
 
 	crypto_dev_sess_t *ctx = crypto_tfm_ctx(tfm);
 	if (-1 == fill_crypto_dev_sess_ctx(ctx, fsl_alg->op_type))
@@ -404,8 +207,7 @@ static void pkc_cra_exit(struct crypto_tfm *tfm)
 
 }
 
-static struct fsl_crypto_alg *fsl_alg_alloc(struct alg_template *template,
-					    bool keyed)
+static struct fsl_crypto_alg *fsl_alg_alloc(struct alg_template *template)
 {
 	struct crypto_alg *alg = NULL;
 	struct fsl_crypto_alg *f_alg =
@@ -415,25 +217,11 @@ static struct fsl_crypto_alg *fsl_alg_alloc(struct alg_template *template,
 		return NULL;
 	}
 
-	/* Fill the 'fsl_crypto_alg' */
-	if (CRYPTO_ALG_TYPE_AHASH == template->type) {
-		f_alg->u.ahash_alg = template->u.ahash;
-		alg = &f_alg->u.ahash_alg.halg.base;
-	} else {
-		alg = &f_alg->u.crypto_alg;
-	}
+	alg = &f_alg->crypto_alg;
 
-	if (keyed && (CRYPTO_ALG_TYPE_AHASH == template->type)) {
-		snprintf(alg->cra_name, CRYPTO_MAX_ALG_NAME, "%s",
-			 template->hmac_name);
-		snprintf(alg->cra_driver_name, CRYPTO_MAX_ALG_NAME, "%s",
-			 template->hmac_driver_name);
-	} else {
-		snprintf(alg->cra_name, CRYPTO_MAX_ALG_NAME, "%s",
-			 template->name);
-		snprintf(alg->cra_driver_name, CRYPTO_MAX_ALG_NAME, "%s",
-			 template->driver_name);
-	}
+	snprintf(alg->cra_name, CRYPTO_MAX_ALG_NAME, "%s", template->name);
+	snprintf(alg->cra_driver_name, CRYPTO_MAX_ALG_NAME, "%s", template->driver_name);
+
 	alg->cra_module = THIS_MODULE;
 	alg->cra_priority = FSL_CRA_PRIORITY;
 	alg->cra_blocksize = template->blocksize;
@@ -449,45 +237,7 @@ static struct fsl_crypto_alg *fsl_alg_alloc(struct alg_template *template,
 		alg->cra_exit = pkc_cra_exit;
 		alg->cra_type = &crypto_pkc_type;
 		alg->cra_u.pkc = template->u.pkc;
-		f_alg->ahash = false;
 		f_alg->op_type = ASYMMETRIC;
-		break;
-	case CRYPTO_ALG_TYPE_AHASH:
-#ifdef HASH_OFFLOAD
-		alg->cra_init = hash_cra_init;
-		alg->cra_exit = hash_cra_exit;
-		alg->cra_type = &crypto_ahash_type;
-		f_alg->alg_type = template->alg_type;
-		f_alg->alg_op = template->alg_op;
-		f_alg->ahash = true;
-		f_alg->op_type = SYMMETRIC;
-#endif
-		break;
-
-	case CRYPTO_ALG_TYPE_AEAD:
-	case CRYPTO_ALG_TYPE_ABLKCIPHER:
-#ifdef SYMMETRIC_OFFLOAD
-		alg->cra_init = sym_cra_init;
-		alg->cra_exit = sym_cra_exit;
-
-		switch (template->type) {
-#if 0
-		case CRYPTO_ALG_TYPE_AEAD:
-			alg->cra_type = &crypto_aead_type;
-			alg->cra_aead = template->u.aead;
-			break;
-#endif
-		case CRYPTO_ALG_TYPE_ABLKCIPHER:
-			alg->cra_type = &crypto_ablkcipher_type;
-			alg->cra_ablkcipher = template->u.blkcipher;
-			break;
-		}
-		f_alg->class1_alg_type = template->class1_alg_type;
-		f_alg->class2_alg_type = template->class2_alg_type;
-		f_alg->alg_op = template->alg_op;
-		f_alg->ahash = false;
-		f_alg->op_type = SYMMETRIC;
-#endif
 		break;
 	}
 
@@ -509,42 +259,22 @@ int32_t fsl_algapi_init(void)
 	int loop, err;
 	char *driver_alg_name;
 	struct fsl_crypto_alg *f_alg;
-	/* keyed == false: base algorithm, cipher or digest
-	 * keyed == true : hashed digest */
-	bool keyed;
 
 	INIT_LIST_HEAD(&alg_list);
 
 	for (loop = 0; loop < ARRAY_SIZE(driver_algs); loop++) {
-		keyed = false;
-#ifdef HMAC_OFFLOAD
-l_start:
-#endif
-		f_alg = fsl_alg_alloc(&driver_algs[loop], keyed);
-
+		f_alg = fsl_alg_alloc(&driver_algs[loop]);
 		if (!f_alg) {
 			err = -ENOMEM;
 			print_error("%s alg allocation failed\n",
 				    driver_algs[loop].driver_name);
 			goto out_err;
 		}
+		print_debug("%s alg allocation successful\n",
+				driver_algs[loop].driver_name);
 
-		if (keyed) {
-			print_debug("%s alg allocation successful\n",
-					driver_algs[loop].hmac_driver_name);
-		} else {
-			print_debug("%s alg allocation successful\n",
-					driver_algs[loop].driver_name);
-		}
-
-		if (f_alg->ahash) {
-			err = crypto_register_ahash(&f_alg->u.ahash_alg);
-			driver_alg_name =
-			    f_alg->u.ahash_alg.halg.base.cra_driver_name;
-		} else {
-			err = crypto_register_alg(&f_alg->u.crypto_alg);
-			driver_alg_name = f_alg->u.crypto_alg.cra_driver_name;
-		}
+		err = crypto_register_alg(&f_alg->crypto_alg);
+		driver_alg_name = f_alg->crypto_alg.cra_driver_name;
 
 		if (err) {
 			print_error("%s alg registration failed\n",
@@ -555,15 +285,6 @@ l_start:
 
 		print_debug("%s alg registration successful\n", driver_alg_name);
 		list_add_tail(&f_alg->entry, &alg_list);
-
-#ifdef HMAC_OFFLOAD
-		/* after registering a digest algorithm, loop again to register
-		 * the hashed (keyed) version of the same algorithm */
-		if (f_alg->ahash && !keyed) {
-			keyed = true;
-			goto l_start;
-		}
-#endif
 	}
 
 	return 0;
@@ -592,11 +313,7 @@ void fsl_algapi_exit(void)
 		return;
 
 	list_for_each_entry_safe(f_alg, temp, &alg_list, entry) {
-		if (f_alg->ahash) {
-			alg = &f_alg->u.ahash_alg.halg.base;
-		} else {
-			alg = &f_alg->u.crypto_alg;
-		}
+		alg = &f_alg->crypto_alg;
 		crypto_unregister_alg(alg);
 		list_del(&f_alg->entry);
 		kfree(f_alg);

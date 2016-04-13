@@ -53,10 +53,8 @@ static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 			mem += ALIGN_LEN_TO_DMA(buffers[i].len);
 			break;
 		case BT_IP:
-			if (!mem_info->split_ip) {
-				buffers[i].h_v_addr = mem;
-				mem += ALIGN_LEN_TO_DMA(buffers[i].len);
-			}
+			buffers[i].h_v_addr = mem;
+			mem += ALIGN_LEN_TO_DMA(buffers[i].len);
 			break;
 		case BT_OP:
 			break;
@@ -81,18 +79,7 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 			tot_mem += aligned_len;
 			break;
 		case BT_IP:
-			if (mem_info->split_ip) {
-				buffers[i].h_v_addr = alloc_buffer(mem_info->buf_pool,
-								aligned_len, 1);
-				if (unlikely(!buffers[i].h_v_addr)) {
-					print_error("Alloc mem for buff :%d type :%d failed\n",
-						     i, buffers[i].bt);
-					goto error;
-				}
-				mem_info->sg_cnt++;
-			} else {
-				tot_mem += aligned_len;
-			}
+			tot_mem += aligned_len;
 			break;
 		case BT_OP:
 			break;
@@ -103,24 +90,12 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 	if (!mem)
 		goto no_mem;
 
-	mem_info->sg_cnt++;
 	mem_info->src_buff = mem;
 	mem_info->alloc_len = tot_mem;
 	distribute_buffers(mem_info, mem);
-
 	return 0;
 
 no_mem:
-	if (!mem_info->split_ip) {
-		return -ENOMEM;
-	}
-error:
-	while (i--) {
-		if (buffers[i].bt == BT_IP) {
-			free_buffer(mem_info->buf_pool, buffers[i].h_v_addr);
-			mem_info->sg_cnt--;
-		}
-	}
 	return -ENOMEM;
 }
 
@@ -137,11 +112,6 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 
 	for (i = 1; i < mem_info->count; i++) {
 		switch (buffers[i].bt) {
-		case BT_IP:
-			if (mem_info->split_ip && buffers[i].h_v_addr) {
-				free_buffer(mem_info->buf_pool, buffers[i].h_v_addr);
-			}
-			break;
 		case BT_OP:
 			if (buffers[i].h_dma_addr) {
 				pci_unmap_single(pci_dev->dev,
