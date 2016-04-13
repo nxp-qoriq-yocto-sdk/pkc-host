@@ -12,7 +12,6 @@ DEBUG_DESC=n
 #      PKC driver in the future
 CONFIG_FSL_C2X0_HASH_OFFLOAD=n
 CONFIG_FSL_C2X0_HMAC_OFFLOAD=n
-CONFIG_FSL_C2X0_SYMMETRIC_OFFLOAD=n
 
 #Enable RNG offloading
 #NOTE: RNG offloading is not supported
@@ -49,7 +48,6 @@ ccflags-$(HIGH_PERF_MODE) += -DHIGH_PERF
 ccflags-$(VIRTIO_C2X0) += -DVIRTIO_C2X0
 ccflags-$(CONFIG_FSL_C2X0_HASH_OFFLOAD) += -DHASH_OFFLOAD
 ccflags-$(CONFIG_FSL_C2X0_HMAC_OFFLOAD) += -DHMAC_OFFLOAD
-ccflags-$(CONFIG_FSL_C2X0_SYMMETRIC_OFFLOAD) += -DSYMMETRIC_OFFLOAD
 ccflags-$(RNG_OFFLOAD) += -DRNG_OFFLOAD
 ccflags-$(ENHANCE_KERNEL_TEST) += -DENHANCE_KERNEL_TEST
 ccflags-y += -DSEC_DMA
@@ -74,9 +72,6 @@ $(DRIVER_KOBJ)-objs += algs/rng_init.o
 $(DRIVER_KOBJ)-objs += crypto_dev/algs_reg.o
 ifeq ($(CONFIG_FSL_C2X0_HASH_OFFLOAD),y)
 $(DRIVER_KOBJ)-objs += algs/hash.o
-endif
-ifeq ($(CONFIG_FSL_C2X0_SYMMETRIC_OFFLOAD),y)
-$(DRIVER_KOBJ)-objs += algs/symmetric.o
 endif
 $(DRIVER_KOBJ)-objs += algs/rng.o
 
