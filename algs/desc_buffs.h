@@ -52,9 +52,6 @@ struct buffer_info {
 	/* Device related fields */
 	void *d_v_addr;
 	dev_p_addr_t d_p_addr;
-#ifdef USE_HOST_DMA
-	phys_addr_t h_map_p_addr;
-#endif
 
 	/* Host related fields */
 	phys_addr_t h_p_addr;
@@ -228,9 +225,6 @@ typedef struct crypto_mem_info {
 	struct scatterlist *ip_sg;
 	struct scatterlist *op_sg;
 	void *src_buff;
-#ifdef USE_HOST_DMA
-	dma_addr_t dest_buff_dma;
-#endif
 	buffer_info_t *buffers;
 	struct buffer_pool *buf_pool;
 	fsl_crypto_dev_t *dev;

@@ -45,7 +45,6 @@
 #ifdef VIRTIO_C2X0
 #include "fsl_c2x0_virtio.h"
 #endif
-#include "dma.h"
 
 /* Callback test functions */
 typedef void (*dh_op_cb) (struct pkc_request *, int32_t result);

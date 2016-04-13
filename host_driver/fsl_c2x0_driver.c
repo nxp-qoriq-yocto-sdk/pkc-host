@@ -47,7 +47,6 @@
 #include "algs.h"
 #include "algs_reg.h"
 #include "test.h"
-#include "dma.h"
 
 static void create_default_config(struct crypto_dev_config *, uint8_t, uint8_t);
 /*********************************************************
@@ -1948,17 +1947,10 @@ static int32_t __init fsl_crypto_drv_init(void)
 		goto unreg_drv;
 	}
 
-	/* For P4080 RC DMA channels will be used for transfer */
-	ret = init_rc_dma();
-	if (ret) {
-		print_error("ERROR: init_rc_dma\n");
-		goto unreg_drv;
-	}
-
 	ret = fsl_cryptodev_register();
 	if (ret) {
 		print_error("ERROR: fsl_cryptodev_register\n");
-		goto free_rc_dma;
+		goto unreg_drv;
 	}
 
 #ifndef VIRTIO_C2X0
@@ -1994,8 +1986,6 @@ free_algapi:
 unreg_cdev:
 #endif
 	fsl_cryptodev_deregister();
-free_rc_dma:
-	cleanup_rc_dma();
 unreg_drv:
 	pci_unregister_driver(&fsl_cypto_driver);
 free_percore:
@@ -2029,10 +2019,6 @@ static void __exit fsl_crypto_drv_exit(void)
 #endif
 #ifndef VIRTIO_C2X0
 	fsl_algapi_exit();
-#endif
-
-#ifdef USE_HOST_DMA
-	cleanup_rc_dma();
 #endif
 	/* Unregister the fsl_crypto device node */
 	fsl_cryptodev_deregister();

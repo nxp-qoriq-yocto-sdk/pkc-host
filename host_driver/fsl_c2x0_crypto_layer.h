@@ -317,9 +317,6 @@ typedef struct fsl_h_rsrc_ring_pair {
 struct dev_pool_info {
 	dev_dma_addr_t d_p_addr;
 	void *h_v_addr;
-#ifdef USE_HOST_DMA
-	phys_addr_t host_map_p_addr;
-#endif
 };
 
 struct pool_info {
