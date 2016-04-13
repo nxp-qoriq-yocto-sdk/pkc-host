@@ -11,9 +11,6 @@ DEBUG_DESC=n
 #NOTE: RNG offloading is not supported
 RNG_OFFLOAD=n
 
-#Specifies whether driver/firmware is running high performance mode
-HIGH_PERF_MODE=y
-
 #Enhance pkc kernel test performance, disable kernel test schedule and
 #restriction number of c29x_fw enqueue and dequeue crypto
 ENHANCE_KERNEL_TEST=n
@@ -38,10 +35,10 @@ ccflags-$(DEBUG_PRINT) += -DDEV_PRINT_DBG -DPRINT_DEBUG
 ccflags-$(INFO_PRINT) += -DPRINT_INFO
 ccflags-$(DEBUG_DESC) += -DDEBUG_DESC
 
-ccflags-$(HIGH_PERF_MODE) += -DHIGH_PERF
 ccflags-$(VIRTIO_C2X0) += -DVIRTIO_C2X0
 ccflags-$(RNG_OFFLOAD) += -DRNG_OFFLOAD
 ccflags-$(ENHANCE_KERNEL_TEST) += -DENHANCE_KERNEL_TEST
+ccflags-y += -DHIGH_PERF
 ccflags-y += -DSEC_DMA
 
 DRIVER_KOBJ = fsl_pkc_crypto_offload_drv
