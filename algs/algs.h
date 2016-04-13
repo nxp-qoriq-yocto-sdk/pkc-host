@@ -42,7 +42,6 @@
 #ifdef VIRTIO_C2X0
 #include <crypto/hash.h>	/* VIRTIO_C2X0 */
 #endif
-#include "hash.h"
 #include "rng.h"
 #include "common.h"
 #include "desc_constr.h"
@@ -99,10 +98,8 @@ struct fsl_crypto_alg {
 	uint32_t alg_op;
 	uint32_t class1_alg_type;
 	uint32_t class2_alg_type;
-	bool ahash;
 	union {
 		struct crypto_alg crypto_alg;
-		struct ahash_alg ahash_alg;
 	} u;
 };
 
@@ -118,9 +115,6 @@ typedef struct crypto_dev_sess {
 	fsl_crypto_dev_t *c_dev;
 	uint32_t r_id;
 	uint8_t sec_eng;
-	union {
-		struct hash_ctx hash;
-	} u;
 } crypto_dev_sess_t;
 
 #ifdef VIRTIO_C2X0
@@ -161,7 +155,6 @@ typedef struct crypto_job_ctx {
 	crypto_op_t oprn;
 	union {
 		struct pkc_request *pkc;
-		struct ahash_request *ahash;
 	} req;
 	union {
 		rsa_dev_mem_t *rsa;

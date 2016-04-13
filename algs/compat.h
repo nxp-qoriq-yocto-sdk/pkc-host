@@ -42,7 +42,6 @@
 #include <linux/device.h>
 #include <linux/interrupt.h>
 #include <linux/crypto.h>
-#include <linux/hash.h>
 #include <linux/hw_random.h>
 #include <linux/of_platform.h>
 #include <linux/dma-mapping.h>
