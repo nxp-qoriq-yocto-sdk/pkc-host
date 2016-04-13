@@ -228,11 +228,6 @@ void crypto_op_done(fsl_crypto_dev_t *c_dev, crypto_job_ctx_t *ctx,
 	case AHASH_FINUP_NO_CTX:
 	case AHASH_UPDATE_NO_CTX:
 	case AHASH_UPDATE_FIRST:
-	case AEAD_SETKEY:
-	case AEAD_ENCRYPT:
-	case AEAD_DECRYPT:
-	case ABLK_ENCRYPT:
-	case ABLK_DECRYPT:
 		break;
 
 	case RNG:
