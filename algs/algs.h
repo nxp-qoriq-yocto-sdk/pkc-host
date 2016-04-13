@@ -125,16 +125,6 @@ struct virtio_c2x0_crypto_sess_ctx {
 
 	struct list_head list_entry;
 } __packed;
-
-#if 0
-struct virtio_c2x0_hash_sess_ctx {
-	crypto_dev_sess_t c_sess;
-	unsigned long sess_id;
-	int32_t guest_id;
-
-	struct list_head list_entry;
-} __packed;
-#endif
 #endif
 /******************************************************************************
 Description :	Defines the context for the crypto job
