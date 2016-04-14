@@ -137,7 +137,7 @@ static struct alg_template driver_algs[] = {
 	 .driver_name = "pkc-rsa-fsl",
 	 .blocksize = 0,
 	 .type = CRYPTO_ALG_TYPE_PKC_RSA,
-	 .u.pkc = {
+	 .pkc = {
 		   .pkc_op = rsa_op,
 		   .min_keysize = 512,
 		   .max_keysize = 4096,
@@ -149,7 +149,7 @@ static struct alg_template driver_algs[] = {
 	 .driver_name = "pkc-dsa-fsl",
 	 .blocksize = 0,
 	 .type = CRYPTO_ALG_TYPE_PKC_DSA,
-	 .u.pkc = {
+	 .pkc = {
 		   .pkc_op = dsa_op,
 		   .min_keysize = 512,
 		   .max_keysize = 4096,
@@ -159,7 +159,7 @@ static struct alg_template driver_algs[] = {
 	 .name = "pkc(dh)",
 	 .driver_name = "pkc-dh-fsl",
 	 .type = CRYPTO_ALG_TYPE_PKC_DH,
-	 .u.pkc = {
+	 .pkc = {
 		   .pkc_op = dh_op,
 		   .min_keysize = 512,
 		   .max_keysize = 4096,
@@ -236,7 +236,7 @@ static struct fsl_crypto_alg *fsl_alg_alloc(struct alg_template *template)
 		alg->cra_init = pkc_cra_init;
 		alg->cra_exit = pkc_cra_exit;
 		alg->cra_type = &crypto_pkc_type;
-		alg->cra_u.pkc = template->u.pkc;
+		alg->cra_u.pkc = template->pkc;
 		f_alg->op_type = ASYMMETRIC;
 		break;
 	}

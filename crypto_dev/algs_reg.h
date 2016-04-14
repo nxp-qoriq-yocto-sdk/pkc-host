@@ -65,9 +65,8 @@ struct alg_template {
 
 	uint32_t blocksize;
 	uint32_t type;
-	union {
-		struct pkc_alg pkc;
-	} u;
+	struct pkc_alg pkc;
+
 	uint32_t alg_type;
 	uint32_t alg_op;
 	uint32_t class1_alg_type;
