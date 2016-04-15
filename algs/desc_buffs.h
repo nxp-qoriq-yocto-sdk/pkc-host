@@ -198,9 +198,6 @@ typedef struct crypto_mem_info {
 } crypto_mem_info_t;
 
 void host_to_dev(crypto_mem_info_t *mem_info);
-#ifdef SEC_DMA
-int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem);
-#endif
 int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info);
 int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info);
 #endif

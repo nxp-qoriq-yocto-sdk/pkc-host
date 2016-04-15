@@ -1340,7 +1340,6 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 #endif
 
 	if (ctx0) {
-		unmap_crypto_mem(&ctx0->crypto_mem);
 		ctx0->op_done(ctx0, res);
 	} else {
 		print_debug("NULL Context!!\n");

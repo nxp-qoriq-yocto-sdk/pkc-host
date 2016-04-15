@@ -706,8 +706,6 @@ int rsa_op(struct pkc_request *req)
 	ret = -EINPROGRESS;
 	goto out_no_ctx;
 
-/*FIXME: we should unmap input buffers mapped in public and private3 operations
- * when ring enqueue fails */
 out_err:
 	dealloc_crypto_mem(&crypto_ctx->crypto_mem);
 out_nop:

@@ -102,25 +102,20 @@ no_mem:
 
 int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 {
-	struct c29x_dev *pci_dev = mem_info->dev->priv_dev;
+	struct pci_dev *dev = mem_info->dev->priv_dev->dev;
 	buffer_info_t *buffers = mem_info->buffers;
-	uint32_t i = 0;
-
+	buffer_type_t bt;
+	uint32_t i;
 	for (i = 1; i < mem_info->count; i++) {
-		switch (buffers[i].bt) {
-		case BT_OP:
-			if (buffers[i].h_dma_addr) {
-				pci_unmap_single(pci_dev->dev,
-						buffers[i].h_dma_addr,
-						buffers[i].len,
-						PCI_DMA_BIDIRECTIONAL);
-			}
-		default:
-			break;
+		bt = buffers[i].bt;
+		if ((bt == BT_IP) || (bt == BT_OP)) {
+			pci_unmap_single(dev, buffers[i].h_dma_addr,
+					buffers[i].len,	PCI_DMA_BIDIRECTIONAL);
 		}
 	}
 
 	free_buffer(mem_info->buf_pool, mem_info->src_buff);
+
 	return 0;
 }
 
@@ -152,25 +147,4 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 		buffers[i].d_p_addr = bars[MEM_TYPE_DRIVER].dev_p_addr +
 					buffers[i].h_dma_addr;
 	}
-}
-
-int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
-	int32_t i;
-	buffer_info_t *buffers;
-	struct pci_dev *dev = crypto_mem->dev->priv_dev->dev;
-
-	if (!crypto_mem) {
-		return -1;
-	}
-
-	buffers = crypto_mem->buffers;
-	for (i = 0; i < crypto_mem->count; i++) {
-		if (buffers[i].bt != BT_IP) {
-			continue;
-		}
-		pci_unmap_single(dev, buffers[i].h_dma_addr, buffers[i].len,
-			PCI_DMA_BIDIRECTIONAL);
-	}
-
-	return 0;
 }
