@@ -69,7 +69,7 @@ static int threads_per_cpu;
 static int cpu_mask;
 static struct timer_list test_timer;
 
-#ifdef CONFIG_PPC
+#if defined(CONFIG_PPC)
 inline uint64_t get_cpu_ticks(void)
 {
 	uint32_t l = 0, h = 0;
@@ -79,7 +79,7 @@ inline uint64_t get_cpu_ticks(void)
 
 	return ((uint64_t) h << 32) | l;
 }
-#else
+#elif defined(CONFIG_X86)
 inline uint64_t get_cpu_ticks(void)
 {
 	uint32_t h = 0, l = 0;
@@ -124,9 +124,9 @@ inline void check_test_done(void)
 	uint64_t cycle_diff = e_time - s_time;
 	uint32_t cpu_freq;
 
-#ifdef CONFIG_PPC
+#if defined(CONFIG_PPC)
 	cpu_freq = ppc_proc_freq / 1000000;
-#else
+#elif defined(CONFIG_X86)
 	cpu_freq = cpu_khz / 1000;
 #endif
 	print_debug("Cpu Freq: %d\n", cpu_freq);
