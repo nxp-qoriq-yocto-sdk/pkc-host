@@ -97,6 +97,9 @@ static void dsa_sign_init_len(struct dsa_sign_req_s *req,
 {
 	dsa_sign_buffers_t *mem = &(mem_info->c_buffers.dsa_sign);
 
+	/* the assumption for DSA signing is that
+	 * r_buff.len == c_buff.len == d_buff.len
+	 */
 	mem->q_buff.len = req->q_len;
 	mem->r_buff.len = req->r_len;
 	mem->g_buff.len = req->g_len;
@@ -174,10 +177,6 @@ static int dsa_sign_cp_req(struct dsa_sign_req_s *req,
 	mem->g_buff.req_ptr = req->g;
 	mem->priv_key_buff.req_ptr = req->priv_key;
 	mem->m_buff.req_ptr = req->m;
-	/* FIXME - make some buffers temporary
-	 * do not map from host ip pool twice
-	 */
-	mem->tmp_buff.req_ptr = mem->tmp_buff.h_v_addr;
 
 	if (ecdsa) {
 		mem->ab_buff.req_ptr = req->ab;
@@ -209,7 +208,6 @@ static int dsa_verify_cp_req(struct dsa_verify_req_s *req,
 	mem->m_buff.req_ptr = req->m;
 	mem->c_buff.req_ptr = req->c;
 	mem->d_buff.req_ptr = req->d;
-	mem->tmp_buff.req_ptr = mem->tmp_buff.h_v_addr;
 
 	if (ecdsa) {
 		mem->ab_buff.req_ptr = req->ab;
@@ -267,6 +265,8 @@ static void constr_dsa_sign_desc(crypto_mem_info_t *mem_info)
 	ASSIGN64(dsa_sign_desc->g_dma, mem->g_buff.d_p_addr);
 	ASSIGN64(dsa_sign_desc->s_dma, mem->priv_key_buff.d_p_addr);
 	ASSIGN64(dsa_sign_desc->f_dma, mem->m_buff.d_p_addr);
+
+	/* alloc the first and the second part of the digital signature */
 	ASSIGN64(dsa_sign_desc->c_dma, mem->tmp_buff.d_p_addr);
 	ASSIGN64(dsa_sign_desc->d_dma, (mem->tmp_buff.d_p_addr + mem->r_buff.len));
 
@@ -404,11 +404,10 @@ static void constr_ecdsa_sign_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	ASSIGN64(ecdsa_sign_desc->s_dma, mem->priv_key_buff.d_p_addr);
 	ASSIGN64(ecdsa_sign_desc->f_dma, mem->m_buff.d_p_addr);
 	ASSIGN64(ecdsa_sign_desc->ab_dma, mem->ab_buff.d_p_addr);
-	ASSIGN64(ecdsa_sign_desc->c_dma, mem->tmp_buff.d_p_addr);
 
-/* FIXME: why the addition of r_buff.len? */
-	ASSIGN64(ecdsa_sign_desc->d_dma,
-		 (mem->tmp_buff.d_p_addr + mem->r_buff.len));
+	/* alloc the first and the second part of the digital signature */
+	ASSIGN64(ecdsa_sign_desc->c_dma, mem->tmp_buff.d_p_addr);
+	ASSIGN64(ecdsa_sign_desc->d_dma, (mem->tmp_buff.d_p_addr + mem->r_buff.len));
 
 	iowrite32be((mem->q_buff.len << 7) | mem->r_buff.len, &ecdsa_sign_desc->sgf_ln);
 	if (ecc_bin) {
@@ -564,7 +563,7 @@ static void dsa_sign_init_crypto_mem(crypto_mem_info_t *crypto_mem, bool ecdsa)
 	dsa_sign_buffs->q_buff.bt = BT_IP;
 	dsa_sign_buffs->r_buff.bt = BT_IP;
 	dsa_sign_buffs->g_buff.bt = BT_IP;
-	dsa_sign_buffs->tmp_buff.bt = BT_IP;
+	dsa_sign_buffs->tmp_buff.bt = BT_TMP;
 	dsa_sign_buffs->priv_key_buff.bt = BT_IP;
 	dsa_sign_buffs->m_buff.bt = BT_IP;
 	dsa_sign_buffs->ab_buff.bt = BT_IP;
@@ -591,7 +590,7 @@ static void dsa_verify_init_crypto_mem(crypto_mem_info_t *crypto_mem,
 	dsa_verify_buffs->pub_key_buff.bt = BT_IP;
 	dsa_verify_buffs->m_buff.bt = BT_IP;
 	dsa_verify_buffs->ab_buff.bt = BT_IP;
-	dsa_verify_buffs->tmp_buff.bt = BT_IP;
+	dsa_verify_buffs->tmp_buff.bt = BT_TMP;
 	dsa_verify_buffs->c_buff.bt = BT_IP;
 	dsa_verify_buffs->d_buff.bt = BT_IP;
 }
