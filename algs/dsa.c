@@ -169,23 +169,14 @@ static int dsa_sign_cp_req(struct dsa_sign_req_s *req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-#ifdef USE_HOST_DMA
-	memcpy(mem->q_buff.h_v_addr, req->q, mem->q_buff.len);
-	memcpy(mem->r_buff.h_v_addr, req->r, mem->r_buff.len);
-	memcpy(mem->g_buff.h_v_addr, req->g, mem->g_buff.len);
-	memcpy(mem->priv_key_buff.h_v_addr, req->priv_key, mem->priv_key_buff.len);
-	memcpy(mem->m_buff.h_v_addr, req->m, mem->m_buff.len);
-
-	if (ecdsa)
-		memcpy(mem->ab_buff.h_v_addr, req->ab, mem->ab_buff.len);
-	else
-		mem->ab_buff.h_v_addr = NULL;
-#else
 	mem->q_buff.req_ptr = req->q;
 	mem->r_buff.req_ptr = req->r;
 	mem->g_buff.req_ptr = req->g;
 	mem->priv_key_buff.req_ptr = req->priv_key;
 	mem->m_buff.req_ptr = req->m;
+	/* FIXME - make some buffers temporary
+	 * do not map from host ip pool twice
+	 */
 	mem->tmp_buff.req_ptr = mem->tmp_buff.h_v_addr;
 
 	if (ecdsa) {
@@ -193,7 +184,7 @@ static int dsa_sign_cp_req(struct dsa_sign_req_s *req,
 	} else {
 		mem->ab_buff.req_ptr = NULL;
 	}
-#endif
+
 	mem->c_buff.h_v_addr = req->c;
 	mem->d_buff.h_v_addr = req->d;
 
@@ -211,21 +202,6 @@ static int dsa_verify_cp_req(struct dsa_verify_req_s *req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-#ifdef USE_HOST_DMA
-	memcpy(mem->q_buff.h_v_addr, req->q, mem->q_buff.len);
-	memcpy(mem->r_buff.h_v_addr, req->r, mem->r_buff.len);
-	memcpy(mem->g_buff.h_v_addr, req->g, mem->g_buff.len);
-	memcpy(mem->pub_key_buff.h_v_addr, req->pub_key, mem->pub_key_buff.len);
-	memcpy(mem->m_buff.h_v_addr, req->m, mem->m_buff.len);
-	memcpy(mem->c_buff.h_v_addr, req->c, mem->c_buff.len);
-	memcpy(mem->d_buff.h_v_addr, req->d, mem->d_buff.len);
-
-	if (ecdsa)
-		memcpy(mem->ab_buff.h_v_addr, req->ab, mem->ab_buff.len);
-	else
-		mem->ab_buff.h_v_addr = NULL;
-
-#else
 	mem->q_buff.req_ptr = req->q;
 	mem->r_buff.req_ptr = req->r;
 	mem->g_buff.req_ptr = req->g;
@@ -240,7 +216,7 @@ static int dsa_verify_cp_req(struct dsa_verify_req_s *req,
 	} else {
 		mem->ab_buff.req_ptr = NULL;
 	}
-#endif
+
 	return 0;
 }
 
@@ -255,16 +231,6 @@ static int dsa_keygen_cp_req(struct dsa_keygen_req_s *req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-#ifdef USE_HOST_DMA
-	memcpy(mem->q_buff.h_v_addr, req->q, mem->q_buff.len);
-	memcpy(mem->r_buff.h_v_addr, req->r, mem->r_buff.len);
-	memcpy(mem->g_buff.h_v_addr, req->g, mem->g_buff.len);
-
-	if (ecdsa)
-		memcpy(mem->ab_buff.h_v_addr, req->ab, mem->ab_buff.len);
-	else
-		mem->ab_buff.h_v_addr = NULL;
-#else
 	mem->q_buff.req_ptr = req->q;
 	mem->r_buff.req_ptr = req->r;
 	mem->g_buff.req_ptr = req->g;
@@ -274,7 +240,7 @@ static int dsa_keygen_cp_req(struct dsa_keygen_req_s *req,
 	} else {
 		mem->ab_buff.req_ptr = NULL;
 	}
-#endif
+
 	mem->prvkey_buff.h_v_addr = req->prvkey;
 	mem->pubkey_buff.h_v_addr = req->pubkey;
 
@@ -289,28 +255,18 @@ static void constr_dsa_sign_desc(crypto_mem_info_t *mem_info)
 	dsa_sign_buffers_t *mem = &(mem_info->c_buffers.dsa_sign);
 	struct dsa_sign_desc_s *dsa_sign_desc =
 	    (struct dsa_sign_desc_s *)mem->desc_buff.h_v_addr;
-#ifdef SEC_DMA
-        dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
+
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&dsa_sign_desc->desc_hdr,
 		      (start_idx << HDR_START_IDX_SHIFT) |
 		      (desc_size & HDR_DESCLEN_MASK) |
 		      HDR_ONE);
 
-#ifdef SEC_DMA
-	ASSIGN64(dsa_sign_desc->q_dma, (mem->q_buff.h_p_addr + offset));
-	ASSIGN64(dsa_sign_desc->r_dma, (mem->r_buff.h_p_addr + offset));
-	ASSIGN64(dsa_sign_desc->g_dma, (mem->g_buff.h_p_addr + offset));
-	ASSIGN64(dsa_sign_desc->s_dma, (mem->priv_key_buff.h_p_addr + offset));
-	ASSIGN64(dsa_sign_desc->f_dma, (mem->m_buff.h_p_addr + offset));
-#else
 	ASSIGN64(dsa_sign_desc->q_dma, mem->q_buff.d_p_addr);
 	ASSIGN64(dsa_sign_desc->r_dma, mem->r_buff.d_p_addr);
 	ASSIGN64(dsa_sign_desc->g_dma, mem->g_buff.d_p_addr);
 	ASSIGN64(dsa_sign_desc->s_dma, mem->priv_key_buff.d_p_addr);
 	ASSIGN64(dsa_sign_desc->f_dma, mem->m_buff.d_p_addr);
-#endif
 	ASSIGN64(dsa_sign_desc->c_dma, mem->tmp_buff.d_p_addr);
 	ASSIGN64(dsa_sign_desc->d_dma, (mem->tmp_buff.d_p_addr + mem->r_buff.len));
 
@@ -353,24 +309,13 @@ static void constr_dsa_verify_desc(crypto_mem_info_t *mem_info)
 	dsa_verify_buffers_t *mem = &(mem_info->c_buffers.dsa_verify);
 	struct dsa_verify_desc_s *dsa_verify_desc =
 	    (struct dsa_verify_desc_s *)mem->desc_buff.h_v_addr;
-#ifdef SEC_DMA
-        dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
+
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&dsa_verify_desc->desc_hdr,
 		      (start_idx << HDR_START_IDX_SHIFT) |
 		      (desc_size & HDR_DESCLEN_MASK) |
 		      HDR_ONE);
 
-#ifdef SEC_DMA
-	ASSIGN64(dsa_verify_desc->q_dma, (mem->q_buff.h_p_addr + offset));
-	ASSIGN64(dsa_verify_desc->r_dma, (mem->r_buff.h_p_addr + offset));
-	ASSIGN64(dsa_verify_desc->g_dma, (mem->g_buff.h_p_addr + offset));
-	ASSIGN64(dsa_verify_desc->w_dma, (mem->pub_key_buff.h_p_addr + offset));
-	ASSIGN64(dsa_verify_desc->f_dma, (mem->m_buff.h_p_addr + offset));
-	ASSIGN64(dsa_verify_desc->c_dma, (mem->c_buff.h_p_addr + offset));
-	ASSIGN64(dsa_verify_desc->d_dma, (mem->d_buff.h_p_addr + offset));
-#else
 	ASSIGN64(dsa_verify_desc->q_dma, mem->q_buff.d_p_addr);
 	ASSIGN64(dsa_verify_desc->r_dma, mem->r_buff.d_p_addr);
 	ASSIGN64(dsa_verify_desc->g_dma, mem->g_buff.d_p_addr);
@@ -378,14 +323,12 @@ static void constr_dsa_verify_desc(crypto_mem_info_t *mem_info)
 	ASSIGN64(dsa_verify_desc->f_dma, mem->m_buff.d_p_addr);
 	ASSIGN64(dsa_verify_desc->c_dma, mem->c_buff.d_p_addr);
 	ASSIGN64(dsa_verify_desc->d_dma, mem->d_buff.d_p_addr);
-#endif
 	ASSIGN64(dsa_verify_desc->tmp_dma, mem->tmp_buff.d_p_addr);
 
 	iowrite32be((mem->q_buff.len << 7) | mem->r_buff.len, &dsa_verify_desc->sgf_ln);
 	iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DSAVERIFY, &dsa_verify_desc->op);
 
 #ifdef PRINT_DEBUG
-
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.d_p_addr);
 	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.d_p_addr);
 	print_debug("G DMA: %llx\n", (uint64_t)mem->g_buff.d_p_addr);
@@ -411,23 +354,14 @@ static void constr_dsa_keygen_desc(crypto_mem_info_t *mem_info)
 	struct dsa_keygen_desc_s *dsa_keygen_desc =
 	    (struct dsa_keygen_desc_s *)mem->desc_buff.h_v_addr;
 
-#ifdef SEC_DMA
-        dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&dsa_keygen_desc->desc_hdr,
 		      (start_idx << HDR_START_IDX_SHIFT) |
 		      (desc_size & HDR_DESCLEN_MASK) | HDR_ONE);
 
-#ifdef SEC_DMA
-        ASSIGN64(dsa_keygen_desc->q_dma, (mem->q_buff.h_p_addr + offset));
-        ASSIGN64(dsa_keygen_desc->r_dma, (mem->r_buff.h_p_addr + offset));
-        ASSIGN64(dsa_keygen_desc->g_dma, (mem->g_buff.h_p_addr + offset));
-#else
 	ASSIGN64(dsa_keygen_desc->q_dma, mem->q_buff.d_p_addr);
 	ASSIGN64(dsa_keygen_desc->r_dma, mem->r_buff.d_p_addr);
 	ASSIGN64(dsa_keygen_desc->g_dma, mem->g_buff.d_p_addr);
-#endif
 	ASSIGN64(dsa_keygen_desc->s_dma, mem->prvkey_buff.d_p_addr);
 	ASSIGN64(dsa_keygen_desc->w_dma, mem->pubkey_buff.d_p_addr);
 
@@ -457,31 +391,22 @@ static void constr_ecdsa_sign_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	dsa_sign_buffers_t *mem = (dsa_sign_buffers_t *) (mem_info->buffers);
 	struct ecdsa_sign_desc_s *ecdsa_sign_desc =
 	    (struct ecdsa_sign_desc_s *)mem->desc_buff.h_v_addr;
-#ifdef SEC_DMA
-        dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
+
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&ecdsa_sign_desc->desc_hdr,
 		      (start_idx << HDR_START_IDX_SHIFT) |
 		      (desc_size & HDR_DESCLEN_MASK) |
 		      HDR_ONE);
 
-#ifdef SEC_DMA
-	ASSIGN64(ecdsa_sign_desc->q_dma, (mem->q_buff.h_p_addr + offset));
-	ASSIGN64(ecdsa_sign_desc->r_dma, (mem->r_buff.h_p_addr + offset));
-	ASSIGN64(ecdsa_sign_desc->g_dma, (mem->g_buff.h_p_addr + offset));
-	ASSIGN64(ecdsa_sign_desc->s_dma, (mem->priv_key_buff.h_p_addr + offset));
-	ASSIGN64(ecdsa_sign_desc->f_dma, (mem->m_buff.h_p_addr + offset));
-	ASSIGN64(ecdsa_sign_desc->ab_dma, (mem->ab_buff.h_p_addr + offset));
-#else
 	ASSIGN64(ecdsa_sign_desc->q_dma, mem->q_buff.d_p_addr);
 	ASSIGN64(ecdsa_sign_desc->r_dma, mem->r_buff.d_p_addr);
 	ASSIGN64(ecdsa_sign_desc->g_dma, mem->g_buff.d_p_addr);
 	ASSIGN64(ecdsa_sign_desc->s_dma, mem->priv_key_buff.d_p_addr);
 	ASSIGN64(ecdsa_sign_desc->f_dma, mem->m_buff.d_p_addr);
 	ASSIGN64(ecdsa_sign_desc->ab_dma, mem->ab_buff.d_p_addr);
-#endif
 	ASSIGN64(ecdsa_sign_desc->c_dma, mem->tmp_buff.d_p_addr);
+
+/* FIXME: why the addition of r_buff.len? */
 	ASSIGN64(ecdsa_sign_desc->d_dma,
 		 (mem->tmp_buff.d_p_addr + mem->r_buff.len));
 
@@ -534,25 +459,12 @@ static void constr_ecdsa_verify_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	struct ecdsa_verify_desc_s *ecdsa_verify_desc =
 		(struct ecdsa_verify_desc_s *)mem->desc_buff.h_v_addr;
 
-#ifdef SEC_DMA
-        dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&ecdsa_verify_desc->desc_hdr,
 		      (start_idx << HDR_START_IDX_SHIFT) |
 		      (desc_size & HDR_DESCLEN_MASK) |
 		      HDR_ONE);
 
-#ifdef SEC_DMA
-	ASSIGN64(ecdsa_verify_desc->q_dma, (mem->q_buff.h_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->r_dma, (mem->r_buff.h_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->g_dma, (mem->g_buff.h_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->w_dma, (mem->pub_key_buff.h_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->f_dma, (mem->m_buff.h_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->ab_dma, (mem->ab_buff.h_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->c_dma, (mem->c_buff.h_p_addr + offset));
-	ASSIGN64(ecdsa_verify_desc->d_dma, (mem->d_buff.h_p_addr + offset));
-#else
 	ASSIGN64(ecdsa_verify_desc->q_dma, mem->q_buff.d_p_addr);
 	ASSIGN64(ecdsa_verify_desc->r_dma, mem->r_buff.d_p_addr);
 	ASSIGN64(ecdsa_verify_desc->g_dma, mem->g_buff.d_p_addr);
@@ -561,7 +473,6 @@ static void constr_ecdsa_verify_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	ASSIGN64(ecdsa_verify_desc->ab_dma, mem->ab_buff.d_p_addr);
 	ASSIGN64(ecdsa_verify_desc->c_dma, mem->c_buff.d_p_addr);
 	ASSIGN64(ecdsa_verify_desc->d_dma, mem->d_buff.d_p_addr);
-#endif
 	ASSIGN64(ecdsa_verify_desc->tmp_dma, mem->tmp_buff.d_p_addr);
 
 	iowrite32be((mem->q_buff.len << 7) | mem->r_buff.len, &ecdsa_verify_desc->sgf_ln);
@@ -602,26 +513,15 @@ static void constr_ecdsa_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	struct ecdsa_keygen_desc_s *ecdsa_keygen_desc =
 	    (struct ecdsa_keygen_desc_s *)mem->desc_buff.h_v_addr;
 
-#ifdef SEC_DMA
-        dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
-
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&ecdsa_keygen_desc->desc_hdr,
 		      (start_idx << HDR_START_IDX_SHIFT) |
 		      (desc_size & HDR_DESCLEN_MASK) | HDR_ONE);
 
-#ifdef SEC_DMA
-        ASSIGN64(ecdsa_keygen_desc->q_dma, (mem->q_buff.h_p_addr + offset));
-        ASSIGN64(ecdsa_keygen_desc->r_dma, (mem->r_buff.h_p_addr + offset));
-        ASSIGN64(ecdsa_keygen_desc->ab_dma, (mem->ab_buff.h_p_addr + offset));
-        ASSIGN64(ecdsa_keygen_desc->g_dma, (mem->g_buff.h_p_addr + offset));
-#else
 	ASSIGN64(ecdsa_keygen_desc->q_dma, mem->q_buff.d_p_addr);
 	ASSIGN64(ecdsa_keygen_desc->r_dma, mem->r_buff.d_p_addr);
 	ASSIGN64(ecdsa_keygen_desc->ab_dma, mem->ab_buff.d_p_addr);
 	ASSIGN64(ecdsa_keygen_desc->g_dma, mem->g_buff.d_p_addr);
-#endif
 	ASSIGN64(ecdsa_keygen_desc->s_dma, mem->prvkey_buff.d_p_addr);
 	ASSIGN64(ecdsa_keygen_desc->w_dma, mem->pubkey_buff.d_p_addr);
 
@@ -733,10 +633,7 @@ int dsa_op(struct pkc_request *req)
 	dsa_keygen_buffers_t *dsa_keygen_buffs = NULL;
 	bool ecdsa = false;
 	bool ecc_bin = false;
-
-#ifdef SEC_DMA
         dev_p_addr_t offset;
-#endif
 
 #ifndef VIRTIO_C2X0
 	if (NULL != req->base.tfm) {
@@ -779,9 +676,7 @@ int dsa_op(struct pkc_request *req)
 
 #endif
 	}
-#ifdef SEC_DMA
-        offset = c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
+	offset = c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
@@ -824,11 +719,8 @@ int dsa_op(struct pkc_request *req)
 		}
 		print_debug("Desc constr complete...\n");
 		dsa_keygen_buffs =  &(crypto_ctx->crypto_mem.c_buffers.dsa_keygen);
-#ifdef SEC_DMA
-                sec_dma = dsa_keygen_buffs->desc_buff.h_p_addr + offset;
-#else
 		sec_dma = dsa_keygen_buffs->desc_buff.d_p_addr;
-#endif
+
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr:%p Crypto ctx: %p\n",
 			    (uint64_t)dsa_keygen_buffs->desc_buff.d_p_addr,
 			    dsa_keygen_buffs->desc_buff.h_v_addr, crypto_ctx);
@@ -854,11 +746,8 @@ int dsa_op(struct pkc_request *req)
 		}
 		print_debug("Desc constr complete...\n");
 		dsa_sign_buffs = &(crypto_ctx->crypto_mem.c_buffers.dsa_sign);
-#ifdef SEC_DMA
-		sec_dma = dsa_sign_buffs->desc_buff.h_p_addr + offset;
-#else
+
 		sec_dma = dsa_sign_buffs->desc_buff.d_p_addr;
-#endif
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p	Crypto ctx: %p\n",
 			    (uint64_t)dsa_sign_buffs->desc_buff.d_p_addr,
 			    dsa_sign_buffs->desc_buff.h_v_addr, crypto_ctx);
@@ -884,11 +773,8 @@ int dsa_op(struct pkc_request *req)
 		}
 		print_debug("Desc constr complete...\n");
 		dsa_verify_buffs = &(crypto_ctx->crypto_mem.c_buffers.dsa_verify);
-#ifdef SEC_DMA
-		sec_dma = dsa_verify_buffs->desc_buff.h_p_addr + offset;
-#else
 		sec_dma = dsa_verify_buffs->desc_buff.d_p_addr;
-#endif
+
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p Crypto ctx :%p\n",
 		     (uint64_t)dsa_verify_buffs->desc_buff.d_p_addr,
 		     dsa_verify_buffs->desc_buff.h_v_addr, crypto_ctx);
@@ -901,20 +787,6 @@ int dsa_op(struct pkc_request *req)
 		ret = -EINVAL;
 		goto out_nop;
 	}
-#ifdef USE_HOST_DMA
-	/* Since the desc is first memory inthe contig chunk which needs to be
-	 * transferred, hence taking its p addr as the
-	 * source for the complete transfer.
-	 */
-	crypto_ctx->crypto_mem.dest_buff_dma =
-	    crypto_ctx->crypto_mem.buffers[BT_DESC].h_map_p_addr;
-#endif
-
-#ifndef SEC_DMA
-#ifndef USE_HOST_DMA
-	memcpy_to_dev(&crypto_ctx->crypto_mem);
-#endif
-#endif
 
 	crypto_ctx->req.pkc = req;
 	crypto_ctx->oprn = DSA;
@@ -935,15 +807,6 @@ int dsa_op(struct pkc_request *req)
 	   structure for further refernce */
 	virtio_job->ctx = crypto_ctx;
 #endif
-#ifdef USE_HOST_DMA
-	if (-1 ==
-	    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
-		       dma_tx_complete_cb, crypto_ctx)) {
-		print_error("DMA to dev failed....\n");
-		ret = -1;
-		goto error;
-	}
-#else
 
 	print_debug("Before app_ring_enqueue\n");
 
@@ -956,7 +819,6 @@ int dsa_op(struct pkc_request *req)
 		ret = -1;
 		goto out_err;
 	}
-#endif
 	return -EINPROGRESS;
 
 out_err:
