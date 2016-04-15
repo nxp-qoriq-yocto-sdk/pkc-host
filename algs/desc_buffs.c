@@ -49,14 +49,12 @@ static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 	for (i = 0; i < mem_info->count; i++) {
 		switch (buffers[i].bt) {
 		case BT_DESC:
-			buffers[i].h_v_addr = mem;
-			mem += ALIGN_LEN_TO_DMA(buffers[i].len);
-			break;
 		case BT_IP:
 			buffers[i].h_v_addr = mem;
 			mem += ALIGN_LEN_TO_DMA(buffers[i].len);
 			break;
 		case BT_OP:
+		default:
 			break;
 		}
 	}
@@ -76,12 +74,11 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 		aligned_len = ALIGN_LEN_TO_DMA(buffers[i].len);
 		switch (buffers[i].bt) {
 		case BT_DESC:
-			tot_mem += aligned_len;
-			break;
 		case BT_IP:
 			tot_mem += aligned_len;
 			break;
 		case BT_OP:
+		default:
 			break;
 		}
 	}
@@ -143,6 +140,9 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 			buffers[i].h_dma_addr = pci_map_single(dev,
 					buffers[i].h_v_addr, buffers[i].len,
 					PCI_DMA_BIDIRECTIONAL);
+			break;
+		default:
+			pr_err("wrong buffer type %d\n", buffers[i].bt);
 			break;
 		}
 		buffers[i].d_p_addr = bars[MEM_TYPE_DRIVER].dev_p_addr +
