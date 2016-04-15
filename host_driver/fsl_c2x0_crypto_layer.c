@@ -1314,7 +1314,7 @@ int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 
 void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 {
-	dma_addr_t *h_desc;
+	void *h_desc;
 
 	crypto_op_ctx_t *ctx0 = NULL;
 #ifndef HIGH_PERF
