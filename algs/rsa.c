@@ -356,8 +356,8 @@ static void rsa_priv2_op_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 	priv2_op_buffs->q_buff.bt = BT_IP;
 	priv2_op_buffs->d_buff.bt = BT_IP;
 	priv2_op_buffs->g_buff.bt = BT_IP;
-	priv2_op_buffs->tmp1_buff.bt = BT_IP;
-	priv2_op_buffs->tmp2_buff.bt = BT_IP;
+	priv2_op_buffs->tmp1_buff.bt = BT_TMP;
+	priv2_op_buffs->tmp2_buff.bt = BT_TMP;
 	priv2_op_buffs->f_buff.bt = BT_OP;
 }
 
@@ -437,8 +437,6 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 	mem->dq_buff.req_ptr = priv3_req->dq;
 	mem->g_buff.req_ptr = priv3_req->g;
 	mem->c_buff.req_ptr = priv3_req->c;
-	mem->tmp1_buff.req_ptr = mem->tmp1_buff.h_v_addr;
-	mem->tmp2_buff.req_ptr = mem->tmp2_buff.h_v_addr;
 	mem->f_buff.h_v_addr = priv3_req->f;
 
 #ifdef PRINT_DEBUG
@@ -472,8 +470,8 @@ static void rsa_priv3_op_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 	priv3_op_buffs->dq_buff.bt = BT_IP;
 	priv3_op_buffs->c_buff.bt = BT_IP;
 	priv3_op_buffs->g_buff.bt = BT_IP;
-	priv3_op_buffs->tmp1_buff.bt = BT_IP;
-	priv3_op_buffs->tmp2_buff.bt = BT_IP;
+	priv3_op_buffs->tmp1_buff.bt = BT_TMP;
+	priv3_op_buffs->tmp2_buff.bt = BT_TMP;
 	priv3_op_buffs->f_buff.bt = BT_OP;
 }
 
