@@ -49,6 +49,7 @@ static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 	for (i = 0; i < mem_info->count; i++) {
 		switch (buffers[i].bt) {
 		case BT_DESC:
+		case BT_TMP:
 		case BT_IP:
 			buffers[i].h_v_addr = mem;
 			mem += ALIGN_LEN_TO_DMA(buffers[i].len);
@@ -74,6 +75,7 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 		aligned_len = ALIGN_LEN_TO_DMA(buffers[i].len);
 		switch (buffers[i].bt) {
 		case BT_DESC:
+		case BT_TMP:
 		case BT_IP:
 			tot_mem += aligned_len;
 			break;
@@ -125,9 +127,12 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 	struct pci_dev *dev = c_dev->priv_dev->dev;
 	struct pci_bar_info *bars = c_dev->priv_dev->bars;
 
+	/* TODO: allocate temporary buffers in device SRAM to completely avoid
+	 * PCIe traversal to host memory */
 	for (i = 0; i < mem_info->count; i++) {
 		switch (buffers[i].bt) {
 		case BT_DESC:
+		case BT_TMP:
 			buffers[i].h_dma_addr = c_dev->host_ip_pool.h_dma_addr +
 				(buffers[i].h_v_addr - c_dev->host_ip_pool.h_v_addr);
 			break;

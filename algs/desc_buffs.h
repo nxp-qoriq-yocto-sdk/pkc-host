@@ -39,7 +39,8 @@
 typedef enum buffer_type {
 	BT_DESC,
 	BT_IP,
-	BT_OP
+	BT_OP,
+	BT_TMP,
 } buffer_type_t;
 
 struct buffer_info {
