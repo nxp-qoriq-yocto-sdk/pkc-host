@@ -80,13 +80,8 @@ static void rng_init_done(void *ctx, int32_t res)
 	crypto_op_ctx_t *crypto_ctx = ctx;
 
 	print_debug("[RNG INIT DONE ]\n");
-
-	dealloc_crypto_mem(&(crypto_ctx->crypto_mem));
-
 	crypto_ctx->req.rng_init->result = res;
 	complete(&crypto_ctx->req.rng_init->completion);
-
-	free_crypto_ctx(crypto_ctx->ctx_pool, crypto_ctx);
 }
 
 
@@ -334,7 +329,7 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		ret = rng_init_cp_pers_str(pers_str, sizeof(pers_str),
 						&crypto_ctx->crypto_mem);
 		if (ret != 0) {
-			goto error;
+			goto out_nop;
 		}
 
 		print_debug("RNG init mem complete.....\n");
@@ -367,13 +362,13 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		output = kzalloc(output_len, GFP_KERNEL | GFP_DMA);
 		if (!output) {
 			ret = -ENOMEM;
-			goto error;
+			goto out_nop;
 		}
 
 		ret = rng_self_test_cp_output(output, output_len,
 						&crypto_ctx->crypto_mem);
 		if (ret != 0) {
-			goto error;
+			goto out_err_alloc;
 		}
 
 		print_debug("RNG self test mem complete.....\n");
@@ -399,7 +394,7 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		break;
 	default:
 		ret = -EINVAL;
-		goto error;
+		goto out_nop;
 	}
 
 	memcpy_to_dev(&crypto_ctx->crypto_mem);
@@ -412,10 +407,9 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 	crypto_ctx->op_done = rng_init_done;
 
 	sec_dma = sec_dma | (uint64_t) sec_no;
-	/* Now enqueue the job into the app ring */
 	if (app_ring_enqueue(c_dev, r_id, sec_dma)) {
 		ret = -1;
-		goto error;
+		goto out_enq_fail;
 	}
 	wait_for_completion_interruptible(&r_init.completion);
 
@@ -425,7 +419,6 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 			print_error("RNG SELF TEST Failed\n");
 		} else {
 			ret = self_test_chk_res(output);
-			kfree(output);
 		}
 	} else {
 		if (ret) {
@@ -433,17 +426,14 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		}
 	}
 
-	return ret;
-
-error:
-	if (crypto_ctx) {
-		if (crypto_ctx->crypto_mem.buffers) {
-			dealloc_crypto_mem(&crypto_ctx->crypto_mem);
-		}
-
-		free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
+out_enq_fail:
+	dealloc_crypto_mem(&crypto_ctx->crypto_mem);
+out_err_alloc:
+	if (crypto_ctx->oprn == RNG_SELF_TEST) {
+		kfree(output);
 	}
-	kfree(output);
+out_nop:
+	free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
 	return ret;
 }
 
