@@ -106,10 +106,6 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 	buffer_info_t *buffers = mem_info->buffers;
 	uint32_t i = 0;
 
-	if (buffers[0].h_v_addr) {
-		free_buffer(mem_info->buf_pool, buffers[0].h_v_addr);
-	}
-
 	for (i = 1; i < mem_info->count; i++) {
 		switch (buffers[i].bt) {
 		case BT_OP:
@@ -124,6 +120,7 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 		}
 	}
 
+	free_buffer(mem_info->buf_pool, mem_info->src_buff);
 	return 0;
 }
 
