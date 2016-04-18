@@ -632,7 +632,6 @@ int dsa_op(struct pkc_request *req)
 	dsa_keygen_buffers_t *dsa_keygen_buffs = NULL;
 	bool ecdsa = false;
 	bool ecc_bin = false;
-        dev_p_addr_t offset;
 
 #ifndef VIRTIO_C2X0
 	if (NULL != req->base.tfm) {
@@ -675,7 +674,7 @@ int dsa_op(struct pkc_request *req)
 
 #endif
 	}
-	offset = c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
+
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 

@@ -495,10 +495,6 @@ int rsa_op(struct pkc_request *req)
 	ctx_pool_t *ctx_pool;
 	uint32_t ctx_pool_id = 0;
 
-#ifdef SEC_DMA
-	dev_p_addr_t offset;
-#endif
-
 #ifndef VIRTIO_C2X0
 	if (NULL != req->base.tfm) {
 		crypto_dev_sess_t *c_sess;
@@ -537,8 +533,6 @@ int rsa_op(struct pkc_request *req)
 	atomic_inc(&c_dev->active_jobs);
 #endif
 	}
-
-	offset = c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 
 	ctx_pool_id = sess_cnt % NR_CTX_POOLS;
 	ctx_pool = &c_dev->ctx_pool[ctx_pool_id];
