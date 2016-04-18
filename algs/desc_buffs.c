@@ -158,6 +158,7 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
 	int32_t i;
 	buffer_info_t *buffers;
+	struct pci_dev *dev = crypto_mem->dev->priv_dev->dev;
 
 	if (!crypto_mem) {
 		return -1;
@@ -169,9 +170,8 @@ int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
 			continue;
 		}
 
-		buffers[i].h_p_addr = (phys_addr_t)pci_map_single(
-			g_fsl_pci_dev->dev, buffers[i].req_ptr, buffers[i].len,
-			PCI_DMA_BIDIRECTIONAL);
+		buffers[i].h_p_addr = pci_map_single(dev, buffers[i].req_ptr,
+				buffers[i].len, PCI_DMA_BIDIRECTIONAL);
 	}
 
 	return 0;
@@ -180,6 +180,7 @@ int32_t map_crypto_mem(crypto_mem_info_t *crypto_mem) {
 int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
 	int32_t i;
 	buffer_info_t *buffers;
+	struct pci_dev *dev = crypto_mem->dev->priv_dev->dev;
 
 	if (!crypto_mem) {
 		return -1;
@@ -191,7 +192,7 @@ int32_t unmap_crypto_mem(crypto_mem_info_t *crypto_mem) {
 			continue;
 		}
 
-		pci_unmap_single(g_fsl_pci_dev->dev,
+		pci_unmap_single(dev,
 			(dma_addr_t)buffers[i].h_p_addr, buffers[i].len,
 			PCI_DMA_BIDIRECTIONAL);
 	}

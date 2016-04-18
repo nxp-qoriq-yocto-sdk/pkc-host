@@ -1666,6 +1666,11 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	set_sysfs_value(fsl_pci_dev, FIRMWARE_VERSION_SYSFILE,
 			(uint8_t *) "FSL-FW-1.1.0\n", strlen("FSL-FW-1.1.0\n"));
 
+	/* TODO: remove global variable that references the device. It assumes
+	 * a single board is installed in the system. Currently it is used with
+	 * the tests but we may want to support more than a single board on the
+	 * same system and referencing only one driver through this variable
+	 * will not work for multiple boards */
 	g_fsl_pci_dev = fsl_pci_dev;
 
 	/* Add this node to the pci device's linked list */
