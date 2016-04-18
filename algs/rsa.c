@@ -635,8 +635,9 @@ int rsa_op(struct pkc_request *req)
 	case RSA_PUB:
 		rsa_pub_op_init_crypto_mem(&crypto_ctx->crypto_mem);
 		ret = rsa_pub_op_cp_req(&req->req_u.rsa_pub_req, &crypto_ctx->crypto_mem);
-		if (ret != 0)
-			goto out_err;
+		if (ret != 0) {
+			goto out_nop;
+		}
 
 		print_debug("Rsa pub op init mem complete.....\n");
 
@@ -669,11 +670,9 @@ int rsa_op(struct pkc_request *req)
 		break;
 	case RSA_PRIV_FORM1:
 		rsa_priv1_op_init_crypto_mem(&crypto_ctx->crypto_mem);
-		if (-ENOMEM ==
-		    rsa_priv1_op_cp_req(&req->req_u.rsa_priv_f1,
-					&crypto_ctx->crypto_mem)) {
-			ret = -ENOMEM;
-			goto out_err;
+		ret = rsa_priv1_op_cp_req(&req->req_u.rsa_priv_f1, &crypto_ctx->crypto_mem);
+		if (ret != 0) {
+			goto out_nop;
 		}
 		print_debug("Rsa pub op init mem complete....\n");
 
@@ -700,11 +699,9 @@ int rsa_op(struct pkc_request *req)
 
 	case RSA_PRIV_FORM2:
 		rsa_priv2_op_init_crypto_mem(&crypto_ctx->crypto_mem);
-		if (-ENOMEM ==
-		    rsa_priv2_op_cp_req(&req->req_u.rsa_priv_f2,
-					&crypto_ctx->crypto_mem)) {
-			ret = -ENOMEM;
-			goto out_err;
+		ret = rsa_priv2_op_cp_req(&req->req_u.rsa_priv_f2, &crypto_ctx->crypto_mem);
+		if (ret != 0) {
+			goto out_nop;
 		}
 		print_debug("Rsa pub op init mem complete.....\n");
 
@@ -731,11 +728,9 @@ int rsa_op(struct pkc_request *req)
 
 	case RSA_PRIV_FORM3:
 		rsa_priv3_op_init_crypto_mem(&crypto_ctx->crypto_mem);
-		if (-ENOMEM ==
-		    rsa_priv3_op_cp_req(&req->req_u.rsa_priv_f3,
-					&crypto_ctx->crypto_mem)) {
-			ret = -ENOMEM;
-			goto out_err;
+		ret = rsa_priv3_op_cp_req(&req->req_u.rsa_priv_f3, &crypto_ctx->crypto_mem);
+		if (ret != 0) {
+			goto out_nop;
 		}
 		print_debug("Rsa pub op init mem complete.....\n");
 
@@ -822,12 +817,12 @@ int rsa_op(struct pkc_request *req)
 	ret = -EINPROGRESS;
 	goto out_no_ctx;
 
+/*FIXME: we should unmap input buffers mapped in public and private3 operations
+ * when ring enqueue fails */
 out_err:
 	dealloc_crypto_mem(&crypto_ctx->crypto_mem);
-	/*kfree(crypto_ctx->crypto_mem.buffers); */
 out_nop:
 	free_crypto_ctx(crypto_ctx->ctx_pool, crypto_ctx);
-	/*kfree(crypto_ctx); */
 out_no_ctx:
 #ifndef HIGH_PERF
 	atomic_dec(&c_dev->active_jobs);
