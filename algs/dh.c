@@ -505,8 +505,7 @@ int dh_op(struct pkc_request *req)
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
-		ret = -ENOMEM;
-		goto error;
+		return -ENOMEM;
 	}
 
 	print_debug("Ring selected: %d\n", r_id);
@@ -523,61 +522,55 @@ int dh_op(struct pkc_request *req)
 	}
 
 	switch (req->type) {
+	case DH_KEYGEN:
+	case ECDH_KEYGEN:
+		dh_keygen_init_crypto_mem(&crypto_ctx->crypto_mem, ecdh);
+		dh_keygen_buffs = (dh_keygen_buffers_t *)crypto_ctx->crypto_mem.buffers;
 
-    case DH_KEYGEN:
-    case ECDH_KEYGEN:
-            dh_keygen_init_crypto_mem(&crypto_ctx->crypto_mem, ecdh);
-            dh_keygen_buffs    =   (dh_keygen_buffers_t *)crypto_ctx->crypto_mem.buffers;
+		ret = dh_keygen_cp_req(&req->req_u.dh_keygenreq, &crypto_ctx->crypto_mem, ecdh);
+		if (ret != 0) {
+			goto out_nop;
+		}
+		print_debug("DH init mem complete..... \n");
 
-            if(-ENOMEM == dh_keygen_cp_req(&req->req_u.dh_keygenreq, &crypto_ctx->crypto_mem, ecdh)) {
-				ret = -ENOMEM;
-                goto error;
-			}
-            print_debug("DH init mem complete..... \n");
-
-            /* Convert the buffers to dev */
-            host_to_dev(&crypto_ctx->crypto_mem);
-
-            print_debug("Host to dev convert complete.... \n");
+		/* Convert the buffers to dev */
+		host_to_dev(&crypto_ctx->crypto_mem);
+		print_debug("Host to dev convert complete.... \n");
 
 #ifdef SEC_DMA
-            map_crypto_mem(&(crypto_ctx->crypto_mem));
+		map_crypto_mem(&(crypto_ctx->crypto_mem));
 #endif
 
-            /* Constr the hw desc */
-            if(ecdh) {
-                constr_ecdh_keygen_desc(&crypto_ctx->crypto_mem, ecc_bin);
-            } else {
-                constr_dh_keygen_desc(&crypto_ctx->crypto_mem);
-            }
-            print_debug("Desc constr complete... \n");
+		/* Constr the hw desc */
+		if(ecdh) {
+			constr_ecdh_keygen_desc(&crypto_ctx->crypto_mem, ecc_bin);
+		} else {
+			constr_dh_keygen_desc(&crypto_ctx->crypto_mem);
+		}
+		print_debug("Desc constr complete... \n");
 
 #ifdef SEC_DMA
-            sec_dma = dh_keygen_buffs->desc_buff.h_p_addr + offset;
+		sec_dma = dh_keygen_buffs->desc_buff.h_p_addr + offset;
 #else
-            sec_dma =   dh_keygen_buffs->desc_buff.d_p_addr;
+		sec_dma =   dh_keygen_buffs->desc_buff.d_p_addr;
 #endif
 
-            /* Store the context */
-            print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p    Crypto ctx: %p \n",
-		(uint64_t)dh_keygen_buffs->desc_buff.d_p_addr,
-		dh_keygen_buffs->desc_buff.h_v_addr, crypto_ctx);
+		/* Store the context */
+		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p    Crypto ctx: %p \n",
+				(uint64_t)dh_keygen_buffs->desc_buff.d_p_addr,
+				dh_keygen_buffs->desc_buff.h_v_addr, crypto_ctx);
 
-            store_priv_data(dh_keygen_buffs->desc_buff.h_v_addr, (unsigned long)crypto_ctx);
-
-            break;
-
+		store_priv_data(dh_keygen_buffs->desc_buff.h_v_addr, (unsigned long)crypto_ctx);
+		break;
 	case DH_COMPUTE_KEY:
 	case ECDH_COMPUTE_KEY:
 		dh_key_init_crypto_mem(&crypto_ctx->crypto_mem, ecdh);
 		dh_key_buffs =
 		    (dh_key_buffers_t *) crypto_ctx->crypto_mem.buffers;
 
-		if (-ENOMEM ==
-		    dh_key_cp_req(&req->req_u.dh_req, &crypto_ctx->crypto_mem,
-				  ecdh)) {
-			ret = -ENOMEM;
-			goto error;
+		ret = dh_key_cp_req(&req->req_u.dh_req, &crypto_ctx->crypto_mem, ecdh);
+		if (ret != 0) {
+			goto out_nop;
 		}
 		print_debug("DH init mem complete.....\n");
 
@@ -615,7 +608,7 @@ int dh_op(struct pkc_request *req)
 
 	default:
 		ret = -EINVAL;
-		break;
+		goto out_nop;
 	}
 #ifdef USE_HOST_DMA
 	/* Since the desc is first memory inthe contig chunk which needs to be
@@ -669,27 +662,15 @@ int dh_op(struct pkc_request *req)
 	/* Now enqueue the job into the app ring */
 	if (app_ring_enqueue(c_dev, r_id, sec_dma)) {
 		ret = -1;
-		goto error1;
+		goto error;
 	}
 #endif
-
 	return -EINPROGRESS;
 
 error:
-#ifndef HIGH_PERF
-	atomic_dec(&c_dev->active_jobs);
-#endif
-#ifndef USE_HOST_DMA
-error1:
-#endif
-	if (crypto_ctx) {
-		if (crypto_ctx->crypto_mem.buffers) {
-			dealloc_crypto_mem(&crypto_ctx->crypto_mem);
-			/*kfree(crypto_ctx->crypto_mem.buffers); */
-		}
-		free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
-		/*kfree(crypto_ctx); */
-	}
+	dealloc_crypto_mem(&crypto_ctx->crypto_mem);
+out_nop:
+	free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
 	return ret;
 }
 
