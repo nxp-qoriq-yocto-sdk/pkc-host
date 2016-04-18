@@ -195,15 +195,12 @@ static int submit_job(struct rng_ctx *ctx, int to_current)
 	     rng_buffs->desc_buff.v_mem, crypto_ctx);
 
 	store_priv_data(rng_buffs->desc_buff.v_mem, (unsigned long)crypto_ctx);
+
 	crypto_ctx->oprn = RNG;
-
-	memcpy_to_dev(&crypto_ctx->crypto_mem);
-
 	crypto_ctx->req.rng = bd;
 	crypto_ctx->rid = r_id;
 	crypto_ctx->desc = sec_dma;
 	crypto_ctx->c_dev = ctx->c_dev;
-
 	crypto_ctx->op_done = rng_done;
 
 	print_debug("submitting job %d\n", !(to_current ^ ctx->current_buf));

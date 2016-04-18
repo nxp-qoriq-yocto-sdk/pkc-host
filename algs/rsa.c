@@ -90,16 +90,10 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 	mem_info->buffers = (buffer_info_t *)mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
-#ifdef USE_HOST_DMA
-	memcpy(mem->n_buff.h_v_addr, pub_req->n, mem->n_buff.len);
-	memcpy(mem->e_buff.h_v_addr, pub_req->e, mem->e_buff.len);
-	memcpy(mem->f_buff.h_v_addr, pub_req->f, mem->f_buff.len);
-#else
+
 	mem->n_buff.req_ptr = pub_req->n;
 	mem->e_buff.req_ptr = pub_req->e;
 	mem->f_buff.req_ptr = pub_req->f;
-#endif
-
 	mem->g_buff.h_v_addr = pub_req->g;
 
 	print_debug("[RSA PUB OP] Request details:\n");
@@ -110,13 +104,6 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 	print_debug("Desc Len: %d\n", mem->desc_buff.len);
 	print_debug("G Buff addr: %p\n", mem->g_buff.h_v_addr);
 	print_debug("[RSA PUB OP]\n");
-
-	print_debug("[RSA_PUB_OP] Allocated memory details:\n");
-	print_debug("N Buffer: %p\n", mem->n_buff.h_v_addr);
-	print_debug("E Buffer: %p\n", mem->e_buff.h_v_addr);
-	print_debug("F Buffer: %p\n", mem->f_buff.h_v_addr);
-	print_debug("G Buffer: %p\n", mem->g_buff.h_v_addr);
-	print_debug("DESC Buffer: %p\n", mem->desc_buff.h_v_addr);
 
 	return 0;
 }
@@ -130,25 +117,15 @@ static void constr_rsa_pub_op_desc(crypto_mem_info_t *mem_info)
 	rsa_pub_op_buffers_t *mem = &(mem_info->c_buffers.rsa_pub_op);
 	struct rsa_pub_desc_s *rsa_pub_desc = mem->desc_buff.h_v_addr;
 
-#ifdef SEC_DMA
-        dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
-
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&rsa_pub_desc->desc_hdr,
 		      (start_idx << HDR_START_IDX_SHIFT) | (desc_size &
 							    HDR_DESCLEN_MASK) |
 		      HDR_ONE);
 
-#ifdef SEC_DMA
-	IOWRITE64BE(mem->n_buff.h_p_addr + offset, &rsa_pub_desc->n_dma);
-	IOWRITE64BE(mem->e_buff.h_p_addr + offset, &rsa_pub_desc->e_dma);
-	IOWRITE64BE(mem->f_buff.h_p_addr + offset, &rsa_pub_desc->f_dma);
-#else
 	IOWRITE64BE(mem->n_buff.d_p_addr, &rsa_pub_desc->n_dma);
 	IOWRITE64BE(mem->e_buff.d_p_addr, &rsa_pub_desc->e_dma);
 	IOWRITE64BE(mem->f_buff.d_p_addr, &rsa_pub_desc->f_dma);
-#endif
 	IOWRITE64BE(mem->g_buff.d_p_addr, &rsa_pub_desc->g_dma);
 
 	iowrite32be((mem->e_buff.len << 12) | mem->n_buff.len, &rsa_pub_desc->sgf_flg);
@@ -240,17 +217,12 @@ static int rsa_priv1_op_cp_req(struct rsa_priv_frm1_req_s *priv1_req,
 	mem_info->buffers = (buffer_info_t *)mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
-#ifdef USE_HOST_DMA
-	memcpy(mem->n_buff.h_v_addr, priv1_req->n, mem->n_buff.len);
-	memcpy(mem->d_buff.h_v_addr, priv1_req->d, mem->d_buff.len);
-	memcpy(mem->g_buff.h_v_addr, priv1_req->g, mem->g_buff.len);
-#else
+
 	mem->n_buff.req_ptr = priv1_req->n;
 	mem->d_buff.req_ptr = priv1_req->d;
 	mem->g_buff.req_ptr = priv1_req->g;
-#endif
-
 	mem->f_buff.h_v_addr = priv1_req->f;
+
 #ifdef PRINT_DEBUG
 	print_debug("[RSA PUB OP] Request details:\n");
 	print_debug("N Len: %d\n", mem->n_buff.len);
@@ -340,17 +312,11 @@ static int rsa_priv2_op_cp_req(struct rsa_priv_frm2_req_s *priv2_req,
 	mem_info->buffers = (buffer_info_t *)mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
-#ifdef USE_HOST_DMA
-	memcpy(mem->p_buff.h_v_addr, priv2_req->p, mem->p_buff.len);
-	memcpy(mem->q_buff.h_v_addr, priv2_req->q, mem->q_buff.len);
-	memcpy(mem->d_buff.h_v_addr, priv2_req->d, mem->d_buff.len);
-	memcpy(mem->g_buff.h_v_addr, priv2_req->g, mem->g_buff.len);
-#else
+
 	mem->p_buff.req_ptr = priv2_req->p;
 	mem->q_buff.req_ptr = priv2_req->q;
 	mem->d_buff.req_ptr = priv2_req->d;
 	mem->g_buff.req_ptr = priv2_req->g;
-#endif
 	mem->f_buff.h_v_addr = priv2_req->f;
 
 #ifdef PRINT_DEBUG
@@ -407,31 +373,18 @@ static void constr_rsa_priv3_op_desc(crypto_mem_info_t *mem_info)
 	    (struct rsa_priv_frm3_desc_s *)mem->desc_buff.h_v_addr;
 	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.h_v_addr;
 
-#ifdef SEC_DMA
-        dev_p_addr_t offset = mem_info->dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
-
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(desc_buff,
 		      (start_idx << HDR_START_IDX_SHIFT) | (desc_size &
 							    HDR_DESCLEN_MASK) |
 		      HDR_ONE);
 
-#ifdef SEC_DMA
-	IOWRITE64BE(mem->p_buff.h_p_addr + offset, &rsa_priv_desc->p_dma);
-	IOWRITE64BE(mem->q_buff.h_p_addr + offset, &rsa_priv_desc->q_dma);
-	IOWRITE64BE(mem->dp_buff.h_p_addr + offset, &rsa_priv_desc->dp_dma);
-	IOWRITE64BE(mem->dq_buff.h_p_addr + offset, &rsa_priv_desc->dq_dma);
-	IOWRITE64BE(mem->c_buff.h_p_addr + offset, &rsa_priv_desc->c_dma);
-	IOWRITE64BE(mem->g_buff.h_p_addr + offset, &rsa_priv_desc->g_dma);
-#else
 	IOWRITE64BE(mem->p_buff.d_p_addr, &rsa_priv_desc->p_dma);
 	IOWRITE64BE(mem->q_buff.d_p_addr, &rsa_priv_desc->q_dma);
 	IOWRITE64BE(mem->dp_buff.d_p_addr, &rsa_priv_desc->dp_dma);
 	IOWRITE64BE(mem->dq_buff.d_p_addr, &rsa_priv_desc->dq_dma);
 	IOWRITE64BE(mem->c_buff.d_p_addr, &rsa_priv_desc->c_dma);
 	IOWRITE64BE(mem->g_buff.d_p_addr, &rsa_priv_desc->g_dma);
-#endif
 	IOWRITE64BE(mem->tmp1_buff.d_p_addr, &rsa_priv_desc->tmp1_dma);
 	IOWRITE64BE(mem->tmp2_buff.d_p_addr, &rsa_priv_desc->tmp2_dma);
 	IOWRITE64BE(mem->f_buff.d_p_addr, &rsa_priv_desc->f_dma);
@@ -469,9 +422,7 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 			       crypto_mem_info_t *mem_info)
 {
 	rsa_priv3_op_buffers_t *mem = &(mem_info->c_buffers.rsa_priv3_op);
-#ifdef PRINT_DEBUG
-	rsa_priv3_op_buffers_t *priv3_op_buffs = mem;
-#endif
+
 	rsa_priv3_op_init_len(priv3_req, mem_info);
 
 	/* Alloc mem requrd for crypto operation */
@@ -479,24 +430,15 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 	mem_info->buffers = (buffer_info_t *)mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
-#ifdef USE_HOST_DMA
-	memcpy(mem->p_buff.h_v_addr, priv3_req->p, mem->p_buff.len);
-	memcpy(mem->q_buff.h_v_addr, priv3_req->q, mem->q_buff.len);
-	memcpy(mem->dp_buff.h_v_addr, priv3_req->dp, mem->dp_buff.len);
-	memcpy(mem->dq_buff.h_v_addr, priv3_req->dq, mem->dq_buff.len);
-	memcpy(mem->g_buff.h_v_addr, priv3_req->g, mem->g_buff.len);
-	memcpy(mem->c_buff.h_v_addr, priv3_req->c, mem->c_buff.len);
-#else
+
 	mem->p_buff.req_ptr = priv3_req->p;
 	mem->q_buff.req_ptr = priv3_req->q;
 	mem->dp_buff.req_ptr = priv3_req->dp;
 	mem->dq_buff.req_ptr = priv3_req->dq;
 	mem->g_buff.req_ptr = priv3_req->g;
 	mem->c_buff.req_ptr = priv3_req->c;
-#endif
 	mem->tmp1_buff.req_ptr = mem->tmp1_buff.h_v_addr;
 	mem->tmp2_buff.req_ptr = mem->tmp2_buff.h_v_addr;
-
 	mem->f_buff.h_v_addr = priv3_req->f;
 
 #ifdef PRINT_DEBUG
@@ -512,18 +454,6 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 	print_debug("Desc Len: %d\n", mem->desc_buff.len);
 	print_debug("F Buff addr: %p\n", mem->f_buff.h_v_addr);
 	print_debug("[RSA PRIV3 OP]\n");
-
-	print_debug("[RSA3_PRIV_OP] Allocated memory details:\n");
-	print_debug("P Buffer: %p\n", priv3_op_buffs->p_buff.h_v_addr);
-	print_debug("Q Buffer: %p\n", priv3_op_buffs->q_buff.h_v_addr);
-	print_debug("G Buffer: %p\n", priv3_op_buffs->g_buff.h_v_addr);
-	print_debug("C Buffer: %p\n", priv3_op_buffs->c_buff.h_v_addr);
-	print_debug("DPBuffer: %p\n", priv3_op_buffs->dp_buff.h_v_addr);
-	print_debug("DQBuffer: %p\n", priv3_op_buffs->dq_buff.h_v_addr);
-	print_debug("TMP1 Buffer: %p\n", priv3_op_buffs->tmp1_buff.h_v_addr);
-	print_debug("TMP2 Buffer: %p\n", priv3_op_buffs->tmp2_buff.h_v_addr);
-	print_debug("F Buffer: %p\n", priv3_op_buffs->f_buff.h_v_addr);
-	print_debug("DESC Buffer: %p\n", priv3_op_buffs->desc_buff.h_v_addr);
 #endif
 	return 0;
 }
@@ -610,9 +540,7 @@ int rsa_op(struct pkc_request *req)
 #endif
 	}
 
-#ifdef SEC_DMA
 	offset = c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
 
 	ctx_pool_id = sess_cnt % NR_CTX_POOLS;
 	ctx_pool = &c_dev->ctx_pool[ctx_pool_id];
@@ -643,10 +571,6 @@ int rsa_op(struct pkc_request *req)
 
 		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
-#ifdef SEC_DMA
-		map_crypto_mem(&(crypto_ctx->crypto_mem));
-#endif
-
 		print_debug("Host to dev convert complete....\n");
 
 		/* Constr the hw desc */
@@ -654,11 +578,7 @@ int rsa_op(struct pkc_request *req)
 		print_debug("Desc constr complete...\n");
 
 		pub_op_buffs = &(crypto_ctx->crypto_mem.c_buffers.rsa_pub_op);
-#ifdef SEC_DMA
-		sec_dma = pub_op_buffs->desc_buff.h_p_addr + offset;
-#else
 		sec_dma = pub_op_buffs->desc_buff.d_p_addr;
-#endif
 
 		/* Store the context */
 		print_debug("[Enq] Desc addr:%llx Hbuffer addr:%p Crypto ctx: %p\n",
@@ -736,10 +656,6 @@ int rsa_op(struct pkc_request *req)
 
 		/* Convert the buffers to dev */
 		host_to_dev(&crypto_ctx->crypto_mem);
-#ifdef SEC_DMA
-                map_crypto_mem(&(crypto_ctx->crypto_mem));
-#endif
-
 		print_debug("Host to dev convert complete....\n");
 
 		/* Constr the hw desc */
@@ -747,11 +663,7 @@ int rsa_op(struct pkc_request *req)
 		print_debug("Desc constr complete...\n");
 
 		priv3_op_buffs = &(crypto_ctx->crypto_mem.c_buffers.rsa_priv3_op);
-#ifdef SEC_DMA
-		sec_dma = priv3_op_buffs->desc_buff.h_p_addr + offset;
-#else
 		sec_dma = priv3_op_buffs->desc_buff.d_p_addr;
-#endif
 
 		/* Store the context */
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p Crypto ctx: %p\n",
@@ -767,20 +679,6 @@ int rsa_op(struct pkc_request *req)
 		goto out_nop;
 	}
 
-#ifdef USE_HOST_DMA
-	/* Since the desc is first memory inthe contig chunk which needs to be
-	 * transferred, hence taking its p addr as the
-	 * source for the complete transfer.
-	 */
-	crypto_ctx->crypto_mem.dest_buff_dma =
-	    crypto_ctx->crypto_mem.buffers[BT_DESC].h_map_p_addr;
-#endif
-
-#ifndef SEC_DMA
-#ifndef USE_HOST_DMA
-	memcpy_to_dev(&crypto_ctx->crypto_mem);
-#endif
-#endif
 
 	crypto_ctx->req.pkc = req;
 	crypto_ctx->oprn = RSA;
@@ -797,15 +695,6 @@ int rsa_op(struct pkc_request *req)
 	virtio_job->ctx = crypto_ctx;
 #endif
 
-#ifdef USE_HOST_DMA
-	if (-1 ==
-	    dma_to_dev(get_dma_chnl(), &crypto_ctx->crypto_mem,
-		       dma_tx_complete_cb, crypto_ctx)) {
-		print_error("DMA to dev failed....\n");
-		ret = -1;
-		goto out_err;
-	}
-#else
 	print_debug("Before app_ring_enqueue\n");
 	sec_dma = set_sec_affinity(c_dev, r_id, sec_dma);
 	/* Now enqueue the job into the app ring */
@@ -813,7 +702,7 @@ int rsa_op(struct pkc_request *req)
 		ret = -1;
 		goto out_err;
 	}
-#endif
+
 	ret = -EINPROGRESS;
 	goto out_no_ctx;
 

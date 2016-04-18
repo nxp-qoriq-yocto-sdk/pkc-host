@@ -397,8 +397,6 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		goto out_nop;
 	}
 
-	memcpy_to_dev(&crypto_ctx->crypto_mem);
-
 	crypto_ctx->oprn = op;
 	crypto_ctx->req.rng_init = &r_init;
 	crypto_ctx->rid = r_id;

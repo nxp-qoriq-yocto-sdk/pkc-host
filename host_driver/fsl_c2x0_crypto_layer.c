@@ -923,7 +923,6 @@ void init_op_pool(fsl_crypto_dev_t *dev)
 			DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
 
 	dev->op_pool.h_v_addr = dev->host_mem->op_pool;
-	dev->op_pool.h_p_addr = __pa(dev->host_mem->op_pool);
 }
 
 void init_ip_pool(fsl_crypto_dev_t *dev)
@@ -932,7 +931,7 @@ void init_ip_pool(fsl_crypto_dev_t *dev)
 			FIRMWARE_IP_BUFFER_POOL_SIZE);
 
 	dev->host_ip_pool.h_v_addr = dev->host_mem->ip_pool;
-	dev->host_ip_pool.h_p_addr = __pa(dev->host_mem->ip_pool);
+	dev->host_ip_pool.h_dma_addr = dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr + dev->ob_mem.ip_pool;
 }
 
 int init_crypto_ctx_pool(fsl_crypto_dev_t *dev)
@@ -1315,19 +1314,15 @@ int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 {
 	void *h_desc;
-
 	crypto_op_ctx_t *ctx0 = NULL;
+	dev_p_addr_t offset = dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
+
 #ifndef HIGH_PERF
 	crypto_job_ctx_t *ctx1 = NULL;
 #endif
 
-        dev_p_addr_t offset = dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-
-        if (desc < offset) {
-            h_desc = dev->host_ip_pool.h_v_addr + (desc - dev->dev_ip_pool.d_p_addr);
-        } else {
-            h_desc = dev->host_ip_pool.h_v_addr + (desc - offset - dev->host_ip_pool.h_p_addr);
-        }
+	h_desc = dev->host_ip_pool.h_v_addr + (desc - offset) -
+			dev->host_ip_pool.h_dma_addr;
 
 #ifndef HIGH_PERF
 	if (get_flag(dev->host_ip_pool.pool, h_desc))
@@ -1345,11 +1340,9 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 #endif
 
 	if (ctx0) {
-                if (desc >= offset) {
-                    unmap_crypto_mem(&ctx0->crypto_mem);
-                }
+		unmap_crypto_mem(&ctx0->crypto_mem);
 		ctx0->op_done(ctx0, res);
-        } else {
+	} else {
 		print_debug("NULL Context!!\n");
 	}
 
