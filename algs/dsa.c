@@ -787,8 +787,7 @@ int dsa_op(struct pkc_request *req)
 
 	if (unlikely(!crypto_ctx)) {
 		print_error("Mem alloc failed....\n");
-		ret = -ENOMEM;
-		goto error;
+		return -ENOMEM;
 	}
 
 	print_debug("Ring selected: %d\n", r_id);
@@ -809,11 +808,10 @@ int dsa_op(struct pkc_request *req)
 	case DSA_KEYGEN:
 	case ECDSA_KEYGEN:
 		dsa_keygen_init_crypto_mem(&crypto_ctx->crypto_mem, ecdsa);
-		if (-ENOMEM ==
-		    dsa_keygen_cp_req(&req->req_u.dsa_keygen,
-				      &crypto_ctx->crypto_mem, ecdsa)) {
-			ret = -ENOMEM;
-			goto error;
+		ret = dsa_keygen_cp_req(&req->req_u.dsa_keygen,
+				      &crypto_ctx->crypto_mem, ecdsa);
+		if (ret != 0) {
+			goto out_nop;
 		}
 		print_debug("DSA keygen init mem complete.....\n");
 		host_to_dev(&crypto_ctx->crypto_mem);
@@ -842,11 +840,10 @@ int dsa_op(struct pkc_request *req)
 	case DSA_SIGN:
 	case ECDSA_SIGN:
 		dsa_sign_init_crypto_mem(&crypto_ctx->crypto_mem, ecdsa);
-		if (-ENOMEM ==
-		    dsa_sign_cp_req(&req->req_u.dsa_sign,
-				    &crypto_ctx->crypto_mem, ecdsa)) {
-			ret = -ENOMEM;
-			goto error;
+		ret = dsa_sign_cp_req(&req->req_u.dsa_sign,
+				    &crypto_ctx->crypto_mem, ecdsa);
+		if (ret != 0) {
+			goto out_nop;
 		}
 		print_debug("DSA Sign init mem complete.....\n");
 		host_to_dev(&crypto_ctx->crypto_mem);
@@ -877,11 +874,10 @@ int dsa_op(struct pkc_request *req)
 	case DSA_VERIFY:
 	case ECDSA_VERIFY:
 		dsa_verify_init_crypto_mem(&crypto_ctx->crypto_mem, ecdsa);
-		if (-ENOMEM ==
-		    dsa_verify_cp_req(&req->req_u.dsa_verify,
-				      &crypto_ctx->crypto_mem, ecdsa)) {
-			ret = -ENOMEM;
-			goto error;
+		ret = dsa_verify_cp_req(&req->req_u.dsa_verify,
+				      &crypto_ctx->crypto_mem, ecdsa);
+		if (ret != 0) {
+			goto out_nop;
 		}
 		print_debug("DSA Verify init mem complete.....\n");
 		host_to_dev(&crypto_ctx->crypto_mem);
@@ -911,7 +907,7 @@ int dsa_op(struct pkc_request *req)
 
 	default:
 		ret = -EINVAL;
-		break;
+		goto out_nop;
 	}
 #ifdef USE_HOST_DMA
 	/* Since the desc is first memory inthe contig chunk which needs to be
@@ -966,26 +962,15 @@ int dsa_op(struct pkc_request *req)
 	/* Now enqueue the job into the app ring */
 	if (app_ring_enqueue(c_dev, r_id, sec_dma)) {
 		ret = -1;
-		goto error1;
+		goto out_err;
 	}
 #endif
 	return -EINPROGRESS;
 
-error:
-#ifndef HIGH_PERF
-	atomic_dec(&c_dev->active_jobs);
-#endif
-#ifndef USE_HOST_DMA
-error1:
-#endif
-	if (crypto_ctx) {
-		if (crypto_ctx->crypto_mem.buffers) {
-			dealloc_crypto_mem(&crypto_ctx->crypto_mem);
-			/*kfree(crypto_ctx->crypto_mem.buffers); */
-		}
-		free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
-		/*kfree(crypto_ctx); */
-	}
+out_err:
+	dealloc_crypto_mem(&crypto_ctx->crypto_mem);
+out_nop:
+	free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
 	return ret;
 }
 
