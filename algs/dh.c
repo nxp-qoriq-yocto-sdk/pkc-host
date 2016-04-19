@@ -387,6 +387,9 @@ int dh_op(struct pkc_request *req)
 	dh_keygen_buffers_t *dh_keygen_buffs = NULL;
 	bool ecdh = false;
 	bool ecc_bin = false;
+	ctx_pool_t *ctx_pool;
+	uint32_t ctx_pool_id;
+	uint32_t sess_cnt;
 
 #ifndef VIRTIO_C2X0
 	if (NULL != req->base.tfm) {
@@ -394,9 +397,10 @@ int dh_op(struct pkc_request *req)
 		dh_completion_cb = pkc_request_complete;
 		ecdh_completion_cb = pkc_request_complete;
 		/* Get the session context from input request */
-		c_sess = (crypto_dev_sess_t *)crypto_pkc_ctx(crypto_pkc_reqtfm(req));
+		c_sess = crypto_pkc_ctx(crypto_pkc_reqtfm(req));
 		c_dev = c_sess->c_dev;
 		r_id = c_sess->r_id;
+		sess_cnt = atomic_read(&c_dev->crypto_dev_sess_cnt);
 #ifndef HIGH_PERF
 		if (-1 == check_device(c_dev))
 			return -1;
@@ -424,14 +428,14 @@ int dh_op(struct pkc_request *req)
 
         atomic_inc(&c_dev->active_jobs);
 #else
-        r_id =
-            ((atomic_inc_return(&c_dev->crypto_dev_sess_cnt) -
-                1) % (c_dev->num_of_rings - 1)) + 1;
+	sess_cnt = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
+	r_id = 1 + sess_cnt % (c_dev->num_of_rings - 1);
 #endif
 
     }
-
-	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
+	ctx_pool_id = sess_cnt % NR_CTX_POOLS;
+	ctx_pool = &c_dev->ctx_pool[ctx_pool_id];
+	crypto_ctx = get_crypto_ctx(ctx_pool);
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
@@ -440,7 +444,7 @@ int dh_op(struct pkc_request *req)
 	}
 
 	print_debug("Ring selected: %d\n", r_id);
-	crypto_ctx->ctx_pool = c_dev->ctx_pool;
+	crypto_ctx->ctx_pool = ctx_pool;
 	crypto_ctx->crypto_mem.dev = c_dev;
 	crypto_ctx->crypto_mem.buf_pool = c_dev->ring_pairs[r_id].buf_pool;
 	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.buf_pool);
