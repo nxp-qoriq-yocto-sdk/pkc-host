@@ -540,9 +540,8 @@ int rsa_op(struct pkc_request *req)
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
-		print_error("Mem alloc failed....\n");
-		ret = -ENOMEM;
-		goto out_no_ctx;
+		print_debug("Mem alloc failed....\n");
+		return -ENOMEM;
 	}
 
 	print_debug("Ring selected			:%d\n", r_id);

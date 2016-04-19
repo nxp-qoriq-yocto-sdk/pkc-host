@@ -679,7 +679,7 @@ int dsa_op(struct pkc_request *req)
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
-		print_error("Mem alloc failed....\n");
+		print_debug("Mem alloc failed....\n");
 		return -ENOMEM;
 	}
 

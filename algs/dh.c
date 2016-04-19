@@ -438,8 +438,11 @@ int dh_op(struct pkc_request *req)
 	crypto_ctx = get_crypto_ctx(ctx_pool);
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
+	/*TODO: Implement some kind of back-of mechanism with the driver
+	 * returning EBUSY instead of generic errors.
+	 */
 	if (unlikely(!crypto_ctx)) {
-		print_error("Mem alloc failed....\n");
+		print_debug("Mem alloc failed....\n");
 		return -ENOMEM;
 	}
 

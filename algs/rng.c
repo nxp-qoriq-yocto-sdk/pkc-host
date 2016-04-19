@@ -158,7 +158,7 @@ static int submit_job(struct rng_ctx *ctx, int to_current)
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
-		print_error("Mem alloc failed....\n");
+		print_debug("Mem alloc failed....\n");
 		ret = -ENOMEM;
 		goto error;
 	}

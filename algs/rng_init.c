@@ -307,7 +307,7 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
-		print_error("Mem alloc failed....\n");
+		print_debug("Mem alloc failed....\n");
 		return -ENOMEM;
 	}
 
