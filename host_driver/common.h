@@ -95,13 +95,8 @@
  * Only two bits from higher address is sufficient */
 #define PHYS_ADDR_H_32_BIT_MASK       0x300000000ull
 
-#ifdef DEV_PHYS_ADDR_32BIT
-typedef uint32_t dev_p_addr_t;
-typedef uint32_t dev_dma_addr_t;
-#else
 typedef uint64_t dev_p_addr_t;
 typedef uint64_t dev_dma_addr_t;
-#endif
 
 /* Identifier for the ring pairs */
 typedef enum ring_id {
