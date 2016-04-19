@@ -190,7 +190,6 @@ typedef union crypto_buffers {
 
 typedef struct crypto_mem_info {
 	uint32_t count;
-	uint32_t alloc_len;
 	void *src_buff;
 	buffer_info_t *buffers;
 	struct buffer_pool *buf_pool;

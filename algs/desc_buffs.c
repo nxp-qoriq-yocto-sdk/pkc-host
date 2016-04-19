@@ -90,7 +90,6 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 		goto no_mem;
 
 	mem_info->src_buff = mem;
-	mem_info->alloc_len = tot_mem;
 	distribute_buffers(mem_info, mem);
 	return 0;
 
