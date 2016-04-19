@@ -108,7 +108,8 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 	uint32_t i;
 	for (i = 1; i < mem_info->count; i++) {
 		bt = buffers[i].bt;
-		if ((bt == BT_IP) || (bt == BT_OP)) {
+		/*FIXME: use proper error path clean-up for host_to_dev failure */
+		if (((bt == BT_IP) || (bt == BT_OP)) && (buffers[i].h_dma_addr != 0)) {
 			pci_unmap_single(dev, buffers[i].h_dma_addr,
 					buffers[i].len,	PCI_DMA_BIDIRECTIONAL);
 		}
