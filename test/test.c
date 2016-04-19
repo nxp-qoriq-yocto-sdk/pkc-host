@@ -621,7 +621,7 @@ void c2x0_test_func(char *fname, char *test_name, int len)
 
 void common_dec_count(void)
 {
-	print_debug("Checking Tot: %d, Dec count: %d\n ", total_enq_req,
+	print_debug("Checking Tot: %u, Dec count: %u\n ", total_enq_req,
 		    atomic_read(&total_deq_cnt));
 	if ((atomic_inc_return(&total_deq_cnt) >= total_enq_req)) {
 		if (!atomic_read(&flag)) {
