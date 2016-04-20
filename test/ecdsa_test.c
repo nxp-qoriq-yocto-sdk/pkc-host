@@ -340,31 +340,27 @@ int ecdsa_keygen_verify_test(struct pkc_request *genreq,
 	req->type = ECDSA_VERIFY;
 
 	req->req_u.dsa_verify.q = Q;
-	req->req_u.dsa_verify.q_len = sizeof(Q);
-
 	req->req_u.dsa_verify.r = R;
-	req->req_u.dsa_verify.r_len = sizeof(R);
-
 	req->req_u.dsa_verify.ab = AB;
-	req->req_u.dsa_verify.ab_len = sizeof(AB);
-
 	req->req_u.dsa_verify.g = G;
+	req->req_u.dsa_verify.m = M;
+
+	req->req_u.dsa_verify.q_len = sizeof(Q);
+	req->req_u.dsa_verify.r_len = sizeof(R);
+	req->req_u.dsa_verify.ab_len = sizeof(AB);
 	req->req_u.dsa_verify.g_len = sizeof(G);
+	req->req_u.dsa_verify.pub_key_len = sizeof(PUB_KEY);
+	req->req_u.dsa_verify.m_len = sizeof(M);
+	req->req_u.dsa_verify.d_len = sizeof(D);
 
 	req->req_u.dsa_verify.pub_key = kzalloc(sizeof(PUB_KEY), GFP_KERNEL);
-	memcpy(req->req_u.dsa_verify.pub_key, genreq->req_u.dsa_keygen.pubkey,
-	       sizeof(PUB_KEY));
-	req->req_u.dsa_verify.pub_key_len = sizeof(PUB_KEY);
-
-	req->req_u.dsa_verify.m = M;
-	req->req_u.dsa_verify.m_len = sizeof(M);
-
 	req->req_u.dsa_verify.c = kzalloc(sizeof(D), GFP_KERNEL);
-	memcpy(req->req_u.dsa_verify.c, signreq->req_u.dsa_sign.c, sizeof(D));
-
 	req->req_u.dsa_verify.d = kzalloc(sizeof(D), GFP_KERNEL);
+
+	memcpy(req->req_u.dsa_verify.pub_key, genreq->req_u.dsa_keygen.pubkey,
+		       sizeof(PUB_KEY));
+	memcpy(req->req_u.dsa_verify.c, signreq->req_u.dsa_sign.c, sizeof(D));
 	memcpy(req->req_u.dsa_verify.d, signreq->req_u.dsa_sign.d, sizeof(D));
-	req->req_u.dsa_verify.d_len = sizeof(D);
 
 	ret = test_dsa_op(req, ecdsa_keygen_done);
 
@@ -378,29 +374,26 @@ int ecdsa_keygen_sign_test(struct pkc_request *genreq, struct pkc_request *req)
 	req->type = ECDSA_SIGN;
 
 	req->req_u.dsa_sign.q = Q;
-	req->req_u.dsa_sign.q_len = sizeof(Q);
-
 	req->req_u.dsa_sign.r = R;
-	req->req_u.dsa_sign.r_len = sizeof(R);
-
 	req->req_u.dsa_sign.ab = AB;
-	req->req_u.dsa_sign.ab_len = sizeof(AB);
-
 	req->req_u.dsa_sign.g = G;
-	req->req_u.dsa_sign.g_len = sizeof(G);
-
-	req->req_u.dsa_sign.priv_key = kzalloc(sizeof(PRIV_KEY), GFP_KERNEL);
-	memcpy(req->req_u.dsa_sign.priv_key, genreq->req_u.dsa_keygen.prvkey,
-	       sizeof(PRIV_KEY));
-	req->req_u.dsa_sign.priv_key_len = sizeof(PRIV_KEY);
-
 	req->req_u.dsa_sign.m = M;
-	req->req_u.dsa_sign.m_len = sizeof(M);
 
+	req->req_u.dsa_sign.priv_key = kzalloc(sizeof(PRIV_KEY), GFP_DMA);
 	req->req_u.dsa_sign.c = kzalloc(sizeof(D), GFP_KERNEL | GFP_DMA);
-
 	req->req_u.dsa_sign.d = kzalloc(sizeof(D), GFP_KERNEL | GFP_DMA);
+
+	req->req_u.dsa_sign.q_len = sizeof(Q);
+	req->req_u.dsa_sign.r_len = sizeof(R);
+	req->req_u.dsa_sign.ab_len = sizeof(AB);
+	req->req_u.dsa_sign.g_len = sizeof(G);
+	req->req_u.dsa_sign.priv_key_len = sizeof(PRIV_KEY);
+	req->req_u.dsa_sign.m_len = sizeof(M);
 	req->req_u.dsa_sign.d_len = sizeof(D);
+
+	memcpy(req->req_u.dsa_sign.priv_key,
+		genreq->req_u.dsa_keygen.prvkey,
+		sizeof(PRIV_KEY));
 
 	ret = test_dsa_op(req, ecdsa_keygen_done);
 
@@ -440,14 +433,16 @@ int ecdsa_keygen_test(void)
 	genreq->type = ECDSA_KEYGEN;
 	genreq->req_u.dsa_keygen.pubkey_len = sizeof(PUB_KEY);
 	genreq->req_u.dsa_keygen.prvkey_len = sizeof(PRIV_KEY);
-	genreq->req_u.dsa_keygen.q = Q;
 	genreq->req_u.dsa_keygen.q_len = sizeof(Q);
-	genreq->req_u.dsa_keygen.r = R;
 	genreq->req_u.dsa_keygen.r_len = sizeof(R);
-	genreq->req_u.dsa_keygen.g = G;
 	genreq->req_u.dsa_keygen.g_len = sizeof(G);
-	genreq->req_u.dsa_keygen.ab = AB;
 	genreq->req_u.dsa_keygen.ab_len = sizeof(AB);
+
+	genreq->req_u.dsa_keygen.q = Q;
+	genreq->req_u.dsa_keygen.r = R;
+	genreq->req_u.dsa_keygen.g = G;
+	genreq->req_u.dsa_keygen.ab = AB;
+
 
 	ret = test_dsa_op(genreq, ecdsa_keygen_done);
 	if (ret != 0) {
