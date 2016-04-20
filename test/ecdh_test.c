@@ -115,10 +115,10 @@ void init_ecdh_test(void)
 {
 	g_ecdhreq.type = ECDH_COMPUTE_KEY;
 
-	g_ecdhreq.req_u.dh_req.q = Q;
-	g_ecdhreq.req_u.dh_req.pub_key = W1;
-	g_ecdhreq.req_u.dh_req.s = S2;
-	g_ecdhreq.req_u.dh_req.ab = AB;
+	g_ecdhreq.req_u.dh_req.q = kzalloc(sizeof(Q), GFP_KERNEL | GFP_DMA);
+	g_ecdhreq.req_u.dh_req.pub_key = kzalloc(sizeof(W1), GFP_KERNEL | GFP_DMA);
+	g_ecdhreq.req_u.dh_req.s = kzalloc(sizeof(S2), GFP_KERNEL | GFP_DMA);
+	g_ecdhreq.req_u.dh_req.ab = kzalloc(sizeof(AB), GFP_KERNEL | GFP_DMA);
 	g_ecdhreq.req_u.dh_req.z = kzalloc(sizeof(Q), GFP_KERNEL | GFP_DMA);
 
 	g_ecdhreq.req_u.dh_req.q_len = sizeof(Q);
@@ -126,12 +126,29 @@ void init_ecdh_test(void)
 	g_ecdhreq.req_u.dh_req.s_len = sizeof(S2);
 	g_ecdhreq.req_u.dh_req.ab_len = sizeof(AB);
 	g_ecdhreq.req_u.dh_req.z_len = sizeof(Q);
+
+	memcpy(g_ecdhreq.req_u.dh_req.q, Q, sizeof(Q));
+	memcpy(g_ecdhreq.req_u.dh_req.pub_key, W1, sizeof(W1));
+	memcpy(g_ecdhreq.req_u.dh_req.s, S2, sizeof(S2));
+	memcpy(g_ecdhreq.req_u.dh_req.ab, AB, sizeof(AB));
 }
 
 void cleanup_ecdh_test(void)
 {
 	if(g_ecdhreq.req_u.dh_req.z) {
 		kfree(g_ecdhreq.req_u.dh_req.z);
+	}
+	if(g_ecdhreq.req_u.dh_req.ab) {
+		kfree(g_ecdhreq.req_u.dh_req.ab);
+	}
+	if(g_ecdhreq.req_u.dh_req.s) {
+		kfree(g_ecdhreq.req_u.dh_req.s);
+	}
+	if(g_ecdhreq.req_u.dh_req.pub_key) {
+		kfree(g_ecdhreq.req_u.dh_req.pub_key);
+	}
+	if(g_ecdhreq.req_u.dh_req.q) {
+		kfree(g_ecdhreq.req_u.dh_req.q);
 	}
 }
 
