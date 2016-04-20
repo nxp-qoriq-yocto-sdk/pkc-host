@@ -38,7 +38,6 @@ Example : $CMD RSA_PUB_OP_1K -m 0x2 -t 1 -s 10 -r 100000
 command_str=""
 ncpu=$(grep -c 'processor' /proc/cpuinfo)
 test_stop=0
-arch=$(uname -m)
 
 
 help()
@@ -207,6 +206,9 @@ prepare_command()
 		fi
 	fi
 
+	# convert float to int
+	timer_dur=${timer_dur/.*}
+
 	if [ $timer_dur -gt 2000 ]
 	then
 		echo "*** ERROR !! time duration should less than 2000"
@@ -235,16 +237,21 @@ prepare_command()
 	echo ""
 }
 
-function result
+function print_results
 {
-	per_job_us=$(printf "%.2f\n" $per_job_us)
-	t_job_s=$(printf "%.2f\n" $t_job_s)
-	printf "\n\n\n"
-	printf "\t Test Name          		:       $1\n"
-	printf "\t Host CPU Frequency 		:       $cpu_frq\n"
-	printf "\t # job finished successfully 	:       $repeat\n"
-	printf "\t Per job in us      		:       $per_job_us\n"
-	printf "\t Total jobs in 1 sec		:	$t_job_s\n\n"
+	echo
+	echo
+	echo
+	echo
+	echo -e "\tTest Time Duration: $test_min minutes and $test_sec seconds"
+	echo
+	echo
+	echo
+	echo -e "\tTest Name          		:       $1"
+	echo -e "\t# job finished successfully 	:       $repeat"
+	echo -e "\tPer job in us      		:       $per_job_us"
+	echo -e "\tTotal jobs in 1 sec		:	$t_job_s"
+	echo
 }
 
 function control_c {
@@ -271,7 +278,6 @@ perf_test()
 	success=($(cat $path/res))
 	echo "Press CTRL C to stop the test "
 
-	date1=$(date +"%s")
 	while [ "$success" != "SUCCESS" ]
 	do
 		if [ $test_stop -eq 1 ]
@@ -285,30 +291,20 @@ perf_test()
 		count=`expr $count - 1`
 	done
 
-	date2=$(date +"%s")
-	diff=$(($date2-$date1))
-
 	test_t=$(cat $path/perf | awk '{print($1)}')
 	test_t=($(echo "0x"$test_t))
-	cpu_frq=$(cat $path/perf | awk '{print($2)}')
-	repeat=($(cat $path/repeat))
-	total_time=$(printf "%d\n" $test_t)
-	sec_us=1000000
-	if [ $timer_dur -eq 0 ]
-	then
-		total_time_us=`echo "$total_time / $cpu_frq" | bc -l`
-		per_job_us=`echo "$total_time_us / $repeat" | bc -l`
-		t_job_s=`echo "$sec_us / $per_job_us" | bc -l`
-	else
-		t_job_s=`echo "$repeat / $timer_dur" | bc -l`
-		per_job_us=`echo "($timer_dur * $sec_us) / $repeat" | bc -l`
-	fi
+	total_time_ns=$(printf "%d\n" $test_t)
+	total_time_us=`echo "scale=0; $total_time_ns / 1000" | bc -l`
 
-	echo " "
-	echo " "
-	echo "Test Complete, Details below :- "
-	printf "\n\t Test Time Duration : $(($diff / 60)) minutes and $(($diff % 60)) seconds"
-	result $@
+	repeat=($(cat $path/repeat))
+	per_job_us=`echo "scale=2; $total_time_us / $repeat" | bc -l`
+	t_job_s=`echo "scale=2; 1000000 / $per_job_us" | bc -l`
+
+	total_time_s=`echo "scale=1; $total_time_us / 1000000" | bc -l`
+	test_min=`echo "scale=0; $total_time_s / 60" | bc -l`
+	test_sec=`echo "scale=0; $total_time_s % 60" | bc -l`
+
+	print_results $@
 }
 
 

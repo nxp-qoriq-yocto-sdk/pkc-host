@@ -43,8 +43,8 @@ static struct task_struct *task[MAX_TEST_THREAD_SUPPORT];
 static int32_t no_thread;
 static int32_t g_is_test_in_progress;
 
-static uint64_t s_time;
-static uint64_t e_time;
+struct timespec s_time;
+struct timespec e_time;
 
 static uint32_t exit;
 static uint32_t newtest;
@@ -68,30 +68,6 @@ static int (*testfunc) (void);
 static int threads_per_cpu;
 static int cpu_mask;
 static struct timer_list test_timer;
-
-#if defined(CONFIG_PPC)
-inline uint64_t get_cpu_ticks(void)
-{
-	uint32_t l = 0, h = 0;
-
-	asm volatile ("mfspr %0, 526" : "=r" (l));
-	asm volatile ("mfspr %0, 527" : "=r" (h));
-
-	return ((uint64_t) h << 32) | l;
-}
-#elif defined(CONFIG_X86)
-inline uint64_t get_cpu_ticks(void)
-{
-	uint32_t h = 0, l = 0;
-	__asm__ __volatile__("rdtsc" : "=a"(l), "=d"(h));
-	return ((uint64_t) h << 32) | l;
-}
-#elif defined(CONFIG_ARM64)
-inline uint64_t get_cpu_ticks(void)
-{
-	return 1000;
-}
-#endif
 
 inline void check_test_done(void)
 {
@@ -119,41 +95,22 @@ inline void check_test_done(void)
 	timer_set = 0;
 	print_debug("Total enq: %d, Total deq: %d\n",
 		atomic_read(&total_enq_cnt), atomic_read(&total_deq_cnt));
-	print_debug("s_time: %llx, e_time: %llx\n", s_time, e_time);
 	print_debug("*** Test Complete ***\n");
 
 	{
 	uint8_t sysfs_val[30];
-	uint8_t cycle_diff_s[16];
-	uint8_t cpu_freq_s[10];
-	uint64_t cycle_diff = e_time - s_time;
-	uint32_t cpu_freq;
+	uint8_t time_delta_str[16];
+	struct timespec time_delta = timespec_sub(e_time, s_time);
+	uint64_t time_ns = time_delta.tv_sec * NSEC_PER_SEC + time_delta.tv_nsec;
 
-#if defined(CONFIG_PPC)
-	cpu_freq = ppc_proc_freq / 1000000;
-#elif defined(CONFIG_X86)
-	cpu_freq = cpu_khz / 1000;
-#elif defined(CONFIG_ARM64)
-	cpu_freq = 1000;
-#endif
-	print_debug("Cpu Freq: %d\n", cpu_freq);
-	snprintf(cpu_freq_s, sizeof(cpu_freq_s), "%d", cpu_freq);
-	print_debug("Cpu Freq_s: %s\n", cpu_freq_s);
-	print_debug("Diff: %llx\n", cycle_diff);
+	print_debug("Diff: %llx\n", time_ns);
 	print_debug("total_jobs_s: %0x\n", total_succ_jobs);
+	print_debug("time_delta_str_s: %s\n", time_delta_str);
+
 	/* Write to the sysfs file entry */
-
-	snprintf(cycle_diff_s, sizeof(cycle_diff_s), "%0llx", cycle_diff);
-	print_debug("cycle_diff_s: %s\n", cycle_diff_s);
-
-	strcpy(sysfs_val, cycle_diff_s);
+	snprintf(time_delta_str, sizeof(time_delta_str), "%0llx", time_ns);
+	strcpy(sysfs_val, time_delta_str);
 	print_debug("sysfs val: %s\n", sysfs_val);
-
-	strcat(sysfs_val, " ");
-	print_debug("sysfs val space: %s\n", sysfs_val);
-
-	strcat(sysfs_val, cpu_freq_s);
-	print_debug("sysfs_val: %s\n", sysfs_val);
 
 	set_sysfs_value(g_fsl_pci_dev, TEST_PERF_SYS_FILE, (uint8_t *) sysfs_val,
 			strlen(sysfs_val));
@@ -180,7 +137,7 @@ void start_test(void)
 	if (!atomic_read(&timer_started)) {
 		print_debug("start stopwatch: s_time is set by thread %d\n",
 				smp_processor_id());
-		s_time = get_cpu_ticks();
+		getnstimeofday(&s_time);
 		atomic_set(&timer_started, 1);
 	}
 	while (!exit) {
@@ -230,7 +187,7 @@ static void test_timer_expired(unsigned long data)
 	total_enq_req = 0;
 	if ((atomic_read(&total_deq_cnt) >= total_enq_req)) {
 		if (!atomic_read(&flag)) {
-			e_time = get_cpu_ticks();
+			getnstimeofday(&e_time);
 			atomic_set(&test_done, 1);
 			atomic_set(&flag, 1);
 		}
@@ -555,7 +512,7 @@ void c2x0_test_func(char *fname, char *test_name, int len)
 
 	if (!strcmp(test_name, "current_test_stop_request")) {
 		total_succ_jobs = atomic_read(&total_deq_cnt);
-		e_time = get_cpu_ticks();
+		getnstimeofday(&e_time);
 		atomic_set(&hold_off, 1);
 		print_debug("Test stopped by user\n\n");
 		strcpy(g_test_name, "INVALID");
@@ -625,7 +582,7 @@ void common_dec_count(void)
 		    atomic_read(&total_deq_cnt));
 	if ((atomic_inc_return(&total_deq_cnt) >= total_enq_req)) {
 		if (!atomic_read(&flag)) {
-			e_time = get_cpu_ticks();
+			getnstimeofday(&e_time);
 			atomic_set(&test_done, 1);
 			atomic_set(&flag, 1);
 		}
