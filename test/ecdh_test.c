@@ -154,9 +154,5 @@ void cleanup_ecdh_test(void)
 
 int ecdh_test(void)
 {
-	if (-1 == test_dh_op(&g_ecdhreq, ecdh_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dh_op(&g_ecdhreq, ecdh_done);
 }

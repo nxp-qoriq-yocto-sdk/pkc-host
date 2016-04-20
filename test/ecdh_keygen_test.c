@@ -230,43 +230,31 @@ void cleanup_ecdh_keygen_test(void)
 
 int ecdh_keygen_test_b409(void)
 {
-	int32_t ret = -1;
-
-	(test_dh_op(&b409, ecdh_keygen_done))? : (ret = 0);
-	return ret;
+	return test_dh_op(&b409, ecdh_keygen_done);
 }
+
 int ecdh_keygen_test_b283(void)
 {
-	int32_t ret = -1;
-    (test_dh_op(&b283, ecdh_keygen_done))? : (ret = 0);
-	return ret;
+	return test_dh_op(&b283, ecdh_keygen_done);
 }
 
 int ecdh_keygen_test_b571(void)
 {
-	int32_t ret = -1;
-    (test_dh_op(&b571, ecdh_keygen_done))? : (ret = 0);
-	return ret;
+	return test_dh_op(&b571, ecdh_keygen_done);
 }
 
 int ecdh_keygen_test_p521(void)
 {
-	int32_t ret = -1;
-    (test_dh_op(&p521, ecdh_keygen_done))? : (ret = 0);
-	return ret;
+	return test_dh_op(&p521, ecdh_keygen_done);
 }
 
 int ecdh_keygen_test_p384(void)
 {
-	int32_t ret = -1;
-    (test_dh_op(&p384, ecdh_keygen_done))? : (ret = 0);
-	return ret;
+	return test_dh_op(&p384, ecdh_keygen_done);
 }
 
 int ecdh_keygen_test_p256(void)
 {
-	int32_t ret = -1;
-    (test_dh_op(&p256, ecdh_keygen_done))? : (ret = 0);
-	return ret;
+	return test_dh_op(&p256, ecdh_keygen_done);
 }
 

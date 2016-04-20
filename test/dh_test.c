@@ -240,27 +240,17 @@ void cleanup_dh_test(void)
 
 int dh_test_1k(void)
 {
-	if (-1 == test_dh_op(&g_dhreq_1k, dh_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dh_op(&g_dhreq_1k, dh_done);
 }
 
 int dh_test_2k(void)
 {
-	if (-1 == test_dh_op(&g_dhreq_2k, dh_done))
-		return -1;
-
-	return 0;
+	return test_dh_op(&g_dhreq_2k, dh_done);
 }
 
 int dh_test_4k(void)
 {
-	if (-1 == test_dh_op(&g_dhreq_4k, dh_done))
-		return -1;
-
-	return 0;
+	return test_dh_op(&g_dhreq_4k, dh_done);
 }
 
 int dh_keygen_test(void)

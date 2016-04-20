@@ -581,14 +581,14 @@ int test_dh_op(struct pkc_request *req,
 	       void (*cb) (struct pkc_request *, int32_t result))
 #endif
 {
-    int32_t ret = 0;
+	int32_t ret = 0;
 	switch (req->type) {
 	case DH_COMPUTE_KEY:
-    case DH_KEYGEN:
+	case DH_KEYGEN:
 		dh_completion_cb = cb;
 		break;
 	case ECDH_COMPUTE_KEY:
-    case ECDH_KEYGEN:
+	case ECDH_KEYGEN:
 		ecdh_completion_cb = cb;
 		break;
 	default:
@@ -599,14 +599,11 @@ int test_dh_op(struct pkc_request *req,
 #else
 	ret = dh_op(req);
 #endif
-    if (ret == -EINPROGRESS) {
-	    ret = 0;
-    }
-    if (ret < 0) {
-	    ret = -1;
-    }
+	if (ret == -EINPROGRESS) {
+		ret = 0;
+	}
 
-    return ret;    
+	return ret;
 }
 
 EXPORT_SYMBOL(test_dh_op);
