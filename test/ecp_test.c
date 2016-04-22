@@ -99,28 +99,31 @@ void init_ecp_verify_test_256(void)
 {
 	g_ecpverifyreq_256.type = ECDSA_VERIFY;
 
-	g_ecpverifyreq_256.req_u.dsa_verify.q = Q_256;
-	g_ecpverifyreq_256.req_u.dsa_verify.q_len = (q_256_len);
+	g_ecpverifyreq_256.req_u.dsa_verify.q = kzalloc(sizeof(Q_256), GFP_KERNEL | GFP_DMA);
+	g_ecpverifyreq_256.req_u.dsa_verify.r = kzalloc(sizeof(R_256), GFP_KERNEL | GFP_DMA);
+	g_ecpverifyreq_256.req_u.dsa_verify.ab = kzalloc(sizeof(AB_256), GFP_KERNEL | GFP_DMA);
+	g_ecpverifyreq_256.req_u.dsa_verify.g = kzalloc(sizeof(G_256), GFP_KERNEL | GFP_DMA);
+	g_ecpverifyreq_256.req_u.dsa_verify.pub_key = kzalloc(sizeof(PUB_KEY_EC_256), GFP_KERNEL | GFP_DMA);
+	g_ecpverifyreq_256.req_u.dsa_verify.m = kzalloc(sizeof(M_256), GFP_KERNEL | GFP_DMA);
+	g_ecpverifyreq_256.req_u.dsa_verify.c = kzalloc(sizeof(C), GFP_KERNEL | GFP_DMA);
+	g_ecpverifyreq_256.req_u.dsa_verify.d = kzalloc(sizeof(D), GFP_KERNEL | GFP_DMA);
 
-	g_ecpverifyreq_256.req_u.dsa_verify.r = R_256;
-	g_ecpverifyreq_256.req_u.dsa_verify.r_len = (r_256_len);
+	g_ecpverifyreq_256.req_u.dsa_verify.q_len = sizeof(Q_256);
+	g_ecpverifyreq_256.req_u.dsa_verify.r_len = sizeof(R_256);
+	g_ecpverifyreq_256.req_u.dsa_verify.ab_len = sizeof(AB_256);
+	g_ecpverifyreq_256.req_u.dsa_verify.g_len = sizeof(G_256);
+	g_ecpverifyreq_256.req_u.dsa_verify.pub_key_len = sizeof(PUB_KEY_EC_256);
+	g_ecpverifyreq_256.req_u.dsa_verify.m_len = sizeof(M_256);
+	g_ecpverifyreq_256.req_u.dsa_verify.d_len = sizeof(D);
 
-	g_ecpverifyreq_256.req_u.dsa_verify.ab = AB_256;
-	g_ecpverifyreq_256.req_u.dsa_verify.ab_len = (ab_256_len);
-
-	g_ecpverifyreq_256.req_u.dsa_verify.g = G_256;
-	g_ecpverifyreq_256.req_u.dsa_verify.g_len = (g_256_len);
-
-	g_ecpverifyreq_256.req_u.dsa_verify.pub_key = PUB_KEY_EC_256;
-	g_ecpverifyreq_256.req_u.dsa_verify.pub_key_len = (pub_key_ec_256_len);
-
-	g_ecpverifyreq_256.req_u.dsa_verify.m = M_256;
-	g_ecpverifyreq_256.req_u.dsa_verify.m_len = (m_256_len);
-
-	g_ecpverifyreq_256.req_u.dsa_verify.c = C;
-
-	g_ecpverifyreq_256.req_u.dsa_verify.d = D;
-	g_ecpverifyreq_256.req_u.dsa_verify.d_len = d_len;
+	memcpy(g_ecpverifyreq_256.req_u.dsa_verify.q, Q_256, sizeof(Q_256));
+	memcpy(g_ecpverifyreq_256.req_u.dsa_verify.r, R_256, sizeof(R_256));
+	memcpy(g_ecpverifyreq_256.req_u.dsa_verify.ab, AB_256, sizeof(AB_256));
+	memcpy(g_ecpverifyreq_256.req_u.dsa_verify.g, G_256, sizeof(G_256));
+	memcpy(g_ecpverifyreq_256.req_u.dsa_verify.pub_key, PUB_KEY_EC_256, sizeof(PUB_KEY_EC_256));
+	memcpy(g_ecpverifyreq_256.req_u.dsa_verify.m, M_256, sizeof(M_256));
+	memcpy(g_ecpverifyreq_256.req_u.dsa_verify.c, C, sizeof(C));
+	memcpy(g_ecpverifyreq_256.req_u.dsa_verify.d, D, sizeof(D));
 }
 
 void init_ecp_sign_test_256(void)
@@ -322,6 +325,34 @@ void cleanup_ecp_test(void)
 	if(g_ecpsignreq_256.req_u.dsa_sign.d) {
 		kfree(g_ecpsignreq_256.req_u.dsa_sign.d);
 	}
+
+
+	if(g_ecpverifyreq_256.req_u.dsa_verify.q) {
+		kfree(g_ecpverifyreq_256.req_u.dsa_verify.q);
+	}
+	if(g_ecpverifyreq_256.req_u.dsa_verify.r) {
+		kfree(g_ecpverifyreq_256.req_u.dsa_verify.r);
+	}
+	if(g_ecpverifyreq_256.req_u.dsa_verify.ab) {
+		kfree(g_ecpverifyreq_256.req_u.dsa_verify.ab);
+	}
+	if(g_ecpverifyreq_256.req_u.dsa_verify.g) {
+		kfree(g_ecpverifyreq_256.req_u.dsa_verify.g);
+	}
+	if(g_ecpverifyreq_256.req_u.dsa_verify.pub_key) {
+		kfree(g_ecpverifyreq_256.req_u.dsa_verify.pub_key);
+	}
+	if(g_ecpverifyreq_256.req_u.dsa_verify.m) {
+		kfree(g_ecpverifyreq_256.req_u.dsa_verify.m);
+	}
+	if(g_ecpverifyreq_256.req_u.dsa_verify.c) {
+		kfree(g_ecpverifyreq_256.req_u.dsa_verify.c);
+	}
+	if(g_ecpverifyreq_256.req_u.dsa_verify.d) {
+		kfree(g_ecpverifyreq_256.req_u.dsa_verify.d);
+	}
+
+
 	if(g_ecpsignreq_384.req_u.dsa_sign.c) {
 		kfree(g_ecpsignreq_384.req_u.dsa_sign.c);
 	}

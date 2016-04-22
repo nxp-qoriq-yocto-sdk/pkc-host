@@ -42,56 +42,6 @@ static uint8_t D[] = {
     0x9e, 0xeb, 0xc1, 0x8c, 0x9b, 0xc2, 0x91, 0x93
 };
 
-static int d_len = sizeof(D);
-
-#if 0
-static uint8_t M_256[] = {
-        0x3d, 0x72, 0x42, 0x37, 0xad, 0xc6, 0x22, 0xeb, 0x57, 0x4d, 0x87, 0xa9,
-            0x30, 0xba, 0x7c, 0xe6, 0xe4, 0xd3, 0x9c, 0x88, 0x3d, 0x72, 0x42, 0x37,
-                0xad, 0xc6, 0x22, 0xeb, 0x57, 0x4d, 0x87, 0xa9
-
-/*                
-    0X0F, 0X67, 0XCB, 0XF2, 0X0E, 0XB4, 0X3A, 0X18, 0X80, 0X0F, 0X19, 0X2B,
-    0X95, 0XFF, 0XC2, 0X24,
-    0X30, 0X42, 0X80, 0X8A, 0X78, 0X27, 0X3D, 0X3C, 0X0F, 0X67, 0XCB, 0XF2,
-    0X0E, 0XB4, 0X3A, 0X18,
-    0X80, 0X0F, 0X19,
-    0X2B, 0X95, 0XFF, 0XC2, 0X24, 0X30, 0X42, 0X80, 0X8A,
-    0X78, 0X27, 0X3D, 0X3C,
-    0X0F, 0X67, 0XCB, 0XF2, 0X0E, 0XB4, 0X3A, 0X18, 0X80, 0X0F, 0X19, 0X2B,
-    0X95, 0XFF, 0XC2, 0X24,
-    0X30, 0X42, 0X80, 0X8A, 0X78, 0X27, 0X3D, 0X3C, 0X0F, 0X67, 0XCB, 0XF2,
-    0X0E, 0XB4, 0X3A, 0X18,
-    0X80, 0X0F, 0X19, 0X2B, 0X95, 0XFF, 0XC2, 0X24, 0X30, 0X42, 0X80, 0X8A,
-    0X78, 0X27, 0X3D, 0X3C,
-    0X0F, 0X67, 0XCB, 0XF2, 0X0E, 0XB4, 0X3A, 0X18, 0X80, 0X0F, 0X19, 0X2B,
-    0X95, 0XFF, 0XC2, 0X24,
-    0X30, 0X42, 0X80, 0X8A, 0X78, 0X27, 0X3D, 0X3C, 0X0F, 0X67, 0XCB, 0XF2,
-    0X0E, 0XB4, 0X3A, 0X18,
-    0X80, 0X0F, 0X19, 0X2B, 0X95, 0XFF, 0XC2, 0X24, 0X30, 0X42, 0X80, 0X8A,
-    0X78, 0X27, 0X3D, 0X3C,
-    0X0F, 0X67, 0XCB, 0XF2, 0X0E, 0XB4, 0X3A, 0X18, 0X80, 0X0F, 0X19, 0X2B,
-    0X95, 0XFF, 0XC2, 0X24,
-    0X30, 0X42, 0X80, 0X8A, 0X78, 0X27, 0X3D, 0X3C, 0X0F, 0X67, 0XCB, 0XF2,
-    0X0E, 0XB4, 0X3A, 0X18,
-    0X80, 0X0F, 0X19, 0X2B, 0X95, 0XFF, 0XC2, 0X24, 0X30, 0X42, 0X80, 0X8A,
-    0X78, 0X27, 0X3D, 0X3C,
-    0X0F, 0X67, 0XCB, 0XF2, 0X0E, 0XB4, 0X3A, 0X18, 0X80, 0X0F, 0X19, 0X2B,
-    0X95, 0XFF, 0XC2, 0X24,
-    0X30, 0X42, 0X80, 0X8A, 0X78, 0X27, 0X3D, 0X3C, 0X0F, 0X67, 0XCB, 0XF2,
-    0X0E, 0XB4, 0X3A, 0X18,
-    0X80, 0X0F, 0X19, 0X2B, 0X95, 0XFF, 0XC2, 0X24, 0X30, 0X42, 0X80, 0X8A,
-    0X78, 0X27, 0X3D, 0X3C,
-    0X0F, 0X67, 0XCB, 0XF2, 0X0E, 0XB4, 0X3A, 0X18, 0X80, 0X0F, 0X19, 0X2B,
-    0X95, 0XFF, 0XC2, 0X24,
-    0X30, 0X42, 0X80, 0X8A, 0X78, 0X27, 0X3D, 0X3C, 0X0F, 0X67, 0XCB, 0XF2,
-    0X0E, 0XB4, 0X3A, 0X18,
-    0X80 */
-};
-
-static int m_256_len = sizeof(M_256);
-#endif
-
 /* *************** For P-256 Buffers *************** */
 
 static uint8_t M_256[] = {
@@ -100,16 +50,12 @@ static uint8_t M_256[] = {
     0xad, 0xc6, 0x22, 0xeb, 0x57, 0x4d, 0x87, 0xa9
 };
 
-static int m_256_len = sizeof(M_256);
-
 static uint8_t Q_256[] = {
       0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x01,0x00,0x00,    /* p */
       0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
       0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
       0xFF,0xFF
 };
-
-static int32_t q_256_len = sizeof(Q_256);
 
 static uint8_t AB_256[] = {
       0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x01,0x00,0x00,    /* a */
@@ -122,8 +68,6 @@ static uint8_t AB_256[] = {
       0x60,0x4B
 };
 
-static int32_t ab_256_len = sizeof(AB_256);
-
 static uint8_t G_256[] = { 
       0x6B,0x17,0xD1,0xF2,0xE1,0x2C,0x42,0x47,0xF8,0xBC,    /* x */
       0xE6,0xE5,0x63,0xA4,0x40,0xF2,0x77,0x03,0x7D,0x81,
@@ -135,16 +79,12 @@ static uint8_t G_256[] = {
       0x51,0xf5
 };
 
-static int32_t g_256_len = sizeof(G_256);
-
 static uint8_t R_256[] = {
       0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0xFF,0xFF,    /* order */
       0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xBC,0xE6,0xFA,0xAD,
       0xA7,0x17,0x9E,0x84,0xF3,0xB9,0xCA,0xC2,0xFC,0x63,
       0x25,0x51
 };
-
-static int32_t r_256_len = sizeof(R_256);
 
 static uint8_t PRIV_KEY_EC_256[] = {
     0x11,0x88,0x68,0xc1,0xbe,0x49,0x8c,0x38,0x9c,0xff,0xff,
@@ -160,9 +100,6 @@ static uint8_t PUB_KEY_EC_256[] = {
     0x13,0x91,0x32,0x10,0xfc,0x22,0xad,0xad,0xcd,0x39,0xe6,
     0x26,0x8c,0x9d,0x3a,0x9a,0x87,0xd4,0xe0,0x51
 };
-
-static int32_t pub_key_ec_256_len = sizeof(PUB_KEY_EC_256);
-
 
 /* *************** For P-384 Buffers *************** */
 static uint8_t C_384[] = {
