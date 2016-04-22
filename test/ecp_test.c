@@ -127,28 +127,29 @@ void init_ecp_sign_test_256(void)
 {
 	g_ecpsignreq_256.type = ECDSA_SIGN;
 
-	g_ecpsignreq_256.req_u.dsa_sign.q = Q_256;
-	g_ecpsignreq_256.req_u.dsa_sign.q_len = (q_256_len);
+	g_ecpsignreq_256.req_u.dsa_sign.q = kzalloc(sizeof(Q_256), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_256.req_u.dsa_sign.r = kzalloc(sizeof(R_256), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_256.req_u.dsa_sign.ab = kzalloc(sizeof(AB_256), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_256.req_u.dsa_sign.g = kzalloc(sizeof(G_256), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_256.req_u.dsa_sign.priv_key = kzalloc(sizeof(PRIV_KEY_EC_256), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_256.req_u.dsa_sign.m = kzalloc(sizeof(M_256), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_256.req_u.dsa_sign.c = kzalloc(sizeof(C), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_256.req_u.dsa_sign.d = kzalloc(sizeof(D), GFP_KERNEL | GFP_DMA);
 
-	g_ecpsignreq_256.req_u.dsa_sign.r = R_256;
-	g_ecpsignreq_256.req_u.dsa_sign.r_len = (r_256_len);
+	g_ecpsignreq_256.req_u.dsa_sign.q_len = sizeof(Q_256);
+	g_ecpsignreq_256.req_u.dsa_sign.r_len = sizeof(R_256);
+	g_ecpsignreq_256.req_u.dsa_sign.ab_len = sizeof(AB_256);
+	g_ecpsignreq_256.req_u.dsa_sign.g_len = sizeof(G_256);
+	g_ecpsignreq_256.req_u.dsa_sign.priv_key_len = sizeof(PRIV_KEY_EC_256);
+	g_ecpsignreq_256.req_u.dsa_sign.m_len = sizeof(M_256);
+	g_ecpsignreq_256.req_u.dsa_sign.d_len = sizeof(D);
 
-	g_ecpsignreq_256.req_u.dsa_sign.ab = AB_256;
-	g_ecpsignreq_256.req_u.dsa_sign.ab_len = (ab_256_len);
-
-	g_ecpsignreq_256.req_u.dsa_sign.g = G_256;
-	g_ecpsignreq_256.req_u.dsa_sign.g_len = (g_256_len);
-
-	g_ecpsignreq_256.req_u.dsa_sign.priv_key = PRIV_KEY_EC_256;
-	g_ecpsignreq_256.req_u.dsa_sign.priv_key_len = (priv_key_ec_256_len);
-
-	g_ecpsignreq_256.req_u.dsa_sign.m = M_256;
-	g_ecpsignreq_256.req_u.dsa_sign.m_len = (m_256_len);
-
-	g_ecpsignreq_256.req_u.dsa_sign.c = kzalloc(d_len, GFP_KERNEL | GFP_DMA);
-
-	g_ecpsignreq_256.req_u.dsa_sign.d = kzalloc(d_len, GFP_KERNEL | GFP_DMA);
-	g_ecpsignreq_256.req_u.dsa_sign.d_len = d_len;
+	memcpy(g_ecpsignreq_256.req_u.dsa_sign.q, Q_256, sizeof(Q_256));
+	memcpy(g_ecpsignreq_256.req_u.dsa_sign.r, R_256, sizeof(R_256));
+	memcpy(g_ecpsignreq_256.req_u.dsa_sign.ab, AB_256, sizeof(AB_256));
+	memcpy(g_ecpsignreq_256.req_u.dsa_sign.g, G_256, sizeof(G_256));
+	memcpy(g_ecpsignreq_256.req_u.dsa_sign.priv_key, PRIV_KEY_EC_256, sizeof(PRIV_KEY_EC_256));
+	memcpy(g_ecpsignreq_256.req_u.dsa_sign.m, M_256, sizeof(M_256));
 }
 
 int ecp_verify_test_256(void)
@@ -297,6 +298,24 @@ int ecp_sign_test_521(void)
 
 void cleanup_ecp_test(void)
 {
+	if(g_ecpsignreq_256.req_u.dsa_sign.q) {
+		kfree(g_ecpsignreq_256.req_u.dsa_sign.q);
+	}
+	if(g_ecpsignreq_256.req_u.dsa_sign.r) {
+		kfree(g_ecpsignreq_256.req_u.dsa_sign.r);
+	}
+	if(g_ecpsignreq_256.req_u.dsa_sign.ab) {
+		kfree(g_ecpsignreq_256.req_u.dsa_sign.ab);
+	}
+	if(g_ecpsignreq_256.req_u.dsa_sign.g) {
+		kfree(g_ecpsignreq_256.req_u.dsa_sign.g);
+	}
+	if(g_ecpsignreq_256.req_u.dsa_sign.priv_key) {
+		kfree(g_ecpsignreq_256.req_u.dsa_sign.priv_key);
+	}
+	if(g_ecpsignreq_256.req_u.dsa_sign.m) {
+		kfree(g_ecpsignreq_256.req_u.dsa_sign.m);
+	}
 	if(g_ecpsignreq_256.req_u.dsa_sign.c) {
 		kfree(g_ecpsignreq_256.req_u.dsa_sign.c);
 	}
