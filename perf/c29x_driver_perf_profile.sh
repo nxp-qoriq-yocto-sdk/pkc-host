@@ -219,7 +219,10 @@ prepare_command()
 		exit
 	fi
 
-	if [ "$test_name" == "DSA_KEYGEN_TEST" ] || [ "$test_name" == "ECDSA_KEYGEN_TEST" ] || [ "$test_name" == "DH_KEYGEN_TEST" ]
+	if [ "$test_name" == "DSA_KEYGEN_TEST" ] ||
+		[ "$test_name" == "ECDSA_KEYGEN_TEST" ] ||
+		[ "$test_name" == "DH_KEYGEN_TEST" ] ||
+		[ "$test_name" == "DSA_SIGN_VERIFY_TEST" ]
 	then
 		echo ""
 		echo "!!!!! Please note, $test_name is not a performance test. So It will only run for one iteration."
