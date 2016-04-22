@@ -175,7 +175,6 @@ void init_ecdsa_verify_test(void)
 {
 	g_ecdsaverifyreq.type = ECDSA_VERIFY;
 
-#ifdef SEC_DMA
         g_ecdsaverifyreq.req_u.dsa_verify.q = kmalloc(sizeof(Q), GFP_KERNEL | GFP_DMA);
         g_ecdsaverifyreq.req_u.dsa_verify.r = kmalloc(sizeof(R), GFP_KERNEL | GFP_DMA);
         g_ecdsaverifyreq.req_u.dsa_verify.ab = kmalloc(sizeof(AB), GFP_KERNEL | GFP_DMA);
@@ -193,16 +192,6 @@ void init_ecdsa_verify_test(void)
         memcpy(g_ecdsaverifyreq.req_u.dsa_verify.m, M, sizeof(M));
         memcpy(g_ecdsaverifyreq.req_u.dsa_verify.c, C, sizeof(C));
         memcpy(g_ecdsaverifyreq.req_u.dsa_verify.d, D, sizeof(D));
-#else
-	g_ecdsaverifyreq.req_u.dsa_verify.q = Q;
-	g_ecdsaverifyreq.req_u.dsa_verify.r = R;
-	g_ecdsaverifyreq.req_u.dsa_verify.ab = AB;
-	g_ecdsaverifyreq.req_u.dsa_verify.g = G;
-	g_ecdsaverifyreq.req_u.dsa_verify.pub_key = PUB_KEY;
-	g_ecdsaverifyreq.req_u.dsa_verify.m = M;
-	g_ecdsaverifyreq.req_u.dsa_verify.c = C;
-	g_ecdsaverifyreq.req_u.dsa_verify.d = D;
-#endif
 
 	g_ecdsaverifyreq.req_u.dsa_verify.q_len = sizeof(Q);
 	g_ecdsaverifyreq.req_u.dsa_verify.r_len = sizeof(R);
@@ -217,7 +206,6 @@ void init_ecdsa_sign_test(void)
 {
 	g_ecdsasignreq.type = ECDSA_SIGN;
 
-#ifdef SEC_DMA
 	g_ecdsasignreq.req_u.dsa_sign.q = kmalloc(sizeof(Q), GFP_KERNEL | GFP_DMA);
 	g_ecdsasignreq.req_u.dsa_sign.r = kmalloc(sizeof(R), GFP_KERNEL | GFP_DMA);
 	g_ecdsasignreq.req_u.dsa_sign.ab = kmalloc(sizeof(AB), GFP_KERNEL | GFP_DMA);
@@ -231,14 +219,6 @@ void init_ecdsa_sign_test(void)
 	memcpy(g_ecdsasignreq.req_u.dsa_sign.g, G, sizeof(G));
 	memcpy(g_ecdsasignreq.req_u.dsa_sign.priv_key, PRIV_KEY, sizeof(PRIV_KEY));
 	memcpy(g_ecdsasignreq.req_u.dsa_sign.m, M, sizeof(M));
-#else
-	g_ecdsasignreq.req_u.dsa_sign.q = Q;
-	g_ecdsasignreq.req_u.dsa_sign.r = R;
-	g_ecdsasignreq.req_u.dsa_sign.ab = AB;
-	g_ecdsasignreq.req_u.dsa_sign.g = G;
-	g_ecdsasignreq.req_u.dsa_sign.priv_key = PRIV_KEY;
-	g_ecdsasignreq.req_u.dsa_sign.m = M;
-#endif
 
 	g_ecdsasignreq.req_u.dsa_sign.c = kmalloc(sizeof(C), GFP_KERNEL | GFP_DMA);
 	g_ecdsasignreq.req_u.dsa_sign.d = kmalloc(sizeof(D), GFP_KERNEL | GFP_DMA);
@@ -261,7 +241,6 @@ void cleanup_ecdsa_test(void)
 		kfree(g_ecdsasignreq.req_u.dsa_sign.d);
 	}
 
-#ifdef SEC_DMA
 	if (g_ecdsasignreq.req_u.dsa_sign.q) {
 		kfree(g_ecdsasignreq.req_u.dsa_sign.q);
 	}
@@ -318,7 +297,6 @@ void cleanup_ecdsa_test(void)
 	if (g_ecdsaverifyreq.req_u.dsa_verify.d) {
 		kfree(g_ecdsaverifyreq.req_u.dsa_verify.d);
         }
-#endif
 }
 
 int ecdsa_verify_test(void)
@@ -442,7 +420,6 @@ int ecdsa_keygen_test(void)
 	genreq->req_u.dsa_keygen.r = R;
 	genreq->req_u.dsa_keygen.g = G;
 	genreq->req_u.dsa_keygen.ab = AB;
-
 
 	ret = test_dsa_op(genreq, ecdsa_keygen_done);
 	if (ret != 0) {
