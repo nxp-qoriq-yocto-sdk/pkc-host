@@ -176,18 +176,12 @@ void init_ecpbn_sign_test_283(void)
 
 int ecpbn_verify_test_283(void)
 {
-	if (-1 == test_dsa_op(&g_ecpbnverifyreq_283, ecpbn_done))
-		return -1;
-
-	return 0;
+	return test_dsa_op(&g_ecpbnverifyreq_283, ecpbn_done);
 }
 
 int ecpbn_sign_test_283(void)
 {
-	if (-1 == test_dsa_op(&g_ecpbnsignreq_283, ecpbn_done))
-		return -1;
-
-	return 0;
+	return test_dsa_op(&g_ecpbnsignreq_283, ecpbn_done);
 }
 
 
@@ -251,18 +245,12 @@ void init_ecpbn_sign_test_409(void)
 
 int ecpbn_verify_test_409(void)
 {
-	if (-1 == test_dsa_op(&g_ecpbnverifyreq_409, ecpbn_done))
-		return -1;
-
-	return 0;
+	return test_dsa_op(&g_ecpbnverifyreq_409, ecpbn_done);
 }
 
 int ecpbn_sign_test_409(void)
 {
-	if (-1 == test_dsa_op(&g_ecpbnsignreq_409, ecpbn_done))
-		return -1;
-
-	return 0;
+	return test_dsa_op(&g_ecpbnsignreq_409, ecpbn_done);
 }
 
 
@@ -327,20 +315,12 @@ void init_ecpbn_sign_test_571(void)
 
 int ecpbn_verify_test_571(void)
 {
-	if (-1 == test_dsa_op(&g_ecpbnverifyreq_571, ecpbn_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dsa_op(&g_ecpbnverifyreq_571, ecpbn_done);
 }
 
 int ecpbn_sign_test_571(void)
 {
-	if (-1 == test_dsa_op(&g_ecpbnsignreq_571, ecpbn_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dsa_op(&g_ecpbnsignreq_571, ecpbn_done);
 }
 
 void cleanup_ecpbn_test(void)

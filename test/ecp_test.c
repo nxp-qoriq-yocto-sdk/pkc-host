@@ -153,18 +153,12 @@ void init_ecp_sign_test_256(void)
 
 int ecp_verify_test_256(void)
 {
-	if (-1 == test_dsa_op(&g_ecpverifyreq_256, ecp_done))
-		return -1;
-
-	return 0;
+	return test_dsa_op(&g_ecpverifyreq_256, ecp_done);
 }
 
 int ecp_sign_test_256(void)
 {
-	if (-1 == test_dsa_op(&g_ecpsignreq_256, ecp_done))
-		return -1;
-
-	return 0;
+	return test_dsa_op(&g_ecpsignreq_256, ecp_done);
 }
 
 
@@ -226,20 +220,13 @@ void init_ecp_sign_test_384(void)
 
 int ecp_verify_test_384(void)
 {
-	if (-1 == test_dsa_op(&g_ecpverifyreq_384, ecp_done))
-		return -1;
-
-	return 0;
+	return test_dsa_op(&g_ecpverifyreq_384, ecp_done);
 }
 
 int ecp_sign_test_384(void)
 {
-	if (-1 == test_dsa_op(&g_ecpsignreq_384, ecp_done))
-		return -1;
-
-	return 0;
+	return test_dsa_op(&g_ecpsignreq_384, ecp_done);
 }
-
 
 
 void init_ecp_verify_test_521(void)
@@ -300,20 +287,12 @@ void init_ecp_sign_test_521(void)
 
 int ecp_verify_test_521(void)
 {
-	if (-1 == test_dsa_op(&g_ecpverifyreq_521, ecp_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dsa_op(&g_ecpverifyreq_521, ecp_done);
 }
 
 int ecp_sign_test_521(void)
 {
-	if (-1 == test_dsa_op(&g_ecpsignreq_521, ecp_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dsa_op(&g_ecpsignreq_521, ecp_done);
 }
 
 void cleanup_ecp_test(void)

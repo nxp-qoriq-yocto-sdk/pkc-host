@@ -323,20 +323,12 @@ void cleanup_ecdsa_test(void)
 
 int ecdsa_verify_test(void)
 {
-	if (-1 == test_dsa_op(&g_ecdsaverifyreq, ecdsa_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dsa_op(&g_ecdsaverifyreq, ecdsa_done);
 }
 
 int ecdsa_sign_test(void)
 {
-	if (-1 == test_dsa_op(&g_ecdsasignreq, ecdsa_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dsa_op(&g_ecdsasignreq, ecdsa_done);
 }
 
 int ecdsa_keygen_verify_test(struct pkc_request *genreq,
@@ -458,20 +450,23 @@ int ecdsa_keygen_test(void)
 	genreq->req_u.dsa_keygen.ab_len = sizeof(AB);
 
 	ret = test_dsa_op(genreq, ecdsa_keygen_done);
-	if (-1 == ret)
+	if (ret != 0) {
 		goto error;
+	}
 
 	wait_for_completion(&keygen_control_completion_var);
 
 	ret = ecdsa_keygen_sign_test(genreq, signreq);
-	if (-1 == ret)
+	if (ret != 0) {
 		goto error;
+	}
 
 	wait_for_completion(&keygen_control_completion_var);
 
 	ret = ecdsa_keygen_verify_test(genreq, signreq, verifyreq);
-	if (-1 == ret)
+	if (ret != 0) {
 		goto error;
+	}
 
 	wait_for_completion(&keygen_control_completion_var);
 

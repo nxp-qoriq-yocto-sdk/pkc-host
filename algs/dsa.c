@@ -855,14 +855,11 @@ int test_dsa_op(struct pkc_request *req,
 #else
 	ret = dsa_op(req);
 #endif
-    if (-EINPROGRESS == ret) {
-	    ret = 0;
-    }
-    if (0 > ret) {
-	    ret = -1;
-    }
+	if (ret == -EINPROGRESS) {
+		ret = 0;
+	}
 
-    return ret;
+	return ret;
 }
 
 EXPORT_SYMBOL(test_dsa_op);

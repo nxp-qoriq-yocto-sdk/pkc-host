@@ -524,56 +524,32 @@ void cleanup_dsa_test(void)
 
 int dsa_verify_test_1k(void)
 {
-	if (-1 == test_dsa_op(&g_dsaverifyreq_1k, dsa_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dsa_op(&g_dsaverifyreq_1k, dsa_done);
 }
 
 int dsa_sign_test_1k(void)
 {
-	if (-1 == test_dsa_op(&g_dsasignreq_1k, dsa_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dsa_op(&g_dsasignreq_1k, dsa_done);
 }
 
 int dsa_verify_test_2k(void)
 {
-	if (-1 == test_dsa_op(&g_dsaverifyreq_2k, dsa_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dsa_op(&g_dsaverifyreq_2k, dsa_done);
 }
 
 int dsa_sign_test_2k(void)
 {
-	if (-1 == test_dsa_op(&g_dsasignreq_2k, dsa_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dsa_op(&g_dsasignreq_2k, dsa_done);
 }
 
 int dsa_verify_test_4k(void)
 {
-	if (-1 == test_dsa_op(&g_dsaverifyreq_4k, dsa_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dsa_op(&g_dsaverifyreq_4k, dsa_done);
 }
 
 int dsa_sign_test_4k(void)
 {
-	if (-1 == test_dsa_op(&g_dsasignreq_4k, dsa_done)) {
-		return -1;
-	}
-
-	return 0;
+	return test_dsa_op(&g_dsasignreq_4k, dsa_done);
 }
 
 int dsa_keygen_verify_test(struct pkc_request *genreq,
@@ -797,17 +773,22 @@ int dsa_keygen_test(void)
 	genreq->req_u.dsa_keygen.prvkey_len = (priv_key_len);
 
 	ret = test_dsa_op(genreq, dsa_keygen_done);
-	if (-1 == ret)
+	if (ret != 0) {
 		goto error;
+	}
 
 	wait_for_completion(&serialize_keygen);
 	ret = dsa_keygen_sign_test(genreq, signreq);
-	if (-1 == ret)
+	if (ret != 0) {
 		goto error;
+	}
+
 	wait_for_completion(&serialize_keygen);
 	ret = dsa_keygen_verify_test(genreq, signreq, verifyreq);
-	if (-1 == ret)
+	if (ret != 0) {
 		goto error;
+	}
+
 	wait_for_completion(&serialize_keygen);
 
 	common_dec_count();
@@ -952,7 +933,7 @@ int dsa_sign_verify_verify_test(struct pkc_request *ireq)
 
 	ret = test_dsa_op(req, dsa_sign_verify_verify_done);
 
-	if (-1 == ret) {
+	if (ret != 0) {
 #ifdef SEC_DMA
                 kfree(req->req_u.dsa_verify.q);
                 kfree(req->req_u.dsa_verify.r);
@@ -1009,7 +990,7 @@ int dsa_sign_verify_sign_test(struct pkc_request *req)
 
 	ret = test_dsa_op(req, dsa_sign_verify_sign_done);
 
-	if (-1 == ret) {
+	if (ret != 0) {
 #ifdef SEC_DMA
                 kfree(req->req_u.dsa_sign.q);
                 kfree(req->req_u.dsa_sign.r);
