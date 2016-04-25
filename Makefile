@@ -1,7 +1,3 @@
-#Specifies type of EP
-P4080_EP=n
-C293_EP=y
-
 #Controls the debug print level
 DEBUG_PRINT=n
 INFO_PRINT=n
@@ -28,9 +24,6 @@ ccflags-y := -I$(src)/host_driver -I$(src)/algs -I$(src)/crypto_dev -I$(src)/dcl
 ccflags-y += -g -g3 -DDEV_PHYS_ADDR_64BIT
 ccflags-y += -Wall -Werror
 
-ccflags-$(P4080_EP) += -DP4080_EP
-ccflags-$(C293_EP) += -DC293_EP
-
 ccflags-$(DEBUG_PRINT) += -DDEV_PRINT_DBG -DPRINT_DEBUG
 ccflags-$(INFO_PRINT) += -DPRINT_INFO
 ccflags-$(DEBUG_DESC) += -DDEBUG_DESC
@@ -40,6 +33,7 @@ ccflags-$(RNG_OFFLOAD) += -DRNG_OFFLOAD
 ccflags-$(ENHANCE_KERNEL_TEST) += -DENHANCE_KERNEL_TEST
 ccflags-y += -DHIGH_PERF
 ccflags-y += -DSEC_DMA
+ccflags-y += -DC293_EP
 
 DRIVER_KOBJ = fsl_pkc_crypto_offload_drv
 obj-$(CONFIG_FSL_C2X0_CRYPTO_DRV) := $(DRIVER_KOBJ).o
