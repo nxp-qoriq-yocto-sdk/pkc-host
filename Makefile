@@ -3,17 +3,9 @@ DEBUG_PRINT=n
 INFO_PRINT=n
 DEBUG_DESC=n
 
-#Enable RNG offloading
-#NOTE: RNG offloading is not supported
-RNG_OFFLOAD=n
-
 #Enhance pkc kernel test performance, disable kernel test schedule and
 #restriction number of c29x_fw enqueue and dequeue crypto
 ENHANCE_KERNEL_TEST=n
-
-#Specify building host-driver to support Virtualization
-#NOTE: VIRTIO configuration is not supported
-VIRTIO_C2X0=n
 
 GCOV_PROFILE := n
 
@@ -28,8 +20,6 @@ ccflags-$(DEBUG_PRINT) += -DDEV_PRINT_DBG -DPRINT_DEBUG
 ccflags-$(INFO_PRINT) += -DPRINT_INFO
 ccflags-$(DEBUG_DESC) += -DDEBUG_DESC
 
-ccflags-$(VIRTIO_C2X0) += -DVIRTIO_C2X0
-ccflags-$(RNG_OFFLOAD) += -DRNG_OFFLOAD
 ccflags-$(ENHANCE_KERNEL_TEST) += -DENHANCE_KERNEL_TEST
 ccflags-y += -DHIGH_PERF
 ccflags-y += -DSEC_DMA
@@ -55,7 +45,6 @@ $(DRIVER_KOBJ)-objs += algs/rng_init.o
 $(DRIVER_KOBJ)-objs += crypto_dev/algs_reg.o
 $(DRIVER_KOBJ)-objs += algs/rng.o
 
-ifeq ($(VIRTIO_C2X0),n)
 $(DRIVER_KOBJ)-objs += test/rsa_test.o
 $(DRIVER_KOBJ)-objs += test/dsa_test.o
 $(DRIVER_KOBJ)-objs += test/ecdsa_test.o
@@ -65,7 +54,6 @@ $(DRIVER_KOBJ)-objs += test/dh_test.o
 $(DRIVER_KOBJ)-objs += test/ecdh_test.o
 $(DRIVER_KOBJ)-objs += test/ecdh_keygen_test.o
 $(DRIVER_KOBJ)-objs += test/test.o
-endif
 
 .PHONY: build clean
 
