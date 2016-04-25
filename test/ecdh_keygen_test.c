@@ -69,20 +69,24 @@ void init_ecdh_keygen_test_p256(void)
 	struct dh_keygen_req_s *req = &p256.req_u.dh_keygenreq;
 	p256.type = ECDH_KEYGEN;
 
-	req->q = Q_256;
-	req->r = R_256;
-	req->g = G_256;
-	req->ab = AB_256;
-    req->q_len = q_256_len;
-    req->r_len = r_256_len;
-    req->g_len = g_256_len;
-    req->ab_len = ab_256_len;
+	req->q = kzalloc(sizeof(Q_256), GFP_KERNEL|GFP_DMA);
+	req->r = kzalloc(sizeof(R_256), GFP_KERNEL|GFP_DMA);
+	req->g = kzalloc(sizeof(G_256), GFP_KERNEL|GFP_DMA);
+	req->ab = kzalloc(sizeof(AB_256), GFP_KERNEL|GFP_DMA);
+	req->prvkey = kzalloc(sizeof(R_256), GFP_KERNEL|GFP_DMA);
+	req->pubkey = kzalloc(sizeof(G_256), GFP_KERNEL|GFP_DMA);
 
-    req->prvkey_len = req->r_len;
-    req->pubkey_len = req->g_len;
+	req->q_len = sizeof(Q_256);
+	req->r_len = sizeof(R_256);
+	req->g_len = sizeof(G_256);
+	req->ab_len = sizeof(AB_256);
+	req->prvkey_len = sizeof(R_256);
+	req->pubkey_len = sizeof(G_256);
 
-	req->pubkey = kzalloc(req->pubkey_len, GFP_KERNEL|GFP_DMA);
-	req->prvkey = kzalloc(req->prvkey_len, GFP_KERNEL|GFP_DMA);
+        memcpy(req->q, Q_256, sizeof(Q_256));
+        memcpy(req->r, R_256, sizeof(R_256));
+        memcpy(req->g, G_256, sizeof(G_256));
+        memcpy(req->ab, AB_256, sizeof(AB_256));
 }
 
 void init_ecdh_keygen_test_p384(void)
@@ -190,12 +194,26 @@ void init_ecdh_keygen_test_b571(void)
 
 void cleanup_ecdh_keygen_test(void)
 {
+	if(p256.req_u.dh_keygenreq.q) {
+		kfree(p256.req_u.dh_keygenreq.q);
+	}
+	if(p256.req_u.dh_keygenreq.r) {
+		kfree(p256.req_u.dh_keygenreq.r);
+	}
+	if(p256.req_u.dh_keygenreq.g) {
+		kfree(p256.req_u.dh_keygenreq.g);
+	}
+	if(p256.req_u.dh_keygenreq.ab) {
+		kfree(p256.req_u.dh_keygenreq.ab);
+	}
 	if(p256.req_u.dh_keygenreq.pubkey) {
 		kfree(p256.req_u.dh_keygenreq.pubkey);
 	}
 	if(p256.req_u.dh_keygenreq.prvkey) {
 		kfree(p256.req_u.dh_keygenreq.prvkey);
 	}
+
+
 	if(p384.req_u.dh_keygenreq.pubkey) {
 		kfree(p384.req_u.dh_keygenreq.pubkey);
 	}
