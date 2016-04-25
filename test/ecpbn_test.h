@@ -16,69 +16,6 @@ static uint8_t M_283[] = {
     0xad, 0xc6, 0x22, 0xeb, 0x57, 0x4d, 0x87, 0xa9, 0x30, 0xba, 0x7c, 0xe6
 };
 
-/*
-static uint8_t M_409[] = {
-    0x3d, 0x72, 0x42, 0x37, 0xad, 0xc6, 0x22, 0xeb, 0x57, 0x4d, 0x87, 0xa9,
-    0x30, 0xba, 0x7c, 0xe6, 0xe4, 0xd3, 0x9c, 0x88, 0x3d, 0x72, 0x42, 0x37,
-    0xad, 0xc6, 0x22, 0xeb, 0x57, 0x4d, 0x87, 0xa9, 0x30, 0xba, 0x7c, 0xe6,
-    0xe4, 0xd3, 0x9c, 0x88
-};
-
-static int m_409_len = sizeof(M_409);
-
-static uint8_t M_571[] = {
-    0x3d, 0x72, 0x42, 0x37, 0xad, 0xc6, 0x22, 0xeb, 0x57, 0x4d, 0x87, 0xa9,
-    0x30, 0xba, 0x7c, 0xe6, 0xe4, 0xd3, 0x9c, 0x88, 0x3d, 0x72, 0x42, 0x37,
-    0xad, 0xc6, 0x22, 0xeb, 0x57, 0x4d, 0x87, 0xa9, 0x30, 0xba, 0x7c, 0xe6,
-    0xe4, 0xd3, 0x9c, 0x88, 0x3d, 0x72, 0x42, 0x37, 0xad, 0xc6, 0x22, 0xeb,
-    0x57, 0x4d, 0x87, 0xa9, 0x30, 0xba, 0x7c, 0xe6, 0xe4, 0xd3, 0x9c, 0x88,
-    0x3d, 0x72, 0x42, 0x37, 0xad, 0xc6, 0x22, 0xeb, 0x57, 0x4d, 0x87, 0xa9,
-    0x30, 0xba, 0x7c, 0xe6, 0xe4, 0xd3, 0x9c, 0x88
-};
-
-static int m_571_len = sizeof(M_571);
-
-static uint8_t M_283[] = {
-    0X0F, 0X67, 0XCB, 0XF2, 0X0E, 0XB4, 0X3A, 0X18, 0X80, 0X0F, 0X19, 0X2B,
-    0X95, 0XFF, 0XC2, 0X24,
-    0X30, 0X42, 0X80, 0X8A, 0X78, 0X27, 0X3D, 0X3C, 0X0F, 0X67, 0XCB, 0XF2,
-    0X0E, 0XB4, 0X3A, 0X18,
-    0X80, 0X0F, 0X19,
-    0X2B, 0X95, 0XFF, 0XC2, 0X24, 0X30, 0X42, 0X80, 0X8A,
-    0X78, 0X27, 0X3D, 0X3C,
-    0X0F, 0X67, 0XCB, 0XF2, 0X0E, 0XB4, 0X3A, 0X18, 0X80, 0X0F, 0X19, 0X2B,
-    0X95, 0XFF, 0XC2, 0X24,
-    0X30, 0X42, 0X80, 0X8A, 0X78, 0X27, 0X3D, 0X3C, 0X0F, 0X67, 0XCB, 0XF2,
-    0X0E, 0XB4, 0X3A, 0X18,
-    0X80, 0X0F, 0X19, 0X2B, 0X95, 0XFF, 0XC2, 0X24, 0X30, 0X42, 0X80, 0X8A,
-    0X78, 0X27, 0X3D, 0X3C,
-    0X0F, 0X67, 0XCB, 0XF2, 0X0E, 0XB4, 0X3A, 0X18, 0X80, 0X0F, 0X19, 0X2B,
-    0X95, 0XFF, 0XC2, 0X24,
-    0X30, 0X42, 0X80, 0X8A, 0X78, 0X27, 0X3D, 0X3C, 0X0F, 0X67, 0XCB, 0XF2,
-    0X0E, 0XB4, 0X3A, 0X18,
-    0X80, 0X0F, 0X19, 0X2B, 0X95, 0XFF, 0XC2, 0X24, 0X30, 0X42, 0X80, 0X8A,
-    0X78, 0X27, 0X3D, 0X3C,
-    0X0F, 0X67, 0XCB, 0XF2, 0X0E, 0XB4, 0X3A, 0X18, 0X80, 0X0F, 0X19, 0X2B,
-    0X95, 0XFF, 0XC2, 0X24,
-    0X30, 0X42, 0X80, 0X8A, 0X78, 0X27, 0X3D, 0X3C, 0X0F, 0X67, 0XCB, 0XF2,
-    0X0E, 0XB4, 0X3A, 0X18,
-    0X80, 0X0F, 0X19, 0X2B, 0X95, 0XFF, 0XC2, 0X24, 0X30, 0X42, 0X80, 0X8A,
-    0X78, 0X27, 0X3D, 0X3C,
-    0X0F, 0X67, 0XCB, 0XF2, 0X0E, 0XB4, 0X3A, 0X18, 0X80, 0X0F, 0X19, 0X2B,
-    0X95, 0XFF, 0XC2, 0X24,
-    0X30, 0X42, 0X80, 0X8A, 0X78, 0X27, 0X3D, 0X3C, 0X0F, 0X67, 0XCB, 0XF2,
-    0X0E, 0XB4, 0X3A, 0X18,
-    0X80, 0X0F, 0X19, 0X2B, 0X95, 0XFF, 0XC2, 0X24, 0X30, 0X42, 0X80, 0X8A,
-    0X78, 0X27, 0X3D, 0X3C,
-    0X0F, 0X67, 0XCB, 0XF2, 0X0E, 0XB4, 0X3A, 0X18, 0X80, 0X0F, 0X19, 0X2B,
-    0X95, 0XFF, 0XC2, 0X24,
-    0X30, 0X42, 0X80, 0X8A, 0X78, 0X27, 0X3D, 0X3C, 0X0F, 0X67, 0XCB, 0XF2,
-    0X0E, 0XB4, 0X3A, 0X18,
-    0X80
-};
-static int m_283_len = sizeof(M_283);
-
-*/
 
 /* *************** For P-283 Buffers *************** */
 
