@@ -116,22 +116,27 @@ void init_ecdh_keygen_test_p384(void)
 
 void init_ecdh_keygen_test_p521(void)
 {
-    struct dh_keygen_req_s *req = &p521.req_u.dh_keygenreq;
-    p521.type = ECDH_KEYGEN;
-   
-    req->q = Q_521;
-    req->r = R_521;
-    req->g = G_521;
-    req->ab = AB_521;
-    req->q_len = q_521_len;
-    req->r_len = r_521_len;
-    req->g_len = g_521_len;
-    req->ab_len = ab_521_len;
-    req->prvkey_len = req->r_len;
-    req->pubkey_len = req->g_len;
+	struct dh_keygen_req_s *req = &p521.req_u.dh_keygenreq;
+	p521.type = ECDH_KEYGEN;
 
-    req->pubkey = kzalloc(req->pubkey_len, GFP_KERNEL|GFP_DMA);
-    req->prvkey = kzalloc(req->prvkey_len, GFP_KERNEL|GFP_DMA);
+	req->q = kzalloc(sizeof(Q_521), GFP_KERNEL|GFP_DMA);
+	req->r = kzalloc(sizeof(R_521), GFP_KERNEL|GFP_DMA);
+	req->g = kzalloc(sizeof(G_521), GFP_KERNEL|GFP_DMA);
+	req->ab = kzalloc(sizeof(AB_521), GFP_KERNEL|GFP_DMA);
+	req->prvkey = kzalloc(sizeof(R_521), GFP_KERNEL|GFP_DMA);
+	req->pubkey = kzalloc(sizeof(G_521), GFP_KERNEL|GFP_DMA);
+
+	req->q_len = sizeof(Q_521);
+	req->r_len = sizeof(R_521);
+	req->g_len = sizeof(G_521);
+	req->ab_len = sizeof(AB_521);
+	req->prvkey_len = sizeof(R_521);
+	req->pubkey_len = sizeof(G_521);
+
+        memcpy(req->q, Q_521, sizeof(Q_521));
+        memcpy(req->r, R_521, sizeof(R_521));
+        memcpy(req->g, G_521, sizeof(G_521));
+        memcpy(req->ab, AB_521, sizeof(AB_521));
 }
 
 void init_ecdh_keygen_test_b283(void)
@@ -239,12 +244,26 @@ void cleanup_ecdh_keygen_test(void)
 	}
 
 
+	if(p521.req_u.dh_keygenreq.q) {
+		kfree(p521.req_u.dh_keygenreq.q);
+	}
+	if(p521.req_u.dh_keygenreq.r) {
+		kfree(p521.req_u.dh_keygenreq.r);
+	}
+	if(p521.req_u.dh_keygenreq.g) {
+		kfree(p521.req_u.dh_keygenreq.g);
+	}
+	if(p521.req_u.dh_keygenreq.ab) {
+		kfree(p521.req_u.dh_keygenreq.ab);
+	}
 	if(p521.req_u.dh_keygenreq.pubkey) {
 		kfree(p521.req_u.dh_keygenreq.pubkey);
 	}
 	if(p521.req_u.dh_keygenreq.prvkey) {
 		kfree(p521.req_u.dh_keygenreq.prvkey);
 	}
+
+
 	if(b283.req_u.dh_keygenreq.pubkey) {
 		kfree(b283.req_u.dh_keygenreq.pubkey);
 	}
