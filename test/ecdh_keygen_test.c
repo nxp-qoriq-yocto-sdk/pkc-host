@@ -193,23 +193,28 @@ void init_ecdh_keygen_test_b409(void)
 
 void init_ecdh_keygen_test_b571(void)
 {
-    struct dh_keygen_req_s *req = &b571.req_u.dh_keygenreq;
-    b571.type = ECDH_KEYGEN;
-    b571.curve_type = ECC_BINARY; 
+	struct dh_keygen_req_s *req = &b571.req_u.dh_keygenreq;
+	b571.type = ECDH_KEYGEN;
+	b571.curve_type = ECC_BINARY;
 
-    req->q = Q_571;
-    req->r = R_571;
-    req->g = G_571;
-    req->ab = AB_571;
-    req->q_len = q_571_len;
-    req->r_len = r_571_len;
-    req->g_len = g_571_len;
-    req->ab_len = ab_571_len;
-    req->prvkey_len = req->r_len;
-    req->pubkey_len = req->g_len;
+	req->q = kzalloc(sizeof(Q_571), GFP_KERNEL|GFP_DMA);
+	req->r = kzalloc(sizeof(R_571), GFP_KERNEL|GFP_DMA);
+	req->g = kzalloc(sizeof(G_571), GFP_KERNEL|GFP_DMA);
+	req->ab = kzalloc(sizeof(AB_571), GFP_KERNEL|GFP_DMA);
+	req->prvkey = kzalloc(sizeof(R_571), GFP_KERNEL|GFP_DMA);
+	req->pubkey = kzalloc(sizeof(G_571), GFP_KERNEL|GFP_DMA);
 
-    req->pubkey = kzalloc(req->pubkey_len, GFP_KERNEL|GFP_DMA);
-    req->prvkey = kzalloc(req->prvkey_len, GFP_KERNEL|GFP_DMA);
+	req->q_len = sizeof(Q_571);
+	req->r_len = sizeof(R_571);
+	req->g_len = sizeof(G_571);
+	req->ab_len = sizeof(AB_571);
+	req->prvkey_len = sizeof(R_571);
+	req->pubkey_len = sizeof(G_571);
+
+	memcpy(req->q, Q_571, sizeof(Q_571));
+	memcpy(req->r, R_571, sizeof(R_571));
+	memcpy(req->g, G_571, sizeof(G_571));
+	memcpy(req->ab, AB_571, sizeof(AB_571));
 }
 
 void cleanup_ecdh_keygen_test(void)
@@ -313,6 +318,18 @@ void cleanup_ecdh_keygen_test(void)
 	}
 
 
+	if(b571.req_u.dh_keygenreq.q) {
+		kfree(b571.req_u.dh_keygenreq.q);
+	}
+	if(b571.req_u.dh_keygenreq.r) {
+		kfree(b571.req_u.dh_keygenreq.r);
+	}
+	if(b571.req_u.dh_keygenreq.g) {
+		kfree(b571.req_u.dh_keygenreq.g);
+	}
+	if(b571.req_u.dh_keygenreq.ab) {
+		kfree(b571.req_u.dh_keygenreq.ab);
+	}
 	if(b571.req_u.dh_keygenreq.pubkey) {
 		kfree(b571.req_u.dh_keygenreq.pubkey);
 	}
