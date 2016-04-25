@@ -151,30 +151,31 @@ void init_ecpbn_verify_test_283(void)
 void init_ecpbn_sign_test_283(void)
 {
 	g_ecpbnsignreq_283.type = ECDSA_SIGN;
-    g_ecpbnsignreq_283.curve_type = ECC_BINARY;
+	g_ecpbnsignreq_283.curve_type = ECC_BINARY;
 
-	g_ecpbnsignreq_283.req_u.dsa_sign.q = Q_283;
-	g_ecpbnsignreq_283.req_u.dsa_sign.q_len = (q_283_len);
+	g_ecpbnsignreq_283.req_u.dsa_sign.q = kzalloc(sizeof(Q_283), GFP_KERNEL | GFP_DMA);
+	g_ecpbnsignreq_283.req_u.dsa_sign.r = kzalloc(sizeof(R_283), GFP_KERNEL | GFP_DMA);
+	g_ecpbnsignreq_283.req_u.dsa_sign.ab = kzalloc(sizeof(AB_283), GFP_KERNEL | GFP_DMA);
+	g_ecpbnsignreq_283.req_u.dsa_sign.g = kzalloc(sizeof(G_283), GFP_KERNEL | GFP_DMA);
+	g_ecpbnsignreq_283.req_u.dsa_sign.priv_key = kzalloc(sizeof(PRIV_KEY_EC_283), GFP_KERNEL | GFP_DMA);
+	g_ecpbnsignreq_283.req_u.dsa_sign.m = kzalloc(sizeof(M_283), GFP_KERNEL | GFP_DMA);
+	g_ecpbnsignreq_283.req_u.dsa_sign.c = kzalloc(sizeof(R_283), GFP_KERNEL | GFP_DMA);
+	g_ecpbnsignreq_283.req_u.dsa_sign.d = kzalloc(sizeof(R_283), GFP_KERNEL | GFP_DMA);
 
-	g_ecpbnsignreq_283.req_u.dsa_sign.r = R_283;
-	g_ecpbnsignreq_283.req_u.dsa_sign.r_len = (r_283_len);
+	g_ecpbnsignreq_283.req_u.dsa_sign.q_len = sizeof(Q_283);
+	g_ecpbnsignreq_283.req_u.dsa_sign.r_len = sizeof(R_283);
+	g_ecpbnsignreq_283.req_u.dsa_sign.ab_len = sizeof(AB_283);
+	g_ecpbnsignreq_283.req_u.dsa_sign.g_len = sizeof(G_283);
+	g_ecpbnsignreq_283.req_u.dsa_sign.priv_key_len = sizeof(PRIV_KEY_EC_283);
+	g_ecpbnsignreq_283.req_u.dsa_sign.m_len = sizeof(M_283);
+	g_ecpbnsignreq_283.req_u.dsa_sign.d_len = sizeof(R_283);
 
-	g_ecpbnsignreq_283.req_u.dsa_sign.ab = AB_283;
-	g_ecpbnsignreq_283.req_u.dsa_sign.ab_len = (ab_283_len);
-
-	g_ecpbnsignreq_283.req_u.dsa_sign.g = G_283;
-	g_ecpbnsignreq_283.req_u.dsa_sign.g_len = (g_283_len);
-
-	g_ecpbnsignreq_283.req_u.dsa_sign.priv_key = PRIV_KEY_EC_283;
-	g_ecpbnsignreq_283.req_u.dsa_sign.priv_key_len = (priv_key_ec_283_len);
-
-	g_ecpbnsignreq_283.req_u.dsa_sign.m = M_283;
-	g_ecpbnsignreq_283.req_u.dsa_sign.m_len = (m_283_len);
-
-	g_ecpbnsignreq_283.req_u.dsa_sign.c = kzalloc(r_283_len, GFP_KERNEL | GFP_DMA);
-
-	g_ecpbnsignreq_283.req_u.dsa_sign.d = kzalloc(r_283_len, GFP_KERNEL | GFP_DMA);
-	g_ecpbnsignreq_283.req_u.dsa_sign.d_len = r_283_len;
+	memcpy(g_ecpbnsignreq_283.req_u.dsa_sign.q, Q_283, sizeof(Q_283));
+	memcpy(g_ecpbnsignreq_283.req_u.dsa_sign.r, R_283, sizeof(R_283));
+	memcpy(g_ecpbnsignreq_283.req_u.dsa_sign.ab, AB_283, sizeof(AB_283));
+	memcpy(g_ecpbnsignreq_283.req_u.dsa_sign.g, G_283, sizeof(G_283));
+	memcpy(g_ecpbnsignreq_283.req_u.dsa_sign.priv_key, PRIV_KEY_EC_283, sizeof(PRIV_KEY_EC_283));
+	memcpy(g_ecpbnsignreq_283.req_u.dsa_sign.m, M_283, sizeof(M_283));
 }
 
 int ecpbn_verify_test_283(void)
@@ -352,12 +353,33 @@ void cleanup_ecpbn_test(void)
 		kfree(g_ecpbnverifyreq_283.req_u.dsa_verify.d);
 	}
 
+
+	if(g_ecpbnsignreq_283.req_u.dsa_sign.q) {
+		kfree(g_ecpbnsignreq_283.req_u.dsa_sign.q);
+	}
+	if(g_ecpbnsignreq_283.req_u.dsa_sign.r) {
+		kfree(g_ecpbnsignreq_283.req_u.dsa_sign.r);
+	}
+	if(g_ecpbnsignreq_283.req_u.dsa_sign.ab) {
+		kfree(g_ecpbnsignreq_283.req_u.dsa_sign.ab);
+	}
+	if(g_ecpbnsignreq_283.req_u.dsa_sign.g) {
+		kfree(g_ecpbnsignreq_283.req_u.dsa_sign.g);
+	}
+	if(g_ecpbnsignreq_283.req_u.dsa_sign.priv_key) {
+		kfree(g_ecpbnsignreq_283.req_u.dsa_sign.priv_key);
+	}
+	if(g_ecpbnsignreq_283.req_u.dsa_sign.m) {
+		kfree(g_ecpbnsignreq_283.req_u.dsa_sign.m);
+	}
 	if(g_ecpbnsignreq_283.req_u.dsa_sign.c) {
 		kfree(g_ecpbnsignreq_283.req_u.dsa_sign.c);
 	}
 	if(g_ecpbnsignreq_283.req_u.dsa_sign.d) {
 		kfree(g_ecpbnsignreq_283.req_u.dsa_sign.d);
 	}
+
+
 	if(g_ecpbnsignreq_409.req_u.dsa_sign.c) {
 		kfree(g_ecpbnsignreq_409.req_u.dsa_sign.c);
 	}
