@@ -198,28 +198,29 @@ void init_ecp_sign_test_384(void)
 {
 	g_ecpsignreq_384.type = ECDSA_SIGN;
 
-	g_ecpsignreq_384.req_u.dsa_sign.q = Q_384;
-	g_ecpsignreq_384.req_u.dsa_sign.q_len = (q_384_len);
+	g_ecpsignreq_384.req_u.dsa_sign.q = kzalloc(sizeof(Q_384), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_384.req_u.dsa_sign.r = kzalloc(sizeof(R_384), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_384.req_u.dsa_sign.ab = kzalloc(sizeof(AB_384), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_384.req_u.dsa_sign.g = kzalloc(sizeof(G_384), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_384.req_u.dsa_sign.priv_key = kzalloc(sizeof(PRIV_KEY_EC_384), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_384.req_u.dsa_sign.m = kzalloc(sizeof(M_384), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_384.req_u.dsa_sign.c = kzalloc(sizeof(C_384), GFP_KERNEL | GFP_DMA);
+	g_ecpsignreq_384.req_u.dsa_sign.d = kzalloc(sizeof(D_384), GFP_KERNEL | GFP_DMA);
 
-	g_ecpsignreq_384.req_u.dsa_sign.r = R_384;
-	g_ecpsignreq_384.req_u.dsa_sign.r_len = (r_384_len);
+	g_ecpsignreq_384.req_u.dsa_sign.q_len = sizeof(Q_384);
+	g_ecpsignreq_384.req_u.dsa_sign.r_len = sizeof(R_384);
+	g_ecpsignreq_384.req_u.dsa_sign.ab_len = sizeof(AB_384);
+	g_ecpsignreq_384.req_u.dsa_sign.g_len = sizeof(G_384);
+	g_ecpsignreq_384.req_u.dsa_sign.priv_key_len = sizeof(PRIV_KEY_EC_384);
+	g_ecpsignreq_384.req_u.dsa_sign.m_len = sizeof(M_384);
+	g_ecpsignreq_384.req_u.dsa_sign.d_len = sizeof(D_384);
 
-	g_ecpsignreq_384.req_u.dsa_sign.ab = AB_384;
-	g_ecpsignreq_384.req_u.dsa_sign.ab_len = (ab_384_len);
-
-	g_ecpsignreq_384.req_u.dsa_sign.g = G_384;
-	g_ecpsignreq_384.req_u.dsa_sign.g_len = (g_384_len);
-
-	g_ecpsignreq_384.req_u.dsa_sign.priv_key = PRIV_KEY_EC_384;
-	g_ecpsignreq_384.req_u.dsa_sign.priv_key_len = (priv_key_ec_384_len);
-
-	g_ecpsignreq_384.req_u.dsa_sign.m = M_384;
-	g_ecpsignreq_384.req_u.dsa_sign.m_len = (m_384_len);
-
-	g_ecpsignreq_384.req_u.dsa_sign.c = kzalloc(d_384_len, GFP_KERNEL | GFP_DMA);
-
-	g_ecpsignreq_384.req_u.dsa_sign.d = kzalloc(d_384_len, GFP_KERNEL | GFP_DMA);
-	g_ecpsignreq_384.req_u.dsa_sign.d_len = d_384_len;
+	memcpy(g_ecpsignreq_384.req_u.dsa_sign.q, Q_384, sizeof(Q_384));
+	memcpy(g_ecpsignreq_384.req_u.dsa_sign.r, R_384, sizeof(R_384));
+	memcpy(g_ecpsignreq_384.req_u.dsa_sign.ab, AB_384, sizeof(AB_384));
+	memcpy(g_ecpsignreq_384.req_u.dsa_sign.g, G_384, sizeof(G_384));
+	memcpy(g_ecpsignreq_384.req_u.dsa_sign.priv_key, PRIV_KEY_EC_384, sizeof(PRIV_KEY_EC_384));
+	memcpy(g_ecpsignreq_384.req_u.dsa_sign.m, M_384, sizeof(M_384));
 }
 
 int ecp_verify_test_384(void)
@@ -353,12 +354,32 @@ void cleanup_ecp_test(void)
 	}
 
 
+	if(g_ecpsignreq_384.req_u.dsa_sign.q) {
+		kfree(g_ecpsignreq_384.req_u.dsa_sign.q);
+	}
+	if(g_ecpsignreq_384.req_u.dsa_sign.r) {
+		kfree(g_ecpsignreq_384.req_u.dsa_sign.r);
+	}
+	if(g_ecpsignreq_384.req_u.dsa_sign.ab) {
+		kfree(g_ecpsignreq_384.req_u.dsa_sign.ab);
+	}
+	if(g_ecpsignreq_384.req_u.dsa_sign.g) {
+		kfree(g_ecpsignreq_384.req_u.dsa_sign.g);
+	}
+	if(g_ecpsignreq_384.req_u.dsa_sign.priv_key) {
+		kfree(g_ecpsignreq_384.req_u.dsa_sign.priv_key);
+	}
+	if(g_ecpsignreq_384.req_u.dsa_sign.m) {
+		kfree(g_ecpsignreq_384.req_u.dsa_sign.m);
+	}
 	if(g_ecpsignreq_384.req_u.dsa_sign.c) {
 		kfree(g_ecpsignreq_384.req_u.dsa_sign.c);
 	}
 	if(g_ecpsignreq_384.req_u.dsa_sign.d) {
 		kfree(g_ecpsignreq_384.req_u.dsa_sign.d);
 	}
+
+
 	if(g_ecpsignreq_521.req_u.dsa_sign.c) {
 		kfree(g_ecpsignreq_521.req_u.dsa_sign.c);
 	}
