@@ -119,30 +119,33 @@ void ecpbn_done(struct pkc_request *req, int32_t sec_result)
 void init_ecpbn_verify_test_283(void)
 {
 	g_ecpbnverifyreq_283.type = ECDSA_VERIFY;
-    g_ecpbnverifyreq_283.curve_type = ECC_BINARY;
+	g_ecpbnverifyreq_283.curve_type = ECC_BINARY;
 
-	g_ecpbnverifyreq_283.req_u.dsa_verify.q = Q_283;
-	g_ecpbnverifyreq_283.req_u.dsa_verify.q_len = (q_283_len);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.q = kzalloc(sizeof(Q_283), GFP_KERNEL | GFP_DMA);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.r = kzalloc(sizeof(R_283), GFP_KERNEL | GFP_DMA);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.ab = kzalloc(sizeof(AB_283), GFP_KERNEL | GFP_DMA);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.g = kzalloc(sizeof(G_283), GFP_KERNEL | GFP_DMA);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.pub_key = kzalloc(sizeof(PUB_KEY_EC_283), GFP_KERNEL | GFP_DMA);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.m = kzalloc(sizeof(M_283), GFP_KERNEL | GFP_DMA);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.c = kzalloc(sizeof(C), GFP_KERNEL | GFP_DMA);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.d = kzalloc(sizeof(D), GFP_KERNEL | GFP_DMA);
 
-	g_ecpbnverifyreq_283.req_u.dsa_verify.r = R_283;
-	g_ecpbnverifyreq_283.req_u.dsa_verify.r_len = (r_283_len);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.q_len = sizeof(Q_283);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.r_len = sizeof(R_283);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.ab_len = sizeof(AB_283);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.g_len = sizeof(G_283);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.pub_key_len = sizeof(PUB_KEY_EC_283);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.m_len = sizeof(M_283);
+	g_ecpbnverifyreq_283.req_u.dsa_verify.d_len = sizeof(D);
 
-	g_ecpbnverifyreq_283.req_u.dsa_verify.ab = AB_283;
-	g_ecpbnverifyreq_283.req_u.dsa_verify.ab_len = (ab_283_len);
-
-	g_ecpbnverifyreq_283.req_u.dsa_verify.g = G_283;
-	g_ecpbnverifyreq_283.req_u.dsa_verify.g_len = (g_283_len);
-
-	g_ecpbnverifyreq_283.req_u.dsa_verify.pub_key = PUB_KEY_EC_283;
-	g_ecpbnverifyreq_283.req_u.dsa_verify.pub_key_len = (pub_key_ec_283_len);
-
-	g_ecpbnverifyreq_283.req_u.dsa_verify.m = M_283;
-	g_ecpbnverifyreq_283.req_u.dsa_verify.m_len = (m_283_len);
-
-	g_ecpbnverifyreq_283.req_u.dsa_verify.c = C;
-
-	g_ecpbnverifyreq_283.req_u.dsa_verify.d = D;
-	g_ecpbnverifyreq_283.req_u.dsa_verify.d_len = d_len;
+	memcpy(g_ecpbnverifyreq_283.req_u.dsa_verify.q, Q_283, sizeof(Q_283));
+	memcpy(g_ecpbnverifyreq_283.req_u.dsa_verify.r, R_283, sizeof(R_283));
+	memcpy(g_ecpbnverifyreq_283.req_u.dsa_verify.ab, AB_283, sizeof(AB_283));
+	memcpy(g_ecpbnverifyreq_283.req_u.dsa_verify.g, G_283, sizeof(G_283));
+	memcpy(g_ecpbnverifyreq_283.req_u.dsa_verify.pub_key, PUB_KEY_EC_283, sizeof(PUB_KEY_EC_283));
+	memcpy(g_ecpbnverifyreq_283.req_u.dsa_verify.m, M_283, sizeof(M_283));
+	memcpy(g_ecpbnverifyreq_283.req_u.dsa_verify.c, C, sizeof(C));
+	memcpy(g_ecpbnverifyreq_283.req_u.dsa_verify.d, D, sizeof(D));
 }
 
 void init_ecpbn_sign_test_283(void)
@@ -254,7 +257,6 @@ int ecpbn_sign_test_409(void)
 }
 
 
-
 void init_ecpbn_verify_test_571(void)
 {
 	g_ecpbnverifyreq_571.type = ECDSA_VERIFY;
@@ -325,6 +327,31 @@ int ecpbn_sign_test_571(void)
 
 void cleanup_ecpbn_test(void)
 {
+	if(g_ecpbnverifyreq_283.req_u.dsa_verify.q) {
+		kfree(g_ecpbnverifyreq_283.req_u.dsa_verify.q);
+	}
+	if(g_ecpbnverifyreq_283.req_u.dsa_verify.r) {
+		kfree(g_ecpbnverifyreq_283.req_u.dsa_verify.r);
+	}
+	if(g_ecpbnverifyreq_283.req_u.dsa_verify.ab) {
+		kfree(g_ecpbnverifyreq_283.req_u.dsa_verify.ab);
+	}
+	if(g_ecpbnverifyreq_283.req_u.dsa_verify.g) {
+		kfree(g_ecpbnverifyreq_283.req_u.dsa_verify.g);
+	}
+	if(g_ecpbnverifyreq_283.req_u.dsa_verify.pub_key) {
+		kfree(g_ecpbnverifyreq_283.req_u.dsa_verify.pub_key);
+	}
+	if(g_ecpbnverifyreq_283.req_u.dsa_verify.m) {
+		kfree(g_ecpbnverifyreq_283.req_u.dsa_verify.m);
+	}
+	if(g_ecpbnverifyreq_283.req_u.dsa_verify.c) {
+		kfree(g_ecpbnverifyreq_283.req_u.dsa_verify.c);
+	}
+	if(g_ecpbnverifyreq_283.req_u.dsa_verify.d) {
+		kfree(g_ecpbnverifyreq_283.req_u.dsa_verify.d);
+	}
+
 	if(g_ecpbnsignreq_283.req_u.dsa_sign.c) {
 		kfree(g_ecpbnsignreq_283.req_u.dsa_sign.c);
 	}
