@@ -41,6 +41,16 @@
 #include "command.h"
 #include "sysfs.h"
 
+#define IOREAD64BE(val, addr)         { \
+	val = ioread32be((void *)(addr)); \
+	val = (val) << 32; \
+	val = (val) | ioread32be((uint8_t *)(addr) + sizeof(uint32_t)); \
+	};
+#define IOWRITE64BE(val, addr)        { \
+	iowrite32be((uint32_t)((val)>>32), (void *)(addr)); \
+	iowrite32be((uint32_t)(val), (uint8_t *)(addr) + sizeof(uint32_t));\
+	};
+
 /* Functions used in case of reset commands for smooth exit */
 static int32_t wait_for_cmd_response(cmd_op_t *cmd_op);
 static cmd_op_t *get_cmd_op_ctx(fsl_crypto_dev_t *c_dev,
@@ -607,7 +617,7 @@ static cmd_op_t *get_cmd_op_ctx(fsl_crypto_dev_t *c_dev,
 	    (dev_dma_addr_t) (c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr +
 			      op_dev_addr);
 
-	ASSIGN64(pci_cmd_desc->cmd_op, op_dev_addr);
+	IOWRITE64BE(op_dev_addr, &pci_cmd_desc->cmd_op);
 
 	return cmd_op;
 error:
@@ -641,7 +651,7 @@ int32_t send_command_to_fw(fsl_crypto_dev_t *c_dev, commands_t command,
 		goto exit;
 	}
 
-	ASSIGN64(pci_cmd_desc->cmd_op, (uint64_t) 0X0);
+	IOWRITE64BE(0, &pci_cmd_desc->cmd_op);
 
 	cmd_op = get_cmd_op_ctx(c_dev, pci_cmd_desc);
 	if (NULL == cmd_op) {

@@ -69,17 +69,6 @@
 #include <linux/kthread.h>
 #include <linux/cpumask.h>
 
-#define IOREAD64BE(val, addr)         { \
-	val = ioread32be((void *)(addr)); \
-	val = (val) << 32; \
-	val = (val) | ioread32be((uint8_t *)(addr) + sizeof(uint32_t)); \
-	};
-#define IOWRITE64BE(val, addr)        { \
-	iowrite32be((uint32_t)((val)>>32), (void *)(addr)); \
-	iowrite32be((uint32_t)(val), (uint8_t *)(addr) + sizeof(uint32_t));\
-	};
-#define ASSIGN64(l, r)       IOWRITE64BE((r), &(l))
-
 /* Application ring properties bit masks and shift */
 #define APP_RING_PROP_ORDER_MASK    0x01
 #define APP_RING_PROP_ORDER_SHIFT   0
