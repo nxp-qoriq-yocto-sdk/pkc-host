@@ -83,7 +83,7 @@ static inline void *sh_desc_pdb(u32 *desc)
 
 static inline void init_desc(u32 *desc, u32 options)
 {
-	iowrite32be(options | HDR_ONE, desc);
+	*desc = cpu_to_be32(options | HDR_ONE);
 }
 
 static inline void init_job_desc(u32 *desc, u32 options)
@@ -93,7 +93,7 @@ static inline void init_job_desc(u32 *desc, u32 options)
 
 static inline void init_desc_sym(u32 *desc, u32 options)
 {
-	*desc = (options | HDR_ONE) + 1;
+	*desc = cpu_to_be32((options | HDR_ONE) + 1);
 }
 
 static inline void init_sh_desc(u32 *desc, u32 options)
