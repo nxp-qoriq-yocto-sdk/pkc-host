@@ -51,8 +51,6 @@ struct buffer_info {
 	uint8_t *req_ptr;
 	void *h_v_addr;
 	dma_addr_t h_dma_addr;
-	/* FIXME: convert all descriptors to use dma address */
-	phys_addr_t h_p_addr;
 
 	void *d_v_addr;
 	dev_p_addr_t d_p_addr;
