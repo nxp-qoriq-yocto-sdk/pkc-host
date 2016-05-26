@@ -112,7 +112,7 @@ static int rng_init_cp_pers_str(uint32_t *pers_str, uint32_t length,
 	if (-ENOMEM == alloc_crypto_mem(mem_info)) {
 		return -ENOMEM;
 	}
-	mem->pers_str_buff.req_ptr = (uint8_t *) pers_str;
+	mem->pers_str_buff.h_v_addr = pers_str;
 	return 0;
 }
 

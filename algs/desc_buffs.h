@@ -47,8 +47,6 @@ struct buffer_info {
 	buffer_type_t bt;
 
 	uint32_t len;
-
-	uint8_t *req_ptr;
 	void *h_v_addr;
 	dma_addr_t h_dma_addr;
 

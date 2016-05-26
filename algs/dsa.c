@@ -172,16 +172,16 @@ static int dsa_sign_cp_req(struct dsa_sign_req_s *req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-	mem->q_buff.req_ptr = req->q;
-	mem->r_buff.req_ptr = req->r;
-	mem->g_buff.req_ptr = req->g;
-	mem->priv_key_buff.req_ptr = req->priv_key;
-	mem->m_buff.req_ptr = req->m;
+	mem->q_buff.h_v_addr = req->q;
+	mem->r_buff.h_v_addr = req->r;
+	mem->g_buff.h_v_addr = req->g;
+	mem->priv_key_buff.h_v_addr = req->priv_key;
+	mem->m_buff.h_v_addr = req->m;
 
 	if (ecdsa) {
-		mem->ab_buff.req_ptr = req->ab;
+		mem->ab_buff.h_v_addr = req->ab;
 	} else {
-		mem->ab_buff.req_ptr = NULL;
+		mem->ab_buff.h_v_addr = NULL;
 	}
 
 	mem->c_buff.h_v_addr = req->c;
@@ -201,18 +201,18 @@ static int dsa_verify_cp_req(struct dsa_verify_req_s *req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-	mem->q_buff.req_ptr = req->q;
-	mem->r_buff.req_ptr = req->r;
-	mem->g_buff.req_ptr = req->g;
-	mem->pub_key_buff.req_ptr = req->pub_key;
-	mem->m_buff.req_ptr = req->m;
-	mem->c_buff.req_ptr = req->c;
-	mem->d_buff.req_ptr = req->d;
+	mem->q_buff.h_v_addr = req->q;
+	mem->r_buff.h_v_addr = req->r;
+	mem->g_buff.h_v_addr = req->g;
+	mem->pub_key_buff.h_v_addr = req->pub_key;
+	mem->m_buff.h_v_addr = req->m;
+	mem->c_buff.h_v_addr = req->c;
+	mem->d_buff.h_v_addr = req->d;
 
 	if (ecdsa) {
-		mem->ab_buff.req_ptr = req->ab;
+		mem->ab_buff.h_v_addr = req->ab;
 	} else {
-		mem->ab_buff.req_ptr = NULL;
+		mem->ab_buff.h_v_addr = NULL;
 	}
 
 	return 0;
@@ -229,14 +229,14 @@ static int dsa_keygen_cp_req(struct dsa_keygen_req_s *req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-	mem->q_buff.req_ptr = req->q;
-	mem->r_buff.req_ptr = req->r;
-	mem->g_buff.req_ptr = req->g;
+	mem->q_buff.h_v_addr = req->q;
+	mem->r_buff.h_v_addr = req->r;
+	mem->g_buff.h_v_addr = req->g;
 
 	if (ecdsa) {
-		mem->ab_buff.req_ptr = req->ab;
+		mem->ab_buff.h_v_addr = req->ab;
 	} else {
-		mem->ab_buff.req_ptr = NULL;
+		mem->ab_buff.h_v_addr = NULL;
 	}
 
 	mem->prvkey_buff.h_v_addr = req->prvkey;

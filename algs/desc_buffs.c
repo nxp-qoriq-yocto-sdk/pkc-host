@@ -137,7 +137,7 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 			break;
 		case BT_IP:
 			buffers[i].h_dma_addr = pci_map_single(dev,
-					buffers[i].req_ptr, buffers[i].len,
+					buffers[i].h_v_addr, buffers[i].len,
 					PCI_DMA_BIDIRECTIONAL);
 			break;
 		case BT_OP:

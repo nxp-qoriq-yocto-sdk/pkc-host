@@ -140,14 +140,14 @@ static int dh_key_cp_req(struct dh_key_req_s *req, crypto_mem_info_t *mem_info,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-	mem->q_buff.req_ptr = req->q;
-	mem->w_buff.req_ptr = req->pub_key;
-	mem->s_buff.req_ptr = req->s;
+	mem->q_buff.h_v_addr = req->q;
+	mem->w_buff.h_v_addr = req->pub_key;
+	mem->s_buff.h_v_addr = req->s;
 
 	if (ecdh) {
-		mem->ab_buff.req_ptr = req->ab;
+		mem->ab_buff.h_v_addr = req->ab;
 	} else {
-		mem->ab_buff.req_ptr = NULL;
+		mem->ab_buff.h_v_addr = NULL;
 	}
 	mem->z_buff.h_v_addr = req->z;
 	return 0;
@@ -163,14 +163,14 @@ static int dh_keygen_cp_req(struct dh_keygen_req_s *req, crypto_mem_info_t *mem_
     if(-ENOMEM == alloc_crypto_mem(mem_info))
         return -ENOMEM;
 
-    mem->q_buff.req_ptr         =   req->q;
-    mem->r_buff.req_ptr         =   req->r;
-    mem->g_buff.req_ptr         =   req->g;
+    mem->q_buff.h_v_addr         =   req->q;
+    mem->r_buff.h_v_addr         =   req->r;
+    mem->g_buff.h_v_addr         =   req->g;
 
     if(ecdh) {
-       mem->ab_buff.req_ptr     =   req->ab;
+       mem->ab_buff.h_v_addr     =   req->ab;
     } else {
-       mem->ab_buff.req_ptr     =   NULL;
+       mem->ab_buff.h_v_addr     =   NULL;
     }
 
     mem->prvkey_buff.h_v_addr     =   req->prvkey;

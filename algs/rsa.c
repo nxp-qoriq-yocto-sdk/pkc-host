@@ -91,9 +91,9 @@ static int rsa_pub_op_cp_req(struct rsa_pub_req_s *pub_req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-	mem->n_buff.req_ptr = pub_req->n;
-	mem->e_buff.req_ptr = pub_req->e;
-	mem->f_buff.req_ptr = pub_req->f;
+	mem->n_buff.h_v_addr = pub_req->n;
+	mem->e_buff.h_v_addr = pub_req->e;
+	mem->f_buff.h_v_addr = pub_req->f;
 	mem->g_buff.h_v_addr = pub_req->g;
 
 	print_debug("[RSA PUB OP] Request details:\n");
@@ -218,9 +218,9 @@ static int rsa_priv1_op_cp_req(struct rsa_priv_frm1_req_s *priv1_req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-	mem->n_buff.req_ptr = priv1_req->n;
-	mem->d_buff.req_ptr = priv1_req->d;
-	mem->g_buff.req_ptr = priv1_req->g;
+	mem->n_buff.h_v_addr = priv1_req->n;
+	mem->d_buff.h_v_addr = priv1_req->d;
+	mem->g_buff.h_v_addr = priv1_req->g;
 	mem->f_buff.h_v_addr = priv1_req->f;
 
 #ifdef PRINT_DEBUG
@@ -313,10 +313,10 @@ static int rsa_priv2_op_cp_req(struct rsa_priv_frm2_req_s *priv2_req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-	mem->p_buff.req_ptr = priv2_req->p;
-	mem->q_buff.req_ptr = priv2_req->q;
-	mem->d_buff.req_ptr = priv2_req->d;
-	mem->g_buff.req_ptr = priv2_req->g;
+	mem->p_buff.h_v_addr = priv2_req->p;
+	mem->q_buff.h_v_addr = priv2_req->q;
+	mem->d_buff.h_v_addr = priv2_req->d;
+	mem->g_buff.h_v_addr = priv2_req->g;
 	mem->f_buff.h_v_addr = priv2_req->f;
 
 #ifdef PRINT_DEBUG
@@ -431,12 +431,12 @@ static int rsa_priv3_op_cp_req(struct rsa_priv_frm3_req_s *priv3_req,
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
-	mem->p_buff.req_ptr = priv3_req->p;
-	mem->q_buff.req_ptr = priv3_req->q;
-	mem->dp_buff.req_ptr = priv3_req->dp;
-	mem->dq_buff.req_ptr = priv3_req->dq;
-	mem->g_buff.req_ptr = priv3_req->g;
-	mem->c_buff.req_ptr = priv3_req->c;
+	mem->p_buff.h_v_addr = priv3_req->p;
+	mem->q_buff.h_v_addr = priv3_req->q;
+	mem->dp_buff.h_v_addr = priv3_req->dp;
+	mem->dq_buff.h_v_addr = priv3_req->dq;
+	mem->g_buff.h_v_addr = priv3_req->g;
+	mem->c_buff.h_v_addr = priv3_req->c;
 	mem->f_buff.h_v_addr = priv3_req->f;
 
 #ifdef PRINT_DEBUG
