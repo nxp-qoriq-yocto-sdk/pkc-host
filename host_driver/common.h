@@ -66,7 +66,7 @@
 
 #include <linux/completion.h>
 #include <linux/sched.h>
-#include<linux/kthread.h>
+#include <linux/kthread.h>
 #include <linux/cpumask.h>
 
 #define IOREAD64BE(val, addr)         { \
