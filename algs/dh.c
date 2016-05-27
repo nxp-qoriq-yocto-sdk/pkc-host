@@ -194,15 +194,13 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 							    HDR_DESCLEN_MASK) |
 		      HDR_ONE);
 
-	ASSIGN64(dh_key_desc->q_dma, mem->q_buff.d_p_addr);
-	ASSIGN64(dh_key_desc->w_dma, mem->w_buff.d_p_addr);
-	ASSIGN64(dh_key_desc->s_dma, mem->s_buff.d_p_addr);
-	ASSIGN64(dh_key_desc->z_dma, mem->z_buff.d_p_addr);
+	dh_key_desc->q_dma = cpu_to_be64(mem->q_buff.d_p_addr);
+	dh_key_desc->w_dma = cpu_to_be64(mem->w_buff.d_p_addr);
+	dh_key_desc->s_dma = cpu_to_be64(mem->s_buff.d_p_addr);
+	dh_key_desc->z_dma = cpu_to_be64(mem->z_buff.d_p_addr);
 
-	iowrite32be((mem->q_buff.len << 7) | mem->s_buff.len,
-			&dh_key_desc->sgf_ln);
-	iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH,
-			&dh_key_desc->op);
+	dh_key_desc->sgf_ln = cpu_to_be32((mem->q_buff.len << 7) | mem->s_buff.len);
+	dh_key_desc->op = cpu_to_be32(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH);
 
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.d_p_addr);
 	print_debug("W DMA: %llx\n", (uint64_t)mem->w_buff.d_p_addr);
@@ -230,20 +228,21 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 							    HDR_DESCLEN_MASK) |
 		      HDR_ONE);
 
-	ASSIGN64(ecdh_key_desc->q_dma, mem->q_buff.d_p_addr);
-	ASSIGN64(ecdh_key_desc->w_dma, mem->w_buff.d_p_addr);
-	ASSIGN64(ecdh_key_desc->s_dma, mem->s_buff.d_p_addr);
-	ASSIGN64(ecdh_key_desc->ab_dma, mem->ab_buff.d_p_addr);
-	ASSIGN64(ecdh_key_desc->z_dma, mem->z_buff.d_p_addr);
+	ecdh_key_desc->q_dma = cpu_to_be64(mem->q_buff.d_p_addr);
+	ecdh_key_desc->w_dma = cpu_to_be64(mem->w_buff.d_p_addr);
+	ecdh_key_desc->s_dma = cpu_to_be64(mem->s_buff.d_p_addr);
+	ecdh_key_desc->ab_dma = cpu_to_be64(mem->ab_buff.d_p_addr);
+	ecdh_key_desc->z_dma = cpu_to_be64(mem->z_buff.d_p_addr);
 
-	iowrite32be((mem->q_buff.len << 7) | mem->s_buff.len,
-			&ecdh_key_desc->sgf_ln);
+	ecdh_key_desc->sgf_ln = cpu_to_be32((mem->q_buff.len << 7) | mem->s_buff.len);
 	if (ecc_bin) {
-		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH |
-			  OP_PCL_PKPROT_ECC | OP_PCL_PKPROT_F2M, &ecdh_key_desc->op);
+		ecdh_key_desc->op = cpu_to_be32(CMD_OPERATION |
+			OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH |
+			OP_PCL_PKPROT_ECC | OP_PCL_PKPROT_F2M);
 	} else {
-		iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH |
-			  OP_PCL_PKPROT_ECC, &ecdh_key_desc->op);
+		ecdh_key_desc->op = cpu_to_be32(CMD_OPERATION |
+			OP_TYPE_UNI_PROTOCOL | OP_PCLID_DH |
+			OP_PCL_PKPROT_ECC);
 	}
 
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.d_p_addr);
@@ -260,31 +259,35 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 {
-    uint32_t    desc_size   =   sizeof(struct ecdh_keygen_desc_s) / sizeof(uint32_t);
-    uint32_t    start_idx   =   desc_size - 1;
+	uint32_t desc_size = sizeof(struct ecdh_keygen_desc_s) / sizeof(uint32_t);
+	uint32_t start_idx = desc_size - 1;
 
-    dh_keygen_buffers_t   *mem            =   (dh_keygen_buffers_t *)(mem_info->buffers);
-    struct ecdh_keygen_desc_s  *ecdh_keygen_desc  =   (struct ecdh_keygen_desc_s *)mem->desc_buff.h_v_addr;
+	dh_keygen_buffers_t *mem = (dh_keygen_buffers_t *)(mem_info->buffers);
+	struct ecdh_keygen_desc_s *ecdh_keygen_desc = (struct ecdh_keygen_desc_s *)mem->desc_buff.h_v_addr;
 
-    start_idx   &=  HDR_START_IDX_MASK;
-    init_job_desc(&ecdh_keygen_desc->desc_hdr, (start_idx << HDR_START_IDX_SHIFT) | (desc_size & HDR_DESCLEN_MASK) | HDR_ONE);
+	start_idx   &=  HDR_START_IDX_MASK;
+	init_job_desc(&ecdh_keygen_desc->desc_hdr,
+		(start_idx << HDR_START_IDX_SHIFT) |
+		(desc_size & HDR_DESCLEN_MASK) | HDR_ONE);
 
-    ASSIGN64(ecdh_keygen_desc->q_dma, mem->q_buff.d_p_addr);
-    ASSIGN64(ecdh_keygen_desc->r_dma, mem->r_buff.d_p_addr);
-    ASSIGN64(ecdh_keygen_desc->g_dma, mem->g_buff.d_p_addr);
-    ASSIGN64(ecdh_keygen_desc->ab_dma, mem->ab_buff.d_p_addr);
-    ASSIGN64(ecdh_keygen_desc->pubkey_dma, mem->pubkey_buff.d_p_addr);
-    ASSIGN64(ecdh_keygen_desc->prvkey_dma, mem->prvkey_buff.d_p_addr);
+	ecdh_keygen_desc->q_dma = cpu_to_be64(mem->q_buff.d_p_addr);
+	ecdh_keygen_desc->r_dma = cpu_to_be64(mem->r_buff.d_p_addr);
+	ecdh_keygen_desc->g_dma = cpu_to_be64(mem->g_buff.d_p_addr);
+	ecdh_keygen_desc->ab_dma = cpu_to_be64(mem->ab_buff.d_p_addr);
+	ecdh_keygen_desc->pubkey_dma = cpu_to_be64(mem->pubkey_buff.d_p_addr);
+	ecdh_keygen_desc->prvkey_dma = cpu_to_be64(mem->prvkey_buff.d_p_addr);
 
-    iowrite32be((mem->q_buff.len<<7) | mem->r_buff.len, &ecdh_keygen_desc->sgf_ln);
-    if(ecc_bin) {
-	    iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR |
-		OP_PCL_PKPROT_ECC | OP_PCL_PKPROT_F2M, &ecdh_keygen_desc->op);
-    }
-    else {
-        iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR |
-		OP_PCL_PKPROT_ECC, &ecdh_keygen_desc->op);
-    }
+	ecdh_keygen_desc->sgf_ln = cpu_to_be32((mem->q_buff.len<<7) | mem->r_buff.len);
+	if(ecc_bin) {
+		ecdh_keygen_desc->op = cpu_to_be32(CMD_OPERATION |
+			OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR |
+			OP_PCL_PKPROT_ECC | OP_PCL_PKPROT_F2M);
+	}
+	else {
+		ecdh_keygen_desc->op = cpu_to_be32(CMD_OPERATION |
+			OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR |
+			OP_PCL_PKPROT_ECC);
+	}
 
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.d_p_addr);
 	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.d_p_addr);
@@ -301,23 +304,25 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 
 static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
 {
-    uint32_t    desc_size   =   sizeof(struct dh_keygen_desc_s) / sizeof(uint32_t);
-    uint32_t    start_idx   =   desc_size - 1;
+	uint32_t desc_size = sizeof(struct dh_keygen_desc_s) / sizeof(uint32_t);
+	uint32_t start_idx = desc_size - 1;
 
-    dh_keygen_buffers_t *mem            =   (dh_keygen_buffers_t *)(mem_info->buffers);
-    struct dh_keygen_desc_s *dh_keygen_desc =   (struct dh_keygen_desc_s *)mem->desc_buff.h_v_addr;
+	dh_keygen_buffers_t *mem = (dh_keygen_buffers_t *)(mem_info->buffers);
+	struct dh_keygen_desc_s *dh_keygen_desc = (struct dh_keygen_desc_s *)mem->desc_buff.h_v_addr;
 
-    start_idx   &=  HDR_START_IDX_MASK;
-    init_job_desc(&dh_keygen_desc->desc_hdr, (start_idx << HDR_START_IDX_SHIFT) | (desc_size & HDR_DESCLEN_MASK) | HDR_ONE);
+	start_idx &= HDR_START_IDX_MASK;
+	init_job_desc(&dh_keygen_desc->desc_hdr,
+		(start_idx << HDR_START_IDX_SHIFT) |
+		(desc_size & HDR_DESCLEN_MASK) | HDR_ONE);
 
-    ASSIGN64(dh_keygen_desc->q_dma, mem->q_buff.d_p_addr);
-    ASSIGN64(dh_keygen_desc->r_dma, mem->r_buff.d_p_addr);
-    ASSIGN64(dh_keygen_desc->g_dma, mem->g_buff.d_p_addr);
-    ASSIGN64(dh_keygen_desc->pubkey_dma, mem->pubkey_buff.d_p_addr);
-    ASSIGN64(dh_keygen_desc->prvkey_dma, mem->prvkey_buff.d_p_addr);
+	dh_keygen_desc->q_dma = cpu_to_be64(mem->q_buff.d_p_addr);
+	dh_keygen_desc->r_dma = cpu_to_be64(mem->r_buff.d_p_addr);
+	dh_keygen_desc->g_dma = cpu_to_be64(mem->g_buff.d_p_addr);
+	dh_keygen_desc->pubkey_dma = cpu_to_be64(mem->pubkey_buff.d_p_addr);
+	dh_keygen_desc->prvkey_dma = cpu_to_be64(mem->prvkey_buff.d_p_addr);
 
-    iowrite32be((mem->q_buff.len<<7) | mem->r_buff.len, &dh_keygen_desc->sgf_ln);
-    iowrite32be(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR, &dh_keygen_desc->op);
+	dh_keygen_desc->sgf_ln = cpu_to_be32((mem->q_buff.len<<7) | mem->r_buff.len);
+	dh_keygen_desc->op = cpu_to_be32(CMD_OPERATION | OP_TYPE_UNI_PROTOCOL | OP_PCLID_PUBLICKEYPAIR);
 
 	print_debug("Q DMA: %llx\n", (uint64_t)mem->q_buff.d_p_addr);
 	print_debug("R DMA: %llx\n", (uint64_t)mem->r_buff.d_p_addr);
