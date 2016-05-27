@@ -105,10 +105,10 @@ inline void check_test_done(void)
 
 	print_debug("Diff: %llx\n", time_ns);
 	print_debug("total_jobs_s: %0x\n", total_succ_jobs);
-	print_debug("time_delta_str_s: %s\n", time_delta_str);
 
 	/* Write to the sysfs file entry */
 	snprintf(time_delta_str, sizeof(time_delta_str), "%0llx", time_ns);
+	print_debug("time_delta_str_s: %s\n", time_delta_str);
 	strcpy(sysfs_val, time_delta_str);
 	print_debug("sysfs val: %s\n", sysfs_val);
 
