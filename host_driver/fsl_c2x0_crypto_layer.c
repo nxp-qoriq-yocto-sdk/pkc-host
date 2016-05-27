@@ -1018,7 +1018,10 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 	print_debug("Enqueuing to the req r addr: %p\n", rp->req_r);
 	print_debug("Writing at the addr	: %p\n", &(rp->req_r[wi].sec_desc));
 
-	IOWRITE64BE(sec_desc, &rp->req_r[wi].sec_desc);
+	rp->req_r[wi].sec_desc = cpu_to_be64(sec_desc);
+
+	/* confirm the descriptor has been written before updating ring index */
+	wmb();
 
 	rp->indexes->w_index = (wi + 1) % rp->depth;
 	print_debug("Update W index: %d\n", rp->indexes->w_index);
