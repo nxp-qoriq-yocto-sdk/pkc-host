@@ -267,17 +267,6 @@ static void rng_init_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 	rng_init_buffs->pers_str_buff.bt = BT_IP;
 }
 
-static void constr_personalization_str(uint32_t *pers_str, uint32_t length,
-				       uint32_t sec_no)
-{
-	int32_t i = 0;
-	for (i = 0; i < length; i++)
-		pers_str[i] = 0;
-
-	pers_str[0] = sec_no;
-
-}
-
 int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 {
 	crypto_op_ctx_t *crypto_ctx = NULL;
@@ -287,9 +276,10 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 
 	rng_init_buffers_t *rng_init_buffs = NULL;
 	rng_self_test_buffers_t *rng_self_test_buffs = NULL;
-	uint32_t pers_str[8];
+	uint32_t *pers_str = NULL;
 	uint32_t *output = NULL;
-	uint32_t output_len = 0;
+	uint32_t output_len;
+	uint32_t pers_len;
 	int32_t ret = 0;
 	struct rng_init_compl r_init;
 
@@ -322,14 +312,17 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 		rng_init_init_crypto_mem(&crypto_ctx->crypto_mem);
 		rng_init_buffs =
 		    (rng_init_buffers_t *) crypto_ctx->crypto_mem.buffers;
-
-		constr_personalization_str(pers_str,
-					   sizeof(pers_str) / sizeof(uint32_t),
-					   sec_no);
-		ret = rng_init_cp_pers_str(pers_str, sizeof(pers_str),
+		pers_len = 8 * sizeof(uint32_t);
+		pers_str = kzalloc(pers_len, GFP_KERNEL | GFP_DMA);
+		if (pers_str == NULL) {
+			ret = -ENOMEM;
+			goto out_nop;
+		}
+		pers_str[0] = sec_no;
+		ret = rng_init_cp_pers_str(pers_str, pers_len,
 						&crypto_ctx->crypto_mem);
 		if (ret != 0) {
-			goto out_nop;
+			goto out_err_alloc;
 		}
 
 		print_debug("RNG init mem complete.....\n");
@@ -427,6 +420,9 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 out_enq_fail:
 	dealloc_crypto_mem(&crypto_ctx->crypto_mem);
 out_err_alloc:
+	if (crypto_ctx->oprn == RNG_INIT) {
+		kfree(pers_str);
+	}
 	if (crypto_ctx->oprn == RNG_SELF_TEST) {
 		kfree(output);
 	}
