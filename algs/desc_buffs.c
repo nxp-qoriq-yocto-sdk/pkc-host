@@ -50,10 +50,10 @@ static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 		switch (buffers[i].bt) {
 		case BT_DESC:
 		case BT_TMP:
-		case BT_IP:
 			buffers[i].h_v_addr = mem;
 			mem += ALIGN_LEN_TO_DMA(buffers[i].len);
 			break;
+		case BT_IP:
 		case BT_OP:
 		default:
 			break;
@@ -76,9 +76,9 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 		switch (buffers[i].bt) {
 		case BT_DESC:
 		case BT_TMP:
-		case BT_IP:
 			tot_mem += aligned_len;
 			break;
+		case BT_IP:
 		case BT_OP:
 		default:
 			break;
