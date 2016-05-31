@@ -39,8 +39,6 @@
 #include "desc_buffs.h"
 #include "pkc_desc.h"
 
-extern struct c29x_dev *g_fsl_pci_dev;
-
 static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 {
 	uint32_t i;
