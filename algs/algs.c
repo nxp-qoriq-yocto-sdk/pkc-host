@@ -320,30 +320,6 @@ dev_dma_addr_t set_sec_affinity(fsl_crypto_dev_t *c_dev, uint32_t rid,
 }
 #endif
 
-void dma_tx_complete_cb(void *ctx)
-{
-	crypto_op_ctx_t *crypto_ctx = ctx;
-	fsl_crypto_dev_t *c_dev = crypto_ctx->c_dev;
-#ifndef HIGH_PERF
-	if (atomic_inc_return(&crypto_ctx->reqcnt) <
-	    atomic_read(&crypto_ctx->maxreqs))
-		return;
-
-	kfree(crypto_ctx->crypto_mem.ip_sg);
-	kfree(crypto_ctx->crypto_mem.op_sg);
-
-	atomic_dec(&c_dev->active_jobs);
-#endif
-RETRY:
-	if (app_ring_enqueue(c_dev, crypto_ctx->rid, 
-			set_sec_affinity(c_dev, crypto_ctx->rid, crypto_ctx->desc))) {
-		print_error("App ring enqueue failed...\n");
-		set_current_state(TASK_INTERRUPTIBLE);
-		schedule_timeout(usecs_to_jiffies(10));
-		goto RETRY;
-	}
-}
-
 #ifdef DEBUG_DESC
 void dump_desc(void *buff, uint32_t desc_size, const uint8_t *func)
 {
