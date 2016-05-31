@@ -151,16 +151,11 @@ typedef struct crypto_op_ctx {
 	uint32_t rid;
 	dev_dma_addr_t desc;
 	fsl_crypto_dev_t *c_dev;
-
-	atomic_t maxreqs;
-	atomic_t reqcnt;
-
 	union {
 		struct pkc_request *pkc;
 		struct rng_init_compl *rng_init;
 		struct buf_data *rng;
 	} req;
-	struct split_key_result *result;
 	void (*op_done) (void *ctx, int32_t result);
 #ifdef VIRTIO_C2X0
 	int32_t card_status;
