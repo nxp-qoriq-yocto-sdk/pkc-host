@@ -50,10 +50,7 @@ struct buffer_info {
 	void *h_v_addr;
 	dma_addr_t h_dma_addr;
 
-	void *d_v_addr;
 	dev_p_addr_t d_p_addr;
-
-	unsigned long priv;
 } __packed;
 
 typedef struct buffer_info buffer_info_t;
