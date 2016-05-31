@@ -673,7 +673,6 @@ int rsa_op(struct pkc_request *req)
 
 	crypto_ctx->req.pkc = req;
 	crypto_ctx->oprn = RSA;
-	crypto_ctx->rid = r_id;
 	crypto_ctx->op_done = rsa_op_done;
 	crypto_ctx->desc = sec_dma;
 	crypto_ctx->c_dev = c_dev;

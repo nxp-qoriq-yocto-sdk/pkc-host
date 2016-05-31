@@ -148,7 +148,6 @@ typedef struct crypto_op_ctx {
 	void *ctx_pool; /* pointer to the enclosing pool */
 	crypto_mem_info_t crypto_mem;
 	crypto_op_t oprn;
-	uint32_t rid;
 	dev_dma_addr_t desc;
 	fsl_crypto_dev_t *c_dev;
 	union {

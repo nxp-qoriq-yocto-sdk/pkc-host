@@ -392,7 +392,6 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 
 	crypto_ctx->oprn = op;
 	crypto_ctx->req.rng_init = &r_init;
-	crypto_ctx->rid = r_id;
 	crypto_ctx->desc = sec_dma;
 	crypto_ctx->c_dev = c_dev;
 	crypto_ctx->op_done = rng_init_done;
