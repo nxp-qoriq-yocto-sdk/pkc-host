@@ -558,7 +558,6 @@ int dh_op(struct pkc_request *req)
 #endif
 	print_debug("Before app_ring_enqueue\n");
 
-	sec_dma = set_sec_affinity(c_dev, r_id, sec_dma);
 #ifndef HIGH_PERF
 	atomic_dec(&c_dev->active_jobs);
 #endif

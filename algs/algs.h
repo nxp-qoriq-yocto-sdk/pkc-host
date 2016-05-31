@@ -180,8 +180,7 @@ int32_t check_device(fsl_crypto_dev_t *c_dev);
 void crypto_op_done(fsl_crypto_dev_t *c_dev,
 		    crypto_job_ctx_t *ctx, int32_t sec_result);
 #endif
-dev_dma_addr_t set_sec_affinity(fsl_crypto_dev_t *c_dev, uint32_t rid,
-								dev_dma_addr_t desc);
+
 uint32_t get_ring_rr(fsl_crypto_dev_t *c_dev);
 fsl_crypto_dev_t *get_device_rr(void);
 

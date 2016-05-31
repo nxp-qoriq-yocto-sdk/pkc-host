@@ -206,7 +206,6 @@ static int submit_job(struct rng_ctx *ctx, int to_current)
 	print_debug("submitting job %d\n", !(to_current ^ ctx->current_buf));
 	init_completion(&bd->filled);
 
-	sec_dma = set_sec_affinity(ctx->c_dev, r_id, sec_dma);
 	atomic_dec(&ctx->c_dev->active_jobs);
 	if (-1 == app_ring_enqueue(ctx->c_dev, r_id, sec_dma)) {
 		print_error("Application Ring Enqueue Failed\n");

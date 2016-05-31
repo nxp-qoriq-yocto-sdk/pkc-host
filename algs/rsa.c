@@ -686,7 +686,6 @@ int rsa_op(struct pkc_request *req)
 #endif
 
 	print_debug("Before app_ring_enqueue\n");
-	sec_dma = set_sec_affinity(c_dev, r_id, sec_dma);
 	/* Now enqueue the job into the app ring */
 	if (app_ring_enqueue(c_dev, r_id, sec_dma)) {
 		ret = -1;

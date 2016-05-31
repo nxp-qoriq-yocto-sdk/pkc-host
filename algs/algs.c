@@ -304,22 +304,6 @@ uint32_t get_ring_rr(fsl_crypto_dev_t *c_dev)
 	return r_id;
 }
 
-#ifdef HIGH_PERF
-dev_dma_addr_t set_sec_affinity(fsl_crypto_dev_t *c_dev, uint32_t rid,
-                                dev_dma_addr_t desc)
-{
-	return desc;
-}
-#else
-dev_dma_addr_t set_sec_affinity(fsl_crypto_dev_t *c_dev, uint32_t rid,
-								dev_dma_addr_t desc)
-{
-	uint32_t sec_no = 0;
-	sec_no = f_get_a(c_dev->ring_pairs[rid].info.flags);
-	return (desc | (uint64_t) sec_no);
-}
-#endif
-
 #ifdef DEBUG_DESC
 void dump_desc(void *buff, uint32_t desc_size, const uint8_t *func)
 {
