@@ -1041,6 +1041,9 @@ int32_t create_per_core_info(void)
 
 	workq = create_workqueue("pkc_wq");
 	for_each_online_cpu(i) {
+		/* FIXME: wt_cpu_mask is not valid when smt_enabled=off because
+		 * online_cpu i will be a multiple of two and not of one as expected.
+		 */
 		if (!(wt_cpu_mask & (1 << i)))
 			continue;
 		instance = per_cpu_ptr(per_core, i);

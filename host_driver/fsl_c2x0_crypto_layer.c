@@ -93,22 +93,21 @@ void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	uint16_t isr_count = 0;
 	uint32_t i;
 	struct list_head *isr_ctx_list_head;
-	uint32_t total_cores = num_online_cpus();
 	uint16_t total_isrs = dev->priv_dev->intr_info.intr_vectors_cnt;
 	struct bh_handler *instance;
 	isr_ctx_t *isr_ctx;
 
 	isr_ctx_list_head = &(dev->priv_dev->intr_info.isr_ctx_list_head);
 
-	print_debug("Total cores: %d\n", total_cores);
 	isr_ctx = list_entry(isr_ctx_list_head->next, isr_ctx_t, list);
 
 	INIT_LIST_HEAD(&(isr_ctx->ring_list_head));
 
 	/* Affine the ring to CPU & ISR */
 	for (i = 0; i < config->num_of_rings; i++) {
-		while (!(wt_cpu_mask & (1 << core_no)))
-			core_no = (core_no + 1) % total_cores;
+		while (!(wt_cpu_mask & (1 << core_no))) {
+			core_no = cpumask_next(core_no, cpu_online_mask) % nr_cpu_ids;
+		}
 
 		print_debug("Ring no: %d Core no: %d\n", i, core_no);
 		instance = per_cpu_ptr(per_core, core_no);
@@ -134,7 +133,7 @@ void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 		print_debug("ISR COUNT: %d total num of isrs: %d\n",
 			    isr_count, total_isrs);
 
-		core_no = (core_no + 1) % total_cores;
+		core_no = cpumask_next(core_no, cpu_online_mask) % nr_cpu_ids;
 	}
 }
 
