@@ -505,10 +505,6 @@ int rsa_op(struct pkc_request *req)
 		c_dev = c_sess->c_dev;
 		r_id = c_sess->r_id;
 		sess_cnt = atomic_read(&c_dev->crypto_dev_sess_cnt);
-#ifndef HIGH_PERF
-		if (-1 == check_device(c_dev))
-			return -1;
-#endif
 	}
 
 	else
@@ -528,10 +524,6 @@ int rsa_op(struct pkc_request *req)
 	 * ring 0 is used for commands */
 	sess_cnt = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
 	r_id = 1 + sess_cnt % (c_dev->num_of_rings - 1);
-
-#ifndef HIGH_PERF
-	atomic_inc(&c_dev->active_jobs);
-#endif
 	}
 
 	ctx_pool_id = sess_cnt % NR_CTX_POOLS;
@@ -700,9 +692,6 @@ out_err:
 out_nop:
 	free_crypto_ctx(crypto_ctx->ctx_pool, crypto_ctx);
 out_no_ctx:
-#ifndef HIGH_PERF
-	atomic_dec(&c_dev->active_jobs);
-#endif
 	return ret;
 }
 

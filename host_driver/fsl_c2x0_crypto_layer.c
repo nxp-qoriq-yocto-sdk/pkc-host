@@ -53,15 +53,6 @@ extern struct bh_handler __percpu *per_core;
 #define DEFAULT_FIRMWARE_RESP_RING_DEPTH	(128*4)
 #define FIRMWARE_IP_BUFFER_POOL_SIZE		(512*1024)
 
-#ifndef HIGH_PERF
-
-#ifdef PRINT_DEBUG
-static int32_t total_resp;
-#endif
-
-
-#endif
-
 static uint32_t align(uint32_t addr, uint32_t size)
 {
 	size--;
@@ -938,9 +929,6 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 {
 	uint32_t wi = 0;
 	uint32_t jobs_processed = 0;
-#ifndef HIGH_PERF
-	uint32_t app_req_cnt = 0;
-#endif
 	fsl_h_rsrc_ring_pair_t *rp = NULL;
 
 	print_debug("Sec desc addr: %llx\n", sec_desc);
@@ -974,14 +962,6 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 
 	rp->counters->jobs_added += 1;
 	print_debug("Updated jobs added: %d\n", rp->counters->jobs_added);
-#ifndef HIGH_PERF
-	if (jr_id) {
-		app_req_cnt =  atomic_inc_return(&c_dev->app_req_cnt);
-		set_sysfs_value(c_dev->priv_dev, STATS_REQ_COUNT_SYS_FILE,
-				(uint8_t *) &(app_req_cnt),
-				sizeof(app_req_cnt));
-	}
-#endif
 	print_debug("Ring: %d	Shadow counter address	%p\n", jr_id,
 		    &(rp->shadow_counters->jobs_added));
 	rp->shadow_counters->jobs_added = be32_to_cpu(rp->counters->jobs_added);
@@ -1157,7 +1137,6 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 
 	c_dev->dev_status = alloc_percpu(per_dev_struct_t);
 	set_device_status_per_cpu(c_dev, 1);
-	atomic_set(&(c_dev->active_jobs), 0);
 
 	err = handshake(c_dev, config);
 	if (err) {
@@ -1239,15 +1218,7 @@ int32_t app_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 			 dev_dma_addr_t sec_desc)
 {
 	int32_t ret = 0;
-#ifndef HIGH_PERF
-	/* Check the block flag for the ring */
-	if (0 != atomic_read(&(c_dev->ring_pairs[jr_id].block))) {
-		print_debug("Block condition is set for the ring: %d\n", jr_id);
-		return -1;
-	}
-#endif
 	ret = ring_enqueue(c_dev, jr_id, sec_desc);
-
 	return ret;
 }
 
@@ -1264,41 +1235,17 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 	crypto_op_ctx_t *ctx0 = NULL;
 	dev_p_addr_t offset = dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 
-#ifndef HIGH_PERF
-	crypto_job_ctx_t *ctx1 = NULL;
-#endif
-
 	h_desc = dev->host_ip_pool.h_v_addr + (desc - offset) -
 			dev->host_ip_pool.h_dma_addr;
 
-#ifndef HIGH_PERF
-	if (get_flag(dev->host_ip_pool.pool, h_desc))
-#endif
-		ctx0 = (crypto_op_ctx_t *) get_priv_data(h_desc);
-#ifndef HIGH_PERF
-	else
-		ctx1 = (crypto_job_ctx_t *) get_priv_data(h_desc);
-
-	print_debug("Total Resp count: %d\n", ++total_resp);
-	print_debug("[DEQ] Dev sec desc : %llx\n", desc);
-	print_debug("[DEQ] H sec desc: %pa\n", &h_desc);
-	print_debug("[DEQ] Ctx0 address: %p\n", ctx0);
-	print_debug("[DEQ] Ctx1 address: %p\n", ctx1);
-#endif
-
+	ctx0 = (crypto_op_ctx_t *) get_priv_data(h_desc);
 	if (ctx0) {
 		ctx0->op_done(ctx0, res);
 	} else {
 		print_debug("NULL Context!!\n");
 	}
 
-#ifndef HIGH_PERF
-	if (ctx1) {
-		crypto_op_done(dev, ctx1, res);
-	}
-#endif
 	return;
-
 }
 
 #define MAX_ERROR_STRING 400
@@ -1313,10 +1260,6 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 	uint64_t desc;
 	int32_t res = 0;
 	struct device *my_dev = &dev->priv_dev->dev->dev;
-#ifndef HIGH_PERF
-	uint32_t r_id;
-	uint32_t app_resp_cnt = 0;
-#endif
 
 	pollcount = 0;
 
@@ -1327,9 +1270,6 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 			continue;
 
 		dev = ring_cursor->dev;
-#ifndef HIGH_PERF
-		r_id = ring_cursor->info.ring_id;
-#endif
 		ri = ring_cursor->indexes->r_index;
 		print_debug("RING ID: %d\n", ring_cursor->info.ring_id);
 		print_debug("GOT INTERRUPT FROM DEV: %d\n", dev->config->dev_no);
@@ -1337,13 +1277,6 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 		while (resp_cnt) {
 			desc = be64_to_cpu(ring_cursor->resp_r[ri].sec_desc);
 			res = be32_to_cpu(ring_cursor->resp_r[ri].result);
-#ifndef HIGH_PERF
-			if (r_id == 0) {
-				print_debug("COMMAND RING GOT AN INTERRUPT\n");
-				if (desc)
-					process_cmd_response(dev, desc, res);
-			} else
-#endif
 			{
 				print_debug("APP RING GOT AN INTERRUPT\n");
 				if (desc) {
@@ -1354,9 +1287,6 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 				if (res) {
 					sec_jr_strstatus(my_dev, res);
 				}
-#ifndef HIGH_PERF
-				atomic_inc_return(&dev->app_resp_cnt);
-#endif
 			}
 			ring_cursor->counters->jobs_processed += 1;
 			iowrite32be(ring_cursor->counters->jobs_processed,
@@ -1382,44 +1312,9 @@ int32_t process_rings(fsl_crypto_dev_t *dev,
 		process_response(dev, ring_cursor);
 	}
 
-#ifndef HIGH_PERF
-	/* UPDATE SYSFS ENTRY */
-	app_resp_cnt = atomic_read(&dev->app_resp_cnt);
-	set_sysfs_value(dev->priv_dev, STATS_RESP_COUNT_SYS_FILE,
-			(uint8_t *) &(app_resp_cnt),
-			sizeof(app_resp_cnt));
-#endif
 	print_debug("DONE PROCESSING RESPONSE\n");
 	return 0;
 }
-
-#ifndef HIGH_PERF
-/* Backward compatible functions for other algorithms */
-static inline void *ip_buf_d_v_addr(fsl_crypto_dev_t *dev, void *h_v_addr)
-{
-	unsigned long offset = h_v_addr - dev->host_ip_pool.h_v_addr;
-	return dev->dev_ip_pool.h_v_addr + offset;
-}
-
-struct cmd_ring_entry_desc *get_buffer(fsl_crypto_dev_t *c_dev, void *id,
-		uint32_t len, uint8_t flag)
-{
-	void *addr;
-
-	addr = alloc_buffer(id, len, flag);
-	if (addr) {
-		addr = ip_buf_d_v_addr(c_dev, addr);
-	}
-
-	return addr;
-}
-
-void put_buffer(fsl_crypto_dev_t *c_dev, struct buffer_pool *pool, void *addr)
-{
-	addr += c_dev->host_ip_pool.h_v_addr - c_dev->dev_ip_pool.h_v_addr;
-	free_buffer(pool, addr);
-}
-#endif
 
 #ifdef VIRTIO_C2X0
 /* For debug purpose */

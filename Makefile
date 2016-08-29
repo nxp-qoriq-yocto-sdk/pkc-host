@@ -21,7 +21,6 @@ ccflags-$(INFO_PRINT) += -DPRINT_INFO
 ccflags-$(DEBUG_DESC) += -DDEBUG_DESC
 
 ccflags-$(ENHANCE_KERNEL_TEST) += -DENHANCE_KERNEL_TEST
-ccflags-y += -DHIGH_PERF
 ccflags-y += -DSEC_DMA
 
 DRIVER_KOBJ = fsl_pkc_crypto_offload_drv

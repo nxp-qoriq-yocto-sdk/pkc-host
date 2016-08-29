@@ -254,47 +254,11 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 	switch (cmd) {
 	case CMDOPERATION:
 		{
-#ifdef HIGH_PERF
 			return EACCES;
-#else
-			fsl_crypto_dev_t *c_dev = NULL;
-			user_command_args_t usr_cmd_desc = { };
-
-			if (copy_from_user
-			    ((void *)&usr_cmd_desc, (void *)arg,
-			     sizeof(usr_cmd_desc))) {
-				print_error("Copy from user failed....\n");
-				return -1;
-			}
-
-			c_dev = get_crypto_dev(usr_cmd_desc.dev_id);
-			if (NULL == c_dev) {
-				print_debug("Invalid device number: %d\n", usr_cmd_desc.dev_id);
-				return -1;
-			}
-			return process_cmd_req(c_dev, &usr_cmd_desc);
-#endif
 		}
 	case CHECKCMD:
 		{
-#ifdef HIGH_PERF
 			return EACCES;
-#else
-			fsl_crypto_dev_t *c_dev = NULL;
-			user_command_args_t usr_cmd_desc = { };
-			if (copy_from_user
-					((void *)&usr_cmd_desc, (void *)arg,
-					sizeof(usr_cmd_desc))) {
-				print_error("Copy from user failed....\n");
-				return -1;
-			}
-			c_dev = get_crypto_dev(usr_cmd_desc.dev_id);
-			if (NULL == c_dev) {
-				print_debug("Invalid device number: %d\n", usr_cmd_desc.dev_id);
-				return -1;
-			}
-			return validate_cmd_args(c_dev, &usr_cmd_desc); 
-#endif
 		}
 #ifdef VIRTIO_C2X0
 	case VIRTIOOPERATION:

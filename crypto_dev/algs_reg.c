@@ -56,12 +56,6 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 {
 	uint32_t no_of_app_rings = 0;
 	uint32_t no_of_devices = 0;
-#ifndef HIGH_PERF
-	uint32_t  new_device = 0;
-	int device_status = 0, count = 0, cpu = 0;
-	per_dev_struct_t *dev_stat = NULL;
-	uint32_t loop_cnt = 0;
-#endif
 
 	no_of_devices = get_no_of_devices();
 	if (0 >= no_of_devices) {
@@ -69,43 +63,11 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 		return -1;
 	}
 
-#ifndef HIGH_PERF
-	while (!device_status && count < no_of_devices) {
-		new_device =
-		    ((atomic_inc_return(&selected_devices) -
-		      1) % no_of_devices) + 1;
-		ctx->c_dev = get_crypto_dev(new_device);
-		if (!ctx->c_dev) {
-			print_error
-			    ("Could not retrieve the device structure.\n");
-			return -1;
-		}
-		cpu = get_cpu();
-		dev_stat = per_cpu_ptr(ctx->c_dev->dev_status, cpu);
-		put_cpu();
-
-		device_status = atomic_read(&(dev_stat->device_status));
-		if (device_status) {
-			count = 0;
-			break;
-		}
-		count++;
-		if (++loop_cnt > 1000000) {
-			print_error("Could not get an active device\n");
-			return -1;
-		}
-	}
-	if (!device_status) {
-		print_error("No Device is ALIVE\n");
-		return -1;
-	}
-#else
 	ctx->c_dev = get_crypto_dev(1);
 	if (!ctx->c_dev) {
 		print_error("Could not retrieve the device structure.\n");
 		return -1;
 	}
-#endif
 
 	no_of_app_rings = ctx->c_dev->num_of_rings - 1;
 

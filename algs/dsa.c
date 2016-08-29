@@ -645,10 +645,6 @@ int dsa_op(struct pkc_request *req)
 		c_sess = crypto_pkc_ctx(crypto_pkc_reqtfm(req));
 		c_dev = c_sess->c_dev;
 		r_id = c_sess->r_id;
-#ifndef HIGH_PERF
-		if (-1 == check_device(c_dev))
-			return -1;
-#endif
 	}
 	else
 #endif
@@ -666,16 +662,8 @@ int dsa_op(struct pkc_request *req)
 		}
 
 #endif
-#ifndef HIGH_PERF	
-		if(0 == (r_id = get_ring_rr(c_dev)))
-			return -1;
-
-		atomic_inc(&c_dev->active_jobs);
-#else
         r_id = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
         r_id = 1 + r_id % (c_dev->num_of_rings - 1);
-
-#endif
 	}
 
 	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
@@ -810,9 +798,6 @@ int dsa_op(struct pkc_request *req)
 
 	print_debug("Before app_ring_enqueue\n");
 
-#ifndef HIGH_PERF
-	atomic_dec(&c_dev->active_jobs);
-#endif
 	/* Now enqueue the job into the app ring */
 	if (app_ring_enqueue(c_dev, r_id, sec_dma)) {
 		ret = -1;
