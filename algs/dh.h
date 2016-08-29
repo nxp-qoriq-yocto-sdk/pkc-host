@@ -70,9 +70,6 @@ typedef struct dh_key_dev_mem {
 	u32 *hw_desc;
 } dh_key_dev_mem_t;
 
-#ifndef VIRTIO_C2X0
 int test_dh_op(struct pkc_request *req,
 	       void (*cb) (struct pkc_request *, int32_t result));
-#endif
-
 #endif

@@ -41,9 +41,6 @@
 #include "fsl_c2x0_driver.h"
 #include "algs.h"
 #include "crypto_ctx.h"
-#ifdef VIRTIO_C2X0
-#include "fsl_c2x0_virtio.h"
-#endif
 
 #ifdef RNG_OFFLOAD
 static struct rng_ctx *r_ctx;
@@ -303,14 +300,12 @@ static void rng_cleanup(struct hwrng *rng)
 
 static int init_buf(struct rng_ctx *ctx, int buf_id)
 {
-#ifndef VIRTIO_C2X0
 	struct buf_data *bd = &ctx->bufs[buf_id];
 
 	atomic_set(&bd->empty, BUF_EMPTY);
 	if (submit_job(ctx, buf_id == ctx->current_buf))
 		return -1;
 	wait_for_completion(&bd->filled);
-#endif
 	return 0;
 }
 
@@ -374,38 +369,6 @@ error2:
 	print_error("RNG registration failed.\n");
 	return -1;
 }
-
-#ifdef VIRTIO_C2X0
-int32_t process_virtio_rng_job(struct virtio_c2x0_job_ctx *virtio_job)
-{
-	int32_t ret = 0;
-	struct virtio_c2x0_qemu_cmd *qemu_cmd = &virtio_job->qemu_cmd;
-	struct rng_ctx *ctx = r_ctx;
-	struct buf_data *bd = NULL;
-	int buf_id;
-
-	ctx->cur_buf_idx = qemu_cmd->u.rng.rng_req.cur_buf_idx;
-	ctx->current_buf = qemu_cmd->u.rng.rng_req.current_buf;
-
-	buf_id = ctx->current_buf;
-	bd = &ctx->bufs[buf_id];
-
-	atomic_set(&bd->empty, BUF_EMPTY);
-	ret = submit_job(ctx, buf_id == ctx->current_buf);
-	if (0 == ret) {
-		wait_for_completion(&bd->filled);
-		ret = copy_to_user(qemu_cmd->u.rng.rng_req.buf, bd->buf,
-				 RN_BUF_SIZE);
-		if (0 != ret) {
-			print_error("COPY TO USER failed with %d ret\n", ret);
-			return -1;
-		}
-	}
-	return ret;
-}
-
-#endif /*VIRTIO_C2X0*/
-
 #else
 
 int rng_init(void)

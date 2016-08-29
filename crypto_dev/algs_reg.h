@@ -41,21 +41,12 @@
 
 #define FSL_CRA_PRIORITY 4000
 
-#ifdef VIRTIO_C2X0
-/* forward definitions */
-struct virtio_c2x0_job_ctx;
-struct virtio_c2x0_qemu_cmd;
-typedef struct crypto_dev_sess crypto_dev_sess_t;
-
-#else
 extern int32_t fsl_algapi_init(void);
 extern void fsl_algapi_exit(void);
 
 extern int rsa_op(struct pkc_request *req);
 extern int dsa_op(struct pkc_request *req);
 extern int dh_op(struct pkc_request *req);
-
-#endif
 
 struct alg_template {
 	char name[CRYPTO_MAX_ALG_NAME];

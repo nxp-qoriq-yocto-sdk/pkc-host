@@ -141,9 +141,6 @@ typedef struct rsa_dev_mem {
 	uint32_t *hw_desc;
 } rsa_dev_mem_t;
 
-#ifndef VIRTIO_C2X0
 int test_rsa_op(struct pkc_request *req,
 		void (*cb) (struct pkc_request *, int32_t result));
-#endif
-
 #endif

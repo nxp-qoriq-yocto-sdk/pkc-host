@@ -42,9 +42,6 @@
 #include "pkc_desc.h"
 #include "desc.h"
 #include "crypto_ctx.h"
-#ifdef VIRTIO_C2X0
-#include "fsl_c2x0_virtio.h"
-#endif
 
 /* Callback test functions */
 typedef void (*dsa_op_cb) (struct pkc_request *, int32_t result);
@@ -58,17 +55,8 @@ static void dsa_op_done(void *ctx, int32_t res)
 	print_debug("[DSA OP DONE ]\n");
 
 	dealloc_crypto_mem(&(crypto_ctx->crypto_mem));
-
-#ifndef VIRTIO_C2X0
 	dsa_completion_cb(crypto_ctx->req.pkc, res);
-
 	free_crypto_ctx(crypto_ctx->ctx_pool, crypto_ctx);
-#endif
-#ifdef VIRTIO_C2X0
-	/* Update the sec result to crypto job context */
-	crypto_ctx->card_status = res;
-	print_debug("Updated card status to %d\n", crypto_ctx->card_status);
-#endif
 }
 
 static void ecdsa_op_done(void *ctx, int32_t res)
@@ -78,17 +66,8 @@ static void ecdsa_op_done(void *ctx, int32_t res)
 	print_debug("[ECDSA OP DONE ]\n");
 
 	dealloc_crypto_mem(&(crypto_ctx->crypto_mem));
-
-#ifndef VIRTIO_C2X0
 	ecdsa_completion_cb(crypto_ctx->req.pkc, res);
-
 	free_crypto_ctx(crypto_ctx->ctx_pool, crypto_ctx);
-#endif
-#ifdef VIRTIO_C2X0
-	/* Update the sec result to crypto job context */
-	crypto_ctx->card_status = res;
-	print_debug("Updated card status to %d\n", crypto_ctx->card_status);
-#endif
 }
 
 /* Memory copy functions */
@@ -619,11 +598,7 @@ static void dsa_keygen_init_crypto_mem(crypto_mem_info_t *crypto_mem,
 	dsa_keygen_buffs->pubkey_buff.bt = BT_OP;
 }
 
-#ifdef VIRTIO_C2X0
-int dsa_op(struct pkc_request *req, struct virtio_c2x0_job_ctx *virtio_job)
-#else
 int dsa_op(struct pkc_request *req)
-#endif
 {
 	int32_t ret = 0;
 	crypto_op_ctx_t *crypto_ctx = NULL;
@@ -636,7 +611,6 @@ int dsa_op(struct pkc_request *req)
 	bool ecdsa = false;
 	bool ecc_bin = false;
 
-#ifndef VIRTIO_C2X0
 	if (NULL != req->base.tfm) {
 		crypto_dev_sess_t *c_sess;
 		dsa_completion_cb = pkc_request_complete;
@@ -645,23 +619,15 @@ int dsa_op(struct pkc_request *req)
 		c_sess = crypto_pkc_ctx(crypto_pkc_reqtfm(req));
 		c_dev = c_sess->c_dev;
 		r_id = c_sess->r_id;
-	}
-	else
-#endif
-	{
+	} else {
 		/* By default using first device --
 		 * Logic here will be replaced with LB */
-#ifdef VIRTIO_C2X0
-		if(NULL == (c_dev = get_device_rr()))
-			return -1;
-#else
 		c_dev = get_crypto_dev(1);
 		if (!c_dev) {
 			print_error("Could not retrieve the device structure.\n");
 			return -1;
 		}
 
-#endif
         r_id = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
         r_id = 1 + r_id % (c_dev->num_of_rings - 1);
 	}
@@ -787,14 +753,6 @@ int dsa_op(struct pkc_request *req)
 	} else {
 		crypto_ctx->op_done = dsa_op_done;
 	}
-#ifdef VIRTIO_C2X0
-	/* Initialise card status as Unfinished */
-	crypto_ctx->card_status = -1;
-
-	/* Updating crypto context to virtio job
-	   structure for further refernce */
-	virtio_job->ctx = crypto_ctx;
-#endif
 
 	print_debug("Before app_ring_enqueue\n");
 
@@ -812,14 +770,8 @@ out_nop:
 	return ret;
 }
 
-#ifdef VIRTIO_C2X0
-int test_dsa_op(struct pkc_request *req,
-		void (*cb) (struct pkc_request *, int32_t result),
-		struct virtio_c2x0_job_ctx *virtio_job)
-#else
 int test_dsa_op(struct pkc_request *req,
 		void (*cb) (struct pkc_request *, int32_t result))
-#endif
 {
     int32_t ret = 0;
 	switch (req->type) {
@@ -836,11 +788,7 @@ int test_dsa_op(struct pkc_request *req,
 	default:
 		break;
 	}
-#ifdef VIRTIO_C2X0
-	ret = dsa_op(req, virtio_job);
-#else
 	ret = dsa_op(req);
-#endif
 	if (ret == -EINPROGRESS) {
 		ret = 0;
 	}

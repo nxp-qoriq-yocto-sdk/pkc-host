@@ -39,9 +39,6 @@
 #include "desc_buffs.h"
 #include <linux/crypto.h>
 #include <crypto/algapi.h>
-#ifdef VIRTIO_C2X0
-#include <crypto/hash.h>	/* VIRTIO_C2X0 */
-#endif
 #include "rng.h"
 #include "common.h"
 #include "desc_constr.h"
@@ -64,13 +61,6 @@ typedef enum crypto_op {
 	RNG,
 	RNG_INIT,
 	RNG_SELF_TEST,
-#ifdef VIRTIO_C2X0
-	VIRTIO_C2X0_HASH_CRA_INIT = 100,
-	VIRTIO_C2X0_HASH_CRA_EXIT = 101,
-	VIRTIO_C2X0_SYMM_CRA_INIT = 102,
-	VIRTIO_C2X0_SYMM_CRA_EXIT = 103,
-	VIRTIO_C2X0_ABLK_SETKEY = 104,
-#endif
 } crypto_op_t;
 
 
@@ -100,15 +90,6 @@ typedef struct crypto_dev_sess {
 	uint8_t sec_eng;
 } crypto_dev_sess_t;
 
-#ifdef VIRTIO_C2X0
-struct virtio_c2x0_crypto_sess_ctx {
-	crypto_dev_sess_t c_sess;
-	unsigned long sess_id;
-	int32_t guest_id;
-
-	struct list_head list_entry;
-} __packed;
-#endif
 /******************************************************************************
 Description :	Defines the context for the crypto job
 Fields      :	pci_dev:PCI device instance to which this job belongs to.
@@ -138,10 +119,6 @@ typedef struct crypto_job_ctx {
 	} dev_mem;
 	struct split_key_result *result;
 	void (*done) (struct pkc_request *req, int32_t result);
-#ifdef VIRTIO_C2X0
-	int32_t card_status;
-#endif
-
 } crypto_job_ctx_t;
 
 typedef struct crypto_op_ctx {
@@ -156,9 +133,6 @@ typedef struct crypto_op_ctx {
 		struct buf_data *rng;
 	} req;
 	void (*op_done) (void *ctx, int32_t result);
-#ifdef VIRTIO_C2X0
-	int32_t card_status;
-#endif
 	struct crypto_op_ctx *next;
 } crypto_op_ctx_t;
 
@@ -174,5 +148,4 @@ typedef struct app_req_job_ctx {
 void dump_desc(void *buff, uint32_t desc_size, const uint8_t *func);
 void change_desc_endianness(uint32_t *dev_mem,
 			    uint32_t *host_mem, int32_t words);
-fsl_crypto_dev_t *get_device_rr(void);
 #endif

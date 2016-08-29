@@ -245,17 +245,13 @@ int32_t init_sysfs(struct c29x_dev *fsl_pci_dev)
 	    create_sysfs_dir(dev_sysfs_sub_dirs[1], fsl_pci_dev->sysfs.dev_dir);
 	fsl_pci_dev->sysfs.stats_sub_dir =
 	    create_sysfs_dir(dev_sysfs_sub_dirs[2], fsl_pci_dev->sysfs.dev_dir);
-#ifndef VIRTIO_C2X0
 	fsl_pci_dev->sysfs.test_sub_dir =
 	    create_sysfs_dir(dev_sysfs_sub_dirs[3], fsl_pci_dev->sysfs.dev_dir);
-#endif
 
 	if (unlikely((NULL == fsl_pci_dev->sysfs.pci_sub_dir)
 		     || (NULL == fsl_pci_dev->sysfs.crypto_sub_dir)
 		     || (NULL == fsl_pci_dev->sysfs.stats_sub_dir)
-#ifndef VIRTIO_C2X0
 		     || (NULL == fsl_pci_dev->sysfs.test_sub_dir)
-#endif
 	    )) {
 		print_error("SysFS entry %s creation failed\n",
 			    fsl_pci_dev->dev_name);
@@ -314,7 +310,6 @@ int32_t init_sysfs(struct c29x_dev *fsl_pci_dev)
 		}
 	}
 
-#ifndef VIRTIO_C2X0
 	/* Test sysfs file */
 	for (i = 0; i < NUM_OF_TEST_SYSFS_FILES; i++) {
 		fsl_pci_dev->sysfs.test_files[i].name =
@@ -326,7 +321,6 @@ int32_t init_sysfs(struct c29x_dev *fsl_pci_dev)
 					 test_sysfs_file_str_flag[i],
 					 fsl_pci_dev->sysfs.test_files[i].cb);
 	}
-#endif
 	return 0;
 }
 

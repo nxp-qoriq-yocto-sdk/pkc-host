@@ -40,10 +40,6 @@
 #include "sysfs.h"
 #include "command.h"
 #include "ioctl.h"
-#ifdef VIRTIO_C2X0
-#include "crypto_ctx.h"
-#include "fsl_c2x0_virtio.h"
-#endif
 #include "algs.h"
 #include "algs_reg.h"
 #include "test.h"
@@ -67,18 +63,6 @@ static char *dev_config_file = "/etc/crypto/crypto.cfg";
 int napi_poll_count = -1;
 /*TODO: Make wt_cpu_mask a real CPU bitmask */
 int32_t wt_cpu_mask = -1;
-
-#ifdef VIRTIO_C2X0
-struct list_head virtio_c2x0_cmd_list;
-struct list_head virtio_c2x0_hash_sess_list;
-struct list_head virtio_c2x0_symm_sess_list;
-spinlock_t cmd_list_lock;
-spinlock_t hash_sess_list_lock;
-spinlock_t symm_sess_list_lock;
-
-uint64_t virtio_enq_cnt;
-uint64_t virtio_deq_cnt;
-#endif
 
 /* FIXME: assigning dev_no to new devices in probe is broken. Since this
  * variable is used to match devices with their configuration, we can end up
@@ -260,341 +244,6 @@ static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
 		{
 			return EACCES;
 		}
-#ifdef VIRTIO_C2X0
-	case VIRTIOOPERATION:
-		{
-			struct virtio_c2x0_qemu_cmd *qemu_cmd = NULL;
-			struct virtio_c2x0_job_ctx *virtio_job = NULL;
-			int ret = 0;
-
-			virtio_job = (struct virtio_c2x0_job_ctx *)
-			    kzalloc(sizeof(struct virtio_c2x0_job_ctx),
-				    GFP_KERNEL);
-			if (!virtio_job) {
-				print_error("Alloc failed for virtio_job: %p\n",
-						virtio_job);
-				return -1;
-			}
-
-			qemu_cmd = &(virtio_job->qemu_cmd);
-
-			print_debug("Allocation succeed %p, coping data from user space\n",
-					qemu_cmd);
-			ret = copy_from_user(qemu_cmd,
-					   (struct virtio_c2x0_qemu_cmd *)arg,
-					   sizeof(struct virtio_c2x0_qemu_cmd));
-			if (ret != 0) {
-				print_error("Copy from user failed\n");
-				return -1;
-			}
-
-			ret = process_virtio_app_req(virtio_job);
-			if (ret < 0) {
-				print_error("Virtio Job,op[%d],cmd_index[%d], guest_id[%d] failed with ret %d\n",
-				     qemu_cmd->op, qemu_cmd->cmd_index,
-				     qemu_cmd->guest_id, ret);
-				if (virtio_job->ctx)
-					free_crypto_ctx(virtio_job->ctx->
-							ctx_pool,
-							virtio_job->ctx);
-				kfree(virtio_job);
-				return ret;
-			}
-			if (NONBLOCKING == qemu_cmd->block_type) {
-				/*  Adding job to pending job list  */
-				print_debug("Adding index %u to pending list\n",
-						qemu_cmd->cmd_index);
-				spin_lock(&cmd_list_lock);
-				list_add_tail(&virtio_job->list_entry,
-					      &virtio_c2x0_cmd_list);
-				spin_unlock(&cmd_list_lock);
-			} else if (BLOCKING == qemu_cmd->block_type) {
-				/*
-				 * Blocking Command finished
-				 * Free up virtio job
-				 */
-				if (virtio_job->ctx)
-					free_crypto_ctx(virtio_job->ctx->
-							ctx_pool,
-							virtio_job->ctx);
-				kfree(virtio_job);
-			}
-
-			print_debug("VIRTIOIOERATION returninig with ret %d\n", ret);
-
-			return ret;
-		}
-		break;
-	case VIRTIOOPSTATUS:
-		{
-			struct virtio_c2x0_job_ctx *virtio_job = NULL;
-			struct virtio_c2x0_job_ctx *next_job = NULL;
-			int ret = -1;
-
-			spin_lock(&cmd_list_lock);
-			list_for_each_entry_safe(virtio_job, next_job,
-						 &virtio_c2x0_cmd_list,
-						 list_entry) {
-
-				if (virtio_job->ctx->card_status != -1) {
-					switch (virtio_job->qemu_cmd.op) {
-					case RSA:{
-							switch (virtio_job->
-								qemu_cmd.u.pkc.
-								pkc_req.type) {
-							case RSA_PUB:
-								print_debug("RSA_PUB completion\n");
-								ret =
-								    copy_to_user
-								    ((void
-								      __user *)
-									virtio_job->
-								    qemu_cmd.u.
-								    pkc.
-								    pkc_req.
-								    req_u.
-								    rsa_pub_req.
-								    g,
-								    (void *)
-								    virtio_job->
-								    ctx->req.
-								    pkc->req_u.
-								    rsa_pub_req.
-								    g,
-								    virtio_job->
-								    ctx->req.
-								    pkc->req_u.
-								    rsa_pub_req.
-								    g_len);
-								print_debug("return value for RSA PUB of ouput copy_to_user = %d\n", ret);
-								break;
-							case RSA_PRIV_FORM1:
-							case RSA_PRIV_FORM2:
-							case RSA_PRIV_FORM3:
-								{
-									int i = 0;
-
-									print_debug("RSA_FORM3 completion: Output f_len = %d\n",
-											virtio_job->ctx->req.pkc->req_u.rsa_priv_f3.f_len);
-
-									for (i =
-									     0;
-									     i <
-									     virtio_job->
-									     ctx->
-									     req.
-									     pkc->
-									     req_u.
-									     rsa_priv_f3.
-									     f_len;
-									     i++) {
-										print_debug
-										    ("0x%x ",
-										     virtio_job->
-										     ctx->
-										     req.
-										     pkc->
-										     req_u.
-										     rsa_priv_f3.
-										     f
-										     [i]);
-									}
-
-									ret =
-									    copy_to_user
-									    ((void __user *)
-										virtio_job->
-										qemu_cmd.u.pkc.pkc_req.
-										req_u.rsa_priv_f3.f,
-										(void *)virtio_job->ctx->
-										req.pkc->req_u.rsa_priv_f3.f,
-										virtio_job->ctx->req.pkc->
-										req_u.rsa_priv_f3.f_len);
-
-									print_debug("return value for RSA FORM 3 of ouput copy_to_user = %d\n", ret);
-									break;
-								}
-							default:
-								break;
-							}
-							break;
-						}
-					case DSA:{
-							switch (virtio_job->
-								qemu_cmd.u.pkc.
-								pkc_req.type) {
-							case DSA_SIGN:
-								{
-									ret =
-									    copy_to_user
-									    ((void __user *)
-										virtio_job->qemu_cmd.u.pkc.
-										pkc_req.req_u.dsa_sign.c,
-										(void *)virtio_job->ctx->req.
-										pkc->req_u.dsa_sign.c,
-										virtio_job->ctx->req.pkc->
-										req_u.dsa_sign.d_len);
-
-									print_debug("return value DSA SIGN 'c' of ouput copy_to_user = %d\n", ret);
-									ret =
-									    copy_to_user
-									    ((void __user *)
-										virtio_job->qemu_cmd.u.pkc.
-										pkc_req.req_u.dsa_sign.d,
-										(void *)virtio_job->ctx->req.
-										pkc->req_u.dsa_sign.d,
-										virtio_job->ctx->req.pkc->
-										req_u.dsa_sign.d_len);
-									print_debug
-								    ("return value DSA\
-									 SIGN 'd' of ouput copy_to_user = %d\n",
-									 ret);
-								}
-								break;
-							default:
-								break;
-							}
-							break;
-						}
-					default:
-						{
-							print_error("OP NOT handled\n");
-							break;
-						}
-					}
-					print_debug("Status from Device : 0x%08x\n", virtio_job->ctx->card_status);
-					ret = copy_to_user((void __user *)
-							 virtio_job->qemu_cmd.
-							 host_status,
-							 (void *)&virtio_job->
-							 ctx->card_status,
-							 sizeof(virtio_job->
-								ctx->
-								card_status));
-					print_debug("return value of status copy_to_user = %d\n", ret);
-					/* count++; */
-					ret = 0;
-					print_debug("Job finished : ret =  %d\n", ret);
-					print_debug("VIRTIOOPSTATUS returninig succesfuly\n");
-
-					/* Clean up */
-					kfree(virtio_job->ctx);
-					list_del(&virtio_job->list_entry);
-					kfree(virtio_job);
-		    /********************/
-				}
-			}
-			spin_unlock(&cmd_list_lock);
-			return ret;
-		}
-		break;
-	case VIRTIOSINGLECMDSTATUS:
-		{
-			struct virtio_c2x0_job_ctx *virtio_job = NULL;
-			struct virtio_c2x0_job_ctx *next_job = NULL;
-			struct virtio_c2x0_cmd_status *resp = NULL;
-			int ret = 0;
-
-			resp = (struct virtio_c2x0_cmd_status *)
-			    kzalloc(sizeof(struct virtio_c2x0_cmd_status),
-				    GFP_KERNEL);
-			if (!resp) {
-				print_error("Alloc failed for resp: %p\n", resp);
-				return -1;
-			}
-
-			ret =
-			    copy_from_user(resp,
-					   (struct virtio_c2x0_cmd_status *)arg,
-					   sizeof(struct
-						  virtio_c2x0_cmd_status));
-			if (ret != 0) {
-				print_error("Copy from user failed\n");
-				kfree(resp);
-				return -1;
-			}
-
-			spin_lock(&cmd_list_lock);
-			list_for_each_entry_safe(virtio_job, next_job,
-						 &virtio_c2x0_cmd_list,
-						 list_entry) {
-				if ((virtio_job->qemu_cmd.cmd_index ==
-				     resp->cmd_index)
-				    && (virtio_job->qemu_cmd.guest_id ==
-					resp->guest_id)) {
-
-					if (NULL == virtio_job->ctx) {
-						print_error("NULL ctx in virtio_job for %d OP, cmd_index %d, %d guest_id",
-						     virtio_job->qemu_cmd.op,
-						     virtio_job->qemu_cmd.cmd_index,
-						     virtio_job->qemu_cmd.guest_id);
-						/* No completion to check; Free up the buffers and return success */
-						list_del(&virtio_job->
-							 list_entry);
-						kfree(virtio_job);
-						spin_unlock(&cmd_list_lock);
-						kfree(resp);
-						return 0;
-					}
-					if (-1 == virtio_job->ctx->card_status) {
-						/*
-						 * If command is still under process, return immediately
-						 */
-						spin_unlock(&cmd_list_lock);
-						kfree(resp);
-						return -1;
-					}
-
-					print_debug("Status from Device: 0x%08x\n",
-							virtio_job->ctx->card_status);
-					resp->status =
-					    virtio_job->ctx->card_status;
-
-					ret =
-					    copy_to_user((void __user *)arg,
-							 (void *)resp,
-							 sizeof(struct
-								virtio_c2x0_cmd_status));
-					if (ret != 0) {
-						print_error("Status copytouser=%d for Cmd index[%d],qemuid[%d]\n",
-						     ret, resp->cmd_index,
-						     resp->guest_id);
-						spin_unlock(&cmd_list_lock);
-						kfree(resp);
-						return -1;
-					}
-
-                    /*
-                     * Send response of the virtio job
-                     * by copying ouputs to VM buffers
-                     */
-					process_virtio_job_response(virtio_job);
-
-					/* Clean up */
-					free_crypto_ctx(virtio_job->ctx->
-							ctx_pool,
-							virtio_job->ctx);
-
-					list_del(&virtio_job->list_entry);
-					kfree(virtio_job);
-		    /********************/
-					spin_unlock(&cmd_list_lock);
-					kfree(resp);
-					return ret;
-				}
-			}
-
-			spin_unlock(&cmd_list_lock);
-
-			print_error("Cmd with index[%d],qemuid[%d] NOT found in list\n",
-					resp->cmd_index, resp->guest_id);
-			/* No completion to check; Free up the buffers and return success */
-			kfree(resp);
-			return 0;
-		}
-		break;
-#endif /* VIRTIO_C2X0 : Virtio ioctl operations */
-
 		print_error("DEFAULT IOCTL CALLED\n");
 		break;
 	}
@@ -1740,13 +1389,11 @@ static int32_t __init fsl_crypto_drv_init(void)
 		goto unreg_drv;
 	}
 
-#ifndef VIRTIO_C2X0
 	ret = fsl_algapi_init();
 	if (ret) {
 		print_error("ERROR: fsl_algapi_init\n");
 		goto unreg_cdev;
 	}
-#endif
 
 	ret = rng_init();
 	if (ret) {
@@ -1754,24 +1401,14 @@ static int32_t __init fsl_crypto_drv_init(void)
 		goto free_algapi;
 	}
 
-#ifdef VIRTIO_C2X0
-	INIT_LIST_HEAD(&virtio_c2x0_cmd_list);
-	INIT_LIST_HEAD(&virtio_c2x0_hash_sess_list);
-	INIT_LIST_HEAD(&virtio_c2x0_symm_sess_list);
-	spin_lock_init(&cmd_list_lock);
-	spin_lock_init(&hash_sess_list_lock);
-	spin_lock_init(&symm_sess_list_lock);
-#else
 	/* FIXME: proper clean-up for tests */
 	init_all_test();
-#endif
+
 	return 0;
 
 free_algapi:
-#ifndef VIRTIO_C2X0
 	fsl_algapi_exit();
 unreg_cdev:
-#endif
 	fsl_cryptodev_deregister();
 unreg_drv:
 	pci_unregister_driver(&fsl_cypto_driver);
@@ -1797,16 +1434,12 @@ free_config:
  ******************************************************************************/
 static void __exit fsl_crypto_drv_exit(void)
 {
-#ifndef VIRTIO_C2X0
 	clean_all_test();
-#endif
 
 #ifdef RNG_OFFLOAD 
 	rng_exit();
 #endif
-#ifndef VIRTIO_C2X0
 	fsl_algapi_exit();
-#endif
 	/* Unregister the fsl_crypto device node */
 	fsl_cryptodev_deregister();
 

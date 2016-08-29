@@ -42,9 +42,6 @@
 #include "pkc_desc.h"
 #include "desc.h"
 #include "crypto_ctx.h"
-#ifdef VIRTIO_C2X0
-#include "fsl_c2x0_virtio.h"
-#endif
 
 /* Callback test functions */
 typedef void (*rsa_op_cb) (struct pkc_request *, int32_t result);
@@ -57,15 +54,8 @@ static void rsa_op_done(void *ctx, int32_t res)
 	print_debug("[RSA OP DONE ]\n");
 
 	dealloc_crypto_mem(&(crypto_ctx->crypto_mem));
-
-#ifdef VIRTIO_C2X0
-	/* Update the sec result to crypto job context */
-	crypto_ctx->card_status = res;
-	print_debug("Updated card status to %d\n", crypto_ctx->card_status);
-#else
 	rsa_completion_cb(crypto_ctx->req.pkc, res);
 	free_crypto_ctx(crypto_ctx->ctx_pool, crypto_ctx);
-#endif
 }
 
 /* Memory copy functions */
@@ -475,11 +465,7 @@ static void rsa_priv3_op_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 	priv3_op_buffs->f_buff.bt = BT_OP;
 }
 
-#ifdef VIRTIO_C2X0
-int rsa_op(struct pkc_request *req, struct virtio_c2x0_job_ctx *virtio_job)
-#else
 int rsa_op(struct pkc_request *req)
-#endif
 {
 	int32_t ret = 0;
 	crypto_op_ctx_t *crypto_ctx = NULL;
@@ -495,7 +481,6 @@ int rsa_op(struct pkc_request *req)
 	ctx_pool_t *ctx_pool;
 	uint32_t ctx_pool_id = 0;
 
-#ifndef VIRTIO_C2X0
 	if (NULL != req->base.tfm) {
 		crypto_dev_sess_t *c_sess;
 
@@ -505,18 +490,10 @@ int rsa_op(struct pkc_request *req)
 		c_dev = c_sess->c_dev;
 		r_id = c_sess->r_id;
 		sess_cnt = atomic_read(&c_dev->crypto_dev_sess_cnt);
-	}
-
-	else
-#endif
-	{
+	} else {
 	/* By default using first device --
 	 * Logic here will be replaced with LB */
-#ifdef VIRTIO_C2X0
-	c_dev = get_device_rr();
-#else
 	c_dev = get_crypto_dev(1);
-#endif
 	if (!c_dev)
 		return -1;
 
@@ -668,14 +645,6 @@ int rsa_op(struct pkc_request *req)
 	crypto_ctx->op_done = rsa_op_done;
 	crypto_ctx->desc = sec_dma;
 	crypto_ctx->c_dev = c_dev;
-#ifdef VIRTIO_C2X0
-	/* Initialise card status as Unfinished */
-	crypto_ctx->card_status = -1;
-
-	/* Updating crypto context to virtio
-	   job structure for further refernce */
-	virtio_job->ctx = crypto_ctx;
-#endif
 
 	print_debug("Before app_ring_enqueue\n");
 	/* Now enqueue the job into the app ring */
@@ -695,23 +664,14 @@ out_no_ctx:
 	return ret;
 }
 
-#ifdef VIRTIO_C2X0
-int test_rsa_op(struct pkc_request *req,
-		void (*cb) (struct pkc_request *, int32_t result),
-		struct virtio_c2x0_job_ctx *virtio_job)
-#else
 int test_rsa_op(struct pkc_request *req,
 		void (*cb) (struct pkc_request *, int32_t result))
-#endif
 {
 	int err;
 
 	rsa_completion_cb = cb;
-#ifdef VIRTIO_C2X0
-	err = rsa_op(req, virtio_job);
-#else
 	err = rsa_op(req);
-#endif
+
 	if (err == -EINPROGRESS) {
 		err = 0;
 	}

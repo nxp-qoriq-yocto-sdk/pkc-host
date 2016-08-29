@@ -92,7 +92,6 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 	return 0;
 }
 
-#ifndef VIRTIO_C2X0
 static struct alg_template driver_algs[] = {
 	{
 	 .name = "pkc(rsa)",
@@ -281,4 +280,3 @@ void fsl_algapi_exit(void)
 		kfree(f_alg);
 	}
 }
-#endif /* VIRTIO_C2X0 */

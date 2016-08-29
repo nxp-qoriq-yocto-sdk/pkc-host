@@ -38,14 +38,5 @@
 
 #define CMDOPERATION _IOWR('c', 201, user_command_args_t)
 #define CHECKCMD _IOWR('c', 209, user_command_args_t)
-#ifdef VIRTIO_C2X0
-#define VIRTIOOPERATION _IOWR('c', 202, struct virtio_c2x0_qemu_cmd *)
-#define VIRTIOOPSTATUS _IOWR('c', 203, struct virtio_c2x0_qemu_cmd *)
-#define VIRTIOSINGLECMDSTATUS _IOWR('c', 204, struct virtio_c2x0_cmd_status *)
-#define VIRTIO_HASHCRAINIT _IOWR('c', 205, struct virtio_c2x0_qemu_cmd *)
-#define VIRTIO_HASHCRAEXIT _IOWR('c', 206, struct virtio_c2x0_qemu_cmd *)
-#define VIRTIO_SYMMCRAINIT _IOWR('c', 207, struct virtio_c2x0_qemu_cmd *)
-#define VIRTIO_SYMMCRAEXIT _IOWR('c', 208, struct virtio_c2x0_qemu_cmd *)
-#endif /* VIRTIO_C2X0 */
 
 #endif

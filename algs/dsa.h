@@ -109,9 +109,7 @@ typedef struct dsa_dev_mem {
 	uint32_t *hw_desc;
 } dsa_dev_mem_t;
 
-#ifndef VIRTIO_C2X0
 int test_dsa_op(struct pkc_request *req,
 		void (*cb) (struct pkc_request *, int32_t result));
-#endif
 
 #endif
