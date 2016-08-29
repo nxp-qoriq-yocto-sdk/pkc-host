@@ -37,7 +37,6 @@
 #include "device.h"
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
-#include "command.h"
 #include "algs.h"
 #include "error.h"
 #include "crypto_ctx.h"

@@ -60,7 +60,3 @@ modules_install:
 
 clean:
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) clean
-	rm -f apps/cli/cli
-
-apps/cli/cli : apps/cli/cli.c apps/cli/cli.h
-	$(CROSS_COMPILE)gcc -Wall apps/cli/cli.c -o apps/cli/cli

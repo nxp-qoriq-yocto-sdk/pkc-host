@@ -44,7 +44,6 @@
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/slab.h>
-#include <linux/ioctl.h>
 #include <linux/device.h>	/* class_creatre */
 #include <asm/page.h>
 #include <asm/pgtable.h>

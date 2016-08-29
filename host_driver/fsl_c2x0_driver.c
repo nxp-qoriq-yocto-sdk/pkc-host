@@ -38,8 +38,6 @@
 #include "fsl_c2x0_driver.h"
 #include "fsl_c2x0_crypto_layer.h"
 #include "sysfs.h"
-#include "command.h"
-#include "ioctl.h"
 #include "algs.h"
 #include "algs_reg.h"
 #include "test.h"
@@ -49,12 +47,6 @@ static void create_default_config(struct crypto_dev_config *, uint8_t, uint8_t);
  *                  MACRO DEFINITIONS                    *
  *********************************************************/
 #define DEV_PRINT_DEBUG(...) dev_print_dbg(fsl_pci_dev, ##__VA_ARGS__)
-
-/*********************************************************
- *         INTERNAL FUNCTION PROTOTYPES                  *
- *********************************************************/
-static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
-				unsigned long arg);
 
 /*********************************************************
  *        GLOBAL VARIABLES                               *
@@ -111,21 +103,6 @@ static struct pci_device_id fsl_crypto_pci_dev_ids[] = {
 
 struct c29x_dev *g_fsl_pci_dev;
 
-/*********************************************************
- *        FILE OPERATION STRUCTURE                       *
- *********************************************************/
-static const struct file_operations fsl_cryptodev_fops = {
-	.owner = THIS_MODULE,
-	.unlocked_ioctl = fsl_cryptodev_ioctl,
-};
-
-static struct miscdevice fsl_cryptodev = {
-	.minor = MISC_DYNAMIC_MINOR,
-	.name = "fsl_cryptodev",
-	.fops = &fsl_cryptodev_fops,
-	.mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH,
-};
-
 /* Head of the PCI devices linked list */
 LIST_HEAD(pci_dev_list);
 
@@ -147,42 +124,6 @@ void sysfs_napi_loop_count_set(char *fname, char *count, int len)
 	uint32_t no = *((uint32_t *) (count));
 	printk(KERN_ERR "Count to set... :%d\n", no);
 	napi_poll_count = no;
-}
-
-/*******************************************************************************
- * Function     : fsl_cryptodev_register
- *
- * Arguments    : None
- *
- * Return Value : int32_t
- *
- * Description  : Registers the fsl_crypto device
- *
- ******************************************************************************/
-static int32_t __init fsl_cryptodev_register(void)
-{
-	int32_t rc;
-
-	rc = misc_register(&fsl_cryptodev);
-	if (rc != 0) {
-		print_error("registration of /dev/fsl_crypto failed\n");
-	}
-	return rc;
-}
-
-/*******************************************************************************
- * Function     : fsl_cryptodev_deregister
- *
- * Arguments    : None
- *
- * Return Value : None
- *
- * Description  : Unregisters the fsl_crypto device
- *
- ******************************************************************************/
-static void fsl_cryptodev_deregister(void)
-{
-	misc_deregister(&fsl_cryptodev);
 }
 
 uint32_t get_no_of_devices(void)
@@ -217,37 +158,6 @@ fsl_crypto_dev_t *get_crypto_dev(uint32_t no)
 		}
 	}
 	return NULL;
-}
-
-/*******************************************************************************
- * Function     : fsl_cryptodev_ioctl
- *
- * Arguments    :
- *
- * Return Value :
- *
- * Description  : ioctl command handler
- *
- ******************************************************************************/
-static long fsl_cryptodev_ioctl(struct file *filp, unsigned int cmd,
-				unsigned long arg)
-{
-	print_debug("fsl_cryptodev_ioctl\n");
-	print_debug("COMMAND: %u\n", cmd);
-	print_debug("CMDOPERATION: %llx\n", (uint64_t)CMDOPERATION);
-	switch (cmd) {
-	case CMDOPERATION:
-		{
-			return EACCES;
-		}
-	case CHECKCMD:
-		{
-			return EACCES;
-		}
-		print_error("DEFAULT IOCTL CALLED\n");
-		break;
-	}
-	return 0;
 }
 
 /*******************************************************************************
@@ -1383,16 +1293,10 @@ static int32_t __init fsl_crypto_drv_init(void)
 		goto unreg_drv;
 	}
 
-	ret = fsl_cryptodev_register();
-	if (ret) {
-		print_error("ERROR: fsl_cryptodev_register\n");
-		goto unreg_drv;
-	}
-
 	ret = fsl_algapi_init();
 	if (ret) {
 		print_error("ERROR: fsl_algapi_init\n");
-		goto unreg_cdev;
+		goto unreg_drv;
 	}
 
 	/* FIXME: proper clean-up for tests */
@@ -1400,8 +1304,6 @@ static int32_t __init fsl_crypto_drv_init(void)
 
 	return 0;
 
-unreg_cdev:
-	fsl_cryptodev_deregister();
 unreg_drv:
 	pci_unregister_driver(&fsl_cypto_driver);
 free_percore:
@@ -1429,8 +1331,6 @@ static void __exit fsl_crypto_drv_exit(void)
 	clean_all_test();
 
 	fsl_algapi_exit();
-	/* Unregister the fsl_crypto device node */
-	fsl_cryptodev_deregister();
 
 	/* Clean up all the devices and the resources */
 	pci_unregister_driver(&fsl_cypto_driver);
