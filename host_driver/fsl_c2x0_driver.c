@@ -659,12 +659,8 @@ static void response_ring_handler(struct work_struct *work)
 
 	c_dev = bh->c_dev;	/* get_crypto_dev(1); */
 	print_debug("GOT INTERRUPT FROM DEV : %d\n", c_dev->config->dev_no);
-#ifndef MULTIPLE_RESP_RINGS
 	print_debug("Worker thread invoked on cpu [%d]\n", bh->core_no);
 	process_rings(c_dev, &(bh->ring_list_head));
-#else
-	demux_fw_responses(c_dev);
-#endif
 	return;
 }
 

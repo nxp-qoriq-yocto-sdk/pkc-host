@@ -59,14 +59,6 @@ extern struct bh_handler __percpu *per_core;
 static int32_t total_resp;
 #endif
 
-#ifdef MULTIPLE_RESP_RINGS
-static void store_dev_ctx(void *buffer, uint8_t rid, uint32_t wi)
-{
-	dev_ctx_t *ctx = (dev_ctx_t *) (buffer - 32);
-	ctx->rid = rid;
-	iowrite32be(wi, (void *) &ctx->wi);
-}
-#endif
 
 #endif
 
@@ -968,14 +960,6 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 #endif
 	fsl_h_rsrc_ring_pair_t *rp = NULL;
 
-#ifndef HIGH_PERF
-#ifdef MULTIPLE_RESP_RINGS
-	dev_dma_addr_t ctx_desc = 0;
-	void *h_desc = 0;
-        dev_p_addr_t offset = c_dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
-#endif
-#endif
-
 	print_debug("Sec desc addr: %llx\n", sec_desc);
 	print_debug("Enqueue job in ring: %d\n", jr_id);
 
@@ -991,26 +975,6 @@ static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 		spin_unlock_bh(&(rp->ring_lock));
 		return -1;
 	}
-#ifndef HIGH_PERF
-#ifdef MULTIPLE_RESP_RINGS
-	if (jr_id != 0) {
-		ctx_desc = sec_desc & ~((uint64_t) 0x03);
-                if (ctx_desc < offset) {
-                    h_desc = c_dev->dev_ip_pool.host_map_v_addr + (ctx_desc - c_dev->dev_ip_pool.dev_p_addr);
-                } else {
-                    h_desc = c_dev->dev_ip_pool.host_map_v_addr + (ctx_desc - offset - c_dev->host_ip_pool.p_addr);
-		}
-
-		if (f_get_o(rp->info.flags)) {
-			print_debug("Order bit is set: %d, Desc: %llx\n", rp->indexes->w_index, sec_desc);
-			store_dev_ctx(h_desc, jr_id, rp->indexes->w_index + 1);
-		} else{
-			print_debug("Order bit is not set: %d, Desc: %0llx\n", rp->indexes->w_index, sec_desc);
-			store_dev_ctx(h_desc, jr_id, 0);
-		}
-	}
-#endif
-#endif
 	wi = rp->indexes->w_index;
 
 	print_debug("Enqueuing at the index: %d\n", wi);
@@ -1354,103 +1318,6 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 
 }
 
-#ifdef MULTIPLE_RESP_RINGS
-void demux_fw_responses(fsl_crypto_dev_t *dev)
-{
-	uint32_t ri = 0;
-	uint32_t count = 0;
-	uint64_t desc = 0;
-	int32_t res = 0;
-	uint32_t jobs_added = 0;
-	uint32_t app_resp_cnt = 0;
-#define MAX_ERROR_STRING 400
-	char outstr[MAX_ERROR_STRING];
-
-	struct resp_ring_entry *resp_ring = dev->fw_resp_ring.v_addr;
-
-	jobs_added = be32_to_cpu(dev->fw_resp_ring.r_s_cntrs->jobs_added);
-	count = jobs_added - dev->fw_resp_ring.cntrs->jobs_processed;
-
-	if (!count)
-		goto CMD_RING_RESP;
-
-	dev->fw_resp_ring.cntrs->jobs_processed += count;
-	ri = dev->fw_resp_ring.idxs->r_index;
-
-	app_resp_cnt = atomic_read(&dev->app_resp_cnt);
-
-
-	while (count) {
-#if 0
-		/* Enqueue it to the dest ring */
-		enqueue_to_dest_ring(dev, resp_ring[ri].sec_desc,
-				     resp_ring[ri].result);
-#endif
-		res = be32_to_cpu(resp_ring[ri].result);
-		desc = be64_to_cpu(resp_ring[ri].sec_desc);
-
-		sec_jr_strstatus(outstr, res);
-
-		if (res)
-			print_error("Error from SEC: %s\n", outstr);
-
-		ri = (ri + 1) % (dev->fw_resp_ring.depth);
-
-		count--;
-
-		print_debug("Read index: %d\n", ri);
-
-		handle_response(dev, desc, res);
-		print_debug("Handle response done...\n");
-
-		atomic_inc_return(&dev->app_resp_cnt);
-	}
-
-	if(app_resp_cnt != atomic_read(&dev->app_resp_cnt))
-	{
-		app_resp_cnt = atomic_read(&dev->app_resp_cnt);
-		set_sysfs_value(dev->priv_dev, STATS_RESP_COUNT_SYS_FILE,
-			(uint8_t *) &(app_resp_cnt),
-			sizeof(app_resp_cnt));
-	}
-
-	dev->fw_resp_ring.idxs->r_index = be32_to_cpu(ri);
-	iowrite32be(dev->fw_resp_ring.cntrs->jobs_processed,
-		&dev->fw_resp_ring.s_cntrs->resp_jobs_processed);
-
-	*(dev->fw_resp_ring.intr_ctrl_flag) = 0;
-
-CMD_RING_RESP:
-/* Command ring response processing */
-/*	printk(KERN_ERR "*** Jobs added.. :%d Jobs processed... :%d\n",
-		dev->ring_pairs[0].s_c_counters->jobs_added ,
-		dev->ring_pairs[0].counters->jobs_processed);*/
-
-	if (dev->ring_pairs[0].s_c_counters->jobs_added -
-	    dev->ring_pairs[0].counters->jobs_processed) {
-		ri = dev->ring_pairs[0].indexes->r_index;
-
-		desc = be64_to_cpu(dev->ring_pairs[0].resp_r[ri].sec_desc);
-
-		print_debug("DEQUEUE RESP AT: %u RESP DESC: %llx  == [%p]",
-		     ri, desc, &(dev->ring_pairs[0].resp_r[ri]));
-
-		if (desc) {
-			res = be32_to_cpu(dev->ring_pairs[0].resp_r[ri].result);
-			process_cmd_response(dev, desc, res);
-			ri = (ri + 1) % (dev->ring_pairs[0].depth);
-			dev->ring_pairs[0].indexes->r_index = be32_to_cpu(ri);
-			dev->ring_pairs[0].counters->jobs_processed += 1;
-
-			iowrite32be(dev->ring_pairs[0].counters->jobs_processed,
-				&dev->ring_pairs[0].shadow_counters->resp_jobs_processed);
-		}
-	}
-	return;
-}
-
-#else
-
 #define MAX_ERROR_STRING 400
 
 /* FIXME: function argument dev is overwritten in the first loop */
@@ -1542,7 +1409,6 @@ int32_t process_rings(fsl_crypto_dev_t *dev,
 	print_debug("DONE PROCESSING RESPONSE\n");
 	return 0;
 }
-#endif
 
 #ifndef HIGH_PERF
 /* Backward compatible functions for other algorithms */

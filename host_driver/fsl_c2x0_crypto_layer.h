@@ -163,24 +163,6 @@ struct dev_handshake_mem {
 	} data;
 };
 
-/* FIXME: We had this one defined but fortunately the code it enables is
- * with other defines (HIGH_PERF). Note that the driver is inconsistent about
- * the number of response rings. Ideally the code should be agnostic and
- * configurable. However some parts of the code are written assuming only one
- * response ring and other parts assuming more than one. Do not count on
- * working code for multiple response rings
- * Undefine it to be safe!
- */
-#undef MULTIPLE_RESP_RINGS
-
-#ifdef MULTIPLE_RESP_RINGS
-struct dev_ctx {
-	volatile uint8_t rid;
-	volatile uint32_t wi;
-} __packed;
-typedef struct dev_ctx dev_ctx_t;
-#endif
-
 /*******************************************************************************
 Description :	Defines the input buffer pool
 Fields      :	pool		: Pool pointer returned by the pool manager
@@ -467,7 +449,7 @@ int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 
 fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *dev,
 		struct crypto_dev_config *config);
-void demux_fw_responses(fsl_crypto_dev_t *dev);
+
 void cleanup_crypto_device(fsl_crypto_dev_t *dev);
 int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
 void rearrange_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
@@ -490,10 +472,7 @@ void stop_device(fsl_crypto_dev_t *dev);
 void start_device(fsl_crypto_dev_t *dev);
 
 int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set);
-
-#ifndef MULTIPLE_RESP_RINGS
 int32_t process_rings(fsl_crypto_dev_t *, struct list_head *);
-#endif
 
 extern int32_t rng_instantiation(fsl_crypto_dev_t *c_dev);
 
