@@ -1186,10 +1186,8 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 
 	stop_device(c_dev);
 
-#ifdef C293_EP
 	/* Set the EP registers correctly before booting... */
 	setup_ep(c_dev);
-#endif
 
 	print_debug("Init Handshake....\n");
 	init_handshake(c_dev);

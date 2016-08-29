@@ -110,9 +110,6 @@ module_param_array(dma_channel_cpu_mask, int, &cpu_mask_count, 0000);
 MODULE_PARM_DESC(dma_channel_cpu_mask, "CPU mask for dma chnl alloc");
 
 static struct pci_device_id fsl_crypto_pci_dev_ids[] = {
-#ifdef P4080_EP 
-	{PCI_DEVICE(FSL_CRYPTO_PCI_VENDOR_ID, FSL_CRYPTO_PCI_DEVICE_ID)},
-#elif C293_EP
 	{PCI_DEVICE(FSL_CRYPTO_PCI_VENDOR_ID, FSL_CRYPTO_C290_PCI_DEVICE_ID)},
 	{PCI_DEVICE(FSL_CRYPTO_PCI_VENDOR_ID, FSL_CRYPTO_C280_PCI_DEVICE_ID)},
 	{PCI_DEVICE(FSL_CRYPTO_PCI_VENDOR_ID, FSL_CRYPTO_C270_PCI_DEVICE_ID)},
@@ -125,7 +122,6 @@ static struct pci_device_id fsl_crypto_pci_dev_ids[] = {
 	{PCI_DEVICE(FSL_CRYPTO_PCI_VENDOR_ID, FSL_CRYPTO_TBD4_PCI_DEVICE_ID)},
 	{PCI_DEVICE(FSL_CRYPTO_PCI_VENDOR_ID, FSL_CRYPTO_TBD5_PCI_DEVICE_ID)},
 	{PCI_DEVICE(FSL_CRYPTO_PCI_VENDOR_ID, FSL_CRYPTO_TBD6_PCI_DEVICE_ID)},
-#endif
 	{0,},
 };
 

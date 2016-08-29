@@ -38,13 +38,6 @@
 
 #define NUM_OF_RESP_RINGS	1
 
-#if defined P4080_EP
-#define FSL_CRYPTO_PCI_DEVICE_ID        0X0400
-
-/* 32byte aligned address gives best performance */
-#define DEV_DMA_ALIGNMENT_BYTES				32
-
-#elif defined C293_EP
 #define FSL_CRYPTO_C290_PCI_DEVICE_ID       0X0800
 #define FSL_CRYPTO_C280_PCI_DEVICE_ID       0X0801
 #define FSL_CRYPTO_C270_PCI_DEVICE_ID       0X0803
@@ -60,7 +53,6 @@
 
 /* 32byte aligned address gives best performance */
 #define DEV_DMA_ALIGNMENT_BYTES				32
-#endif
 
 #define FSL_CRYPTO_PCI_VENDOR_ID        0X1957
 
@@ -114,13 +106,8 @@
 #define PCIE1_CONTROLLER_ADDR_IN_DEV        0X00c00000
 
 /* Boot Release Register defines */
-#ifdef P4080_EP
-#define BRR_OFFSET                          0x000e00e4
-#define BRR_RELEASE_CORE0                   0x01
-#elif C293_EP
 #define BRR_OFFSET                          0x1010
 #define BRR_RELEASE_CORE0                   0x01000000
-#endif
 #define PIC_PIR	0x41090
 
 #define DEVICE_CONFIG_AND_PIN_CNTRL_BLK_OFFSET      0X0E0000
