@@ -39,13 +39,11 @@
 #include "desc_buffs.h"
 #include <linux/crypto.h>
 #include <crypto/algapi.h>
-#include "common.h"
 #include "desc_constr.h"
 #include "rsa.h"
 #include "dsa.h"
 #include "dh.h"
 
-/* extern struct instantiate_result; */
 /* Enum identifying the type of operation :- Symmetric/Asymmetric */
 typedef enum crypto_op_type {
 	SYMMETRIC,

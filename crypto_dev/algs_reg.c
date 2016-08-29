@@ -34,7 +34,6 @@
  */
 
 #include "algs_reg.h"
-#include "common.h"
 #include "fsl_c2x0_driver.h"
 #include "algs.h"
 

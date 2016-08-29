@@ -34,7 +34,6 @@
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
 #include "algs.h"
-#include "pkc_desc.h"
 #include "desc.h"
 
 #include"test.h"

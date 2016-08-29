@@ -37,7 +37,6 @@
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
 #include "algs.h"
-#include "error.h"
 
 #ifdef DEBUG_DESC
 void dump_desc(void *buff, uint32_t desc_size, const uint8_t *func)

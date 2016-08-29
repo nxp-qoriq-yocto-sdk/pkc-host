@@ -34,10 +34,8 @@
  */
 
 #include "common.h"
-#include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
 #include "desc_buffs.h"
-#include "pkc_desc.h"
 
 static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 {
