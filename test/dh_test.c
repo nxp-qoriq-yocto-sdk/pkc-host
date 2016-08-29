@@ -95,12 +95,9 @@ void dh_keygen_done(struct pkc_request *req, int32_t sec_result)
 
     printk(KERN_ERR "\n\n");
 #endif
-#ifdef SEC_DMA
     kfree(req->req_u.dh_keygenreq.q);
     kfree(req->req_u.dh_keygenreq.r);
     kfree(req->req_u.dh_keygenreq.g);
-#endif
-
     kfree(req->req_u.dh_keygenreq.pubkey);
     kfree(req->req_u.dh_keygenreq.prvkey);
     kfree(req);
@@ -111,20 +108,15 @@ void init_dh_test_1k(void)
 {
 	g_dhreq_1k.type = DH_COMPUTE_KEY;
 
-#ifdef SEC_DMA
-        g_dhreq_1k.req_u.dh_req.q = kzalloc(q_len, GFP_KERNEL | GFP_DMA);
-        memcpy(g_dhreq_1k.req_u.dh_req.q, Q, q_len);
+	g_dhreq_1k.req_u.dh_req.q = kzalloc(q_len, GFP_KERNEL | GFP_DMA);
+	memcpy(g_dhreq_1k.req_u.dh_req.q, Q, q_len);
 
-        g_dhreq_1k.req_u.dh_req.pub_key = kzalloc(w1_len, GFP_KERNEL | GFP_DMA);
-        memcpy(g_dhreq_1k.req_u.dh_req.pub_key, W1, w1_len);
+	g_dhreq_1k.req_u.dh_req.pub_key = kzalloc(w1_len, GFP_KERNEL | GFP_DMA);
+	memcpy(g_dhreq_1k.req_u.dh_req.pub_key, W1, w1_len);
 
-        g_dhreq_1k.req_u.dh_req.s = kzalloc(s2_len, GFP_KERNEL | GFP_DMA);
-        memcpy(g_dhreq_1k.req_u.dh_req.s, S2, s2_len);
-#else
-	g_dhreq_1k.req_u.dh_req.q = Q;
-	g_dhreq_1k.req_u.dh_req.pub_key = W1;
-	g_dhreq_1k.req_u.dh_req.s = S2;
-#endif
+	g_dhreq_1k.req_u.dh_req.s = kzalloc(s2_len, GFP_KERNEL | GFP_DMA);
+	memcpy(g_dhreq_1k.req_u.dh_req.s, S2, s2_len);
+
 	g_dhreq_1k.req_u.dh_req.z = kzalloc(q_len, GFP_KERNEL | GFP_DMA);
 
 	g_dhreq_1k.req_u.dh_req.q_len = (q_len);
@@ -137,7 +129,6 @@ void init_dh_test_2k(void)
 {
 	g_dhreq_2k.type = DH_COMPUTE_KEY;
 
-#ifdef SEC_DMA
         g_dhreq_2k.req_u.dh_req.q = kzalloc(q_len_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dhreq_2k.req_u.dh_req.q, Q_2048, q_len_2048);
 
@@ -146,11 +137,7 @@ void init_dh_test_2k(void)
 
         g_dhreq_2k.req_u.dh_req.s = kzalloc(s2_len_2048, GFP_KERNEL | GFP_DMA);
         memcpy(g_dhreq_2k.req_u.dh_req.s, S2_2048, s2_len_2048);
-#else
-	g_dhreq_2k.req_u.dh_req.q = Q_2048;
-	g_dhreq_2k.req_u.dh_req.pub_key = W1_2048;
-	g_dhreq_2k.req_u.dh_req.s = S2_2048;
-#endif
+
 	g_dhreq_2k.req_u.dh_req.z = kzalloc(q_len_2048, GFP_KERNEL | GFP_DMA);
 
 	g_dhreq_2k.req_u.dh_req.q_len = (q_len_2048);
@@ -163,7 +150,6 @@ void init_dh_test_4k(void)
 {
 	g_dhreq_4k.type = DH_COMPUTE_KEY;
 
-#ifdef SEC_DMA
         g_dhreq_4k.req_u.dh_req.q = kzalloc(q_len_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dhreq_4k.req_u.dh_req.q, Q_4096, q_len_4096);
 
@@ -172,11 +158,7 @@ void init_dh_test_4k(void)
 
         g_dhreq_4k.req_u.dh_req.s = kzalloc(s2_len_4096, GFP_KERNEL | GFP_DMA);
         memcpy(g_dhreq_4k.req_u.dh_req.s, S2_4096, s2_len_4096);
-#else
-	g_dhreq_4k.req_u.dh_req.q = Q_4096;
-	g_dhreq_4k.req_u.dh_req.pub_key = W1_4096;
-	g_dhreq_4k.req_u.dh_req.s = S2_4096;
-#endif
+
 	g_dhreq_4k.req_u.dh_req.z = kzalloc(q_len_4096, GFP_KERNEL | GFP_DMA);
 
 	g_dhreq_4k.req_u.dh_req.q_len = (q_len_4096);
@@ -187,7 +169,6 @@ void init_dh_test_4k(void)
 
 void cleanup_dh_test(void)
 {
-#ifdef SEC_DMA
         if (g_dhreq_1k.req_u.dh_req.q) {
             kfree(g_dhreq_1k.req_u.dh_req.q);
         }
@@ -225,7 +206,6 @@ void cleanup_dh_test(void)
         if (g_dhreq_4k.req_u.dh_req.s) {
             kfree(g_dhreq_4k.req_u.dh_req.s);
         }
-#endif
 
 	if(g_dhreq_1k.req_u.dh_req.z) {
 		kfree(g_dhreq_1k.req_u.dh_req.z);
@@ -267,7 +247,7 @@ int dh_keygen_test(void)
     uint32_t pubkey_len = 128;
     /* Issue the key gen command */
     req->type = DH_KEYGEN;
-#ifdef SEC_DMA
+
     req->req_u.dh_keygenreq.q = kzalloc(q_len, GFP_KERNEL | GFP_DMA);
     memcpy(req->req_u.dh_keygenreq.q, q, q_len);
 
@@ -276,11 +256,7 @@ int dh_keygen_test(void)
 
     req->req_u.dh_keygenreq.g = kzalloc(g_len, GFP_KERNEL | GFP_DMA);
     memcpy(req->req_u.dh_keygenreq.g, g, g_len);
-#else
-    req->req_u.dh_keygenreq.q = q;
-    req->req_u.dh_keygenreq.r = r;
-    req->req_u.dh_keygenreq.g = g;
-#endif
+
     req->req_u.dh_keygenreq.ab = NULL;
     req->req_u.dh_keygenreq.pubkey = pubkey;
     req->req_u.dh_keygenreq.prvkey = prvkey;
