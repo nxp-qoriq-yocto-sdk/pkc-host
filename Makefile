@@ -40,7 +40,6 @@ $(DRIVER_KOBJ)-objs += algs/dh.o
 $(DRIVER_KOBJ)-objs += algs/desc_buffs.o
 $(DRIVER_KOBJ)-objs += algs/rng_init.o
 $(DRIVER_KOBJ)-objs += crypto_dev/algs_reg.o
-$(DRIVER_KOBJ)-objs += algs/rng.o
 
 $(DRIVER_KOBJ)-objs += test/rsa_test.o
 $(DRIVER_KOBJ)-objs += test/dsa_test.o

@@ -39,7 +39,6 @@
 #include "desc_buffs.h"
 #include <linux/crypto.h>
 #include <crypto/algapi.h>
-#include "rng.h"
 #include "common.h"
 #include "desc_constr.h"
 #include "rsa.h"

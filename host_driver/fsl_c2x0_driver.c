@@ -1395,19 +1395,11 @@ static int32_t __init fsl_crypto_drv_init(void)
 		goto unreg_cdev;
 	}
 
-	ret = rng_init();
-	if (ret) {
-		print_error("ERROR: rng_init\n");
-		goto free_algapi;
-	}
-
 	/* FIXME: proper clean-up for tests */
 	init_all_test();
 
 	return 0;
 
-free_algapi:
-	fsl_algapi_exit();
 unreg_cdev:
 	fsl_cryptodev_deregister();
 unreg_drv:
@@ -1436,9 +1428,6 @@ static void __exit fsl_crypto_drv_exit(void)
 {
 	clean_all_test();
 
-#ifdef RNG_OFFLOAD 
-	rng_exit();
-#endif
 	fsl_algapi_exit();
 	/* Unregister the fsl_crypto device node */
 	fsl_cryptodev_deregister();

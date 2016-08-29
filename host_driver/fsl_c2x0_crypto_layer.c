@@ -41,6 +41,7 @@
 #include "algs.h"
 #include "error.h"
 #include "crypto_ctx.h"
+#include <linux/delay.h>
 
 extern int32_t wt_cpu_mask;
 extern struct bh_handler __percpu *per_core;
