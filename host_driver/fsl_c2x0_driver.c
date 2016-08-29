@@ -42,7 +42,6 @@
 #include "algs_reg.h"
 #include "test.h"
 
-static void create_default_config(struct crypto_dev_config *, uint8_t, uint8_t);
 /*********************************************************
  *                  MACRO DEFINITIONS                    *
  *********************************************************/
