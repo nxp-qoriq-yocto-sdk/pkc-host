@@ -40,9 +40,6 @@
 
 #define FSL_CRA_PRIORITY 4000
 
-extern int32_t fsl_algapi_init(void);
-extern void fsl_algapi_exit(void);
-
 extern int rsa_op(struct pkc_request *req);
 extern int dsa_op(struct pkc_request *req);
 extern int dh_op(struct pkc_request *req);

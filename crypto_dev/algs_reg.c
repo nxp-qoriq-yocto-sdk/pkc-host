@@ -206,6 +206,32 @@ static struct fsl_crypto_alg *fsl_alg_alloc(struct alg_template *template)
 }
 
 /*******************************************************************************
+ * Function     : fsl_algapi_exit
+ *
+ * Arguments    : void
+ *
+ * Return Value : None
+ *
+ * Description  : Deregistering Algorithms from kernel crypto API.
+ *
+ ******************************************************************************/
+void fsl_algapi_exit(void)
+{
+	struct fsl_crypto_alg *f_alg, *temp;
+	struct crypto_alg *alg = NULL;
+
+	if (!alg_list.next)
+		return;
+
+	list_for_each_entry_safe(f_alg, temp, &alg_list, entry) {
+		alg = &f_alg->crypto_alg;
+		crypto_unregister_alg(alg);
+		list_del(&f_alg->entry);
+		kfree(f_alg);
+	}
+}
+
+/*******************************************************************************
  * Function     : fsl_algapi_init
  *
  * Arguments    : void
@@ -253,30 +279,4 @@ int32_t fsl_algapi_init(void)
 out_err:
 	fsl_algapi_exit();
 	return err;
-}
-
-/*******************************************************************************
- * Function     : fsl_algapi_exit
- *
- * Arguments    : void
- *
- * Return Value : None
- *
- * Description  : Deregistering Algorithms from kernel crypto API.
- *
- ******************************************************************************/
-void fsl_algapi_exit(void)
-{
-	struct fsl_crypto_alg *f_alg, *temp;
-	struct crypto_alg *alg = NULL;
-
-	if (!alg_list.next)
-		return;
-
-	list_for_each_entry_safe(f_alg, temp, &alg_list, entry) {
-		alg = &f_alg->crypto_alg;
-		crypto_unregister_alg(alg);
-		list_del(&f_alg->entry);
-		kfree(f_alg);
-	}
 }

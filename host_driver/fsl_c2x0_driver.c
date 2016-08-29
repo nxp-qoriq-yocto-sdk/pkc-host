@@ -39,9 +39,10 @@
 #include "fsl_c2x0_crypto_layer.h"
 #include "sysfs.h"
 #include "algs.h"
-#include "algs_reg.h"
 #include "test.h"
 
+extern int32_t fsl_algapi_init(void);
+extern void fsl_algapi_exit(void);
 /*********************************************************
  *                  MACRO DEFINITIONS                    *
  *********************************************************/
