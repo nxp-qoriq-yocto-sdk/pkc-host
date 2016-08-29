@@ -174,7 +174,6 @@ typedef struct app_req_job_ctx {
 void dump_desc(void *buff, uint32_t desc_size, const uint8_t *func);
 void change_desc_endianness(uint32_t *dev_mem,
 			    uint32_t *host_mem, int32_t words);
-void dma_tx_complete_cb(void *ctx);
 int32_t check_device(fsl_crypto_dev_t *c_dev);
 #ifndef HIGH_PERF
 void crypto_op_done(fsl_crypto_dev_t *c_dev,
@@ -183,5 +182,4 @@ void crypto_op_done(fsl_crypto_dev_t *c_dev,
 
 uint32_t get_ring_rr(fsl_crypto_dev_t *c_dev);
 fsl_crypto_dev_t *get_device_rr(void);
-
 #endif
