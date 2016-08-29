@@ -150,27 +150,6 @@ typedef struct user_command_args {
 } user_command_args_t;
 
 /*******************************************************************************
-Description :   command context
-Fields      :   cmd_type          : type of command
-		cmd_completion    : command completion variable
-*******************************************************************************/
-typedef struct cmd_trace_ctx {
-	commands_t cmd_type;
-	int32_t result;
-	struct completion cmd_completion;
-} cmd_trace_ctx_t;
-
-/*******************************************************************************
-Description	:	output from the device in repsonse of command
-Fields		:	cmd_ctx	: context of command
-			buffer	: output buffer
-*******************************************************************************/
-typedef struct cmd_op {
-	cmd_trace_ctx_t *cmd_ctx;
-	op_buffer_t buffer;
-} cmd_op_t;
-
-/*******************************************************************************
 Description:	prepares the command descriptor for command ring
 Fields:		cmd_type:	type of command
 		ip_info:	input to the command
@@ -189,14 +168,4 @@ struct cmd_ring_entry_desc {
 
 typedef struct cmd_ring_entry_desc cmd_ring_entry_desc_t;
 
-#define PENDING     0xfafa
-#define COMPLETE    0xfbfb
-int32_t process_cmd_req(fsl_crypto_dev_t *c_dev,
-			user_command_args_t *usr_cmd_desc);
-int32_t send_command_to_fw(fsl_crypto_dev_t *c_dev, commands_t command,
-			   user_command_args_t *);
-void process_cmd_response(fsl_crypto_dev_t *c_dev, dev_dma_addr_t desc,
-			  int32_t result);
-int32_t validate_cmd_args(fsl_crypto_dev_t *, user_command_args_t *);
-extern uint32_t dev_count;
 #endif

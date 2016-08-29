@@ -37,7 +37,6 @@
 #define FSL_PKC_SYSFS_H
 
 /** SYSFS RELATED INLINE FUNCTIONS **/
-#define NUM_OF_FW_SYSFS_FILES     FIRMWARE_SYS_FILE_END - FIRMWARE_SYS_FILES_START - 1
 #define NUM_OF_PCI_SYSFS_FILES    PCI_SYS_FILES_END - PCI_SYS_FILES_START - 1
 #define NUM_OF_CRYPTO_SYSFS_FILES CRYPTO_SYS_FILES_END - CRYPTO_SYS_FILES_START - 1
 #define NUM_OF_STATS_SYSFS_FILES  STATS_SYS_FILES_END - STATS_SYS_FILES_START - 1
@@ -63,14 +62,6 @@ typedef enum sys_files_id {
 	DEVICE_SYS_FILES_START,
 	DEVICE_STATE_SYSFILE,
 	DEVICE_SYS_FILES_END,
-
-	/* Block of enums for files in fw dir */
-	FIRMWARE_SYS_FILES_START,
-	FIRMWARE_STATE_SYSFILE,
-	FIRMWARE_VERSION_SYSFILE,
-	FIRMWARE_PATH_SYSFILE,
-	FIRMWARE_TRIGGER_SYSFILE,
-	FIRMWARE_SYS_FILE_END,
 
 	/* Block of enums for files in pci dir */
 	PCI_SYS_FILES_START,
@@ -106,14 +97,12 @@ typedef struct sysfs_file {
 typedef struct dev_sysfs_entries {
 	struct sysfs_dir *dev_dir;
 
-	struct sysfs_dir *fw_sub_dir;
 	struct sysfs_dir *pci_sub_dir;
 	struct sysfs_dir *crypto_sub_dir;
 	struct sysfs_dir *stats_sub_dir;
 	struct sysfs_dir *test_sub_dir;
 
 	sysfs_file_t dev_file;
-	sysfs_file_t fw_files[NUM_OF_FW_SYSFS_FILES];
 	sysfs_file_t pci_files[NUM_OF_PCI_SYSFS_FILES];
 	sysfs_file_t crypto_files[NUM_OF_CRYPTO_SYSFS_FILES];
 	sysfs_file_t stats_files[NUM_OF_STATS_SYSFS_FILES];

@@ -38,15 +38,12 @@
 #include "fsl_c2x0_driver.h"
 
 /* Variables holding the names of sysfs entries to be created */
-int8_t *dev_sysfs_sub_dirs[5] = { "fw", "pci", "crypto", "stat", "test-i" };
+int8_t *dev_sysfs_sub_dirs[5] = {"pci", "crypto", "stat", "test-i" };
 
 /*int8_t *test_sysfs_sub_dirs[] = {"RSA", "DSA", "ECDSA", "DH", "ECDH"};*/
 
 int8_t *dev_sysfs_file[1] = { "state" };
 
-int8_t *fw_sysfs_file_names[NUM_OF_FW_SYSFS_FILES] = {
-	"state", "fw_version", "fw_path", "fw_trigger"
-};
 int8_t *pci_sysfs_file_names[NUM_OF_PCI_SYSFS_FILES] = { "info" };
 int8_t *crypto_sysfs_file_names[NUM_OF_CRYPTO_SYSFS_FILES] = { "info" };
 
@@ -59,7 +56,6 @@ int8_t *test_sysfs_file_names[NUM_OF_TEST_SYSFS_FILES] = {
 };
 
 uint8_t dev_sysfs_file_str_flag[1] = { 1 };
-uint8_t fw_sysfs_file_str_flag[NUM_OF_FW_SYSFS_FILES] = { 1, 1, 1, 1 };
 uint8_t pci_sysfs_file_str_flag[NUM_OF_PCI_SYSFS_FILES] = { 1 };
 uint8_t crypto_sysfs_file_str_flag[NUM_OF_CRYPTO_SYSFS_FILES] = { 1 };
 uint8_t stat_sysfs_file_str_flag[NUM_OF_STATS_SYSFS_FILES] = { 0, 0 };
@@ -241,23 +237,20 @@ int32_t init_sysfs(struct c29x_dev *fsl_pci_dev)
 		return -1;
 	}
 
-	/* Now create the FW, PCI, CRYPTO subdirs
+	/* Now create the PCI, CRYPTO subdirs
 	 * inside the main device directory */
-	fsl_pci_dev->sysfs.fw_sub_dir =
-	    create_sysfs_dir(dev_sysfs_sub_dirs[0], fsl_pci_dev->sysfs.dev_dir);
 	fsl_pci_dev->sysfs.pci_sub_dir =
-	    create_sysfs_dir(dev_sysfs_sub_dirs[1], fsl_pci_dev->sysfs.dev_dir);
+	    create_sysfs_dir(dev_sysfs_sub_dirs[0], fsl_pci_dev->sysfs.dev_dir);
 	fsl_pci_dev->sysfs.crypto_sub_dir =
-	    create_sysfs_dir(dev_sysfs_sub_dirs[2], fsl_pci_dev->sysfs.dev_dir);
+	    create_sysfs_dir(dev_sysfs_sub_dirs[1], fsl_pci_dev->sysfs.dev_dir);
 	fsl_pci_dev->sysfs.stats_sub_dir =
-	    create_sysfs_dir(dev_sysfs_sub_dirs[3], fsl_pci_dev->sysfs.dev_dir);
+	    create_sysfs_dir(dev_sysfs_sub_dirs[2], fsl_pci_dev->sysfs.dev_dir);
 #ifndef VIRTIO_C2X0
 	fsl_pci_dev->sysfs.test_sub_dir =
-	    create_sysfs_dir(dev_sysfs_sub_dirs[4], fsl_pci_dev->sysfs.dev_dir);
+	    create_sysfs_dir(dev_sysfs_sub_dirs[3], fsl_pci_dev->sysfs.dev_dir);
 #endif
 
-	if (unlikely((NULL == fsl_pci_dev->sysfs.fw_sub_dir)
-		     || (NULL == fsl_pci_dev->sysfs.pci_sub_dir)
+	if (unlikely((NULL == fsl_pci_dev->sysfs.pci_sub_dir)
 		     || (NULL == fsl_pci_dev->sysfs.crypto_sub_dir)
 		     || (NULL == fsl_pci_dev->sysfs.stats_sub_dir)
 #ifndef VIRTIO_C2X0
@@ -279,23 +272,6 @@ int32_t init_sysfs(struct c29x_dev *fsl_pci_dev)
 	if (unlikely(NULL == fsl_pci_dev->sysfs.dev_file.file)) {
 		print_error("Dev file creation failed\n");
 		return -1;
-	}
-
-	/* FW sysfs files */
-	for (i = 0; i < NUM_OF_FW_SYSFS_FILES; i++) {
-		fsl_pci_dev->sysfs.fw_files[i].name = fw_sysfs_file_names[i];
-		fsl_pci_dev->sysfs.fw_files[i].cb = set_device;
-		fsl_pci_dev->sysfs.fw_files[i].file =
-		    create_sysfs_file(fsl_pci_dev->sysfs.fw_files[i].name,
-				      fsl_pci_dev->sysfs.fw_sub_dir,
-				      fw_sysfs_file_str_flag[i]);
-		/* SET THE CALLBACK FOR FW_TRIGGER */
-		fsl_pci_dev->sysfs.fw_files[i].file->cb = set_device;
-
-		if (unlikely(NULL == fsl_pci_dev->sysfs.fw_files[i].file)) {
-			print_error("Dev file creation failed\n");
-			return -1;
-		}
 	}
 
 	/* PCI sysfs files */
@@ -358,11 +334,6 @@ void sysfs_cleanup(struct c29x_dev *fsl_pci_dev)
 {
 	uint32_t i = 0;
 
-	for (i = 0; i < NUM_OF_FW_SYSFS_FILES; i++) {
-		delete_sysfs_file(fsl_pci_dev->sysfs.fw_files[i].file,
-				  fsl_pci_dev->sysfs.fw_sub_dir);
-	}
-
 	for (i = 0; i < NUM_OF_PCI_SYSFS_FILES; i++) {
 		delete_sysfs_file(fsl_pci_dev->sysfs.pci_files[i].file,
 				  fsl_pci_dev->sysfs.pci_sub_dir);
@@ -382,7 +353,6 @@ void sysfs_cleanup(struct c29x_dev *fsl_pci_dev)
 	}
 
 	/* Delete the subdirs */
-	delete_sysfs_dir(fsl_pci_dev->sysfs.fw_sub_dir);
 	delete_sysfs_dir(fsl_pci_dev->sysfs.pci_sub_dir);
 	delete_sysfs_dir(fsl_pci_dev->sysfs.crypto_sub_dir);
 	delete_sysfs_dir(fsl_pci_dev->sysfs.stats_sub_dir);
@@ -400,9 +370,6 @@ struct k_sysfs_file *get_sys_file(struct c29x_dev *fsl_pci_dev, sys_files_id_t i
 
 	if (id > DEVICE_SYS_FILES_START && id < DEVICE_SYS_FILES_END) {
 		file = fsl_pci_dev->sysfs.dev_file.file;
-	} else if (id > FIRMWARE_SYS_FILES_START && id < FIRMWARE_SYS_FILE_END) {
-		id -= FIRMWARE_SYS_FILES_START + 1;
-		file = fsl_pci_dev->sysfs.fw_files[id].file;
 	} else if (id > PCI_SYS_FILES_START && id < PCI_SYS_FILES_END) {
 		id -= PCI_SYS_FILES_START + 1;
 		file = fsl_pci_dev->sysfs.pci_files[id].file;

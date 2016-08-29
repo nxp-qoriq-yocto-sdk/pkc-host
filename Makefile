@@ -29,7 +29,6 @@ obj-$(CONFIG_FSL_C2X0_CRYPTO_DRV) := $(DRIVER_KOBJ).o
 $(DRIVER_KOBJ)-objs := host_driver/fsl_c2x0_driver.o
 $(DRIVER_KOBJ)-objs += host_driver/fsl_c2x0_crypto_layer.o
 $(DRIVER_KOBJ)-objs += host_driver/memmgr.o
-$(DRIVER_KOBJ)-objs += host_driver/command.o
 $(DRIVER_KOBJ)-objs += host_driver/sysfs.o
 ifeq ("$(ARCH)","x86")
 $(DRIVER_KOBJ)-objs += crypto/pkc.o

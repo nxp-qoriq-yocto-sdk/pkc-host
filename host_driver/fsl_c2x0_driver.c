@@ -1656,10 +1656,6 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 	set_sysfs_value(fsl_pci_dev, PCI_INFO_SYS_FILE,
 			(uint8_t *) sys_pci_info, strlen(sys_pci_info));
-	set_sysfs_value(fsl_pci_dev, FIRMWARE_PATH_SYSFILE,
-			config->fw_file_path, strlen(config->fw_file_path));
-	set_sysfs_value(fsl_pci_dev, FIRMWARE_VERSION_SYSFILE,
-			(uint8_t *) "FSL-FW-1.1.0\n", strlen("FSL-FW-1.1.0\n"));
 
 	/* TODO: remove global variable that references the device. It assumes
 	 * a single board is installed in the system. Currently it is used with

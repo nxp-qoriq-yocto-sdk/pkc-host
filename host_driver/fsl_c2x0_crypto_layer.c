@@ -483,8 +483,6 @@ void send_hs_complete(fsl_crypto_dev_t *dev)
 	const char *str_state = "HS_COMPLETE\n";
 	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
 			(uint8_t *) str_state, strlen(str_state));
-	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
-			(uint8_t *) str_state, strlen(str_state));
 
 	iowrite8(FW_HS_COMPLETE, &dev->c_hs_mem->state);
 }
@@ -494,8 +492,6 @@ void send_hs_wait_for_rng(fsl_crypto_dev_t *dev)
 	const char *str_state = "WAIT_FOR_RNG\n";
 
 	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
-			(uint8_t *) str_state, strlen(str_state));
-	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
 			(uint8_t *) str_state, strlen(str_state));
 
 	iowrite8(FW_WAIT_FOR_RNG, &dev->c_hs_mem->state);
@@ -507,15 +503,12 @@ void send_hs_rng_done(fsl_crypto_dev_t *dev)
 
 	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
 			(uint8_t *) str_state, strlen(str_state));
-	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
-			(uint8_t *) str_state, strlen(str_state));
 
 	iowrite8(FW_RNG_DONE, &dev->c_hs_mem->state);
 }
 
 void hs_firmware_up(fsl_crypto_dev_t *dev)
 {
-	char *str_state = "FIRMWARE_UP\n";
 	struct fw_up_data *hsdev = &dev->host_mem->hs_mem.data.device;
 	uint32_t p_ib_l;
 	uint32_t p_ib_h;
@@ -523,8 +516,6 @@ void hs_firmware_up(fsl_crypto_dev_t *dev)
 	uint32_t p_ob_h;
 
 	print_debug(" ----------- FIRMWARE_UP -----------\n");
-	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE, str_state,
-			strlen(str_state));
 
 	dev->host_mem->hs_mem.state = DEFAULT;
 
@@ -550,7 +541,6 @@ void hs_firmware_up(fsl_crypto_dev_t *dev)
 
 void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
 {
-	char *str_state = "FW_INIT_CONFIG_COMPLETE\n";
 	struct config_data *hscfg = &dev->host_mem->hs_mem.data.config;
 	void *ptr;
 	uint32_t r_s_c_cntrs;
@@ -560,8 +550,6 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	int i;
 
 	print_debug("--- FW_INIT_CONFIG_COMPLETE ---\n");
-	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE, str_state,
-			strlen(str_state));
 
 	dev->host_mem->hs_mem.state = DEFAULT;
 
@@ -606,14 +594,11 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 
 void hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
 {
-	char *str_state = "FW_INIT_RING_PAIR_COMPLETE\n";
 	struct ring_data *hsring = &dev->host_mem->hs_mem.data.ring;
 	uint32_t req_r;
 	uint32_t intr_ctrl_flag;
 
 	print_debug("---- FW_INIT_RING_PAIR_COMPLETE ----\n");
-	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE, str_state,
-			strlen(str_state));
 
 	dev->host_mem->hs_mem.state = DEFAULT;
 	req_r = be32_to_cpu(hsring->req_r);
@@ -700,8 +685,6 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 		}
 	}
 exit:
-	set_sysfs_value(dev->priv_dev, FIRMWARE_STATE_SYSFILE,
-			(uint8_t *) "FW READY\n", strlen("FW READY\n"));
 	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
 			(uint8_t *) "DRIVER READY\n", strlen("DRIVER READY\n"));
 	return 0;
