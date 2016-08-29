@@ -38,7 +38,6 @@
 #include "fsl_c2x0_driver.h"
 #include "algs.h"
 
-atomic_t selected_devices;
 struct list_head alg_list;
 
 /*****************************************************************************
