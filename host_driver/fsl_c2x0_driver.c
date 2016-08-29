@@ -372,48 +372,6 @@ error:
 	return -ENOMEM;
 }
 
-#ifdef MULTIPLE_MSI_SUPPORT
-int get_msi_iv_cnt(struct c29x_dev *fsl_pci_dev, uint8_t num_of_vectors)
-{
-	int err, tmp;
-	uint16_t msi_ctrl_word;
-	uint32_t mmc_count, mme_count;
-	struct device *my_dev = &fsl_pci_dev->dev->dev;
-
-	/* Check whether the device supports multiple MSI interrupts */
-	pci_read_config_word(fsl_pci_dev->dev, PCI_MSI_CTRL_REGISTER,
-				&msi_ctrl_word);
-
-	/* Check the MMC field to see how many MSIs are supported */
-	mmc_count = (msi_ctrl_word & MSI_CTRL_WORD_MMC_MASK) >>
-			MSI_CTRL_WORD_MMC_SHIFT;
-	mmc_count = 0x01 << mmc_count;
-
-	/* Check the MME field to see how many are actually enabled
-	 * by PCI subsystem */
-	mme_count = (msi_ctrl_word & MSI_CTRL_WORD_MME_MASK) >>
-			MSI_CTRL_WORD_MME_SHIFT;
-	mme_count = 0x01 << mme_count;
-
-	DEV_PRINT_DEBUG("MMC count [%d] MME count [%d]\n", mmc_count, mme_count);
-
-	do {
-		tmp = num_of_vectors;
-		err = pci_enable_msi_block(fsl_pci_dev->dev, num_of_vectors);
-		num_of_vectors = err;
-	} while (err > 0);
-
-	if (err) {
-		dev_err(my_dev, "MSI enable failed!!\n");
-		return -ENODEV;
-	}
-
-	DEV_PRINT_DEBUG("Number of MSI vectors actually enabled %d\n", tmp);
-	fsl_pci_dev->intr_info.intr_vectors_cnt = tmp;
-
-	return 0;
-}
-#else
 int get_msi_iv(struct c29x_dev *fsl_pci_dev)
 {
 	struct device *my_dev = &fsl_pci_dev->dev->dev;
@@ -426,7 +384,6 @@ int get_msi_iv(struct c29x_dev *fsl_pci_dev)
 	fsl_pci_dev->intr_info.intr_vectors_cnt = 1;
 	return 0;
 }
-#endif
 
 /* Get the MSI address and MSI data from the configuration space */
 void get_msi_config_data(struct c29x_dev *fsl_pci_dev, isr_ctx_t *isr_context)
@@ -470,12 +427,7 @@ int get_irq_vectors(struct c29x_dev *fsl_pci_dev, uint8_t num_of_rings)
 {
 	int err;
 
-#ifdef MULTIPLE_MSI_SUPPORT
-	err = get_msi_iv_cnt(fsl_pci_dev, num_of_rings);
-#else
 	err = get_msi_iv(fsl_pci_dev);
-#endif
-
 	if (err != 0) {
 		pci_disable_msi(fsl_pci_dev->dev);
 	}

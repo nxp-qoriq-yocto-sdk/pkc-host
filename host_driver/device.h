@@ -64,11 +64,6 @@
 #define FIRMWARE_IMAGE_START_OFFSET (DEV_MEM_SIZE - FSL_FIRMWARE_SIZE)
 #define HS_MEM_OFFSET (FIRMWARE_IMAGE_START_OFFSET - DEVICE_CACHE_LINE_SIZE)
 
-#ifdef CONFIG_PPC
-/* Assuming that P4080 linux has multiple MSI support */
-/*#define MULTIPLE_MSI_SUPPORT*/
-#endif
-
 /*** Register Offsets ***/
 
 /* Enabling 36bit DMA support - This helps in setting the DMA mask */
