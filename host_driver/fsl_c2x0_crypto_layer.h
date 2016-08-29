@@ -72,14 +72,6 @@ typedef enum fw_handshake_commands {
 	FW_RNG_DONE
 } fw_handshake_commands_t;
 
-/* Identifies the different devices */
-typedef enum crypto_dev_type {
-	CRYPTO_DEV_P4080,
-	CRYPTO_DEV_C270,
-	CRYPTO_DEV_C280,
-	CRYPTO_DEV_C290
-} crypto_dev_type_t;
-
 #define JR_SIZE_SHIFT   0
 #define JR_SIZE_MASK    0x0000ffff
 #define JR_NO_SHIFT     16
@@ -219,25 +211,6 @@ struct counters_mem {
 	uint32_t tot_jobs_added;
 	uint32_t tot_jobs_processed;
 };
-
-/*******************************************************************************
-Description :	Contains the identity information of the crypto device.
-Fields      :	dev_type	: P4080/c270/c280/c290 – String version
-					of the device type
-		sec_version	: version of the SEC engine
-		num_sec_engines	: Number of sec engines in the product
-		CHA_v_id	: CHA version id.
-		PKHA_v_id	: PKHA version id.
-		supported_ops	: OR of supported operations by this device
-*******************************************************************************/
-typedef struct crypto_dev_info {
-	crypto_dev_type_t dev_type;
-	uint8_t sec_version;
-	uint8_t num_sec_engines;	/* Can get from SVR register */
-	uint8_t CHA_v_id;
-	uint8_t PKHA_v_id;
-	uint8_t supported_ops;
-} crypto_dev_info_t;
 
 /**** RING PAIR RELATED DATA STRUCTURES ****/
 
@@ -385,7 +358,6 @@ Fields      :	priv_dev	: Low level private data structure of the device
 typedef struct fsl_crypto_dev {
 	struct c29x_dev *priv_dev;
 
-	crypto_dev_info_t dev_info;
 	struct crypto_dev_config *config;
 	struct driver_ob_mem ob_mem;
 	uint32_t tot_req_mem_size;
