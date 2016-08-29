@@ -39,8 +39,6 @@
 #include "algs.h"
 #include "error.h"
 
-#define MAX_ERROR_STRING 302
-
 #ifdef DEBUG_DESC
 void dump_desc(void *buff, uint32_t desc_size, const uint8_t *func)
 {

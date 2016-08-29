@@ -1244,8 +1244,6 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 	return;
 }
 
-#define MAX_ERROR_STRING 400
-
 /* FIXME: function argument dev is overwritten in the first loop */
 void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor)
 {
