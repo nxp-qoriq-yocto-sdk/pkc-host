@@ -35,7 +35,6 @@
 
 #ifndef DESC_H
 #define DESC_H
-#include "common.h"
 
 /* Format of SGT table entry
 w0: Reserved [24 bits] (must be 0) Address Pointer [MS 8 bits]

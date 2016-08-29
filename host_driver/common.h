@@ -68,9 +68,6 @@
 #include <linux/kthread.h>
 #include <linux/cpumask.h>
 
-typedef uint64_t dev_p_addr_t;
-typedef uint64_t dev_dma_addr_t;
-
 /* Identifier for the ring pairs */
 typedef enum ring_id {
 	CRYPTO_COMMAND_RING_ID,

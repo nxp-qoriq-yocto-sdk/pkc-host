@@ -36,6 +36,10 @@
 #ifndef FSL_PKC_DESC_BUFFS_H
 #define FSL_PKC_DESC_BUFFS_H
 
+#include "types.h"
+
+typedef struct fsl_crypto_dev fsl_crypto_dev_t;
+
 typedef enum buffer_type {
 	BT_DESC,
 	BT_IP,

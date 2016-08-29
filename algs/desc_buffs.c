@@ -34,6 +34,7 @@
  */
 
 #include "common.h"
+#include "types.h"
 #include "fsl_c2x0_driver.h"
 #include "desc_buffs.h"
 

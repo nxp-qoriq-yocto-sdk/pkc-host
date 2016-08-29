@@ -37,6 +37,7 @@
 #define FSL_PKC_CRYPTO_LAYER_H
 
 #include "memmgr.h"
+#include "types.h"
 
 extern int napi_poll_count;
 

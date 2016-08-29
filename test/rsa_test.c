@@ -32,8 +32,7 @@
 
 #include <linux/completion.h>
 #include "common.h"
-#include "fsl_c2x0_crypto_layer.h"
-#include "fsl_c2x0_driver.h"
+#include "types.h"
 #include "algs.h"
 #include "desc.h"
 #include "test.h"
