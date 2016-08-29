@@ -36,8 +36,7 @@
 #ifndef FSL_PKC_ALGS_REG_H
 #define FSL_PKC_ALGS_REG_H
 
-#include "compat.h"
-#include "desc.h"
+#include <linux/crypto.h>
 
 #define FSL_CRA_PRIORITY 4000
 
