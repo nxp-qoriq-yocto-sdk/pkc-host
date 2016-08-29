@@ -14,7 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common.h"
+#include <linux/types.h>
+#include <linux/device.h>
 
 #define JRSTA_SSRC_SHIFT            28
 
