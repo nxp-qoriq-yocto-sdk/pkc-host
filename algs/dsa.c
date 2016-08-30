@@ -35,6 +35,7 @@
 
 #include <linux/crypto.h>
 
+#include "debug_print.h"
 #include "common.h"
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"

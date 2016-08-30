@@ -34,6 +34,7 @@
  */
 
 #include "common.h"
+#include "debug_print.h"
 #include "fsl_c2x0_driver.h"
 #include "memmgr.h"
 
