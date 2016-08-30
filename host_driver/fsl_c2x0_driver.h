@@ -36,6 +36,8 @@
 #ifndef FSL_PKC_DRIVER_H
 #define FSL_PKC_DRIVER_H
 
+#include <linux/crypto.h>
+
 #include "sysfs.h"
 #include "device.h"
 #include "fsl_c2x0_crypto_layer.h"
@@ -187,8 +189,23 @@ struct bh_handler {
 	struct list_head ring_list_head;
 };
 
+struct alg_template {
+	char name[CRYPTO_MAX_ALG_NAME];
+	char driver_name[CRYPTO_MAX_ALG_NAME];
+	char hmac_name[CRYPTO_MAX_ALG_NAME];
+	char hmac_driver_name[CRYPTO_MAX_ALG_NAME];
+
+	uint32_t blocksize;
+	uint32_t type;
+	struct pkc_alg pkc;
+
+	uint32_t alg_type;
+	uint32_t alg_op;
+	uint32_t class1_alg_type;
+	uint32_t class2_alg_type;
+};
+
 fsl_crypto_dev_t *get_crypto_dev(uint32_t no);
-uint32_t get_no_of_devices(void);
 extern struct crypto_dev_config *get_dev_config(struct c29x_dev *fsl_pci_dev);
 extern int32_t parse_config_file(int8_t *config_file);
 void sysfs_napi_loop_count_set(char *fname, char *count, int len);
