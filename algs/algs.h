@@ -87,37 +87,6 @@ typedef struct crypto_dev_sess {
 	uint8_t sec_eng;
 } crypto_dev_sess_t;
 
-/******************************************************************************
-Description :	Defines the context for the crypto job
-Fields      :	pci_dev:PCI device instance to which this job belongs to.
-		pool   :Buffer pool from which memory for this job is
-			allocated
-		req_mem:Pointer to the complete request memory
-		oprn   :Identifies the crypto operation
-		req    :Union of different crypto req mem from KCAPI
-		dev_mem:Union of different crypto
-		done   :Callback to be called on completion of the request
-*******************************************************************************/
-typedef struct crypto_job_ctx {
-	void *pci_dev;		
-	void *pool;
-	void *req_mem;
-
-	crypto_op_t oprn;
-	union {
-		struct pkc_request *pkc;
-	} req;
-	union {
-		rsa_dev_mem_t *rsa;
-		dsa_dev_mem_t *dsa;
-		dh_key_dev_mem_t *dh;
-		struct instantiate_result *rng_init;
-		struct buf_data *rng;
-	} dev_mem;
-	struct split_key_result *result;
-	void (*done) (struct pkc_request *req, int32_t result);
-} crypto_job_ctx_t;
-
 typedef struct crypto_op_ctx {
 	void *ctx_pool; /* pointer to the enclosing pool */
 	crypto_mem_info_t crypto_mem;
