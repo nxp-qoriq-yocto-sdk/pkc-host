@@ -335,11 +335,6 @@ struct driver_ob_mem {
 	uint32_t r_s_cntrs_mem;
 };
 
-/* Per dev status structure */
-typedef struct per_dev_struct {
-	atomic_t device_status;
-} per_dev_struct_t;
-
 typedef struct ctx_pool ctx_pool_t;
 
 /*******************************************************************************
@@ -403,10 +398,6 @@ typedef struct fsl_crypto_dev {
 	/* Holds the count of number of crypto dev sessions */
 	atomic_t crypto_dev_sess_cnt;
 
-	/* FIXME: really? a percpu variable to remember a device state? */
-	/* FLAG TO INDICATE DEVICE'S LIVELENESS STATUS */
-	per_dev_struct_t __percpu *dev_status;
-
 	atomic_t app_req_cnt;
 	atomic_t app_resp_cnt;
 } fsl_crypto_dev_t;
@@ -440,7 +431,6 @@ uint8_t f_get_o(uint8_t);
 void stop_device(fsl_crypto_dev_t *dev);
 void start_device(fsl_crypto_dev_t *dev);
 
-int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set);
 int32_t process_rings(fsl_crypto_dev_t *, struct list_head *);
 
 extern int32_t rng_instantiation(fsl_crypto_dev_t *c_dev);

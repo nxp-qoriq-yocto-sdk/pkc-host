@@ -1012,18 +1012,6 @@ int prepare_crypto_cfg_info_string(struct crypto_dev_config *config,
 	return 0;
 }
 
-
-int32_t set_device_status_per_cpu(fsl_crypto_dev_t *c_dev, uint8_t set)
-{
-	uint32_t i = 0;
-	per_dev_struct_t *dev_stat = NULL;
-	for_each_online_cpu(i) {
-		dev_stat = per_cpu_ptr(c_dev->dev_status, i);
-		atomic_set(&(dev_stat->device_status), set);
-	}
-	return 0;
-}
-
 void stop_device(fsl_crypto_dev_t *dev)
 {
 	void *ccsr = dev->priv_dev->bars[MEM_TYPE_CONFIG].host_v_addr;
@@ -1144,9 +1132,6 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 
 	set_sysfs_value(fsl_pci_dev, DEVICE_STATE_SYSFILE, (uint8_t *) "HS Started\n",
 			strlen("HS Started\n"));
-
-	c_dev->dev_status = alloc_percpu(per_dev_struct_t);
-	set_device_status_per_cpu(c_dev, 1);
 
 	err = handshake(c_dev, config);
 	if (err) {
