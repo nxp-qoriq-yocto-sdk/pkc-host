@@ -48,6 +48,21 @@ extern struct bh_handler __percpu *per_core;
 #define DEFAULT_FIRMWARE_RESP_RING_DEPTH	(128*4)
 #define FIRMWARE_IP_BUFFER_POOL_SIZE		(512*1024)
 
+/* Application ring properties bit masks and shift */
+#define APP_RING_PROP_ORDER_MASK    0x01
+#define APP_RING_PROP_ORDER_SHIFT   0
+
+#define APP_RING_PROP_AFFINE_MASK   0X0E
+#define APP_RING_PROP_AFFINE_SHIFT  1
+
+#define APP_RING_PROP_PRIO_MASK     0XF0
+#define APP_RING_PROP_PRIO_SHIFT    4
+
+#define PHYS_ADDR_L_32_BIT_MASK       0xFFFFFFFF
+/* Since the device has 36bit bus --
+ * Only two bits from higher address is sufficient */
+#define PHYS_ADDR_H_32_BIT_MASK       0x300000000ull
+
 static uint32_t align(uint32_t addr, uint32_t size)
 {
 	size--;

@@ -68,21 +68,6 @@
 #include <linux/kthread.h>
 #include <linux/cpumask.h>
 
-/* Application ring properties bit masks and shift */
-#define APP_RING_PROP_ORDER_MASK    0x01
-#define APP_RING_PROP_ORDER_SHIFT   0
-
-#define APP_RING_PROP_AFFINE_MASK   0X0E
-#define APP_RING_PROP_AFFINE_SHIFT  1
-
-#define APP_RING_PROP_PRIO_MASK     0XF0
-#define APP_RING_PROP_PRIO_SHIFT    4
-
-#define PHYS_ADDR_L_32_BIT_MASK       0xFFFFFFFF
-/* Since the device has 36bit bus --
- * Only two bits from higher address is sufficient */
-#define PHYS_ADDR_H_32_BIT_MASK       0x300000000ull
-
 typedef uint64_t dev_p_addr_t;
 typedef uint64_t dev_dma_addr_t;
 
