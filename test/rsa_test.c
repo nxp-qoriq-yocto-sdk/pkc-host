@@ -57,13 +57,13 @@ void init_1k_rsa_pub_op_req(void)
 {
 	g_1kpubopreq.type = RSA_PUB;
 
-        g_1kpubopreq.req_u.rsa_pub_req.n = kzalloc(ALIGN_LEN_TO_DMA(pub_n_len), GFP_KERNEL | GFP_DMA);
+        g_1kpubopreq.req_u.rsa_pub_req.n = kzalloc(pub_n_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_1kpubopreq.req_u.rsa_pub_req.n, PUB_N_1024, pub_n_len);
 
-        g_1kpubopreq.req_u.rsa_pub_req.e = kzalloc(ALIGN_LEN_TO_DMA(pub_e_len), GFP_KERNEL | GFP_DMA);
+        g_1kpubopreq.req_u.rsa_pub_req.e = kzalloc(pub_e_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_1kpubopreq.req_u.rsa_pub_req.e, PUB_E_1024, pub_e_len);
 
-        g_1kpubopreq.req_u.rsa_pub_req.f = kzalloc(ALIGN_LEN_TO_DMA(pub_f_len), GFP_KERNEL | GFP_DMA);
+        g_1kpubopreq.req_u.rsa_pub_req.f = kzalloc(pub_f_len, GFP_KERNEL | GFP_DMA);
         memcpy(g_1kpubopreq.req_u.rsa_pub_req.f, PUB_F_1024, pub_f_len);
 
         g_1kpubopreq.req_u.rsa_pub_req.g =
