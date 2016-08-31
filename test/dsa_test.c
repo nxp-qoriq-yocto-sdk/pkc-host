@@ -30,12 +30,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <linux/completion.h>
-
-#include "common.h"
+#include "linux/types.h"
+#include <linux/crypto.h>
 #include "debug_print.h"
 #include "types.h"
-#include "algs.h"
 #include "dsa.h"
 #include "test.h"
 #include "dsa_test.h"

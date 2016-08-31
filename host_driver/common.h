@@ -36,7 +36,6 @@
 #ifndef FSL_PKC_COMMON_H
 #define FSL_PKC_COMMON_H
 
-#include <linux/version.h>
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/workqueue.h>
@@ -65,7 +64,6 @@
 
 #include <linux/completion.h>
 #include <linux/sched.h>
-#include <linux/kthread.h>
 #include <linux/cpumask.h>
 
 /* Identifier for the ring pairs */

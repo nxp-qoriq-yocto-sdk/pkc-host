@@ -30,10 +30,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "common.h"
+#include <linux/types.h>
+#include <linux/kthread.h>
+#include <linux/crypto.h>
 #include "debug_print.h"
-#include "fsl_c2x0_driver.h"
-#include "algs.h"
+#include "sysfs.h"
 #include "test.h"
 
 #define MAX_TEST_THREAD_SUPPORT 200

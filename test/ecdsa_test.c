@@ -30,10 +30,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "common.h"
+#include <linux/types.h>
+#include <linux/crypto.h>
 #include "debug_print.h"
 #include "types.h"
-#include "algs.h"
 #include "test.h"
 
 typedef void (*cb) (struct pkc_request *req, int32_t sec_result);

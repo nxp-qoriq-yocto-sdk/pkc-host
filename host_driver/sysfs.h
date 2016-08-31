@@ -36,6 +36,10 @@
 #ifndef FSL_PKC_SYSFS_H
 #define FSL_PKC_SYSFS_H
 
+#include <linux/version.h>
+#include <linux/sysfs.h>
+#include <linux/kobject.h>
+
 /** SYSFS RELATED INLINE FUNCTIONS **/
 #define NUM_OF_PCI_SYSFS_FILES    PCI_SYS_FILES_END - PCI_SYS_FILES_START - 1
 #define NUM_OF_CRYPTO_SYSFS_FILES CRYPTO_SYS_FILES_END - CRYPTO_SYS_FILES_START - 1

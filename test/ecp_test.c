@@ -30,9 +30,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "common.h"
+#include <linux/types.h>
+#include <linux/crypto.h>
 #include "types.h"
-#include "algs.h"
 #include "test.h"
 #include "ecp_test.h"
 
