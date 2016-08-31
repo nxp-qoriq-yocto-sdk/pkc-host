@@ -421,7 +421,6 @@ int init_crypto_ctx_pool(fsl_crypto_dev_t *dev);
 void init_handshake(fsl_crypto_dev_t *dev);
 void init_fw_resp_ring(fsl_crypto_dev_t *dev);
 void init_ring_pairs(fsl_crypto_dev_t *dev);
-struct crypto_dev_config *get_config(uint32_t dev_no);
 void f_set_a(uint8_t *, uint8_t);
 void f_set_p(uint8_t *, uint8_t);
 void f_set_o(uint8_t *, uint8_t);

@@ -197,35 +197,6 @@ static void response_ring_handler(struct work_struct *work)
  *
  ******************************************************************************/
 
-struct crypto_dev_config *get_config(uint32_t dev_no)
-{
-	struct crypto_dev_config *config = NULL;
-
-	/* Loop for each config to get to the correct config.
-	 */
-	list_for_each_entry(config, &crypto_dev_config_list, list) {
-		print_debug("Config Dev no:%d Arg Dev no: %d\n",
-			    config->dev_no, dev_no);
-
-		if (config->dev_no == dev_no)
-			return config;
-
-	}
-
-	return NULL;
-}
-
-/*******************************************************************************
- * Function     : get_dev_config
- *
- * Arguments    : dev : PCI device instance
- *
- * Return Value : config - Config struct corresponding to the device
- *
- * Description  : Returns the configuration corresponding to the device
- *
- ******************************************************************************/
-
 struct crypto_dev_config *get_dev_config(struct c29x_dev *fsl_pci_dev)
 {
 	struct crypto_dev_config *config = NULL;
