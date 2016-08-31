@@ -34,6 +34,8 @@
 #include "common.h"
 #include "types.h"
 #include "algs.h"
+#include "rsa.h"
+
 #include "desc.h"
 #include "test.h"
 #include "rsa_test.h"
@@ -44,6 +46,8 @@ atomic_t rsa_enq_count;
 atomic_t rsa_deq_count;
 /**** WORKING TEST INPUTS ****/
 /* PUB OP BUFFERS */
+
+extern rsa_op_cb rsa_completion_cb;
 
 struct pkc_request g_1kpubopreq;
 struct pkc_request g_2kpubopreq;
@@ -436,6 +440,20 @@ void rsa_test_done(struct pkc_request *req, int32_t sec_result)
 	dec_count();
 #endif
 	common_dec_count();
+}
+
+int test_rsa_op(struct pkc_request *req,
+		void (*cb) (struct pkc_request *, int32_t result))
+{
+	int err;
+
+	rsa_completion_cb = cb;
+	err = rsa_op(req);
+
+	if (err == -EINPROGRESS) {
+		err = 0;
+	}
+	return err;
 }
 
 int test_rsa_pub_op_1k(void)

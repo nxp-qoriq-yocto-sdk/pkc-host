@@ -141,6 +141,7 @@ typedef struct rsa_dev_mem {
 	uint32_t *hw_desc;
 } rsa_dev_mem_t;
 
-int test_rsa_op(struct pkc_request *req,
-		void (*cb) (struct pkc_request *, int32_t result));
+typedef void (*rsa_op_cb) (struct pkc_request *, int32_t result);
+int rsa_op(struct pkc_request *req);
+
 #endif

@@ -44,8 +44,7 @@
 #include "desc.h"
 #include "algs.h"
 
-/* Callback test functions */
-typedef void (*rsa_op_cb) (struct pkc_request *, int32_t result);
+/* TODO: Remove this global callback. It is a broken implementation for testing */
 rsa_op_cb rsa_completion_cb;
 
 static void rsa_op_done(void *ctx, int32_t res)
@@ -664,18 +663,3 @@ out_nop:
 out_no_ctx:
 	return ret;
 }
-
-int test_rsa_op(struct pkc_request *req,
-		void (*cb) (struct pkc_request *, int32_t result))
-{
-	int err;
-
-	rsa_completion_cb = cb;
-	err = rsa_op(req);
-
-	if (err == -EINPROGRESS) {
-		err = 0;
-	}
-	return err;
-}
-EXPORT_SYMBOL(test_rsa_op);
