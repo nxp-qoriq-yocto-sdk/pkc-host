@@ -33,10 +33,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "common.h"
+#include <linux/module.h>
+#include <linux/pci.h>
+#include <linux/interrupt.h>
+#include <linux/fs.h>
+
 #include "debug_print.h"
 #include "fsl_c2x0_driver.h"
-#include "fsl_c2x0_crypto_layer.h"
 #include "algs.h"
 #include "test.h"
 

@@ -33,13 +33,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "common.h"
+#include <linux/fs.h>
+#include <linux/delay.h>
+#include <linux/pci.h>
+#include <linux/sched.h>
+
 #include "debug_print.h"
-#include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
 #include "algs.h"
 #include "error.h"
-#include <linux/delay.h>
 
 extern int32_t wt_cpu_mask;
 extern struct bh_handler __percpu *per_core;

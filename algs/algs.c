@@ -33,9 +33,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "common.h"
-#include "fsl_c2x0_crypto_layer.h"
-#include "fsl_c2x0_driver.h"
+#include <linux/types.h>
 #include "algs.h"
 
 #ifdef DEBUG_DESC

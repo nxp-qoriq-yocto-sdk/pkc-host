@@ -33,9 +33,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "common.h"
+#include <linux/types.h>
+#include <linux/spinlock.h>
+
 #include "debug_print.h"
-#include "fsl_c2x0_driver.h"
 #include "memmgr.h"
 
 static void link_and_merge(bp *pool, bh *node);

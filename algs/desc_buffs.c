@@ -33,7 +33,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "common.h"
+#include <linux/types.h>
+#include <linux/pci.h>
 #include "desc_buffs.h"
 #include "fsl_c2x0_driver.h"
 
