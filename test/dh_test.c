@@ -35,8 +35,6 @@
 #include "types.h"
 #include "algs.h"
 #include "dh.h"
-#include "desc.h"
-
 #include "test.h"
 #include "dh_test.h"
 

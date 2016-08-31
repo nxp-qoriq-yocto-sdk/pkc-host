@@ -35,8 +35,6 @@
 #include "types.h"
 #include "algs.h"
 #include "rsa.h"
-
-#include "desc.h"
 #include "test.h"
 #include "rsa_test.h"
 

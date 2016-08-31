@@ -34,8 +34,6 @@
 #include "common.h"
 #include "types.h"
 #include "algs.h"
-#include "desc.h"
-
 #include "test.h"
 
 typedef void (*cb) (struct pkc_request *req, int32_t sec_result);

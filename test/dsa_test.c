@@ -37,8 +37,6 @@
 #include "types.h"
 #include "algs.h"
 #include "dsa.h"
-#include "desc.h"
-
 #include "test.h"
 #include "dsa_test.h"
 
