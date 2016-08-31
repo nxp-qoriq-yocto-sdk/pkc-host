@@ -37,6 +37,7 @@
 #include "debug_print.h"
 #include "fsl_c2x0_crypto_layer.h"
 #include "fsl_c2x0_driver.h"
+#include "desc_constr.h"
 #include "algs.h"
 
 struct rng_init_compl {

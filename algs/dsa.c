@@ -41,6 +41,7 @@
 #include "fsl_c2x0_driver.h"
 #include "dsa.h"
 #include "pkc_desc.h"
+#include "desc_constr.h"
 #include "algs.h"
 
 /* TODO: Remove this global callback. It is a broken implementation for testing */
