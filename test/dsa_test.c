@@ -36,6 +36,7 @@
 #include "debug_print.h"
 #include "types.h"
 #include "algs.h"
+#include "dsa.h"
 #include "desc.h"
 
 #include "test.h"
@@ -461,6 +462,35 @@ void cleanup_dsa_test(void)
 	}
 
 }
+extern dsa_op_cb dsa_completion_cb;
+extern dsa_op_cb ecdsa_completion_cb;
+
+int test_dsa_op(struct pkc_request *req,
+		void (*cb) (struct pkc_request *, int32_t result))
+{
+    int32_t ret = 0;
+	switch (req->type) {
+	case DSA_KEYGEN:
+	case DSA_SIGN:
+	case DSA_VERIFY:
+		dsa_completion_cb = cb;
+		break;
+	case ECDSA_KEYGEN:
+	case ECDSA_SIGN:
+	case ECDSA_VERIFY:
+		ecdsa_completion_cb = cb;
+		break;
+	default:
+		break;
+	}
+	ret = dsa_op(req);
+	if (ret == -EINPROGRESS) {
+		ret = 0;
+	}
+
+	return ret;
+}
+
 
 int dsa_verify_test_1k(void)
 {

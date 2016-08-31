@@ -53,6 +53,8 @@ struct pkc_request g_ecpbnsignreq_571;
 /*
 static struct completion keygen_control_completion_var;
 */
+int test_dsa_op(struct pkc_request *req,
+		void (*cb) (struct pkc_request *, int32_t result));
 
 void ecpbn_done(struct pkc_request *req, int32_t sec_result)
 {

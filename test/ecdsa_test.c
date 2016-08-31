@@ -36,9 +36,11 @@
 #include "algs.h"
 #include "desc.h"
 
-#include"test.h"
+#include "test.h"
 
 typedef void (*cb) (struct pkc_request *req, int32_t sec_result);
+int test_dsa_op(struct pkc_request *req,
+		void (*cb) (struct pkc_request *, int32_t result));
 
 atomic_t ecdsa_enq_count;
 atomic_t ecdsa_deq_count;

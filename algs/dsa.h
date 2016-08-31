@@ -109,7 +109,7 @@ typedef struct dsa_dev_mem {
 	uint32_t *hw_desc;
 } dsa_dev_mem_t;
 
-int test_dsa_op(struct pkc_request *req,
-		void (*cb) (struct pkc_request *, int32_t result));
+typedef void (*dsa_op_cb) (struct pkc_request *, int32_t result);
+int dsa_op(struct pkc_request *req);
 
 #endif

@@ -40,7 +40,6 @@
 #include <linux/crypto.h>
 #include <crypto/algapi.h>
 #include "desc_constr.h"
-#include "dsa.h"
 #include "dh.h"
 
 /* Enum identifying the type of operation :- Symmetric/Asymmetric */

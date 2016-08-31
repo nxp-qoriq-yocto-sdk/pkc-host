@@ -44,8 +44,7 @@
 #include "desc.h"
 #include "algs.h"
 
-/* Callback test functions */
-typedef void (*dsa_op_cb) (struct pkc_request *, int32_t result);
+/* TODO: Remove this global callback. It is a broken implementation for testing */
 dsa_op_cb dsa_completion_cb;
 dsa_op_cb ecdsa_completion_cb;
 
@@ -770,31 +769,3 @@ out_nop:
 	free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
 	return ret;
 }
-
-int test_dsa_op(struct pkc_request *req,
-		void (*cb) (struct pkc_request *, int32_t result))
-{
-    int32_t ret = 0;
-	switch (req->type) {
-	case DSA_KEYGEN:
-	case DSA_SIGN:
-	case DSA_VERIFY:
-		dsa_completion_cb = cb;
-		break;
-	case ECDSA_KEYGEN:
-	case ECDSA_SIGN:
-	case ECDSA_VERIFY:
-		ecdsa_completion_cb = cb;
-		break;
-	default:
-		break;
-	}
-	ret = dsa_op(req);
-	if (ret == -EINPROGRESS) {
-		ret = 0;
-	}
-
-	return ret;
-}
-
-EXPORT_SYMBOL(test_dsa_op);
