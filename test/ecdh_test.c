@@ -43,6 +43,9 @@ typedef void (*cb) (struct pkc_request *req, int32_t sec_result);
 static DECLARE_COMPLETION(jobs_done);
 static int count;
 */
+int test_dh_op(struct pkc_request *req,
+	       void (*cb) (struct pkc_request *, int32_t result));
+
 atomic_t ecdh_enq_count;
 atomic_t ecdh_deq_count;
 struct pkc_request g_ecdhreq;

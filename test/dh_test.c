@@ -34,6 +34,7 @@
 #include "common.h"
 #include "types.h"
 #include "algs.h"
+#include "dh.h"
 #include "desc.h"
 
 #include "test.h"
@@ -44,6 +45,10 @@ typedef void (*cb) (struct pkc_request *req, int32_t sec_result);
 static DECLARE_COMPLETION(jobs_done);
 static int count;
 */
+
+extern dh_op_cb dh_completion_cb;
+extern dh_op_cb ecdh_completion_cb;
+
 atomic_t dh_enq_count;
 atomic_t dh_deq_count;
 struct pkc_request g_dhreq_1k;
@@ -214,6 +219,32 @@ void cleanup_dh_test(void)
 	if(g_dhreq_4k.req_u.dh_req.z) {
 		kfree(g_dhreq_4k.req_u.dh_req.z);
 	}
+}
+
+
+int test_dh_op(struct pkc_request *req,
+	       void (*cb) (struct pkc_request *, int32_t result))
+{
+	int32_t ret = 0;
+	switch (req->type) {
+	case DH_COMPUTE_KEY:
+	case DH_KEYGEN:
+		dh_completion_cb = cb;
+		break;
+	case ECDH_COMPUTE_KEY:
+	case ECDH_KEYGEN:
+		ecdh_completion_cb = cb;
+		break;
+	default:
+		break;
+	}
+
+	ret = dh_op(req);
+	if (ret == -EINPROGRESS) {
+		ret = 0;
+	}
+
+	return ret;
 }
 
 int dh_test_1k(void)

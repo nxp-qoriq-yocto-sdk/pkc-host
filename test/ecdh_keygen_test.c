@@ -43,6 +43,9 @@ struct pkc_request b283;
 struct pkc_request b409;
 struct pkc_request b571;
 
+int test_dh_op(struct pkc_request *req,
+	       void (*cb) (struct pkc_request *, int32_t result));
+
 void ecdh_keygen_done(struct pkc_request *req, int32_t sec_result)
 {
 #if 0 

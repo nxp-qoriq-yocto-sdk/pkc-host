@@ -70,6 +70,7 @@ typedef struct dh_key_dev_mem {
 	u32 *hw_desc;
 } dh_key_dev_mem_t;
 
-int test_dh_op(struct pkc_request *req,
-	       void (*cb) (struct pkc_request *, int32_t result));
+typedef void (*dh_op_cb) (struct pkc_request *, int32_t result);
+int dh_op(struct pkc_request *req);
+
 #endif

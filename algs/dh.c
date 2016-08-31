@@ -44,8 +44,7 @@
 #include "desc.h"
 #include "algs.h"
 
-/* Callback test functions */
-typedef void (*dh_op_cb) (struct pkc_request *, int32_t result);
+/* TODO: Remove this global callback. It is a broken implementation for testing */
 dh_op_cb dh_completion_cb;
 dh_op_cb ecdh_completion_cb;
 
@@ -519,30 +518,3 @@ out_nop:
 	free_crypto_ctx(c_dev->ctx_pool, crypto_ctx);
 	return ret;
 }
-
-int test_dh_op(struct pkc_request *req,
-	       void (*cb) (struct pkc_request *, int32_t result))
-{
-	int32_t ret = 0;
-	switch (req->type) {
-	case DH_COMPUTE_KEY:
-	case DH_KEYGEN:
-		dh_completion_cb = cb;
-		break;
-	case ECDH_COMPUTE_KEY:
-	case ECDH_KEYGEN:
-		ecdh_completion_cb = cb;
-		break;
-	default:
-		break;
-	}
-
-	ret = dh_op(req);
-	if (ret == -EINPROGRESS) {
-		ret = 0;
-	}
-
-	return ret;
-}
-
-EXPORT_SYMBOL(test_dh_op);
