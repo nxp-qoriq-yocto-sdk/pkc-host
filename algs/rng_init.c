@@ -39,7 +39,6 @@
 #include "fsl_c2x0_driver.h"
 #include "algs.h"
 #include "desc.h"
-#include "crypto_ctx.h"
 
 struct rng_init_compl {
 	struct completion completion;

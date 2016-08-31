@@ -39,7 +39,6 @@
 #include "fsl_c2x0_driver.h"
 #include "algs.h"
 #include "error.h"
-#include "crypto_ctx.h"
 #include <linux/delay.h>
 
 extern int32_t wt_cpu_mask;

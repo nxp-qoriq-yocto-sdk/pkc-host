@@ -111,6 +111,39 @@ typedef struct app_req_job_ctx {
 	dev_p_addr_t r_offset;
 } app_req_job_ctx_t;
 
+#define NUM_OF_CTXS     1024
+
+typedef struct ctx_pool {
+	crypto_op_ctx_t mem[NUM_OF_CTXS];
+	crypto_op_ctx_t *head;
+	spinlock_t ctx_lock;
+} ctx_pool_t;
+
+static inline void *get_crypto_ctx(ctx_pool_t *pool)
+{
+	crypto_op_ctx_t *ctx;
+
+	spin_lock_bh(&pool->ctx_lock);
+	ctx = pool->head;
+	if (ctx != NULL) {
+		pool->head = ctx->next;
+	}
+	spin_unlock_bh(&pool->ctx_lock);
+
+	return ctx;
+}
+
+static inline void free_crypto_ctx(void *id, crypto_op_ctx_t *ctx)
+{
+	ctx_pool_t *pool = id;
+
+	spin_lock_bh(&pool->ctx_lock);
+	memset(ctx, 0, sizeof(crypto_op_ctx_t));
+	ctx->next = pool->head;
+	pool->head = ctx;
+	spin_unlock_bh(&pool->ctx_lock);
+}
+
 void dump_desc(void *buff, uint32_t desc_size, const uint8_t *func);
 void change_desc_endianness(uint32_t *dev_mem,
 			    uint32_t *host_mem, int32_t words);

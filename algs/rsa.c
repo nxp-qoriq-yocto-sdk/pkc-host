@@ -42,7 +42,7 @@
 #include "rsa.h"
 #include "pkc_desc.h"
 #include "desc.h"
-#include "crypto_ctx.h"
+#include "algs.h"
 
 /* Callback test functions */
 typedef void (*rsa_op_cb) (struct pkc_request *, int32_t result);
