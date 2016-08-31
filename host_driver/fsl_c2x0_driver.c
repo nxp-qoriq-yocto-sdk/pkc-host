@@ -37,7 +37,6 @@
 #include "debug_print.h"
 #include "fsl_c2x0_driver.h"
 #include "fsl_c2x0_crypto_layer.h"
-#include "sysfs.h"
 #include "algs.h"
 #include "test.h"
 
