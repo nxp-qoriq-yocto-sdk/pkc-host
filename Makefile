@@ -16,7 +16,7 @@ ccflags-y := -I$(src)/host_driver -I$(src)/algs -I$(src)/crypto_dev -I$(src)/dcl
 ccflags-y += -g -g3 -DDEV_PHYS_ADDR_64BIT -std=gnu90
 ccflags-y += -Wall -Werror
 
-ccflags-$(DEBUG_PRINT) += -DDEV_PRINT_DBG -DPRINT_DEBUG
+ccflags-$(DEBUG_PRINT) += -DPRINT_DEBUG
 ccflags-$(INFO_PRINT) += -DPRINT_INFO
 ccflags-$(DEBUG_DESC) += -DDEBUG_DESC
 

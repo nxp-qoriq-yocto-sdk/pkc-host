@@ -46,7 +46,6 @@
 /*********************************************************
  *                  MACRO DEFINITIONS                    *
  *********************************************************/
-#define DEV_PRINT_DEBUG(...) dev_print_dbg(fsl_pci_dev, ##__VA_ARGS__)
 #define FSL_CRA_PRIORITY 4000
 
 extern int rsa_op(struct pkc_request *req);
@@ -513,11 +512,11 @@ int fsl_get_bar_map(struct c29x_dev *fsl_pci_dev)
 			dev_err(my_dev, "BAR %d: failed to get physical address\n", i);
 			goto error; /* no clean-up required */
 		}
-		DEV_PRINT_DEBUG("BAR %d: physical address %pa\n", i, &bars[i].host_p_addr);
+		print_debug("BAR %d: physical address %pa\n", i, &bars[i].host_p_addr);
 
 		if (request_and_map_pci_resource(&bars[i]) != 0)
 			goto error;
-		DEV_PRINT_DEBUG("BAR %d: virtual address %p, length %pa\n", i,
+		print_debug("BAR %d: virtual address %p, length %pa\n", i,
 				bars[i].host_v_addr, &bars[i].len);
 	}
 	return 0;
@@ -555,7 +554,7 @@ void get_msi_config_data(struct c29x_dev *fsl_pci_dev, isr_ctx_t *isr_context)
 	pci_read_config_word(fsl_pci_dev->dev, PCI_MSI_ADDR_DATA,
 			&(isr_context->msi_data));
 
-	DEV_PRINT_DEBUG("MSI addr low [%0X] MSI addr high [%0X] MSI data [%0X]\n",
+	print_debug("MSI addr low [%0X] MSI addr high [%0X] MSI data [%0X]\n",
 			isr_context->msi_addr_low, isr_context->msi_addr_high,
 			isr_context->msi_data);
 
@@ -573,7 +572,7 @@ void fsl_release_irqs(struct c29x_dev *fsl_pci_dev)
 
 	list_for_each_entry_safe(isr_context, isr_n_context,
 			&(fsl_pci_dev->intr_info.isr_ctx_list_head), list) {
-		dev_print_dbg(fsl_pci_dev, "Freeing Irq\n");
+		print_debug("Freeing Irq\n");
 		free_irq(isr_context->irq, isr_context);
 		list_del(&(isr_context->list));
 		list_del(&(isr_context->ring_list_head));
@@ -1030,13 +1029,13 @@ static void cleanup_pci_device(struct c29x_dev *dev)
 	/* Free the BAR related resources */
 	for (i = 0; i < MEM_TYPE_DRIVER; i++) {
 		if (NULL != dev->bars[i].host_v_addr) {
-			dev_print_dbg(dev, "IOunmap\n");
+			print_debug("IOunmap\n");
 			/* io unmap */
 			iounmap(dev->bars[i].host_v_addr);
 		}
 
 		if (0 != dev->bars[i].host_p_addr) {
-			dev_print_dbg(dev, "Releasing region\n");
+			print_debug("Releasing region\n");
 			/* Free the resource */
 			/* Free the mem region */
 			pci_release_region(dev->dev, i);
@@ -1044,7 +1043,7 @@ static void cleanup_pci_device(struct c29x_dev *dev)
 	}
 
 	if (0 == dev->intr_info.intr_vectors_cnt) {
-		dev_print_dbg(dev, "Zero interrupt count");
+		print_debug("Zero interrupt count");
 		goto disable_dev;
 	}
 
@@ -1188,7 +1187,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	snprintf(fsl_pci_dev->dev_name, FSL_PCI_DEV_NAME_MAX_LEN, "%s%d",
 		 FSL_PCI_DEV_NAME, dev_no);
 
-	DEV_PRINT_DEBUG("Found C29x Device");
+	print_debug("Found C29x Device");
 
 	/* Set the DMA mask for the device. This helps the PCI subsystem
 	 * for proper dma mappings */
