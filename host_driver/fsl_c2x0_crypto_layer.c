@@ -132,23 +132,6 @@ void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	}
 }
 
-uint32_t round_to_power2(uint32_t n)
-{
-	uint32_t i = 1;
-	while (i < n)
-		i = i << 1;
-	return i;
-}
-
-static void pow2_rp_len(struct crypto_dev_config *config)
-{
-	uint32_t i;
-	/* Correct the ring depths to be power of 2 */
-	for (i = 0; i < config->num_of_rings; i++) {
-		config->ring[i].depth = round_to_power2(config->ring[i].depth);
-	}
-}
-
 /* utilities to get/set ring flags */
 uint8_t f_get_p(uint8_t flags)
 {
@@ -186,8 +169,6 @@ void f_set_o(uint8_t *flags, uint8_t order)
 void rearrange_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	uint8_t i;
-
-	pow2_rp_len(config);
 
 	for (i = 0; i < config->num_of_rings; i++) {
 		dev->ring_pairs[i].info = config->ring[i];

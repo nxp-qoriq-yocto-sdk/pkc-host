@@ -1139,6 +1139,23 @@ static void fsl_crypto_pci_remove(struct pci_dev *dev)
 	dev_no--;
 }
 
+uint32_t round_to_power2(uint32_t n)
+{
+	uint32_t i = 1;
+	while (i < n)
+		i = i << 1;
+	return i;
+}
+
+static void pow2_rp_len(struct crypto_dev_config *config)
+{
+	uint32_t i;
+	/* Correct the ring depths to be power of 2 */
+	for (i = 0; i < config->num_of_rings; i++) {
+		config->ring[i].depth = round_to_power2(config->ring[i].depth);
+	}
+}
+
 /*******************************************************************************
  * Function     : fsl_crypto_pci_probe
  *
@@ -1250,6 +1267,8 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		print_debug("Firmware Path : %s\n", config->fw_file_path);
 		create_default_config(config, 0, 2);
 	}
+	/* round ring lengths to powers of two */
+	pow2_rp_len(config);
 
 	err = get_irq_vectors(fsl_pci_dev, config->num_of_rings);
 	if (err)
