@@ -372,7 +372,6 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 
 		rp->dev = dev;
 		rp->depth = dev->config->ring[i].depth;
-		rp->num_of_sec_engines = 1;
 
 		rp->buf_pool = &dev->host_ip_pool.buf_pool;
 		rp->req_r = NULL;
@@ -388,8 +387,6 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 		INIT_LIST_HEAD(&(rp->isr_ctx_list_node));
 		INIT_LIST_HEAD(&(rp->bh_ctx_list_node));
 
-/* FIXME: It's not clear what is the use of sec_eng_sel, num_of_sec_engines and crypto_dev_sess:sec_eng */
-		atomic_set(&(rp->sec_eng_sel), 0);
 		spin_lock_init(&(rp->ring_lock));
 	}
 

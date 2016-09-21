@@ -197,11 +197,6 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 	print_debug("C dev num of rings [%d] r_id [%d]\n",
 		    ctx->c_dev->num_of_rings, ctx->r_id);
 
-	/* For symmetric algos all the job under same session should
-	 * go to same sec engine. Hence selecting one of the sec engine
-	 * for the ring pair. This sec engine selection will be passed
-	 * to firmware and firmware will enqueue the job to selected sec engine
-	 */
 	return 0;
 }
 

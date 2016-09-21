@@ -319,9 +319,7 @@ typedef struct fsl_h_rsrc_ring_pair {
 
 	uint32_t depth;
 	uint32_t core_no;
-	uint32_t num_of_sec_engines;
 
-	atomic_t sec_eng_sel;
 	spinlock_t ring_lock;
 
 	/* Will be used to notify the running contexts to block the ring -

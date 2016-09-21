@@ -75,13 +75,10 @@ Description :   Defines the crypto dev session context. This context is created
 		at the time of new crypto dev session.
 Fields      :   c_dev:	Crypto device instance to which this session belongs
 		r_id :	Id of the ring to which this session belongs
-		sec_eng:Id of the sec engine to which this session belongs.
-			Used only in case of Symmetric algorithms
 *******************************************************************************/
 typedef struct crypto_dev_sess {
 	fsl_crypto_dev_t *c_dev;
 	uint32_t r_id;
-	uint8_t sec_eng;
 } crypto_dev_sess_t;
 
 typedef struct crypto_op_ctx {
