@@ -166,16 +166,6 @@ void f_set_o(uint8_t *flags, uint8_t order)
 	*flags |= order << APP_RING_PROP_ORDER_SHIFT;
 }
 
-void rearrange_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
-{
-	uint8_t i;
-
-	for (i = 0; i < config->num_of_rings; i++) {
-		dev->ring_pairs[i].info = config->ring[i];
-	}
-	dev->num_of_rings = config->num_of_rings;
-}
-
 static uint32_t count_ring_slots(struct crypto_dev_config *config)
 {
 	uint32_t i, len = 0;
@@ -381,7 +371,7 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 		rp = &(dev->ring_pairs[i]);
 
 		rp->dev = dev;
-		rp->depth = rp->info.depth;
+		rp->depth = dev->config->ring[i].depth;
 		rp->num_of_sec_engines = 1;
 
 		rp->buf_pool = &dev->host_ip_pool.buf_pool;
@@ -1048,6 +1038,7 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 
 	c_dev->priv_dev = fsl_pci_dev;
 	c_dev->config = config;
+	c_dev->num_of_rings = config->num_of_rings;
 
 	/* HACK */
 	fsl_pci_dev->crypto_dev = c_dev;
@@ -1058,11 +1049,6 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 
 	print_debug("IB mem addr: %p\n", c_dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr);
 	print_debug("Device hs mem addr: %p\n", c_dev->c_hs_mem);
-
-	/* Rearrange rings according to their priority */
-	print_debug("Rearrange rings.....\n");
-	rearrange_rings(c_dev, config);
-	print_debug("Rearrange complete....\n");
 
 	err = alloc_ob_mem(c_dev, config);
 	if (err) {
@@ -1247,7 +1233,6 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 
 		dev = ring_cursor->dev;
 		ri = ring_cursor->indexes->r_index;
-		print_debug("RING ID: %d\n", ring_cursor->info.ring_id);
 		print_debug("GOT INTERRUPT FROM DEV: %d\n", dev->config->dev_no);
 
 		while (resp_cnt) {

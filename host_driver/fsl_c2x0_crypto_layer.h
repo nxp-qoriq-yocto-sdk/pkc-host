@@ -304,7 +304,6 @@ Fields      :	depth: Depth of the ring
 *******************************************************************************/
 typedef struct fsl_h_rsrc_ring_pair {
 	struct fsl_crypto_dev *dev;
-	struct ring_info info;
 
 	struct list_head isr_ctx_list_node;
 	struct list_head bh_ctx_list_node;
