@@ -180,7 +180,6 @@ struct dev_handshake_mem {
 	uint32_t h_msi_mem_h;
 
 	uint8_t state;
-	uint8_t padding1; /* this field is not used inside firmware */
 	uint8_t data_len;
 	uint8_t pad;
 
@@ -190,13 +189,8 @@ struct dev_handshake_mem {
 		struct c_config_data {
 			uint8_t num_of_rps;  /* total number of rings, in and out */
 			uint8_t max_pri;
-			uint8_t padding2; /* number of output rings */
 			uint32_t req_mem_size;  /* memory required for requests by all rings */
-			uint32_t padding3; /* dma address for responses for all rings */
-			uint32_t padding4; /* dma address for another response ring (512 entries)*/
-			uint32_t padding1; /* not used by the firmware */
 			uint32_t r_s_cntrs;/* dma address for other shadow counters */
-			uint32_t padding5; /* defaults to 512 - size of ring fw_resp_ring */
 		} config;
 		struct c_ring_data {
 			uint8_t rid;
@@ -206,7 +200,6 @@ struct dev_handshake_mem {
 			uint32_t resp_ring_offset;
 			uint32_t msi_addr_l;
 			uint32_t msi_addr_h;
-			uint32_t padding1; /* not used by the firmware */
 		} ring;
 	} data;
 };
