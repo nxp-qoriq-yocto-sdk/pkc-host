@@ -1105,13 +1105,6 @@ int32_t app_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 	return ret;
 }
 
-int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
-			 dev_dma_addr_t sec_desc)
-{
-	print_debug("Command ring enqueue called...\n");
-	return ring_enqueue(c_dev, jr_id, sec_desc);
-}
-
 void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 {
 	void *h_desc;

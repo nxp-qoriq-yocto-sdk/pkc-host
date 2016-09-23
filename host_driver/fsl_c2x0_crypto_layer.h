@@ -429,8 +429,6 @@ typedef struct fsl_crypto_dev {
 
 int32_t app_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 			 dev_dma_addr_t sec_desc);
-int32_t cmd_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
-			 dev_dma_addr_t sec_desc);
 
 fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *dev,
 		struct crypto_dev_config *config);
