@@ -504,7 +504,7 @@ int dh_op(struct pkc_request *req)
 	print_debug("Before app_ring_enqueue\n");
 
 	/* Now enqueue the job into the app ring */
-	if (app_ring_enqueue(c_dev, r_id, sec_dma)) {
+	if (ring_enqueue(c_dev, r_id, sec_dma)) {
 		ret = -1;
 		goto error;
 	}

@@ -393,7 +393,7 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 	crypto_ctx->op_done = rng_init_done;
 
 	sec_dma = sec_dma | (uint64_t) sec_no;
-	if (app_ring_enqueue(c_dev, r_id, sec_dma)) {
+	if (ring_enqueue(c_dev, r_id, sec_dma)) {
 		ret = -1;
 		goto out_enq_fail;
 	}

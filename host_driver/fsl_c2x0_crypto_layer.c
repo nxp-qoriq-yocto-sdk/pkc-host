@@ -830,7 +830,7 @@ int init_crypto_ctx_pool(fsl_crypto_dev_t *dev)
 	return 0;
 }
 
-static int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
+int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 			    dev_dma_addr_t sec_desc)
 {
 	uint32_t wi = 0;
@@ -1095,14 +1095,6 @@ void cleanup_crypto_device(fsl_crypto_dev_t *dev)
 	clear_ring_lists();
 	kfree(dev->ring_pairs);
 	kfree(dev);
-}
-
-int32_t app_ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
-			 dev_dma_addr_t sec_desc)
-{
-	int32_t ret = 0;
-	ret = ring_enqueue(c_dev, jr_id, sec_desc);
-	return ret;
 }
 
 void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
