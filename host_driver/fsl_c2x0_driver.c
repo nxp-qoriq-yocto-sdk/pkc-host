@@ -175,17 +175,15 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 		return -1;
 	}
 
-	num_of_rps = ctx->c_dev->num_of_rps - 1;
-
-	/* Select the ring in which this job has to be posted. */
-
-	if (0 < num_of_rps) {
-		ctx->r_id = atomic_inc_return(&ctx->c_dev->crypto_dev_sess_cnt);
-		ctx->r_id = (ctx->r_id - 1) % num_of_rps + 1;
-	} else {
+	num_of_rps = ctx->c_dev->num_of_rps;
+	if (num_of_rps == 0) {
 		print_error("No application ring configured\n");
 		return -1;
 	}
+
+	/* Select the ring in which this job has to be posted. */
+	ctx->r_id = atomic_inc_return(&ctx->c_dev->crypto_dev_sess_cnt)
+			% num_of_rps;
 
 	print_debug("C dev num of rings [%d] r_id [%d]\n",
 		    ctx->c_dev->num_of_rps, ctx->r_id);
@@ -717,11 +715,7 @@ static void create_default_config(struct crypto_dev_config *config,
 	print_debug("Total no of Rings : %d\n", max_ring);
 	for (; from_ring < max_ring; ++from_ring) {
 		config->ring[from_ring].ring_id = from_ring;
-		if (0 == from_ring) {
-			config->ring[from_ring].depth = 16;
-		} else {
-			config->ring[from_ring].depth = 1024;
-		}
+		config->ring[from_ring].depth = 1024;
 
 		print_debug("Ring [%d] default Depth : %d\n", from_ring,
 			    config->ring[from_ring].depth);
@@ -776,14 +770,12 @@ int32_t process_label(int8_t *label, int8_t *value)
 		}
 		config->num_of_rps = conv_value;
 		rings_spec = true;
-		/* Default values for all the rings */
-		/*create_default_config(config,0,config->num_of_rings); */
 	} else if (!strcmp(label, "<ring>") && (dev_start == true)) {
 		/* New ring information is starting here */
 		ring_start = true;
 		if (false == rings_spec) {
 			/* Default values for all the rings */
-			create_default_config(config, 0, 2);
+			create_default_config(config, 0, 1);
 			return 0;
 		}
 		if (ring_count >= FSL_CRYPTO_MAX_RING_PAIRS)
@@ -794,19 +786,15 @@ int32_t process_label(int8_t *label, int8_t *value)
 	} else if (!strcmp(label, "<end>")) {
 		if (ring_start == true) {
 			ring_start = false;
-			if (config->ring[ring_count].depth < 16) {
-				if (ring_count == 0) {
-					config->ring[ring_count].depth = 16;
-				} else {
-					config->ring[ring_count].depth = 128;
-				}
+			if (config->ring[ring_count].depth < 128) {
+				config->ring[ring_count].depth = 128;
 			}
 			ring_count++;
 		} else if (dev_start == true) {
 			/* FIX: IF GIVEN CONFIGURATION FAILS THEN MAKE DEFAULT
 			 * CONFIGURATION ENABLED */
-			if (config->num_of_rps <= 1) {
-				create_default_config(config, 0, 2);
+			if (config->num_of_rps < 1) {
+				create_default_config(config, 0, 1);
 			} else if (ring_count < config->num_of_rps) {
 				create_default_config(config, ring_count,
 						      config->num_of_rps);
@@ -1167,7 +1155,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		config->dev_no = fsl_pci_dev->dev_no;
 		strcpy(config->fw_file_path, FIRMWARE_FILE_DEFAULT_PATH);
 		print_debug("Firmware Path : %s\n", config->fw_file_path);
-		create_default_config(config, 0, 2);
+		create_default_config(config, 0, 1);
 	}
 	/* round ring lengths to powers of two */
 	pow2_rp_len(config);

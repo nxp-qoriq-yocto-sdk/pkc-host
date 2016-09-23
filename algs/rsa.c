@@ -495,10 +495,8 @@ int rsa_op(struct pkc_request *req)
 	if (!c_dev)
 		return -1;
 
-	/* Choose ring id with round robin. Start ring counter from 1 since
-	 * ring 0 is used for commands */
 	sess_cnt = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
-	r_id = 1 + sess_cnt % (c_dev->num_of_rps - 1);
+	r_id = sess_cnt % c_dev->num_of_rps;
 	}
 
 	ctx_pool_id = sess_cnt % NR_CTX_POOLS;
