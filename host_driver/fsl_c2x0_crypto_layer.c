@@ -186,27 +186,22 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	uint32_t ob_mem_len = sizeof(struct host_mem_layout);
 	uint32_t total_ring_slots;
 
-	/* Correct the ring depths to power of 2 */
 	total_ring_slots = count_ring_slots(config);
 	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.drv_resp_rings = ob_mem_len;
 	ob_mem_len += total_ring_slots * sizeof(struct resp_ring_entry);
 
-	/* For each rp we need a local memory for indexes */
-	/* FIXME: we should probably allocate
-	 * 		config->num_of_rings + NUM_OF_RESP_RINGS instead of
-	 * 		config->num_of_rings + 1 */
 	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.idxs_mem = ob_mem_len;
-	ob_mem_len += (config->num_of_rings + 1) * (sizeof(struct ring_idxs_mem));
+	ob_mem_len += config->num_of_rings * sizeof(struct ring_idxs_mem);
 
 	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.cntrs_mem = ob_mem_len;
-	ob_mem_len += (config->num_of_rings + 1) * sizeof(struct ring_counters_mem);
+	ob_mem_len += config->num_of_rings * sizeof(struct ring_counters_mem);
 
 	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.r_s_cntrs_mem = ob_mem_len;
-	ob_mem_len += (config->num_of_rings + 1) * sizeof(struct ring_counters_mem);
+	ob_mem_len += config->num_of_rings * sizeof(struct ring_counters_mem);
 
 	/* We have to make sure that we align the output buffer pool to DMA */
 	ob_mem_len = cache_line_align(ob_mem_len);
