@@ -98,7 +98,7 @@ void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	INIT_LIST_HEAD(&(isr_ctx->ring_list_head));
 
 	/* Affine the ring to CPU & ISR */
-	for (i = 0; i < config->num_of_rings; i++) {
+	for (i = 0; i < config->num_of_rps; i++) {
 		while (!(wt_cpu_mask & (1 << core_no))) {
 			core_no = cpumask_next(core_no, cpu_online_mask) % nr_cpu_ids;
 		}
@@ -169,7 +169,7 @@ static uint32_t count_ring_slots(struct crypto_dev_config *config)
 {
 	uint32_t i, len = 0;
 
-	for (i = 0; i < config->num_of_rings; i++) {
+	for (i = 0; i < config->num_of_rps; i++) {
 		len += config->ring[i].depth;
 	}
 	return len;
@@ -193,15 +193,15 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 
 	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.idxs_mem = ob_mem_len;
-	ob_mem_len += config->num_of_rings * sizeof(struct ring_idxs_mem);
+	ob_mem_len += config->num_of_rps * sizeof(struct ring_idxs_mem);
 
 	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.cntrs_mem = ob_mem_len;
-	ob_mem_len += config->num_of_rings * sizeof(struct ring_counters_mem);
+	ob_mem_len += config->num_of_rps * sizeof(struct ring_counters_mem);
 
 	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.r_s_cntrs_mem = ob_mem_len;
-	ob_mem_len += config->num_of_rings * sizeof(struct ring_counters_mem);
+	ob_mem_len += config->num_of_rps * sizeof(struct ring_counters_mem);
 
 	/* We have to make sure that we align the output buffer pool to DMA */
 	ob_mem_len = cache_line_align(ob_mem_len);
@@ -319,7 +319,7 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 	/* all response ring entries start here. Each ring has rp->depth entries */
 	struct resp_ring_entry *resp_r = dev->host_mem->drv_resp_rings;
 
-	for (i = 0; i < dev->num_of_rings; i++) {
+	for (i = 0; i < dev->num_of_rps; i++) {
 		rp = &(dev->ring_pairs[i]);
 
 		rp->dev = dev;
@@ -352,13 +352,13 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
 			(uint8_t *) str_state, strlen(str_state));
 
-	iowrite8(dev->num_of_rings, &config->num_of_rps);
+	iowrite8(dev->num_of_rps, &config->num_of_rps);
 	iowrite8(1, &config->max_pri);
 	iowrite32be(dev->tot_req_mem_size, &config->req_mem_size);
 	iowrite32be(dev->ob_mem.r_s_cntrs_mem, &config->r_s_cntrs);
 
 	print_debug("HS_INIT_CONFIG Details\n");
-	print_debug("Num of rps    : %d\n", dev->num_of_rings);
+	print_debug("Num of ring pairs: %d\n", dev->num_of_rps);
 	print_debug("Req mem size  : %d\n", dev->tot_req_mem_size);
 	print_debug("R S counters  : %x\n", dev->ob_mem.r_s_cntrs_mem);
 	print_debug("Sending FW_INIT_CONFIG command at addr: %p\n",
@@ -544,7 +544,7 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 			}
 			hs_init_rp_complete(dev, config, rid);
 			rid++;
-			if (rid < dev->num_of_rings) {
+			if (rid < dev->num_of_rps) {
 				send_hs_init_ring_pair(dev, &(config->ring[rid]));
 			} else {
 				send_hs_complete(dev);
@@ -887,14 +887,14 @@ int prepare_crypto_cfg_info_string(struct crypto_dev_config *config,
 
 	ret = snprintf(cryp_cfg_str, rem_len,
 			"Tot rings:%d\nrid,dpth,affin,prio,ord\n",
-			config->num_of_rings);
+			config->num_of_rps);
 
 	if ((ret < 0) || (ret >= rem_len))
 		return ret;
 	rem_len -= ret;
 	cryp_cfg_str += ret;
 
-	for (i = 0; i < config->num_of_rings; i++) {
+	for (i = 0; i < config->num_of_rps; i++) {
 		flags = config->ring[i].flags;
 		ret = snprintf(cryp_cfg_str, rem_len, " %d,%4d,%d,%d,%d\n",
 				i, config->ring[i].depth, f_get_a(flags),
@@ -955,13 +955,13 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 		return NULL;
 
 	c_dev->ring_pairs = kzalloc(sizeof(fsl_h_rsrc_ring_pair_t) *
-				    config->num_of_rings, GFP_KERNEL);
+				    config->num_of_rps, GFP_KERNEL);
 	if (!c_dev->ring_pairs)
 		goto rp_fail;
 
 	c_dev->priv_dev = fsl_pci_dev;
 	c_dev->config = config;
-	c_dev->num_of_rings = config->num_of_rings;
+	c_dev->num_of_rps = config->num_of_rps;
 
 	/* HACK */
 	fsl_pci_dev->crypto_dev = c_dev;
@@ -1075,7 +1075,7 @@ void cleanup_crypto_device(fsl_crypto_dev_t *dev)
 		return;
 #if 0
 	int i = 0;
-	for (i = 0; i < dev->num_of_rings; i++) {
+	for (i = 0; i < dev->num_of_rps; i++) {
 		/* Delete all the links */
 		list_del(&(dev->ring_pairs[i].isr_ctx_list_node));
 		list_del(&(dev->ring_pairs[i].bh_ctx_list_node));

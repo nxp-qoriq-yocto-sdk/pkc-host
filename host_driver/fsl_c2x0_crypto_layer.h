@@ -110,7 +110,7 @@ struct crypto_dev_config {
 
 	uint8_t *firmware;
 
-	uint8_t num_of_rings;
+	uint8_t num_of_rps;
 
 /* Safe MAX number of ring pairs -
  * Only required for some static data structures. */
@@ -417,7 +417,7 @@ typedef struct fsl_crypto_dev {
 	 * of the available static contexts */
 	ctx_pool_t *ctx_pool;
 
-	uint8_t num_of_rings;
+	uint8_t num_of_rps;
 	fsl_h_rsrc_ring_pair_t *ring_pairs;
 
 	/* Holds the count of number of crypto dev sessions */

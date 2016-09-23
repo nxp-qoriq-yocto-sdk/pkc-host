@@ -282,7 +282,7 @@ int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
 	init_completion(&r_init.completion);
 
 	/* at least two rings must be configured */
-	if (c_dev->num_of_rings > 1) {
+	if (c_dev->num_of_rps > 1) {
 		r_id = 1;
 	} else {
 		print_error("No application ring configured\n");

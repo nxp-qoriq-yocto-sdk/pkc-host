@@ -169,7 +169,7 @@ void sysfs_napi_loop_count_set(char *fname, char *count, int len)
 
 int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 {
-	uint32_t no_of_app_rings = 0;
+	uint32_t num_of_rps = 0;
 
 	if (dev_no == 0) {
 		print_error("No Device configured\n");
@@ -182,20 +182,20 @@ int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 		return -1;
 	}
 
-	no_of_app_rings = ctx->c_dev->num_of_rings - 1;
+	num_of_rps = ctx->c_dev->num_of_rps - 1;
 
 	/* Select the ring in which this job has to be posted. */
 
-	if (0 < no_of_app_rings) {
+	if (0 < num_of_rps) {
 		ctx->r_id = atomic_inc_return(&ctx->c_dev->crypto_dev_sess_cnt);
-		ctx->r_id = (ctx->r_id - 1) % no_of_app_rings + 1;
+		ctx->r_id = (ctx->r_id - 1) % num_of_rps + 1;
 	} else {
 		print_error("No application ring configured\n");
 		return -1;
 	}
 
 	print_debug("C dev num of rings [%d] r_id [%d]\n",
-		    ctx->c_dev->num_of_rings, ctx->r_id);
+		    ctx->c_dev->num_of_rps, ctx->r_id);
 
 	return 0;
 }
@@ -801,7 +801,7 @@ static void create_default_config(struct crypto_dev_config *config,
 		print_debug("Ring [%d] default Order : 0\n", from_ring);
 
 	}
-	config->num_of_rings = max_ring;
+	config->num_of_rps = max_ring;
 }
 
 /*******************************************************************************
@@ -849,7 +849,7 @@ int32_t process_label(int8_t *label, int8_t *value)
 		if (FSL_CRYPTO_MAX_RING_PAIRS < conv_value || 0 > conv_value) {
 			conv_value = FSL_CRYPTO_MAX_RING_PAIRS;
 		}
-		config->num_of_rings = conv_value;
+		config->num_of_rps = conv_value;
 		rings_spec = true;
 		/* Default values for all the rings */
 		/*create_default_config(config,0,config->num_of_rings); */
@@ -898,12 +898,12 @@ int32_t process_label(int8_t *label, int8_t *value)
 		} else if (dev_start == true) {
 			/* FIX: IF GIVEN CONFIGURATION FAILS THEN MAKE DEFAULT
 			 * CONFIGURATION ENABLED */
-			if (1 >= config->num_of_rings) {
+			if (config->num_of_rps <= 1) {
 				create_default_config(config, 0, 2);
-			} else if (ring_count < config->num_of_rings) {
+			} else if (ring_count < config->num_of_rps) {
 				create_default_config(config, ring_count,
-						      config->num_of_rings);
-			} else if (ring_count > config->num_of_rings) {
+						      config->num_of_rps);
+			} else if (ring_count > config->num_of_rps) {
 				return -1;
 			}
 			rings_spec = false;
@@ -1146,7 +1146,7 @@ static void pow2_rp_len(struct crypto_dev_config *config)
 {
 	uint32_t i;
 	/* Correct the ring depths to be power of 2 */
-	for (i = 0; i < config->num_of_rings; i++) {
+	for (i = 0; i < config->num_of_rps; i++) {
 		config->ring[i].depth = round_to_power2(config->ring[i].depth);
 	}
 }
@@ -1265,7 +1265,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	/* round ring lengths to powers of two */
 	pow2_rp_len(config);
 
-	err = get_irq_vectors(fsl_pci_dev, config->num_of_rings);
+	err = get_irq_vectors(fsl_pci_dev, config->num_of_rps);
 	if (err)
 		goto free_config;
 
