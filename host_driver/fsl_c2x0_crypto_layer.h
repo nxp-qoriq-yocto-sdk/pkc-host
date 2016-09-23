@@ -190,13 +190,13 @@ struct dev_handshake_mem {
 		struct c_config_data {
 			uint8_t num_of_rps;  /* total number of rings, in and out */
 			uint8_t max_pri;
-			uint8_t num_of_fwresp_rings; /* number of output rings */
+			uint8_t padding2; /* number of output rings */
 			uint32_t req_mem_size;  /* memory required for requests by all rings */
-			uint32_t drv_resp_ring; /* dma address for responses for all rings */
-			uint32_t fw_resp_ring; /* dma address for another response ring (512 entries)*/
+			uint32_t padding3; /* dma address for responses for all rings */
+			uint32_t padding4; /* dma address for another response ring (512 entries)*/
 			uint32_t padding1; /* not used by the firmware */
 			uint32_t r_s_cntrs;/* dma address for other shadow counters */
-			uint32_t fw_resp_ring_depth; /* defaults to 512 - size of ring fw_resp_ring */
+			uint32_t padding5; /* defaults to 512 - size of ring fw_resp_ring */
 		} config;
 		struct c_ring_data {
 			uint8_t rid;
@@ -339,21 +339,6 @@ struct pool_info {
 	struct buffer_pool buf_pool;
 };
 
-/* This structure defines the resp ring interfacing with the firmware */
-struct fw_resp_ring {
-	phys_addr_t p_addr;
-	void *v_addr;
-	uint32_t depth;
-
-	uint8_t id;
-
-	uint32_t *intr_ctrl_flag;
-	struct ring_idxs_mem *idxs;
-	struct ring_counters_mem *cntrs;
-	struct ring_counters_mem *r_s_cntrs;
-	struct ring_counters_mem *r_s_c_cntrs;
-};
-
 /*******************************************************************************
 Description :	Contains the structured layout of the driver mem - outbound mem
 Fields      :	hs_mem	: Handshake memory - 64bytes
@@ -368,7 +353,6 @@ Fields      :	hs_mem	: Handshake memory - 64bytes
 struct host_mem_layout {
 	struct host_handshake_mem hs_mem;
 
-	struct resp_ring_entry *fw_resp_ring;
 	struct resp_ring_entry *drv_resp_rings;
 	struct ring_idxs_mem *idxs_mem;
 	struct ring_counters_mem *cntrs_mem;
@@ -380,7 +364,6 @@ struct host_mem_layout {
 
 struct driver_ob_mem {
 	uint32_t drv_resp_rings;
-	uint32_t fw_resp_ring;
 	uint32_t ip_pool;
 	uint32_t op_pool;
 	uint32_t idxs_mem;
@@ -441,10 +424,6 @@ typedef struct fsl_crypto_dev {
 	 * of the available static contexts */
 	ctx_pool_t *ctx_pool;
 
-	/* Firmware resp ring information */
-#define NUM_OF_RESP_RINGS 1
-	struct fw_resp_ring fw_resp_rings[NUM_OF_RESP_RINGS];
-
 	uint8_t num_of_rings;
 	fsl_h_rsrc_ring_pair_t *ring_pairs;
 
@@ -472,7 +451,6 @@ void init_ip_pool(fsl_crypto_dev_t *dev);
 void init_op_pool(fsl_crypto_dev_t *dev);
 int init_crypto_ctx_pool(fsl_crypto_dev_t *dev);
 void init_handshake(fsl_crypto_dev_t *dev);
-void init_fw_resp_ring(fsl_crypto_dev_t *dev);
 void init_ring_pairs(fsl_crypto_dev_t *dev);
 void f_set_a(uint8_t *, uint8_t);
 void f_set_p(uint8_t *, uint8_t);

@@ -47,7 +47,6 @@ extern int32_t wt_cpu_mask;
 extern struct bh_handler __percpu *per_core;
 
 #define DEFAULT_HOST_OP_BUFFER_POOL_SIZE	(1*1024)
-#define DEFAULT_FIRMWARE_RESP_RING_DEPTH	(128*4)
 #define FIRMWARE_IP_BUFFER_POOL_SIZE		(512*1024)
 
 /* Application ring properties bit masks and shift */
@@ -186,7 +185,6 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 {
 	uint32_t ob_mem_len = sizeof(struct host_mem_layout);
 	uint32_t total_ring_slots;
-	uint32_t fw_rr_size;
 
 	/* Correct the ring depths to power of 2 */
 	total_ring_slots = count_ring_slots(config);
@@ -214,16 +212,6 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	ob_mem_len = cache_line_align(ob_mem_len);
 	dev->ob_mem.op_pool = ob_mem_len;
 	ob_mem_len += DEFAULT_HOST_OP_BUFFER_POOL_SIZE;
-
-	fw_rr_size = DEFAULT_FIRMWARE_RESP_RING_DEPTH * sizeof(struct resp_ring_entry);
-	/* See if we can fit fw_resp_ring before the end of this page and if not
-	 * put it in the next page */
-	if ((PAGE_SIZE - (ob_mem_len % PAGE_SIZE)) < fw_rr_size) {
-		ob_mem_len = page_align(ob_mem_len);
-	}
-
-	dev->ob_mem.fw_resp_ring = ob_mem_len;
-	ob_mem_len += fw_rr_size;
 
 	/* For IP Pool we need to make sure that we always
 	 * get 32BYTE aligned address */
@@ -274,7 +262,6 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	 * write to. We calculate the addresses with the correct offset and
 	 * then communicate them to the device in the handshake operation */
 	dev->host_mem = host_v_addr;
-	dev->host_mem->fw_resp_ring = host_v_addr + dev->ob_mem.fw_resp_ring;
 	dev->host_mem->drv_resp_rings = host_v_addr + dev->ob_mem.drv_resp_rings;
 	dev->host_mem->idxs_mem = host_v_addr + dev->ob_mem.idxs_mem;
 	dev->host_mem->cntrs_mem = host_v_addr + dev->ob_mem.cntrs_mem;
@@ -285,7 +272,6 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	print_debug("====== OB MEM POINTERS =======\n");
 	print_debug("Hmem		: %p\n", dev->host_mem);
 	print_debug("H HS Mem		: %p\n", &(dev->host_mem->hs_mem));
-	print_debug("Fw resp ring	: %p\n", dev->host_mem->fw_resp_ring);
 	print_debug("Drv resp rings	: %p\n", dev->host_mem->drv_resp_rings);
 	print_debug("Idxs mem	        : %p\n", dev->host_mem->idxs_mem);
 	print_debug("cntrs mem          : %p\n", dev->host_mem->cntrs_mem);
@@ -331,35 +317,6 @@ void init_handshake(fsl_crypto_dev_t *dev)
 	iowrite32be(h_val, (void *) &dev->c_hs_mem->h_msi_mem_h);
 }
 
-void init_fw_resp_ring(fsl_crypto_dev_t *dev)
-{
-	struct fw_resp_ring *fw_ring;
-	uint8_t i;
-	uint8_t id = dev->num_of_rings;
-	/*int offset = 0;*/
-
-	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
-		fw_ring = &dev->fw_resp_rings[i];
-		fw_ring->id = i;
-		fw_ring->depth = DEFAULT_FIRMWARE_RESP_RING_DEPTH;
-		fw_ring->v_addr = dev->host_mem->fw_resp_ring;
-		fw_ring->p_addr = __pa(fw_ring->v_addr);
-
-		/* We allocated "config->num_of_rings + 1" in alloc_ob_mem and
-		 * id is the last one in this array of rings. But if
-		 * NUM_OF_RESP_RINGS is not 1, we've got ourself a mess here */
-		fw_ring->idxs = &(dev->host_mem->idxs_mem[id]);
-		fw_ring->cntrs = &(dev->host_mem->cntrs_mem[id]);
-		fw_ring->r_s_cntrs = &(dev->host_mem->r_s_cntrs_mem[id]);
-		fw_ring->r_s_c_cntrs = NULL;
-
-		/* FIXME: clean-up leftovers. It probably makes sense to actually
-		 * use offset variable when NUM_OF_RESP_RINGS != 1
-		offset += (DEFAULT_FIRMWARE_RESP_RING_DEPTH *
-			   sizeof(struct resp_ring_entry));*/
-	}
-}
-
 void init_ring_pairs(fsl_crypto_dev_t *dev)
 {
 	fsl_h_rsrc_ring_pair_t *rp;
@@ -402,16 +359,12 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 
 	iowrite8(dev->num_of_rings, &config->num_of_rps);
 	iowrite8(1, &config->max_pri);
-	iowrite8(NUM_OF_RESP_RINGS, &config->num_of_fwresp_rings);
 	iowrite32be(dev->tot_req_mem_size, &config->req_mem_size);
-	iowrite32be(dev->ob_mem.fw_resp_ring, &config->fw_resp_ring);
 	iowrite32be(dev->ob_mem.r_s_cntrs_mem, &config->r_s_cntrs);
-	iowrite32be(DEFAULT_FIRMWARE_RESP_RING_DEPTH, &config->fw_resp_ring_depth);
 
 	print_debug("HS_INIT_CONFIG Details\n");
 	print_debug("Num of rps    : %d\n", dev->num_of_rings);
 	print_debug("Req mem size  : %d\n", dev->tot_req_mem_size);
-	print_debug("Fw resp ring  : %x\n", dev->ob_mem.fw_resp_ring);
 	print_debug("R S counters  : %x\n", dev->ob_mem.r_s_cntrs_mem);
 	print_debug("Sending FW_INIT_CONFIG command at addr: %p\n",
 			&(dev->c_hs_mem->state));
@@ -513,12 +466,9 @@ void hs_firmware_up(fsl_crypto_dev_t *dev)
 void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
 {
 	struct config_data *hscfg = &dev->host_mem->hs_mem.data.config;
-	void *ptr;
 	uint32_t r_s_c_cntrs;
 	uint32_t s_c_cntrs;
 	uint32_t ip_pool;
-	uint32_t resp_intr_ctrl_flag;
-	int i;
 
 	print_debug("--- FW_INIT_CONFIG_COMPLETE ---\n");
 
@@ -527,30 +477,11 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	r_s_c_cntrs = be32_to_cpu(hscfg->r_s_c_cntrs);
 	s_c_cntrs = be32_to_cpu(hscfg->s_c_cntrs);
 	ip_pool = be32_to_cpu(hscfg->ip_pool);
-	resp_intr_ctrl_flag = be32_to_cpu(hscfg->resp_intr_ctrl_flag);
 
 	dev->r_s_c_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + r_s_c_cntrs;
 	dev->s_c_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_c_cntrs;
 	dev->dev_ip_pool.d_p_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr + ip_pool;
 	dev->dev_ip_pool.h_v_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + ip_pool;
-
-	ptr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + resp_intr_ctrl_flag;
-	for (i = 0; i < NUM_OF_RESP_RINGS; i++) {
-		/* FIXME: this assignment is wrong. There is an inconsistency about
-		 * the total number of response rings. In some places it is simply
-		 * assumed there is only one. In other places as in here more than
-		 * one can be the case.
-		 * Here, the addresses of intr_ctrl_flag are _not_ uint32_t away
-		 * one from another. Instead they are distanced by fw_resp_ring
-		 * away from each other (or probably driver_resp_ring in firmware ?)
-		 * Even so, playing with pointers like this asks for trouble.
-		 * And we might need more than one response ring for increased
-		 * performance
-		 */
-		dev->fw_resp_rings[i].intr_ctrl_flag = ptr + (i * sizeof(uint32_t *));
-		dev->fw_resp_rings[i].r_s_c_cntrs = &(dev->r_s_c_cntrs[dev->num_of_rings + i]);
-		print_debug("FW Intrl Ctrl Flag: %p\n", dev->fw_resp_rings[i].intr_ctrl_flag);
-	}
 
 	print_debug(" ----- Details from firmware  -------\n");
 	print_debug("SRAM H V ADDR: %p\n", dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr);
@@ -1061,10 +992,6 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 		print_error("Failed to allocate context pool\n");
 		goto ctx_pool_fail;
 	}
-
-	print_debug("Init fw resp ring....\n");
-	init_fw_resp_ring(c_dev);
-	print_debug("Init fw resp ring complete...\n");
 
 	print_debug("Init ring  pair....\n");
 	init_ring_pairs(c_dev);
