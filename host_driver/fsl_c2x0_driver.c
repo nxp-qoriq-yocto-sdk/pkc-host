@@ -789,17 +789,9 @@ static void create_default_config(struct crypto_dev_config *config,
 		} else {
 			config->ring[from_ring].depth = 1024;
 		}
-		/* default values for affinity, priority and order */
-		f_set_a(&config->ring[from_ring].flags, 0);
-		f_set_p(&config->ring[from_ring].flags, 1);
-		f_set_o(&config->ring[from_ring].flags, 0);
 
 		print_debug("Ring [%d] default Depth : %d\n", from_ring,
 			    config->ring[from_ring].depth);
-		print_debug("Ring [%d] default Affinity : 0\n", from_ring);
-		print_debug("Ring [%d] default Priority : 1\n", from_ring);
-		print_debug("Ring [%d] default Order : 0\n", from_ring);
-
 	}
 	config->num_of_rps = max_ring;
 }
@@ -866,24 +858,6 @@ int32_t process_label(int8_t *label, int8_t *value)
 		config->ring[ring_count].ring_id = ring_count;
 	} else if (!strcmp(label, "depth") && (ring_start == true)) {
 		config->ring[ring_count].depth = str_to_int(value);
-	} else if (!strcmp(label, "affinity") && (ring_start == true)) {
-		conv_value = str_to_int(value);
-		f_set_a(&config->ring[ring_count].flags, (uint8_t)conv_value);
-	} else if (!strcmp(label, "priority") && (ring_start == true)) {
-		conv_value = str_to_int(value);
-		if (16 < conv_value) {
-			conv_value = 16;
-		}
-		if (0 >= conv_value) {
-			conv_value = 1;
-		}
-		f_set_p(&config->ring[ring_count].flags, (uint8_t)conv_value);
-	} else if (!strcmp(label, "order") && (ring_start == true)) {
-		conv_value = str_to_int(value);
-		if ( conv_value > 1 || conv_value < 0) {
-			conv_value = 0;
-		}
-		f_set_o(&config->ring[ring_count].flags, (uint8_t)conv_value);
 	} else if (!strcmp(label, "<end>")) {
 		if (ring_start == true) {
 			ring_start = false;

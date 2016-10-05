@@ -42,7 +42,6 @@
 
 /** SYSFS RELATED INLINE FUNCTIONS **/
 #define NUM_OF_PCI_SYSFS_FILES    PCI_SYS_FILES_END - PCI_SYS_FILES_START - 1
-#define NUM_OF_CRYPTO_SYSFS_FILES CRYPTO_SYS_FILES_END - CRYPTO_SYS_FILES_START - 1
 #define NUM_OF_STATS_SYSFS_FILES  STATS_SYS_FILES_END - STATS_SYS_FILES_START - 1
 #define NUM_OF_TEST_SYSFS_FILES   TEST_SYS_FILES_END - TEST_SYS_FILES_START - 1
 
@@ -72,11 +71,6 @@ typedef enum sys_files_id {
 	PCI_INFO_SYS_FILE,
 	PCI_SYS_FILES_END,
 
-	/* Block of enums for files in crypto dir */
-	CRYPTO_SYS_FILES_START,
-	CRYPTO_INFO_SYS_FILE,
-	CRYPTO_SYS_FILES_END,
-
 	/* Block of enums for files in stat dir */
 	STATS_SYS_FILES_START,
 	STATS_REQ_COUNT_SYS_FILE,
@@ -102,13 +96,11 @@ typedef struct dev_sysfs_entries {
 	struct sysfs_dir *dev_dir;
 
 	struct sysfs_dir *pci_sub_dir;
-	struct sysfs_dir *crypto_sub_dir;
 	struct sysfs_dir *stats_sub_dir;
 	struct sysfs_dir *test_sub_dir;
 
 	sysfs_file_t dev_file;
 	sysfs_file_t pci_files[NUM_OF_PCI_SYSFS_FILES];
-	sysfs_file_t crypto_files[NUM_OF_CRYPTO_SYSFS_FILES];
 	sysfs_file_t stats_files[NUM_OF_STATS_SYSFS_FILES];
 	sysfs_file_t test_files[NUM_OF_TEST_SYSFS_FILES];
 } dev_sysfs_entries_t;

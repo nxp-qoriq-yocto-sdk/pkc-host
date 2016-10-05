@@ -38,14 +38,13 @@
 #include "fsl_c2x0_driver.h"
 
 /* Variables holding the names of sysfs entries to be created */
-int8_t *dev_sysfs_sub_dirs[5] = {"pci", "crypto", "stat", "test-i" };
+int8_t *dev_sysfs_sub_dirs[] = {"pci", "stat", "test-i"};
 
 /*int8_t *test_sysfs_sub_dirs[] = {"RSA", "DSA", "ECDSA", "DH", "ECDH"};*/
 
 int8_t *dev_sysfs_file[1] = { "state" };
 
 int8_t *pci_sysfs_file_names[NUM_OF_PCI_SYSFS_FILES] = { "info" };
-int8_t *crypto_sysfs_file_names[NUM_OF_CRYPTO_SYSFS_FILES] = { "info" };
 
 int8_t *stat_sysfs_file_names[NUM_OF_STATS_SYSFS_FILES] = {
 	"req_count", "resp_count"
@@ -57,7 +56,6 @@ int8_t *test_sysfs_file_names[NUM_OF_TEST_SYSFS_FILES] = {
 
 uint8_t dev_sysfs_file_str_flag[1] = { 1 };
 uint8_t pci_sysfs_file_str_flag[NUM_OF_PCI_SYSFS_FILES] = { 1 };
-uint8_t crypto_sysfs_file_str_flag[NUM_OF_CRYPTO_SYSFS_FILES] = { 1 };
 uint8_t stat_sysfs_file_str_flag[NUM_OF_STATS_SYSFS_FILES] = { 0, 0 };
 uint8_t test_sysfs_file_str_flag[NUM_OF_TEST_SYSFS_FILES] = { 1, 1, 1, 0 };
 
@@ -241,15 +239,12 @@ int32_t init_sysfs(struct c29x_dev *fsl_pci_dev)
 	 * inside the main device directory */
 	fsl_pci_dev->sysfs.pci_sub_dir =
 	    create_sysfs_dir(dev_sysfs_sub_dirs[0], fsl_pci_dev->sysfs.dev_dir);
-	fsl_pci_dev->sysfs.crypto_sub_dir =
-	    create_sysfs_dir(dev_sysfs_sub_dirs[1], fsl_pci_dev->sysfs.dev_dir);
 	fsl_pci_dev->sysfs.stats_sub_dir =
-	    create_sysfs_dir(dev_sysfs_sub_dirs[2], fsl_pci_dev->sysfs.dev_dir);
+	    create_sysfs_dir(dev_sysfs_sub_dirs[1], fsl_pci_dev->sysfs.dev_dir);
 	fsl_pci_dev->sysfs.test_sub_dir =
-	    create_sysfs_dir(dev_sysfs_sub_dirs[3], fsl_pci_dev->sysfs.dev_dir);
+	    create_sysfs_dir(dev_sysfs_sub_dirs[2], fsl_pci_dev->sysfs.dev_dir);
 
 	if (unlikely((NULL == fsl_pci_dev->sysfs.pci_sub_dir)
-		     || (NULL == fsl_pci_dev->sysfs.crypto_sub_dir)
 		     || (NULL == fsl_pci_dev->sysfs.stats_sub_dir)
 		     || (NULL == fsl_pci_dev->sysfs.test_sub_dir)
 	    )) {
@@ -278,20 +273,6 @@ int32_t init_sysfs(struct c29x_dev *fsl_pci_dev)
 				      fsl_pci_dev->sysfs.pci_sub_dir,
 				      pci_sysfs_file_str_flag[i]);
 		if (unlikely(NULL == fsl_pci_dev->sysfs.pci_files[i].file)) {
-			print_error("Dev file creation failed\n");
-			return -1;
-		}
-	}
-
-	/* CRYPTO sysfs files */
-	for (i = 0; i < NUM_OF_CRYPTO_SYSFS_FILES; i++) {
-		fsl_pci_dev->sysfs.crypto_files[i].name =
-		    crypto_sysfs_file_names[i];
-		fsl_pci_dev->sysfs.crypto_files[i].file =
-		    create_sysfs_file(fsl_pci_dev->sysfs.crypto_files[i].name,
-				      fsl_pci_dev->sysfs.crypto_sub_dir,
-				      crypto_sysfs_file_str_flag[i]);
-		if (unlikely(NULL == fsl_pci_dev->sysfs.crypto_files[i].file)) {
 			print_error("Dev file creation failed\n");
 			return -1;
 		}
@@ -332,11 +313,6 @@ void sysfs_cleanup(struct c29x_dev *fsl_pci_dev)
 		delete_sysfs_file(fsl_pci_dev->sysfs.pci_files[i].file,
 				  fsl_pci_dev->sysfs.pci_sub_dir);
 	}
-
-	for (i = 0; i < NUM_OF_CRYPTO_SYSFS_FILES; i++) {
-		delete_sysfs_file(fsl_pci_dev->sysfs.crypto_files[i].file,
-				  fsl_pci_dev->sysfs.crypto_sub_dir);
-	}
 	for (i = 0; i < NUM_OF_STATS_SYSFS_FILES; i++) {
 		delete_sysfs_file(fsl_pci_dev->sysfs.stats_files[i].file,
 				  fsl_pci_dev->sysfs.stats_sub_dir);
@@ -348,7 +324,6 @@ void sysfs_cleanup(struct c29x_dev *fsl_pci_dev)
 
 	/* Delete the subdirs */
 	delete_sysfs_dir(fsl_pci_dev->sysfs.pci_sub_dir);
-	delete_sysfs_dir(fsl_pci_dev->sysfs.crypto_sub_dir);
 	delete_sysfs_dir(fsl_pci_dev->sysfs.stats_sub_dir);
 	delete_sysfs_dir(fsl_pci_dev->sysfs.test_sub_dir);
 
@@ -367,9 +342,6 @@ struct k_sysfs_file *get_sys_file(struct c29x_dev *fsl_pci_dev, sys_files_id_t i
 	} else if (id > PCI_SYS_FILES_START && id < PCI_SYS_FILES_END) {
 		id -= PCI_SYS_FILES_START + 1;
 		file = fsl_pci_dev->sysfs.pci_files[id].file;
-	} else if (id > CRYPTO_SYS_FILES_START && id < CRYPTO_SYS_FILES_END) {
-		id -= CRYPTO_SYS_FILES_START + 1;
-		file = fsl_pci_dev->sysfs.crypto_files[id].file;
 	} else if (id > STATS_SYS_FILES_START && id < STATS_SYS_FILES_END) {
 		id -= STATS_SYS_FILES_START + 1;
 		file = fsl_pci_dev->sysfs.stats_files[id].file;

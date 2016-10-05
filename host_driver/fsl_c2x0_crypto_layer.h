@@ -119,7 +119,6 @@ struct crypto_dev_config {
 	struct ring_info {
 		ring_id_t ring_id;
 		uint32_t depth;
-		uint8_t flags;
 		uint32_t msi_addr_l;
 		uint32_t msi_addr_h;
 		uint16_t msi_data;
@@ -188,13 +187,13 @@ struct dev_handshake_mem {
 		 * Addresses are dma addresses on host for data located in OB mem */
 		struct c_config_data {
 			uint8_t num_of_rps;  /* total number of rings, in and out */
-			uint8_t max_pri;
+			uint8_t padding;
 			uint32_t req_mem_size;  /* memory required for requests by all rings */
 			uint32_t r_s_cntrs;/* dma address for other shadow counters */
 		} config;
 		struct c_ring_data {
 			uint8_t rid;
-			uint8_t props;
+			uint8_t padding;
 			uint16_t msi_data;
 			uint32_t depth;
 			uint32_t resp_ring_offset;
@@ -443,12 +442,6 @@ void init_op_pool(fsl_crypto_dev_t *dev);
 int init_crypto_ctx_pool(fsl_crypto_dev_t *dev);
 void init_handshake(fsl_crypto_dev_t *dev);
 void init_ring_pairs(fsl_crypto_dev_t *dev);
-void f_set_a(uint8_t *, uint8_t);
-void f_set_p(uint8_t *, uint8_t);
-void f_set_o(uint8_t *, uint8_t);
-uint8_t f_get_a(uint8_t);
-uint8_t f_get_p(uint8_t);
-uint8_t f_get_o(uint8_t);
 void stop_device(fsl_crypto_dev_t *dev);
 void start_device(fsl_crypto_dev_t *dev);
 

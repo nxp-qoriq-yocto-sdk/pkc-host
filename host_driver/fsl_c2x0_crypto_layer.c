@@ -131,40 +131,6 @@ void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	}
 }
 
-/* utilities to get/set ring flags */
-uint8_t f_get_p(uint8_t flags)
-{
-	return (flags & APP_RING_PROP_PRIO_MASK) >> APP_RING_PROP_PRIO_SHIFT;
-}
-
-uint8_t f_get_a(uint8_t flags)
-{
-	return (flags & APP_RING_PROP_AFFINE_MASK) >> APP_RING_PROP_AFFINE_SHIFT;
-}
-
-uint8_t f_get_o(uint8_t flags)
-{
-	return (flags & APP_RING_PROP_ORDER_MASK) >> APP_RING_PROP_ORDER_SHIFT;
-}
-
-void f_set_p(uint8_t *flags, uint8_t priority)
-{
-	*flags &= ~APP_RING_PROP_PRIO_MASK;
-	*flags |= priority << APP_RING_PROP_PRIO_SHIFT;
-}
-
-void f_set_a(uint8_t *flags, uint8_t affinity)
-{
-	*flags &= ~APP_RING_PROP_AFFINE_MASK;
-	*flags |= affinity << APP_RING_PROP_AFFINE_SHIFT;
-}
-
-void f_set_o(uint8_t *flags, uint8_t order)
-{
-	*flags &= ~APP_RING_PROP_ORDER_MASK;
-	*flags |= order << APP_RING_PROP_ORDER_SHIFT;
-}
-
 static uint32_t count_ring_slots(struct crypto_dev_config *config)
 {
 	uint32_t i, len = 0;
@@ -353,7 +319,6 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 			(uint8_t *) str_state, strlen(str_state));
 
 	iowrite8(dev->num_of_rps, &config->num_of_rps);
-	iowrite8(1, &config->max_pri);
 	iowrite32be(dev->tot_req_mem_size, &config->req_mem_size);
 	iowrite32be(dev->ob_mem.r_s_cntrs_mem, &config->r_s_cntrs);
 
@@ -379,7 +344,6 @@ void send_hs_init_ring_pair(fsl_crypto_dev_t *dev, struct ring_info *ring)
 			(void *)dev->host_mem;
 
 	iowrite8(ring->ring_id, &dev->c_hs_mem->data.ring.rid);
-	iowrite8(ring->flags, &dev->c_hs_mem->data.ring.props);
 	iowrite16be(ring->msi_data, &dev->c_hs_mem->data.ring.msi_data);
 	iowrite32be(ring->depth, &dev->c_hs_mem->data.ring.depth);
 	iowrite32be(resp_r_offset, &dev->c_hs_mem->data.ring.resp_ring_offset);
@@ -516,7 +480,6 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	uint8_t rid = 0;
 	uint32_t timeoutcntr = 0;
-	uint32_t no_secs;
 #define LOOP_BREAK_TIMEOUT_MS		1000
 #define LOOP_BREAK_TIMEOUT_JIFFIES	msecs_to_jiffies(LOOP_BREAK_TIMEOUT_MS)
 #define HS_TIMEOUT_IN_MS		(50 * LOOP_BREAK_TIMEOUT_MS)
@@ -536,12 +499,6 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 			send_hs_init_ring_pair(dev, &(config->ring[rid]));
 			break;
 		case FW_INIT_RING_PAIR_COMPLETE:
-			no_secs = be32_to_cpu(dev->host_mem->hs_mem.data.device.no_secs);
-			if (f_get_a(config->ring[rid].flags) > no_secs) {
-				print_error("Wrong Affinity for the ring: %d\n", rid);
-				print_error("No of SECs are %d\n", no_secs);
-				goto error;
-			}
 			hs_init_rp_complete(dev, config, rid);
 			rid++;
 			if (rid < dev->num_of_rps) {
@@ -876,38 +833,6 @@ int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 	return 0;
 }
 
-#define CRYPTO_INFO_STR_LENGTH 200
-int prepare_crypto_cfg_info_string(struct crypto_dev_config *config,
-		uint8_t *cryp_cfg_str)
-{
-	uint32_t i;
-	uint8_t flags;
-	int rem_len = CRYPTO_INFO_STR_LENGTH;
-	int ret;
-
-	ret = snprintf(cryp_cfg_str, rem_len,
-			"Tot rings:%d\nrid,dpth,affin,prio,ord\n",
-			config->num_of_rps);
-
-	if ((ret < 0) || (ret >= rem_len))
-		return ret;
-	rem_len -= ret;
-	cryp_cfg_str += ret;
-
-	for (i = 0; i < config->num_of_rps; i++) {
-		flags = config->ring[i].flags;
-		ret = snprintf(cryp_cfg_str, rem_len, " %d,%4d,%d,%d,%d\n",
-				i, config->ring[i].depth, f_get_a(flags),
-				f_get_p(flags), f_get_o(flags));
-
-		if ((ret < 0) || (ret >= rem_len))
-			return ret;
-		rem_len -= ret;
-		cryp_cfg_str += ret;
-	}
-	return 0;
-}
-
 void stop_device(fsl_crypto_dev_t *dev)
 {
 	void *ccsr = dev->priv_dev->bars[MEM_TYPE_CONFIG].host_v_addr;
@@ -945,7 +870,6 @@ void start_device(fsl_crypto_dev_t *dev)
 fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 				  struct crypto_dev_config *config)
 {
-	uint8_t crypto_info_str[CRYPTO_INFO_STR_LENGTH];
 	fsl_crypto_dev_t *c_dev;
 	int err;
 
@@ -1026,14 +950,6 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 		print_error("Handshake failed\n");
 		goto error;
 	}
-
-	err = prepare_crypto_cfg_info_string(config, crypto_info_str);
-	if (err) {
-		print_error("Preparing crypto config info string failed\n");
-		goto error;
-	}
-	set_sysfs_value(fsl_pci_dev, CRYPTO_INFO_SYS_FILE, (uint8_t *)crypto_info_str,
-			strlen(crypto_info_str));
 
 	printk(KERN_INFO "[FSL-CRYPTO-OFFLOAD-DRV] DevId:%d DEVICE IS UP\n",
 	       c_dev->config->dev_no);
