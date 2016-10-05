@@ -45,7 +45,7 @@
 /* TODO: Remove this global callback. It is a broken implementation for testing */
 rsa_op_cb rsa_completion_cb;
 
-static void rsa_op_done(void *ctx, int32_t res)
+static void rsa_op_done(void *ctx, uint32_t res)
 {
 	crypto_op_ctx_t *crypto_ctx = ctx;
 

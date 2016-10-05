@@ -46,7 +46,7 @@
 dsa_op_cb dsa_completion_cb;
 dsa_op_cb ecdsa_completion_cb;
 
-static void dsa_op_done(void *ctx, int32_t res)
+static void dsa_op_done(void *ctx, uint32_t res)
 {
 	crypto_op_ctx_t *crypto_ctx = ctx;
 
@@ -57,7 +57,7 @@ static void dsa_op_done(void *ctx, int32_t res)
 	free_crypto_ctx(crypto_ctx->ctx_pool, crypto_ctx);
 }
 
-static void ecdsa_op_done(void *ctx, int32_t res)
+static void ecdsa_op_done(void *ctx, uint32_t res)
 {
 	crypto_op_ctx_t *crypto_ctx = ctx;
 

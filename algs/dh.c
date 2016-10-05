@@ -46,7 +46,7 @@
 dh_op_cb dh_completion_cb;
 dh_op_cb ecdh_completion_cb;
 
-static void dh_op_done(void *ctx, int32_t res)
+static void dh_op_done(void *ctx, uint32_t res)
 {
 	crypto_op_ctx_t *crypto_ctx = ctx;
 
@@ -57,7 +57,7 @@ static void dh_op_done(void *ctx, int32_t res)
 	free_crypto_ctx(crypto_ctx->ctx_pool, crypto_ctx);
 }
 
-static void ecdh_op_done(void *ctx, int32_t res)
+static void ecdh_op_done(void *ctx, uint32_t res)
 {
 	crypto_op_ctx_t *crypto_ctx = ctx;
 

@@ -40,7 +40,7 @@
 
 struct rng_init_compl {
 	struct completion completion;
-	int result;
+	uint32_t result;
 };
 
 static int32_t self_test_chk_res(uint32_t *output)
@@ -71,7 +71,7 @@ static int32_t self_test_chk_res(uint32_t *output)
 	return status;
 }
 
-static void rng_init_done(void *ctx, int32_t res)
+static void rng_init_done(void *ctx, uint32_t res)
 {
 	crypto_op_ctx_t *crypto_ctx = ctx;
 

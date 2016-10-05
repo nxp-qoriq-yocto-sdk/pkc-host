@@ -278,7 +278,7 @@ Fields      :	sec_desc: DMA address of the sec addr valid in dev domain
 *******************************************************************************/
 struct resp_ring_entry {
 	dev_dma_addr_t sec_desc;
-	volatile int32_t result;
+	volatile uint32_t result;
 } __packed;
 
 /*******************************************************************************

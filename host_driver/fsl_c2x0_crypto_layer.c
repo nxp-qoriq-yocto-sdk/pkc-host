@@ -1124,7 +1124,7 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 	uint32_t resp_cnt = 0;
 	uint32_t ri;
 	uint64_t desc;
-	int32_t res = 0;
+	uint32_t res;
 	struct device *my_dev = &dev->priv_dev->dev->dev;
 
 	pollcount = 0;
@@ -1144,12 +1144,12 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 			res = be32_to_cpu(ring_cursor->resp_r[ri].result);
 			{
 				print_debug("APP RING GOT AN INTERRUPT\n");
-				if (desc) {
+				if (desc != 0) {
 					handle_response(dev, desc, res);
 				} else {
 					dev_err(my_dev, "INVALID DESC AT RI : %u\n", ri);
 				}
-				if (res) {
+				if (res != 0) {
 					sec_jr_strstatus(my_dev, res);
 				}
 			}

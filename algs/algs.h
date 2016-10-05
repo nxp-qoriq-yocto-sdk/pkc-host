@@ -92,7 +92,7 @@ typedef struct crypto_op_ctx {
 		struct rng_init_compl *rng_init;
 		struct buf_data *rng;
 	} req;
-	void (*op_done) (void *ctx, int32_t result);
+	void (*op_done) (void *ctx, uint32_t result);
 	struct crypto_op_ctx *next;
 } crypto_op_ctx_t;
 
