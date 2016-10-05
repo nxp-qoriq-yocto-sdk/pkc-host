@@ -187,13 +187,11 @@ struct dev_handshake_mem {
 		 * Addresses are dma addresses on host for data located in OB mem */
 		struct c_config_data {
 			uint8_t num_of_rps;  /* total number of rings, in and out */
-			uint8_t padding;
 			uint32_t req_mem_size;  /* memory required for requests by all rings */
 			uint32_t r_s_cntrs;/* dma address for other shadow counters */
 		} config;
 		struct c_ring_data {
 			uint8_t rid;
-			uint8_t padding;
 			uint16_t msi_data;
 			uint32_t depth;
 			uint32_t resp_ring_offset;
