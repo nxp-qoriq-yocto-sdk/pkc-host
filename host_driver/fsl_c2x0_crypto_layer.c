@@ -301,11 +301,7 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 
 void send_hs_init_config(fsl_crypto_dev_t *dev)
 {
-	const char *str_state = "HS_INIT_CONFIG\n";
 	struct c_config_data *config = &dev->c_hs_mem->data.config;
-
-	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
-			(uint8_t *) str_state, strlen(str_state));
 
 	iowrite8(dev->num_of_rps, &config->num_of_rps);
 	iowrite32be(dev->tot_req_mem_size, &config->req_mem_size);
@@ -323,11 +319,7 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 
 void send_hs_init_ring_pair(fsl_crypto_dev_t *dev, struct ring_info *ring)
 {
-	const char *str_state = "HS_INIT_RING_PAIR\n";
 	uint32_t resp_r_offset;
-
-	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
-			(uint8_t *) str_state, strlen(str_state));
 
 	resp_r_offset = (void *)dev->ring_pairs[ring->ring_id].resp_r -
 			(void *)dev->host_mem;
@@ -352,30 +344,16 @@ void send_hs_init_ring_pair(fsl_crypto_dev_t *dev, struct ring_info *ring)
 
 void send_hs_complete(fsl_crypto_dev_t *dev)
 {
-	const char *str_state = "HS_COMPLETE\n";
-	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
-			(uint8_t *) str_state, strlen(str_state));
-
 	iowrite8(FW_HS_COMPLETE, &dev->c_hs_mem->state);
 }
 
 void send_hs_wait_for_rng(fsl_crypto_dev_t *dev)
 {
-	const char *str_state = "WAIT_FOR_RNG\n";
-
-	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
-			(uint8_t *) str_state, strlen(str_state));
-
 	iowrite8(FW_WAIT_FOR_RNG, &dev->c_hs_mem->state);
 }
 
 void send_hs_rng_done(fsl_crypto_dev_t *dev)
 {
-	const char *str_state = "RNG_DONE\n";
-
-	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
-			(uint8_t *) str_state, strlen(str_state));
-
 	iowrite8(FW_RNG_DONE, &dev->c_hs_mem->state);
 }
 
@@ -528,8 +506,6 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 		}
 	}
 exit:
-	set_sysfs_value(dev->priv_dev, DEVICE_STATE_SYSFILE,
-			(uint8_t *) "DRIVER READY\n", strlen("DRIVER READY\n"));
 	return 0;
 
 error:
@@ -930,9 +906,6 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 #ifdef CHECK_EP_BOOTUP
 	check_ep_bootup(c_dev);
 #endif
-
-	set_sysfs_value(fsl_pci_dev, DEVICE_STATE_SYSFILE, (uint8_t *) "HS Started\n",
-			strlen("HS Started\n"));
 
 	err = handshake(c_dev, config);
 	if (err) {

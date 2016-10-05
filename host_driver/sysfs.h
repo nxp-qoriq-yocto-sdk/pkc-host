@@ -61,11 +61,6 @@
 #endif
 
 typedef enum sys_files_id {
-	/* Block of enums for files in dev dir */
-	DEVICE_SYS_FILES_START,
-	DEVICE_STATE_SYSFILE,
-	DEVICE_SYS_FILES_END,
-
 	/* Block of enums for files in pci dir */
 	PCI_SYS_FILES_START,
 	PCI_INFO_SYS_FILE,
@@ -99,7 +94,6 @@ typedef struct dev_sysfs_entries {
 	struct sysfs_dir *stats_sub_dir;
 	struct sysfs_dir *test_sub_dir;
 
-	sysfs_file_t dev_file;
 	sysfs_file_t pci_files[NUM_OF_PCI_SYSFS_FILES];
 	sysfs_file_t stats_files[NUM_OF_STATS_SYSFS_FILES];
 	sysfs_file_t test_files[NUM_OF_TEST_SYSFS_FILES];
