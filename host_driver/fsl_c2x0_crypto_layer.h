@@ -342,7 +342,6 @@ Fields      :	hs_mem	: Handshake memory - 64bytes
 *******************************************************************************/
 struct host_mem_layout {
 	struct host_handshake_mem hs_mem;
-
 	struct resp_ring_entry *drv_resp_rings;
 	struct ring_idxs_mem *idxs_mem;
 	struct ring_counters_mem *cntrs_mem;
@@ -353,12 +352,13 @@ struct host_mem_layout {
 };
 
 struct driver_ob_mem {
+	uint32_t hs_mem;
 	uint32_t drv_resp_rings;
-	uint32_t ip_pool;
-	uint32_t op_pool;
 	uint32_t idxs_mem;
 	uint32_t cntrs_mem;
 	uint32_t r_s_cntrs_mem;
+	uint32_t op_pool;
+	uint32_t ip_pool;
 };
 
 typedef struct ctx_pool ctx_pool_t;

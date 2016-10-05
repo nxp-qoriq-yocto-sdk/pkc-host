@@ -141,51 +141,40 @@ static uint32_t count_ring_slots(struct crypto_dev_config *config)
 	return len;
 }
 
-/*
- * Calculate outbound memory requirements.
- * ob_mem->h_mem will contain the memory map relative to address 0. It will be
- * translated relative to a pci mapped address by alloc_ob_mem
- */
+uint32_t ob_alloc(size_t size)
+{
+	static uint32_t addr;
+	uint32_t save_addr;
+
+	save_addr = cache_line_align(addr);
+	addr = save_addr + size;
+
+	return save_addr;
+}
+
 static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 				struct crypto_dev_config *config)
 {
-	uint32_t ob_mem_len = sizeof(struct host_mem_layout);
 	uint32_t total_ring_slots;
 
 	total_ring_slots = count_ring_slots(config);
-	ob_mem_len = cache_line_align(ob_mem_len);
-	dev->ob_mem.drv_resp_rings = ob_mem_len;
-	ob_mem_len += total_ring_slots * sizeof(struct resp_ring_entry);
+	dev->tot_req_mem_size = total_ring_slots *
+					sizeof(struct req_ring_entry);
 
-	ob_mem_len = cache_line_align(ob_mem_len);
-	dev->ob_mem.idxs_mem = ob_mem_len;
-	ob_mem_len += config->num_of_rps * sizeof(struct ring_idxs_mem);
-
-	ob_mem_len = cache_line_align(ob_mem_len);
-	dev->ob_mem.cntrs_mem = ob_mem_len;
-	ob_mem_len += config->num_of_rps * sizeof(struct ring_counters_mem);
-
-	ob_mem_len = cache_line_align(ob_mem_len);
-	dev->ob_mem.r_s_cntrs_mem = ob_mem_len;
-	ob_mem_len += config->num_of_rps * sizeof(struct ring_counters_mem);
-
-	/* We have to make sure that we align the output buffer pool to DMA */
-	ob_mem_len = cache_line_align(ob_mem_len);
-	dev->ob_mem.op_pool = ob_mem_len;
-	ob_mem_len += DEFAULT_HOST_OP_BUFFER_POOL_SIZE;
-
-	/* For IP Pool we need to make sure that we always
-	 * get 32BYTE aligned address */
-	ob_mem_len = cache_line_align(ob_mem_len);
-	dev->ob_mem.ip_pool = ob_mem_len;
-	ob_mem_len += FIRMWARE_IP_BUFFER_POOL_SIZE;
+	dev->ob_mem.hs_mem = ob_alloc(sizeof(struct host_mem_layout));
+	dev->ob_mem.drv_resp_rings = ob_alloc(total_ring_slots *
+					sizeof(struct resp_ring_entry));
+	dev->ob_mem.idxs_mem = ob_alloc(config->num_of_rps *
+					sizeof(struct ring_idxs_mem));
+	dev->ob_mem.cntrs_mem = ob_alloc(config->num_of_rps *
+					sizeof(struct ring_counters_mem));
+	dev->ob_mem.r_s_cntrs_mem = ob_alloc(config->num_of_rps *
+					sizeof(struct ring_counters_mem));
+	dev->ob_mem.op_pool = ob_alloc(DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
+	dev->ob_mem.ip_pool = ob_alloc(FIRMWARE_IP_BUFFER_POOL_SIZE);
 
 	/* Make the total mem requirement aligned to page size */
-	ob_mem_len = page_align(ob_mem_len);
-
-	dev->tot_req_mem_size = total_ring_slots * sizeof(struct req_ring_entry);
-
-	return ob_mem_len;
+	return page_align(ob_alloc(0));
 }
 
 /*
