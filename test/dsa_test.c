@@ -42,11 +42,6 @@ int dsa_keygen_sign_test(struct pkc_request *ireq, struct pkc_request *);
 int dsa_keygen_verify_test(struct pkc_request *ireq, struct pkc_request *ireq1,
 			   struct pkc_request *);
 
-typedef void (*cb) (struct pkc_request *req, int32_t sec_result);
-/*
-static DECLARE_COMPLETION(jobs_done);
-static int count;
-*/
 atomic_t dsa_enq_count;
 atomic_t dsa_deq_count;
 extern atomic_t total_enq_cnt;
