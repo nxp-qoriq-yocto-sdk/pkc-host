@@ -179,6 +179,5 @@ struct alg_template {
 fsl_crypto_dev_t *get_crypto_dev(uint32_t no);
 extern struct crypto_dev_config *get_dev_config(struct c29x_dev *fsl_pci_dev);
 extern int32_t parse_config_file(int8_t *config_file);
-void sysfs_napi_loop_count_set(char *fname, char *count, int len);
 
 #endif

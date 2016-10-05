@@ -160,13 +160,6 @@ static struct alg_template driver_algs[] = {
 	 },
 };
 
-void sysfs_napi_loop_count_set(char *fname, char *count, int len)
-{
-	uint32_t no = *((uint32_t *) (count));
-	printk(KERN_ERR "Count to set... :%d\n", no);
-	napi_poll_count = no;
-}
-
 int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
 {
 	uint32_t num_of_rps = 0;

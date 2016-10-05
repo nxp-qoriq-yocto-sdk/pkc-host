@@ -54,8 +54,6 @@ uint8_t pci_sysfs_file_str_flag[NUM_OF_PCI_SYSFS_FILES] = { 1 };
 uint8_t stat_sysfs_file_str_flag[NUM_OF_STATS_SYSFS_FILES] = { 0, 0 };
 uint8_t test_sysfs_file_str_flag[NUM_OF_TEST_SYSFS_FILES] = { 1, 1, 1, 0 };
 
-void *napi_loop_count_file;
-
 ssize_t common_sysfs_show(struct kobject *kobj, struct attribute *attr,
 				 char *buf)
 {
@@ -187,9 +185,7 @@ void delete_sysfs_dir(struct sysfs_dir *sys_dir)
 
 void clean_common_sysfs(void)
 {
-    delete_sysfs_file(napi_loop_count_file, fsl_sysfs_entries);
     delete_sysfs_dir(fsl_sysfs_entries);
-
     fsl_sysfs_entries = NULL;
 }
 
@@ -199,20 +195,11 @@ int32_t init_common_sysfs(void)
      * All the device specific entries will be added under this dir.
      */
     fsl_sysfs_entries = create_sysfs_dir("fsl_crypto", NULL);
-    if (unlikely(NULL == fsl_sysfs_entries)) {
+    if (fsl_sysfs_entries == NULL) {
         print_error("Sysfs creation failed\n");
         return -1;
     }
 
-    /* Create napi loop count file */
-    napi_loop_count_file =
-        create_sysfs_file_cb("napi_loop_count", fsl_sysfs_entries, 0,
-                sysfs_napi_loop_count_set);
-    if(unlikely(NULL ==  napi_loop_count_file)) {
-        print_error("napi_loop_count sysfs creation failed \n");
-        delete_sysfs_dir(fsl_sysfs_entries);
-        return -1;
-    }
     return 0;
 }
 
