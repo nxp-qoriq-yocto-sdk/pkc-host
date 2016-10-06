@@ -86,14 +86,14 @@ void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	uint32_t core_no = 0;
 	uint16_t isr_count = 0;
 	uint32_t i;
-	struct list_head *isr_ctx_list_head;
+	struct list_head *isr_ctx_head;
 	uint16_t total_isrs = dev->priv_dev->intr_info.intr_vectors_cnt;
 	struct bh_handler *instance;
 	isr_ctx_t *isr_ctx;
 
-	isr_ctx_list_head = &(dev->priv_dev->intr_info.isr_ctx_list_head);
+	isr_ctx_head = &(dev->priv_dev->intr_info.isr_ctx_head);
 
-	isr_ctx = list_entry(isr_ctx_list_head->next, isr_ctx_t, list);
+	isr_ctx = list_entry(isr_ctx_head->next, isr_ctx_t, list);
 
 	INIT_LIST_HEAD(&(isr_ctx->ring_list_head));
 
@@ -120,7 +120,7 @@ void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 		if ((++isr_count) % total_isrs) {
 			isr_ctx = list_entry(isr_ctx->list.next, isr_ctx_t, list);
 		} else {
-			isr_ctx = list_entry(isr_ctx_list_head->next, isr_ctx_t,
+			isr_ctx = list_entry(isr_ctx_head->next, isr_ctx_t,
 						list);
 		}
 

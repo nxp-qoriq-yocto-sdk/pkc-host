@@ -519,7 +519,7 @@ void fsl_release_irqs(struct c29x_dev *fsl_pci_dev)
 	isr_ctx_t *isr_context, *isr_n_context;
 
 	list_for_each_entry_safe(isr_context, isr_n_context,
-			&(fsl_pci_dev->intr_info.isr_ctx_list_head), list) {
+			&(fsl_pci_dev->intr_info.isr_ctx_head), list) {
 		print_debug("Freeing Irq\n");
 		free_irq(isr_context->irq, isr_context);
 		list_del(&(isr_context->list));
@@ -547,43 +547,43 @@ int fsl_request_irqs(struct c29x_dev *fsl_pci_dev)
 {
 	uint16_t i, num_of_vectors;
 	uint32_t irq;
-	isr_ctx_t *isr_context;
-	struct list_head *ctx_list;
+	isr_ctx_t *isr_ctx;
+	struct list_head *isr_ctx_head;
 	int err;
 	struct device *my_dev = &fsl_pci_dev->dev->dev;
 
-	ctx_list = &(fsl_pci_dev->intr_info.isr_ctx_list_head);
-	INIT_LIST_HEAD(ctx_list);
+	isr_ctx_head = &(fsl_pci_dev->intr_info.isr_ctx_head);
+	INIT_LIST_HEAD(isr_ctx_head);
 
 	/* this was set-up earlier by get_irq_vectors */
 	num_of_vectors = fsl_pci_dev->intr_info.intr_vectors_cnt;
 	for (i = 0; i < num_of_vectors; i++) {
-		isr_context = kzalloc(sizeof(*isr_context), GFP_KERNEL);
-		if (!isr_context) {
+		isr_ctx = kzalloc(sizeof(*isr_ctx), GFP_KERNEL);
+		if (!isr_ctx) {
 			dev_err(my_dev, "Mem alloc failed\n");
 			err = -ENOMEM;
 			goto free_irqs;
 		}
 
-		INIT_LIST_HEAD(&(isr_context->ring_list_head));
-		isr_context->dev = fsl_pci_dev;
+		INIT_LIST_HEAD(&(isr_ctx->ring_list_head));
+		isr_ctx->dev = fsl_pci_dev;
 
 		irq = fsl_pci_dev->dev->irq + i;
 
 		/* Register the ISR with kernel for each vector */
 		err = request_irq(irq, (irq_handler_t) fsl_crypto_isr, 0,
-				fsl_pci_dev->dev_name, isr_context);
+				fsl_pci_dev->dev_name, isr_ctx);
 		if (err) {
 			dev_err(my_dev, "Request IRQ failed for vector: %d\n", i);
-			kfree(isr_context);
+			kfree(isr_ctx);
 			goto free_irqs;
 		}
-		isr_context->irq = irq;
+		isr_ctx->irq = irq;
 
-		get_msi_config_data(fsl_pci_dev, isr_context);
+		get_msi_config_data(fsl_pci_dev, isr_ctx);
 
 		/* Add this to the list of ISR contexts */
-		list_add(&(isr_context->list), ctx_list);
+		list_add(&(isr_ctx->list), isr_ctx_head);
 	}
 	return 0;
 

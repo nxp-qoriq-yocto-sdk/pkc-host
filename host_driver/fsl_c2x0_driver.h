@@ -117,7 +117,7 @@ Fields	   :	intr_vectors_cnt: Number of intr vectors alloc for this device
 *******************************************************************************/
 typedef struct pci_intr_info {
 	u16 intr_vectors_cnt;
-	struct list_head isr_ctx_list_head;
+	struct list_head isr_ctx_head;
 } pci_intr_info_t;
 
 /*******************************************************************************
