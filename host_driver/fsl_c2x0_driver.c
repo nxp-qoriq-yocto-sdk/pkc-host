@@ -629,17 +629,7 @@ free_irqs:
 	return err;
 }
 
-/*******************************************************************************
- * Function     : create_per_core_info
- *
- * Arguments    : None
- *
- * Return Value : None
- *
- * Description  : Creates per core data structures
- *
- ******************************************************************************/
-int32_t create_per_core_info(void)
+int32_t create_c29x_workqueue(void)
 {
 	uint32_t i = 0;
 	struct bh_handler *instance;
@@ -1358,7 +1348,7 @@ static int32_t __init fsl_crypto_drv_init(void)
 	}
 
 	/* Create the per core data structures */
-	ret = create_per_core_info();
+	ret = create_c29x_workqueue();
 	if (ret) {
 		print_error("Per cpu alloc failed\n");
 		goto free_sysfs;
