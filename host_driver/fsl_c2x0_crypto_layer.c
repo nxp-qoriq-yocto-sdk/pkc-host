@@ -1058,3 +1058,30 @@ int32_t process_rings(fsl_crypto_dev_t *dev,
 	print_debug("DONE PROCESSING RESPONSE\n");
 	return 0;
 }
+
+/*******************************************************************************
+ * Function     : response_ring_handler
+ *
+ * Arguments    : work - Kernel work posted to this handler
+ *
+ * Return Value : none
+ *
+ * Description  : Bottom half implementation to handle the responses.
+ *
+ ******************************************************************************/
+void response_ring_handler(struct work_struct *work)
+{
+	struct bh_handler *bh = container_of(work, struct bh_handler, work);
+	fsl_crypto_dev_t *c_dev;
+
+	if (unlikely(NULL == bh)) {
+		print_error("No bottom half handler found for the work\n");
+		return;
+	}
+
+	c_dev = bh->c_dev;	/* get_crypto_dev(1); */
+	print_debug("GOT INTERRUPT FROM DEV : %d\n", c_dev->config->dev_no);
+	print_debug("Worker thread invoked on cpu [%d]\n", bh->core_no);
+	process_rings(c_dev, &(bh->ring_list_head));
+	return;
+}

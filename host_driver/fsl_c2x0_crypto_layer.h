@@ -442,8 +442,7 @@ void init_handshake(fsl_crypto_dev_t *dev);
 void init_ring_pairs(fsl_crypto_dev_t *dev);
 void stop_device(fsl_crypto_dev_t *dev);
 void start_device(fsl_crypto_dev_t *dev);
-
-int32_t process_rings(fsl_crypto_dev_t *, struct list_head *);
+void response_ring_handler(struct work_struct *work);
 
 extern int32_t rng_instantiation(fsl_crypto_dev_t *c_dev);
 
