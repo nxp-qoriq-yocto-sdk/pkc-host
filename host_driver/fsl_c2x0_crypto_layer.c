@@ -446,10 +446,7 @@ void hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 {
 	uint8_t rid = 0;
-	uint32_t timeoutcntr = 0;
-#define LOOP_BREAK_TIMEOUT_MS		1000
-#define LOOP_BREAK_TIMEOUT_JIFFIES	msecs_to_jiffies(LOOP_BREAK_TIMEOUT_MS)
-#define HS_TIMEOUT_IN_MS		(50 * LOOP_BREAK_TIMEOUT_MS)
+	uint32_t timecntr = 0;
 
 	while (true) {
 		switch (dev->host_mem->hs_mem.state) {
@@ -486,17 +483,13 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 			goto exit;
 
 		case DEFAULT:
-			if (!
-			    (HS_TIMEOUT_IN_MS -
-			     (timeoutcntr * LOOP_BREAK_TIMEOUT_MS))) {
+			if (timecntr > HS_TIMEOUT) {
 				print_error("HS Timed out!!!!\n");
 				goto error;
 			}
-
-			/* Schedule out so that loop does not hog CPU */
-			++timeoutcntr;
+			timecntr += HS_LOOP_BREAK;
 			set_current_state(TASK_INTERRUPTIBLE);
-			schedule_timeout(LOOP_BREAK_TIMEOUT_JIFFIES);
+			schedule_timeout(msecs_to_jiffies(HS_LOOP_BREAK));
 
 			break;
 

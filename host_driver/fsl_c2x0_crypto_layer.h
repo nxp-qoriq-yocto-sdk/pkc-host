@@ -41,6 +41,10 @@
 
 extern int napi_poll_count;
 
+/* times in milliseconds */
+#define HS_TIMEOUT	500
+#define HS_LOOP_BREAK	5
+
 /* the number of context pools is arbitrary and NR_CPUS is a good default
  * considering that worker threads using the contexts are local to a CPU.
  * However we set a conservative default until we fix malloc issues for x86 */
