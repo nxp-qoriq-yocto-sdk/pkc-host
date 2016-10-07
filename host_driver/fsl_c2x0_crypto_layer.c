@@ -43,7 +43,6 @@
 #include "algs.h"
 #include "error.h"
 
-extern int32_t wt_cpu_mask;
 extern struct bh_handler __percpu *bh_workers;
 
 /* The size of the ip_pool was chosen 512K so it could fit in the device SRAM
@@ -101,10 +100,6 @@ void distribute_rings(struct c29x_dev *c_dev)
 
 	/* Affine the ring to CPU & ISR */
 	for (i = 0; i < c_dev->config.num_of_rps; i++) {
-		while (!(wt_cpu_mask & (1 << core_no))) {
-			core_no = cpumask_next(core_no, cpu_online_mask) % nr_cpu_ids;
-		}
-
 		print_debug("Ring no: %d Core no: %d\n", i, core_no);
 		bh_worker = per_cpu_ptr(bh_workers, core_no);
 

@@ -56,8 +56,6 @@ extern int dh_op(struct pkc_request *req);
  *        GLOBAL VARIABLES                               *
  *********************************************************/
 int napi_poll_count = -1;
-/*TODO: Make wt_cpu_mask a real CPU bitmask */
-int32_t wt_cpu_mask = -1;
 
 /* default configuration for all devices */
 struct c29x_cfg defcfg = {
@@ -76,9 +74,6 @@ static struct workqueue_struct *workq;
 
 module_param(napi_poll_count, int, S_IRUGO);
 MODULE_PARM_DESC(napi_poll_count, "Poll count for NAPI thread");
-
-module_param(wt_cpu_mask, int, S_IRUGO);
-MODULE_PARM_DESC(wt_cpu_mask, "CPU mask for napi worker threads");
 
 static struct pci_device_id fsl_crypto_pci_dev_ids[] = {
 	{PCI_DEVICE(FSL_CRYPTO_PCI_VENDOR_ID, FSL_CRYPTO_C290_PCI_DEVICE_ID)},
@@ -513,11 +508,6 @@ int32_t create_c29x_workqueue(void)
 
 	workq = create_workqueue("pkc_wq");
 	for_each_online_cpu(i) {
-		/* FIXME: wt_cpu_mask is not valid when smt_enabled=off because
-		 * online_cpu i will be a multiple of two and not of one as expected.
-		 */
-		if (!(wt_cpu_mask & (1 << i)))
-			continue;
 		bh_worker = per_cpu_ptr(bh_workers, i);
 		INIT_WORK(&(bh_worker->work), response_ring_handler);
 		bh_worker->core_no = i;
@@ -594,9 +584,6 @@ static void cleanup_percore_list(void)
 
 	for_each_online_cpu(i)
 	{
-		if (!(wt_cpu_mask & (1 << i)))
-			continue;
-
 		bh_worker = per_cpu_ptr(bh_workers, i);
 		if (bh_worker == NULL) 
 			return;
@@ -802,15 +789,6 @@ static struct pci_driver fsl_cypto_driver = {
 static int32_t __init fsl_crypto_drv_init(void)
 {
 	int32_t ret = 0;
-
-	if (-1 == wt_cpu_mask) {
-		print_info("CPU mask for NAPI threads is not specified, using one thread per cpu\n");
-		for_each_online_cpu(ret)
-			wt_cpu_mask |= 1 << ret;
-	} else {
-		print_info("CPU mask for NAPI threads is specified, configured value: 0x%x\n",
-				wt_cpu_mask);
-	}
 
 	if ( -1 == napi_poll_count ) {
 		napi_poll_count = 1;
