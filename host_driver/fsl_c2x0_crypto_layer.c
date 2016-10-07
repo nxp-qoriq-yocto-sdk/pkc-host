@@ -44,7 +44,7 @@
 #include "error.h"
 
 extern int32_t wt_cpu_mask;
-extern struct bh_handler __percpu *per_core;
+extern struct bh_handler __percpu *bh_workers;
 
 #define DEFAULT_HOST_OP_BUFFER_POOL_SIZE	(1*1024)
 #define FIRMWARE_IP_BUFFER_POOL_SIZE		(512*1024)
@@ -88,7 +88,7 @@ void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	uint32_t i;
 	struct list_head *isr_ctx_head;
 	uint16_t total_isrs = dev->priv_dev->intr_info.intr_vectors_cnt;
-	struct bh_handler *instance;
+	struct bh_handler *bh_worker;
 	isr_ctx_t *isr_ctx;
 
 	isr_ctx_head = &(dev->priv_dev->intr_info.isr_ctx_head);
@@ -104,7 +104,7 @@ void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 		}
 
 		print_debug("Ring no: %d Core no: %d\n", i, core_no);
-		instance = per_cpu_ptr(per_core, core_no);
+		bh_worker = per_cpu_ptr(bh_workers, core_no);
 
 		rp = &(dev->ring_pairs[i]);
 		rp->core_no = core_no;
@@ -115,7 +115,7 @@ void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 
 		/* Adding the ring to the ISR */
 		list_add(&(rp->isr_ctx_list_node), &(isr_ctx->ring_list_head));
-		list_add(&(rp->bh_ctx_list_node), &(instance->ring_list_head));
+		list_add(&(rp->bh_ctx_list_node), &(bh_worker->ring_list_head));
 
 		if ((++isr_count) % total_isrs) {
 			isr_ctx = list_entry(isr_ctx->list.next, isr_ctx_t, list);
@@ -928,13 +928,13 @@ rp_fail:
 void clear_ring_lists(void)
 {
 	uint32_t i;
-	struct bh_handler *instance;
+	struct bh_handler *bh_worker;
 	struct list_head *pos, *next;
 
 	for_each_online_cpu(i) {
-		instance = per_cpu_ptr(per_core, i);
+		bh_worker = per_cpu_ptr(bh_workers, i);
 
-		list_for_each_safe(pos, next, &(instance->ring_list_head)) {
+		list_for_each_safe(pos, next, &(bh_worker->ring_list_head)) {
 			list_del(pos);
 		}
 	}

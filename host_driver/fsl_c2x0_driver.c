@@ -121,7 +121,7 @@ struct sysfs_dir *fsl_sysfs_entries;
 void *wt_loop_cnt_sysfs_file;
 
 /* Pointer to the base of per cpu memory */
-struct bh_handler __percpu *per_core;
+struct bh_handler __percpu *bh_workers;
 
 struct list_head alg_list;
 static struct alg_template driver_algs[] = {
@@ -392,7 +392,7 @@ static uint64_t readtb(void)
 static irqreturn_t fsl_crypto_isr(int irq, void *data)
 {
 	isr_ctx_t *isr_ctx = (isr_ctx_t *) data;
-	struct bh_handler *instance = NULL;
+	struct bh_handler *bh_worker = NULL;
 	fsl_h_rsrc_ring_pair_t *rp = NULL;
 
 	if (unlikely(!isr_ctx)) {
@@ -404,11 +404,10 @@ static irqreturn_t fsl_crypto_isr(int irq, void *data)
 		print_debug("Ring is assoc with this intr on core [%d]\n",
 			    rp->core_no);
 		print_debug("SHEDULING THE WORK ON CORE : %d\n", rp->core_no);
-		/* From the core number get the per core info instance */
-		instance = per_cpu_ptr(per_core, rp->core_no);
-		instance->c_dev = isr_ctx->dev->crypto_dev;
+		bh_worker = per_cpu_ptr(bh_workers, rp->core_no);
+		bh_worker->c_dev = isr_ctx->dev->crypto_dev;
 
-		queue_work_on(rp->core_no, workq, &(instance->work));
+		queue_work_on(rp->core_no, workq, &(bh_worker->work));
 	}
 
 	return IRQ_HANDLED;
@@ -595,11 +594,11 @@ free_irqs:
 int32_t create_c29x_workqueue(void)
 {
 	uint32_t i = 0;
-	struct bh_handler *instance;
+	struct bh_handler *bh_worker;
 
-	per_core = alloc_percpu(struct bh_handler);
+	bh_workers = alloc_percpu(struct bh_handler);
 
-	if (unlikely(per_core == NULL)) {
+	if (unlikely(bh_workers == NULL)) {
 		print_error("Mem allocation failed\n");
 		return -1;
 	}
@@ -611,11 +610,11 @@ int32_t create_c29x_workqueue(void)
 		 */
 		if (!(wt_cpu_mask & (1 << i)))
 			continue;
-		instance = per_cpu_ptr(per_core, i);
-		INIT_WORK(&(instance->work), response_ring_handler);
-		instance->core_no = i;
+		bh_worker = per_cpu_ptr(bh_workers, i);
+		INIT_WORK(&(bh_worker->work), response_ring_handler);
+		bh_worker->core_no = i;
 
-		INIT_LIST_HEAD(&(instance->ring_list_head));
+		INIT_LIST_HEAD(&(bh_worker->ring_list_head));
 	}
 	return 0;
 }
@@ -982,9 +981,9 @@ disable_dev:
 static void cleanup_percore_list(void)
 {
 	uint32_t i = 0;
-	struct bh_handler *cursor = NULL;
+	struct bh_handler *bh_worker;
 
-	if (per_core == NULL)
+	if (bh_workers == NULL)
 		return;
 
 	for_each_online_cpu(i)
@@ -992,15 +991,15 @@ static void cleanup_percore_list(void)
 		if (!(wt_cpu_mask & (1 << i)))
 			continue;
 
-		cursor = per_cpu_ptr(per_core, i);
-		if (NULL == cursor)
+		bh_worker = per_cpu_ptr(bh_workers, i);
+		if (bh_worker == NULL) 
 			return;
 	}
 
 	flush_workqueue(workq);
 	destroy_workqueue(workq);
 
-	free_percpu(per_core);
+	free_percpu(bh_workers);
 }
 
 /*******************************************************************************
