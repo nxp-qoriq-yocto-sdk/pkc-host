@@ -158,9 +158,6 @@ struct resp_ring_entry {
 typedef struct fsl_h_rsrc_ring_pair {
 	struct c29x_dev *c_dev;
 
-	struct list_head isr_ctx_list_node;
-	struct list_head bh_ctx_list_node;
-
 	uint32_t *intr_ctrl_flag;
 	struct req_ring_entry *req_r;
 	struct resp_ring_entry *resp_r;
@@ -170,11 +167,9 @@ typedef struct fsl_h_rsrc_ring_pair {
 	struct ring_counters_mem *r_s_c_cntrs;
 
 	uint32_t depth;
-	uint32_t core_no;
 	uint32_t msi_addr_l;
 	uint32_t msi_addr_h;
 	uint16_t msi_data;
-
 	spinlock_t ring_lock;
 } fsl_h_rsrc_ring_pair_t;
 

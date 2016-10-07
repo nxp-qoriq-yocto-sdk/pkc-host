@@ -85,45 +85,20 @@ static uint32_t page_align(uint32_t addr)
 void distribute_rings(struct c29x_dev *c_dev)
 {
 	fsl_h_rsrc_ring_pair_t *rp;
-	uint32_t core_no = 0;
-	uint16_t isr_count = 0;
 	uint32_t i;
-	struct list_head *isr_ctx_head;
-	uint16_t total_isrs = c_dev->intr_info.intr_vectors_cnt;
 	struct bh_handler *bh_worker;
 	isr_ctx_t *isr_ctx;
 
-	isr_ctx_head = &(c_dev->intr_info.isr_ctx_head);
-	isr_ctx = list_entry(isr_ctx_head->next, isr_ctx_t, list);
-
-	INIT_LIST_HEAD(&(isr_ctx->ring_list_head));
-
-	/* Affine the ring to CPU & ISR */
 	for (i = 0; i < c_dev->config.num_of_rps; i++) {
-		print_debug("Ring no: %d Core no: %d\n", i, core_no);
-		bh_worker = per_cpu_ptr(bh_workers, core_no);
-
 		rp = &(c_dev->ring_pairs[i]);
-		rp->core_no = core_no;
+		isr_ctx = &(c_dev->isr_ctx[i]);
+
 		rp->msi_addr_l = isr_ctx->msi_addr_low;
 		rp->msi_addr_h = isr_ctx->msi_addr_high;
 		rp->msi_data = isr_ctx->msi_data;
 
-		/* Adding the ring to the ISR */
-		list_add(&(rp->isr_ctx_list_node), &(isr_ctx->ring_list_head));
-		list_add(&(rp->bh_ctx_list_node), &(bh_worker->ring_list_head));
-
-		if ((++isr_count) % total_isrs) {
-			isr_ctx = list_entry(isr_ctx->list.next, isr_ctx_t, list);
-		} else {
-			isr_ctx = list_entry(isr_ctx_head->next, isr_ctx_t,
-						list);
-		}
-
-		print_debug("ISR COUNT: %d total num of isrs: %d\n",
-			    isr_count, total_isrs);
-
-		core_no = cpumask_next(core_no, cpu_online_mask) % nr_cpu_ids;
+		bh_worker = per_cpu_ptr(bh_workers, i);
+		bh_worker->rp = rp;
 	}
 }
 
@@ -229,7 +204,6 @@ void init_ring_pairs(struct c29x_dev *c_dev)
 {
 	fsl_h_rsrc_ring_pair_t *rp;
 	uint32_t i;
-	/* all response ring entries start here. Each ring has rp->depth entries */
 	struct resp_ring_entry *resp_r = c_dev->drv_resp_rings;
 
 	for (i = 0; i < c_dev->config.num_of_rps; i++) {
@@ -247,9 +221,6 @@ void init_ring_pairs(struct c29x_dev *c_dev)
 		rp->counters = &(c_dev->cntrs_mem[i]);
 		rp->r_s_cntrs = &(c_dev->r_s_cntrs_mem[i]);
 		rp->r_s_c_cntrs = NULL;
-
-		INIT_LIST_HEAD(&(rp->isr_ctx_list_node));
-		INIT_LIST_HEAD(&(rp->bh_ctx_list_node));
 
 		spin_lock_init(&(rp->ring_lock));
 	}
@@ -850,21 +821,6 @@ rp_fail:
 	return -ENODEV;
 }
 
-void clear_ring_lists(void)
-{
-	uint32_t i;
-	struct bh_handler *bh_worker;
-	struct list_head *pos, *next;
-
-	for_each_online_cpu(i) {
-		bh_worker = per_cpu_ptr(bh_workers, i);
-
-		list_for_each_safe(pos, next, &(bh_worker->ring_list_head)) {
-			list_del(pos);
-		}
-	}
-}
-
 void cleanup_crypto_device(struct c29x_dev *c_dev)
 {
 	if (NULL == c_dev)
@@ -879,7 +835,6 @@ void cleanup_crypto_device(struct c29x_dev *c_dev)
 				    c_dev->drv_mem.host_dma_addr);
 	}
 
-	clear_ring_lists();
 	kfree(c_dev->ring_pairs);
 }
 
@@ -907,8 +862,7 @@ void handle_response(struct c29x_dev *c_dev, uint64_t desc, int32_t res)
 	return;
 }
 
-/* FIXME: function argument dev is overwritten in the first loop */
-void process_response(struct c29x_dev *c_dev, fsl_h_rsrc_ring_pair_t *ring_cursor)
+void process_ring(struct fsl_h_rsrc_ring_pair *rp)
 {
 	uint32_t pollcount;
 	uint32_t jobs_added;
@@ -916,61 +870,44 @@ void process_response(struct c29x_dev *c_dev, fsl_h_rsrc_ring_pair_t *ring_curso
 	uint32_t ri;
 	uint64_t desc;
 	uint32_t res;
-	struct device *my_dev = &c_dev->dev->dev;
+	struct device *dev = &(rp->c_dev->dev->dev);
 
 	pollcount = 0;
 
 	while (pollcount < napi_poll_count) {
 		pollcount++;
-		jobs_added = be32_to_cpu(ring_cursor->r_s_cntrs->jobs_added);
-		resp_cnt = jobs_added - ring_cursor->counters->jobs_processed;
+		jobs_added = be32_to_cpu(rp->r_s_cntrs->jobs_added);
+		resp_cnt = jobs_added - rp->counters->jobs_processed;
 		if (!resp_cnt)
 			continue;
 
-		c_dev = ring_cursor->c_dev;
-		ri = ring_cursor->indexes->r_index;
-		print_debug("GOT INTERRUPT FROM DEV: %d\n", c_dev->dev_no);
+		ri = rp->indexes->r_index;
 
 		while (resp_cnt) {
-			desc = be64_to_cpu(ring_cursor->resp_r[ri].sec_desc);
-			res = be32_to_cpu(ring_cursor->resp_r[ri].result);
+			desc = be64_to_cpu(rp->resp_r[ri].sec_desc);
+			res = be32_to_cpu(rp->resp_r[ri].result);
 			{
 				print_debug("APP RING GOT AN INTERRUPT\n");
 				if (desc != 0) {
-					handle_response(c_dev, desc, res);
+					handle_response(rp->c_dev, desc, res);
 				} else {
-					dev_err(my_dev, "INVALID DESC AT RI : %u\n", ri);
+					dev_err(dev, "INVALID DESC AT RI : %u\n", ri);
 				}
 				if (res != 0) {
-					sec_jr_strstatus(my_dev, res);
+					sec_jr_strstatus(dev, res);
 				}
 			}
-			ring_cursor->counters->jobs_processed += 1;
-			iowrite32be(ring_cursor->counters->jobs_processed,
-				&ring_cursor->r_s_c_cntrs->jobs_processed);
+			rp->counters->jobs_processed += 1;
+			iowrite32be(rp->counters->jobs_processed,
+				&rp->r_s_c_cntrs->jobs_processed);
 
-			ri = (ri + 1) % (ring_cursor->depth);
-			ring_cursor->indexes->r_index = ri;
+			ri = (ri + 1) % (rp->depth);
+			rp->indexes->r_index = ri;
 			--resp_cnt;
 		}
 	}
 	/* Enable the intrs for this ring */
-	*(ring_cursor->intr_ctrl_flag) = 0;
-}
-
-int32_t process_rings(struct c29x_dev *c_dev,
-			 struct list_head *ring_list_head)
-{
-	fsl_h_rsrc_ring_pair_t *ring_cursor = NULL;
-
-	print_debug("---------------- PROCESSING RESPONSE ------------------\n");
-
-	list_for_each_entry(ring_cursor, ring_list_head, bh_ctx_list_node) {
-		process_response(c_dev, ring_cursor);
-	}
-
-	print_debug("DONE PROCESSING RESPONSE\n");
-	return 0;
+	*(rp->intr_ctrl_flag) = 0;
 }
 
 /*******************************************************************************
@@ -985,17 +922,12 @@ int32_t process_rings(struct c29x_dev *c_dev,
  ******************************************************************************/
 void response_ring_handler(struct work_struct *work)
 {
-	struct bh_handler *bh = container_of(work, struct bh_handler, work);
-	struct c29x_dev *c_dev;
+	struct bh_handler *bh;
 
-	if (unlikely(NULL == bh)) {
+	bh = container_of(work, struct bh_handler, work);
+	if (bh != NULL) {
+		process_ring(bh->rp);
+	} else {
 		print_error("No bottom half handler found for the work\n");
-		return;
 	}
-
-	c_dev = bh->c_dev;	/* get_crypto_dev(1); */
-	print_debug("GOT INTERRUPT FROM DEV : %d\n", c_dev->dev_no);
-	print_debug("Worker thread invoked on cpu [%d]\n", bh->core_no);
-	process_rings(c_dev, &(bh->ring_list_head));
-	return;
 }

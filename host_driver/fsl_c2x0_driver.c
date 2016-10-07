@@ -309,24 +309,16 @@ struct c29x_dev *get_crypto_dev(uint32_t no)
  ******************************************************************************/
 static irqreturn_t fsl_crypto_isr(int irq, void *data)
 {
-	isr_ctx_t *isr_ctx = (isr_ctx_t *) data;
-	struct bh_handler *bh_worker = NULL;
-	fsl_h_rsrc_ring_pair_t *rp = NULL;
+	struct isr_ctx *isr_ctx = data;
+	struct bh_handler *bh_worker;
 
-	if (unlikely(!isr_ctx)) {
+	if (unlikely(isr_ctx == NULL)) {
 		print_error("[ISR] Null Params.....\n");
 		return IRQ_NONE;
 	}
 
-	list_for_each_entry((rp), &(isr_ctx->ring_list_head), isr_ctx_list_node) {
-		print_debug("Ring is assoc with this intr on core [%d]\n",
-			    rp->core_no);
-		print_debug("SHEDULING THE WORK ON CORE : %d\n", rp->core_no);
-		bh_worker = per_cpu_ptr(bh_workers, rp->core_no);
-		bh_worker->c_dev = isr_ctx->c_dev;
-
-		queue_work_on(rp->core_no, workq, &(bh_worker->work));
-	}
+	bh_worker = per_cpu_ptr(bh_workers, isr_ctx->core_no);
+	queue_work_on(isr_ctx->core_no, workq, &(bh_worker->work));
 
 	return IRQ_HANDLED;
 }
@@ -401,96 +393,74 @@ error:
 	return -ENOMEM;
 }
 
-/* Get the MSI address and MSI data from the configuration space */
-void get_msi_config_data(struct c29x_dev *c_dev, isr_ctx_t *isr_context)
+void fsl_release_irqs(struct c29x_dev *c_dev, uint32_t maxvec)
 {
-	pci_read_config_dword(c_dev->dev, PCI_MSI_ADDR_LOW,
-			&(isr_context->msi_addr_low));
-	pci_read_config_dword(c_dev->dev, PCI_MSI_ADDR_HIGH,
-			&(isr_context->msi_addr_high));
-	pci_read_config_word(c_dev->dev, PCI_MSI_ADDR_DATA,
-			&(isr_context->msi_data));
+	uint32_t i;
+	isr_ctx_t *isr_ctx;
 
-	print_debug("MSI addr low  [%0X]\n", isr_context->msi_addr_low);
-	print_debug("MSI addr high [%0X]\n", isr_context->msi_addr_high);
-	print_debug("MSI data      [%0X]\n", isr_context->msi_data);
-}
-
-void fsl_release_irqs(struct c29x_dev *c_dev)
-{
-	isr_ctx_t *isr_context, *isr_n_context;
-
-	list_for_each_entry_safe(isr_context, isr_n_context,
-			&(c_dev->intr_info.isr_ctx_head), list) {
-		print_debug("Freeing Irq\n");
-		free_irq(isr_context->irq, isr_context);
-		list_del(&(isr_context->list));
-		list_del(&(isr_context->ring_list_head));
-		kfree(isr_context);
+	for (i = 0; i < maxvec; i++) {
+		isr_ctx = &(c_dev->isr_ctx[i]);
+		free_irq(isr_ctx->irq, isr_ctx);
 	}
 }
 
-int get_irq_vectors(struct c29x_dev *c_dev)
+int32_t get_irq_vectors(struct c29x_dev *c_dev)
 {
-	int err;
+	int32_t nvec;
+	int8_t maxvec = c_dev->config.num_of_rps;
+	struct device *my_dev = &c_dev->dev->dev;
 
-	err = pci_enable_msi(c_dev->dev);
-	if (err != 0) {
-		dev_err(&c_dev->dev->dev, "MSI enable failed !!\n");
-		return err;
+	print_debug("MSI available vectors: %d\n", pci_msi_vec_count(c_dev->dev));
+	print_debug("MSI requested vectors: %d\n", maxvec);
+
+	nvec = pci_enable_msi_range(c_dev->dev, 1, maxvec);
+	if (nvec < 0) {
+		dev_err(my_dev, "MSI enable failed !!\n");
+		return -ENODEV;
 	}
+	c_dev->intr_vectors_cnt = nvec;
+	print_debug("MSI enabled vectors  : %d\n", nvec);
 
-	c_dev->intr_info.intr_vectors_cnt = 1;
-
-	return err;
+	return 0;
 }
 
 int fsl_request_irqs(struct c29x_dev *c_dev)
 {
-	uint16_t i, num_of_vectors;
-	uint32_t irq;
+	uint32_t i;
+	uint32_t num_of_vectors;
 	isr_ctx_t *isr_ctx;
-	struct list_head *isr_ctx_head;
 	int err;
 	struct device *my_dev = &c_dev->dev->dev;
 
-	isr_ctx_head = &(c_dev->intr_info.isr_ctx_head);
-	INIT_LIST_HEAD(isr_ctx_head);
-
-	/* this was set-up earlier by get_irq_vectors */
-	num_of_vectors = c_dev->intr_info.intr_vectors_cnt;
+	num_of_vectors = c_dev->intr_vectors_cnt;
 	for (i = 0; i < num_of_vectors; i++) {
-		isr_ctx = kzalloc(sizeof(*isr_ctx), GFP_KERNEL);
-		if (!isr_ctx) {
-			dev_err(my_dev, "Mem alloc failed\n");
-			err = -ENOMEM;
-			goto free_irqs;
-		}
+		isr_ctx = &(c_dev->isr_ctx[i]);
+		isr_ctx->core_no = i;
+		isr_ctx->irq = c_dev->dev->irq + i;
 
-		INIT_LIST_HEAD(&(isr_ctx->ring_list_head));
-		isr_ctx->c_dev = c_dev;
-
-		irq = c_dev->dev->irq + i;
-
-		/* Register the ISR with kernel for each vector */
-		err = request_irq(irq, (irq_handler_t) fsl_crypto_isr, 0,
+		err = request_irq(isr_ctx->irq, fsl_crypto_isr, 0,
 				c_dev->dev_name, isr_ctx);
 		if (err) {
 			dev_err(my_dev, "Request IRQ failed for vector: %d\n", i);
-			kfree(isr_ctx);
 			goto free_irqs;
 		}
-		isr_ctx->irq = irq;
 
-		get_msi_config_data(c_dev, isr_ctx);
+		pci_read_config_dword(c_dev->dev, PCI_MSI_ADDR_LOW,
+				&(isr_ctx->msi_addr_low));
+		pci_read_config_dword(c_dev->dev, PCI_MSI_ADDR_HIGH,
+				&(isr_ctx->msi_addr_high));
+		pci_read_config_word(c_dev->dev, PCI_MSI_ADDR_DATA,
+				&(isr_ctx->msi_data));
+		isr_ctx->msi_data += i;
 
-		/* Add this to the list of ISR contexts */
-		list_add(&(isr_ctx->list), isr_ctx_head);
+		print_debug("MSI addr low  [%0X]\n", isr_ctx->msi_addr_low);
+		print_debug("MSI addr high [%0X]\n", isr_ctx->msi_addr_high);
+		print_debug("MSI data      [%0X]\n", isr_ctx->msi_data);
 	}
 	return 0;
 
 free_irqs:
-	fsl_release_irqs(c_dev);
+	fsl_release_irqs(c_dev, i);
 	return err;
 }
 
@@ -510,9 +480,6 @@ int32_t create_c29x_workqueue(void)
 	for_each_online_cpu(i) {
 		bh_worker = per_cpu_ptr(bh_workers, i);
 		INIT_WORK(&(bh_worker->work), response_ring_handler);
-		bh_worker->core_no = i;
-
-		INIT_LIST_HEAD(&(bh_worker->ring_list_head));
 	}
 	return 0;
 }
@@ -552,12 +519,12 @@ static void cleanup_pci_device(struct c29x_dev *c_dev)
 		}
 	}
 
-	if (0 == c_dev->intr_info.intr_vectors_cnt) {
+	if (c_dev->intr_vectors_cnt == 0) {
 		print_debug("Zero interrupt count");
 		goto disable_dev;
 	}
 
-	fsl_release_irqs(c_dev);
+	fsl_release_irqs(c_dev, c_dev->intr_vectors_cnt);
 	pci_disable_msi(c_dev->dev);
 
 disable_dev:
@@ -754,7 +721,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 deinit_sysfs:
 	sysfs_cleanup(c_dev);
 free_req_irq:
-	fsl_release_irqs(c_dev);
+	fsl_release_irqs(c_dev, c_dev->intr_vectors_cnt);
 disable_msi:
 	pci_disable_msi(c_dev->dev);
 free_bar_map:

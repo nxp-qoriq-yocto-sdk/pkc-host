@@ -61,6 +61,8 @@
 #define MSI_CTRL_WORD_MME_MASK	0x70	/* 4-6 bits */
 #define MSI_CTRL_WORD_MME_SHIFT	4
 
+#define MAX_MSI_IRQ 16
+
 /* PCI CONFIG SPACE REGISTERS OFFSET */
 typedef enum pci_config_space_regs {
 	PCI_BAR0_REGISTER = 0X10,
@@ -80,12 +82,10 @@ struct c29x_cfg {
 
 typedef struct isr_ctx {
 	uint32_t irq;
-	struct c29x_dev *c_dev;
 	uint32_t msi_addr_low;
 	uint32_t msi_addr_high;
 	uint16_t msi_data;
-	struct list_head list;
-	struct list_head ring_list_head;
+	uint32_t core_no;
 } isr_ctx_t;
 
 struct pci_bar_info {
@@ -107,11 +107,6 @@ struct host_mem_info {
 	ptrdiff_t buf_pool_offset;
 };
 
-typedef struct pci_intr_info {
-	u16 intr_vectors_cnt;
-	struct list_head isr_ctx_head;
-} pci_intr_info_t;
-
 struct c29x_dev {
 	uint32_t dev_no;
 
@@ -124,9 +119,10 @@ struct c29x_dev {
 
 	struct pci_bar_info bars[MEM_TYPE_MAX];
 	struct host_mem_info drv_mem;
+	uint32_t intr_vectors_cnt;
 
-	pci_intr_info_t intr_info;
 	struct c29x_cfg config;
+	struct isr_ctx isr_ctx[MAX_MSI_IRQ];
 
 	dev_sysfs_entries_t sysfs;
 	void *sysfs_dir;
@@ -159,10 +155,8 @@ struct c29x_dev {
 };
 
 struct bh_handler {
-	int core_no;
-	struct c29x_dev *c_dev;
+	struct fsl_h_rsrc_ring_pair *rp;
 	struct work_struct work;
-	struct list_head ring_list_head;
 };
 
 struct alg_template {
