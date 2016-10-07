@@ -490,19 +490,6 @@ error:
 	return -ENOMEM;
 }
 
-int get_msi_iv(struct c29x_dev *fsl_pci_dev)
-{
-	struct device *my_dev = &fsl_pci_dev->dev->dev;
-
-	if (pci_enable_msi(fsl_pci_dev->dev) != 0) {
-		dev_err(my_dev, "MSI enable failed !!\n");
-		return -ENODEV;
-	}
-
-	fsl_pci_dev->intr_info.intr_vectors_cnt = 1;
-	return 0;
-}
-
 /* Get the MSI address and MSI data from the configuration space */
 void get_msi_config_data(struct c29x_dev *fsl_pci_dev, isr_ctx_t *isr_context)
 {
@@ -545,10 +532,13 @@ int get_irq_vectors(struct c29x_dev *fsl_pci_dev, uint8_t num_of_rings)
 {
 	int err;
 
-	err = get_msi_iv(fsl_pci_dev);
+	err = pci_enable_msi(fsl_pci_dev->dev);
 	if (err != 0) {
-		pci_disable_msi(fsl_pci_dev->dev);
+		dev_err(&fsl_pci_dev->dev->dev, "MSI enable failed !!\n");
+		return err;
 	}
+
+	fsl_pci_dev->intr_info.intr_vectors_cnt = 1;
 
 	return err;
 }
