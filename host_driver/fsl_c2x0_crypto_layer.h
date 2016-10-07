@@ -86,15 +86,6 @@ typedef enum crypto_dev_mem_type {
 	MEM_TYPE_MAX
 } crypto_dev_mem_type_t;
 
-/* Identifier for the ring pairs */
-typedef enum ring_id {
-	CRYPTO_COMMAND_RING_ID,
-	CRYPTO_APP_RING_ID,
-	/*This ID is not used in driver but the same
-	 * enum will be used by firmware*/
-	CRYPTO_SEC_RING_ID
-} ring_id_t;
-
 /*******************************************************************************
 Description :	Contains the configuration read from the file.
 Fields      :	dev_no    : Number of the device to which this config applies.
@@ -121,7 +112,7 @@ struct crypto_dev_config {
 #define FSL_CRYPTO_MAX_RING_PAIRS   6
 
 	struct ring_info {
-		ring_id_t ring_id;
+		uint32_t ring_id;
 		uint32_t depth;
 		uint32_t msi_addr_l;
 		uint32_t msi_addr_h;
