@@ -510,7 +510,7 @@ void get_msi_config_data(struct c29x_dev *fsl_pci_dev, isr_ctx_t *isr_context)
 		bar->host_p_addr |= ((u64) isr_context->msi_addr_high) << 32;
 	}
 
-	bar->host_v_addr = phys_to_virt(bar->host_p_addr);
+	bar->host_v_addr = (void*)0xdeadbeef;
 }
 
 void fsl_release_irqs(struct c29x_dev *fsl_pci_dev)
