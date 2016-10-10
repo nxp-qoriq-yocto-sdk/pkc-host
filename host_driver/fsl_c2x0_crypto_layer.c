@@ -389,7 +389,7 @@ void hs_firmware_up(fsl_crypto_dev_t *dev)
 			(uint64_t)dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr);
 }
 
-void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
+void hs_fw_init_complete(fsl_crypto_dev_t *dev, uint8_t rid)
 {
 	struct config_data *hscfg = &dev->host_mem->hs_mem.data.config;
 	uint32_t r_s_c_cntrs;
@@ -420,7 +420,7 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config
 	print_debug("FW Pool host V addr: %p\n", dev->dev_ip_pool.h_v_addr);
 }
 
-void hs_init_rp_complete(fsl_crypto_dev_t *dev, struct crypto_dev_config *config, uint8_t rid)
+void hs_init_rp_complete(fsl_crypto_dev_t *dev, uint8_t rid)
 {
 	struct ring_data *hsring = &dev->host_mem->hs_mem.data.ring;
 	uint32_t req_r;
@@ -459,11 +459,11 @@ int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 			send_hs_init_config(dev);
 			break;
 		case FW_INIT_CONFIG_COMPLETE:
-			hs_fw_init_complete(dev, config, rid);
+			hs_fw_init_complete(dev, rid);
 			send_hs_init_ring_pair(dev, &(config->ring[rid]));
 			break;
 		case FW_INIT_RING_PAIR_COMPLETE:
-			hs_init_rp_complete(dev, config, rid);
+			hs_init_rp_complete(dev, rid);
 			rid++;
 			if (rid < dev->num_of_rps) {
 				send_hs_init_ring_pair(dev, &(config->ring[rid]));
