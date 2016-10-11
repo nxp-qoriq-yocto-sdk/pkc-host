@@ -169,9 +169,6 @@ struct dev_handshake_mem {
 	uint32_t h_ob_mem_l;
 	uint32_t h_ob_mem_h;
 
-	uint32_t padding1;
-	uint32_t padding2;
-
 	uint8_t state;
 	uint8_t data_len;
 	uint8_t pad;
