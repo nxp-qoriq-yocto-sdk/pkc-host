@@ -82,7 +82,6 @@ typedef enum crypto_dev_mem_type {
 	MEM_TYPE_CONFIG,
 	MEM_TYPE_SRAM,
 	MEM_TYPE_DRIVER,
-	MEM_TYPE_MSI,
 	MEM_TYPE_MAX
 } crypto_dev_mem_type_t;
 
@@ -170,8 +169,8 @@ struct dev_handshake_mem {
 	uint32_t h_ob_mem_l;
 	uint32_t h_ob_mem_h;
 
-	uint32_t h_msi_mem_l;
-	uint32_t h_msi_mem_h;
+	uint32_t padding1;
+	uint32_t padding2;
 
 	uint8_t state;
 	uint8_t data_len;

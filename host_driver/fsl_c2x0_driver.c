@@ -492,8 +492,6 @@ error:
 /* Get the MSI address and MSI data from the configuration space */
 void get_msi_config_data(struct c29x_dev *fsl_pci_dev, isr_ctx_t *isr_context)
 {
-	struct pci_bar_info *bar = &fsl_pci_dev->bars[MEM_TYPE_MSI];
-
 	pci_read_config_dword(fsl_pci_dev->dev, PCI_MSI_ADDR_LOW,
 			&(isr_context->msi_addr_low));
 	pci_read_config_dword(fsl_pci_dev->dev, PCI_MSI_ADDR_HIGH,
@@ -501,16 +499,9 @@ void get_msi_config_data(struct c29x_dev *fsl_pci_dev, isr_ctx_t *isr_context)
 	pci_read_config_word(fsl_pci_dev->dev, PCI_MSI_ADDR_DATA,
 			&(isr_context->msi_data));
 
-	print_debug("MSI addr low [%0X] MSI addr high [%0X] MSI data [%0X]\n",
-			isr_context->msi_addr_low, isr_context->msi_addr_high,
-			isr_context->msi_data);
-
-	bar->host_p_addr = isr_context->msi_addr_low;
-	if (sizeof(phys_addr_t) == sizeof(u64)) {
-		bar->host_p_addr |= ((u64) isr_context->msi_addr_high) << 32;
-	}
-
-	bar->host_v_addr = (void*)0xdeadbeef;
+	print_debug("MSI addr low  [%0X]\n", isr_context->msi_addr_low);
+	print_debug("MSI addr high [%0X]\n", isr_context->msi_addr_high);
+	print_debug("MSI data      [%0X]\n", isr_context->msi_data);
 }
 
 void fsl_release_irqs(struct c29x_dev *fsl_pci_dev)

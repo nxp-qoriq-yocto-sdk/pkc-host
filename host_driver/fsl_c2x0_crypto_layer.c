@@ -236,7 +236,6 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 void init_handshake(fsl_crypto_dev_t *dev)
 {
 	dma_addr_t ob_mem = dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr;
-	phys_addr_t msi_mem = dev->priv_dev->bars[MEM_TYPE_MSI].host_p_addr;
 
 	/* Write our address to the firmware -
 	 * It uses this to give it details when it is up */
@@ -251,20 +250,13 @@ void init_handshake(fsl_crypto_dev_t *dev)
 	print_debug("Host ob mem addr	L: %0x	H: %0x\n", l_val, h_val);
 
 	/* First phase of communication:
-	 * When the device is started it will look for these addresses to get
-	 * back to us: interrupt and host memory (at the base of which there is
-	 * the host handshake area)
+	 * When the device is started it will want to know where to put things
+	 * where the host driver will find them: host memory (at the base of
+	 * which there is the host handshake area) and interrupt information
+	 * (which will be given with each ring later during handshake)
 	 */
 	iowrite32be(l_val, (void *) &dev->c_hs_mem->h_ob_mem_l);
 	iowrite32be(h_val, (void *) &dev->c_hs_mem->h_ob_mem_h);
-
-	/* Write MSI info the device */
-	l_val = (uint32_t) (msi_mem & PHYS_ADDR_L_32_BIT_MASK);
-	h_val = (msi_mem & PHYS_ADDR_H_32_BIT_MASK) >> 32;
-	print_debug("MSI mem addr,	L: %0x	H: %x\n", l_val, h_val);
-
-	iowrite32be(l_val, (void *) &dev->c_hs_mem->h_msi_mem_l);
-	iowrite32be(h_val, (void *) &dev->c_hs_mem->h_msi_mem_h);
 }
 
 void init_ring_pairs(fsl_crypto_dev_t *dev)
@@ -625,7 +617,6 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	print_debug("Ob mem dev_p_addr: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr));
 	print_debug("Ob mem len: %pa\n", &dev->priv_dev->bars[MEM_TYPE_DRIVER].len);
 	print_debug("BAR0 V Addr: %p\n", ccsr);
-	print_debug("MSI mem: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_MSI].host_p_addr));
 
 	/* Dumping the registers set */
 	print_debug(" ==== EP REGISTERS ====\n");
