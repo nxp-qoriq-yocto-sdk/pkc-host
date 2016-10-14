@@ -67,7 +67,6 @@ ssize_t common_sysfs_show(struct kobject *kobj, struct attribute *attr,
 		buf_len = sysfs_file->buf_len;
 	} else {
 		sprintf(buf, "%u\n", sysfs_file->num);
-		buf_len = sizeof(sysfs_file->num);
 		buf_len = strlen(buf);
 	}
 
