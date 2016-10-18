@@ -111,10 +111,9 @@ void distribute_rings(struct c29x_dev *c_dev, struct crypto_dev_config *config)
 
 		rp = &(c_dev->ring_pairs[i]);
 		rp->core_no = core_no;
-
-		config->ring[i].msi_addr_l = isr_ctx->msi_addr_low;
-		config->ring[i].msi_addr_h = isr_ctx->msi_addr_high;
-		config->ring[i].msi_data = isr_ctx->msi_data;
+		rp->msi_addr_l = isr_ctx->msi_addr_low;
+		rp->msi_addr_h = isr_ctx->msi_addr_high;
+		rp->msi_data = isr_ctx->msi_data;
 
 		/* Adding the ring to the ISR */
 		list_add(&(rp->isr_ctx_list_node), &(isr_ctx->ring_list_head));
@@ -305,24 +304,23 @@ void send_hs_init_config(struct c29x_dev *c_dev)
 void send_hs_init_ring_pair(struct c29x_dev *c_dev, uint8_t rid)
 {
 	uint32_t resp_r_offset;
-	struct ring_info *ring = &(c_dev->config->ring[rid]);
+	fsl_h_rsrc_ring_pair_t *rp = &(c_dev->ring_pairs[rid]);
 
-	resp_r_offset = (void *)c_dev->ring_pairs[rid].resp_r -
-			(void *)c_dev->host_mem;
+	resp_r_offset = (void *)rp->resp_r - (void *)c_dev->host_mem;
 
 	iowrite8(rid, &c_dev->c_hs_mem->data.ring.rid);
-	iowrite16be(ring->msi_data, &c_dev->c_hs_mem->data.ring.msi_data);
-	iowrite32be(ring->depth, &c_dev->c_hs_mem->data.ring.depth);
+	iowrite16be(rp->msi_data, &c_dev->c_hs_mem->data.ring.msi_data);
+	iowrite32be(rp->depth, &c_dev->c_hs_mem->data.ring.depth);
 	iowrite32be(resp_r_offset, &c_dev->c_hs_mem->data.ring.resp_ring_offset);
-	iowrite32be(ring->msi_addr_l, &c_dev->c_hs_mem->data.ring.msi_addr_l);
-	iowrite32be(ring->msi_addr_h, &c_dev->c_hs_mem->data.ring.msi_addr_h);
+	iowrite32be(rp->msi_addr_l, &c_dev->c_hs_mem->data.ring.msi_addr_l);
+	iowrite32be(rp->msi_addr_h, &c_dev->c_hs_mem->data.ring.msi_addr_h);
 
 	print_debug("HS_INIT_RING_PAIR Details\n");
 	print_debug("Rid: %d\n", rid);
-	print_debug("Depth: %d\n", ring->depth);
-	print_debug("MSI Data: %x\n", ring->msi_data);
-	print_debug("MSI Addr L: %x\n", ring->msi_addr_l);
-	print_debug("MSI Addr H: %x\n", ring->msi_addr_h);
+	print_debug("Depth: %d\n", rp->depth);
+	print_debug("MSI Data: %x\n", rp->msi_data);
+	print_debug("MSI Addr L: %x\n", rp->msi_addr_l);
+	print_debug("MSI Addr H: %x\n", rp->msi_addr_h);
 
 	barrier();
 	iowrite8(FW_INIT_RING_PAIR, &c_dev->c_hs_mem->state);

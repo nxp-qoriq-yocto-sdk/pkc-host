@@ -111,9 +111,6 @@ struct crypto_dev_config {
 
 	struct ring_info {
 		uint32_t depth;
-		uint32_t msi_addr_l;
-		uint32_t msi_addr_h;
-		uint16_t msi_data;
 	} ring[FSL_CRYPTO_MAX_RING_PAIRS];
 
 	struct list_head list;
@@ -212,6 +209,9 @@ typedef struct fsl_h_rsrc_ring_pair {
 
 	uint32_t depth;
 	uint32_t core_no;
+	uint32_t msi_addr_l;
+	uint32_t msi_addr_h;
+	uint16_t msi_data;
 
 	spinlock_t ring_lock;
 } fsl_h_rsrc_ring_pair_t;
