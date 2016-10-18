@@ -336,7 +336,7 @@ int32_t fsl_crypto_layer_add_device(struct c29x_dev *c_dev,
 		struct crypto_dev_config *config);
 
 void cleanup_crypto_device(struct c29x_dev *c_dev);
-int32_t handshake(struct c29x_dev *c_dev, struct crypto_dev_config *config);
+int32_t handshake(struct c29x_dev *c_dev);
 void rearrange_rings(struct c29x_dev *c_dev, struct crypto_dev_config *config);
 void distribute_rings(struct c29x_dev *c_dev, struct crypto_dev_config *config);
 void init_ip_pool(struct c29x_dev *c_dev);

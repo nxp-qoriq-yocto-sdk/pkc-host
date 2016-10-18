@@ -304,9 +304,10 @@ void send_hs_init_config(struct c29x_dev *c_dev)
 	iowrite8(FW_INIT_CONFIG, &c_dev->c_hs_mem->state);
 }
 
-void send_hs_init_ring_pair(struct c29x_dev *c_dev, struct ring_info *ring)
+void send_hs_init_ring_pair(struct c29x_dev *c_dev, uint8_t rid)
 {
 	uint32_t resp_r_offset;
+	struct ring_info *ring = &(c_dev->config->ring[rid]);
 
 	resp_r_offset = (void *)c_dev->ring_pairs[ring->ring_id].resp_r -
 			(void *)c_dev->host_mem;
@@ -419,7 +420,7 @@ void hs_init_rp_complete(struct c29x_dev *c_dev, uint8_t rid)
 	print_debug("Interrupt   : %p\n", c_dev->ring_pairs[rid].intr_ctrl_flag);
 }
 
-int32_t handshake(struct c29x_dev *c_dev, struct crypto_dev_config *config)
+int32_t handshake(struct c29x_dev *c_dev)
 {
 	uint8_t rid = 0;
 	uint32_t timecntr = 0;
@@ -436,13 +437,13 @@ int32_t handshake(struct c29x_dev *c_dev, struct crypto_dev_config *config)
 			break;
 		case FW_INIT_CONFIG_COMPLETE:
 			hs_fw_init_complete(c_dev, rid);
-			send_hs_init_ring_pair(c_dev, &(config->ring[rid]));
+			send_hs_init_ring_pair(c_dev, rid);
 			break;
 		case FW_INIT_RING_PAIR_COMPLETE:
 			hs_init_rp_complete(c_dev, rid);
 			rid++;
 			if (rid < c_dev->num_of_rps) {
-				send_hs_init_ring_pair(c_dev, &(config->ring[rid]));
+				send_hs_init_ring_pair(c_dev, rid);
 			} else {
 				send_hs_complete(c_dev);
 			}
@@ -856,7 +857,7 @@ int32_t fsl_crypto_layer_add_device(struct c29x_dev *c_dev,
 	check_ep_bootup(c_dev);
 #endif
 
-	err = handshake(c_dev, config);
+	err = handshake(c_dev);
 	if (err) {
 		print_error("Handshake failed\n");
 		goto error;
