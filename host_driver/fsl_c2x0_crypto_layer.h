@@ -277,7 +277,7 @@ Fields      :	depth: Depth of the ring
 		pool		: Input buffer pool information
 *******************************************************************************/
 typedef struct fsl_h_rsrc_ring_pair {
-	struct fsl_crypto_dev *dev;
+	struct c29x_dev *dev;
 
 	struct list_head isr_ctx_list_node;
 	struct list_head bh_ctx_list_node;
@@ -335,76 +335,24 @@ struct driver_ob_mem {
 
 typedef struct ctx_pool ctx_pool_t;
 
-/*******************************************************************************
-Description :	Contains all the information of the crypto device.
-Fields      :	priv_dev	: Low level private data structure of the device
-		dev_info	: Info of the EP crypto device
-		config		: configuration of the device.
-		mem		: All the memories between the device and driver
-		h_mem		: Layout of the driver memory.
-		pci_id		: Device ID structure of the device.
-		bars		: Holds the information of the PCIe BARs.
-		intr_info	: Holds the interrupt information
-		list		: To make multiple instances of this structure
-					as linked list.
-*******************************************************************************/
-typedef struct fsl_crypto_dev {
-	struct c29x_dev *priv_dev;
-
-	struct crypto_dev_config *config;
-	struct driver_ob_mem ob_mem;
-
-	/* Pointer to the memory on the host side, structures the plain bytes.
-	 * Represents the memory layout on the driver.
-	 * This points to the base of the outbound memory.
-	 */
-	struct host_mem_layout *host_mem;
-
-	/* Pointer to the device's handshake memory, this will be
-	 * pointing to the inbound memory.
-	 * This data structure helps in structured access of raw bytes
-	 * in the device memory during the handshake.
-	 */
-	struct dev_handshake_mem *c_hs_mem;
-
-	/* Pointer to the shadow ring counters memory */
-	struct ring_counters_mem *r_s_c_cntrs;
-
-	/* Structure defining the input pool */
-	struct pool_info host_ip_pool;
-
-	/* Ctx pool - Will be used during data path to allocate one
-	 * of the available static contexts */
-	ctx_pool_t *ctx_pool;
-
-	uint8_t num_of_rps;
-	fsl_h_rsrc_ring_pair_t *ring_pairs;
-
-	/* Holds the count of number of crypto dev sessions */
-	atomic_t crypto_dev_sess_cnt;
-
-	atomic_t app_req_cnt;
-	atomic_t app_resp_cnt;
-} fsl_crypto_dev_t;
-
-int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
+int32_t ring_enqueue(struct c29x_dev *c_dev, uint32_t jr_id,
 			 dev_dma_addr_t sec_desc);
 
-fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *dev,
+int32_t fsl_crypto_layer_add_device(struct c29x_dev *dev,
 		struct crypto_dev_config *config);
 
-void cleanup_crypto_device(fsl_crypto_dev_t *dev);
-int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
-void rearrange_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
-void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
-void init_ip_pool(fsl_crypto_dev_t *dev);
-int init_crypto_ctx_pool(fsl_crypto_dev_t *dev);
-void init_handshake(fsl_crypto_dev_t *dev);
-void init_ring_pairs(fsl_crypto_dev_t *dev);
-void stop_device(fsl_crypto_dev_t *dev);
-void start_device(fsl_crypto_dev_t *dev);
+void cleanup_crypto_device(struct c29x_dev *dev);
+int32_t handshake(struct c29x_dev *dev, struct crypto_dev_config *config);
+void rearrange_rings(struct c29x_dev *dev, struct crypto_dev_config *config);
+void distribute_rings(struct c29x_dev *dev, struct crypto_dev_config *config);
+void init_ip_pool(struct c29x_dev *dev);
+int init_crypto_ctx_pool(struct c29x_dev *dev);
+void init_handshake(struct c29x_dev *dev);
+void init_ring_pairs(struct c29x_dev *dev);
+void stop_device(struct c29x_dev *dev);
+void start_device(struct c29x_dev *dev);
 void response_ring_handler(struct work_struct *work);
 
-extern int32_t rng_instantiation(fsl_crypto_dev_t *c_dev);
+extern int32_t rng_instantiation(struct c29x_dev *c_dev);
 
 #endif

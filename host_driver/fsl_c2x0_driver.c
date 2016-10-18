@@ -293,18 +293,7 @@ out_err:
 }
 
 
-/*******************************************************************************
- * Function     : get_crypto_dev
- *
- * Arguments    : no : Device number
- *
- * Return Value : fsl_crypto_dev_t - Crypto dev instance
- *
- * Description  : Searches the device corresponding to the input argument number
- *                and returns the corresponding crypto dev instance.
- *
- ******************************************************************************/
-fsl_crypto_dev_t *get_crypto_dev(uint32_t no)
+struct c29x_dev *get_crypto_dev(uint32_t no)
 {
 	struct c29x_dev *dev_n_cursor = NULL;
 	struct c29x_dev *dev_cursor = NULL;
@@ -316,7 +305,7 @@ fsl_crypto_dev_t *get_crypto_dev(uint32_t no)
 		if (no == dev_cursor->dev_no) {
 
 			print_debug("Found the device\n");
-			return dev_cursor->crypto_dev;
+			return dev_cursor;
 		}
 	}
 	return NULL;
@@ -393,7 +382,7 @@ static irqreturn_t fsl_crypto_isr(int irq, void *data)
 			    rp->core_no);
 		print_debug("SHEDULING THE WORK ON CORE : %d\n", rp->core_no);
 		bh_worker = per_cpu_ptr(bh_workers, rp->core_no);
-		bh_worker->c_dev = isr_ctx->dev->crypto_dev;
+		bh_worker->c_dev = isr_ctx->dev;
 
 		queue_work_on(rp->core_no, workq, &(bh_worker->work));
 	}
@@ -1007,9 +996,9 @@ static void fsl_crypto_pci_remove(struct pci_dev *dev)
 		return;
 	}
 
-	stop_device(fsl_pci_dev->crypto_dev);
+	stop_device(fsl_pci_dev);
 	/* To do crypto layer related cleanup corresponding to this device */
-	cleanup_crypto_device(fsl_pci_dev->crypto_dev);
+	cleanup_crypto_device(fsl_pci_dev);
 	/* Cleanup the PCI related resources */
 	cleanup_pci_device(fsl_pci_dev);
 	/* Delete the device from list */
@@ -1165,16 +1154,9 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		goto free_req_irq;
 	}
 
-	/* Add the PCI device to the crypto layer --
-	 * This layer adds the device as crypto device.
-	 * To have kernel dependencies separate, all the
-	 * crypto device related handling will be done
-	 * by the crypto layer.
-	 */
-	fsl_pci_dev->crypto_dev = fsl_crypto_layer_add_device(fsl_pci_dev, config);
-	if (!fsl_pci_dev->crypto_dev) {
+	err = fsl_crypto_layer_add_device(fsl_pci_dev, config);
+	if (err != 0) {
 		dev_err(&dev->dev, "Adding device as crypto dev failed\n");
-		err = -ENODEV;
 		goto deinit_sysfs;
 	}
 

@@ -83,18 +83,18 @@ static uint32_t page_align(uint32_t addr)
 	return align(addr, PAGE_SIZE);
 }
 
-void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
+void distribute_rings(struct c29x_dev *dev, struct crypto_dev_config *config)
 {
 	fsl_h_rsrc_ring_pair_t *rp;
 	uint32_t core_no = 0;
 	uint16_t isr_count = 0;
 	uint32_t i;
 	struct list_head *isr_ctx_head;
-	uint16_t total_isrs = dev->priv_dev->intr_info.intr_vectors_cnt;
+	uint16_t total_isrs = dev->intr_info.intr_vectors_cnt;
 	struct bh_handler *bh_worker;
 	isr_ctx_t *isr_ctx;
 
-	isr_ctx_head = &(dev->priv_dev->intr_info.isr_ctx_head);
+	isr_ctx_head = &(dev->intr_info.isr_ctx_head);
 
 	isr_ctx = list_entry(isr_ctx_head->next, isr_ctx_t, list);
 
@@ -155,7 +155,7 @@ uint32_t ob_alloc(size_t size)
 	return save_addr;
 }
 
-static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
+static uint32_t calc_ob_mem_len(struct c29x_dev *dev,
 				struct crypto_dev_config *config)
 {
 	uint32_t total_ring_slots;
@@ -181,7 +181,7 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
  * Allocate outbound memory
  * dev->host_mem will contain the driver's memory map
  */
-int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
+int32_t alloc_ob_mem(struct c29x_dev *dev, struct crypto_dev_config *config)
 {
 	void *host_v_addr;
 	struct pci_bar_info *mem;
@@ -189,12 +189,12 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 
 	/* First get the total ob mem required */
 	ob_mem_len = calc_ob_mem_len(dev, config);
-	mem = &(dev->priv_dev->bars[MEM_TYPE_DRIVER]);
+	mem = &(dev->bars[MEM_TYPE_DRIVER]);
 
 	print_debug("alloc_ob_mem entered...\n");
 	print_debug("Total ob mem returned: %d\n", ob_mem_len);
 
-	host_v_addr = dma_alloc_coherent(&dev->priv_dev->dev->dev, ob_mem_len,
+	host_v_addr = dma_alloc_coherent(&dev->dev->dev, ob_mem_len,
 					&(mem->host_dma_addr), GFP_KERNEL);
 	if (!host_v_addr) {
 		print_error("Allocating ob mem failed...\n");
@@ -230,9 +230,9 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	return 0;
 }
 
-void init_handshake(fsl_crypto_dev_t *dev)
+void init_handshake(struct c29x_dev *dev)
 {
-	dma_addr_t ob_mem = dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr;
+	dma_addr_t ob_mem = dev->bars[MEM_TYPE_DRIVER].host_dma_addr;
 
 	/* Write our address to the firmware -
 	 * It uses this to give it details when it is up */
@@ -256,7 +256,7 @@ void init_handshake(fsl_crypto_dev_t *dev)
 	iowrite32be(h_val, (void *) &dev->c_hs_mem->h_ob_mem_h);
 }
 
-void init_ring_pairs(fsl_crypto_dev_t *dev)
+void init_ring_pairs(struct c29x_dev *dev)
 {
 	fsl_h_rsrc_ring_pair_t *rp;
 	uint32_t i;
@@ -288,7 +288,7 @@ void init_ring_pairs(fsl_crypto_dev_t *dev)
 
 }
 
-void send_hs_init_config(fsl_crypto_dev_t *dev)
+void send_hs_init_config(struct c29x_dev *dev)
 {
 	struct c_config_data *config = &dev->c_hs_mem->data.config;
 
@@ -304,7 +304,7 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	iowrite8(FW_INIT_CONFIG, &dev->c_hs_mem->state);
 }
 
-void send_hs_init_ring_pair(fsl_crypto_dev_t *dev, struct ring_info *ring)
+void send_hs_init_ring_pair(struct c29x_dev *dev, struct ring_info *ring)
 {
 	uint32_t resp_r_offset;
 
@@ -329,22 +329,22 @@ void send_hs_init_ring_pair(fsl_crypto_dev_t *dev, struct ring_info *ring)
 	iowrite8(FW_INIT_RING_PAIR, &dev->c_hs_mem->state);
 }
 
-void send_hs_complete(fsl_crypto_dev_t *dev)
+void send_hs_complete(struct c29x_dev *dev)
 {
 	iowrite8(FW_HS_COMPLETE, &dev->c_hs_mem->state);
 }
 
-void send_hs_wait_for_rng(fsl_crypto_dev_t *dev)
+void send_hs_wait_for_rng(struct c29x_dev *dev)
 {
 	iowrite8(FW_WAIT_FOR_RNG, &dev->c_hs_mem->state);
 }
 
-void send_hs_rng_done(fsl_crypto_dev_t *dev)
+void send_hs_rng_done(struct c29x_dev *dev)
 {
 	iowrite8(FW_RNG_DONE, &dev->c_hs_mem->state);
 }
 
-void hs_firmware_up(fsl_crypto_dev_t *dev)
+void hs_firmware_up(struct c29x_dev *dev)
 {
 	struct fw_up_data *hsdev = &dev->host_mem->hs_mem.data.device;
 	uint32_t p_ib_l;
@@ -361,22 +361,22 @@ void hs_firmware_up(fsl_crypto_dev_t *dev)
 	p_ob_l = be32_to_cpu(hsdev->p_ob_mem_base_l);
 	p_ob_h = be32_to_cpu(hsdev->p_ob_mem_base_h);
 
-	dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr = (dev_p_addr_t) p_ib_h << 32;
-	dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr |= p_ib_l;
+	dev->bars[MEM_TYPE_SRAM].dev_p_addr = (dev_p_addr_t) p_ib_h << 32;
+	dev->bars[MEM_TYPE_SRAM].dev_p_addr |= p_ib_l;
 
-	dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr = (dev_p_addr_t) p_ob_h << 32;
-	dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr |= p_ob_l;
+	dev->bars[MEM_TYPE_DRIVER].dev_p_addr = (dev_p_addr_t) p_ob_h << 32;
+	dev->bars[MEM_TYPE_DRIVER].dev_p_addr |= p_ob_l;
 
 	print_debug("Device Shared Details\n");
 	print_debug("Ib mem PhyAddr L: %0x, H: %0x\n", p_ib_l, p_ib_h);
 	print_debug("Ob mem PhyAddr L: %0x, H: %0x\n", p_ob_l, p_ob_h);
 	print_debug("Formed dev ib mem phys address: %llx\n",
-			(uint64_t)dev->priv_dev->bars[MEM_TYPE_SRAM].dev_p_addr);
+			(uint64_t)dev->bars[MEM_TYPE_SRAM].dev_p_addr);
 	print_debug("Formed dev ob mem phys address: %llx\n",
-			(uint64_t)dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr);
+			(uint64_t)dev->bars[MEM_TYPE_DRIVER].dev_p_addr);
 }
 
-void hs_fw_init_complete(fsl_crypto_dev_t *dev, uint8_t rid)
+void hs_fw_init_complete(struct c29x_dev *dev, uint8_t rid)
 {
 	struct config_data *hscfg = &dev->host_mem->hs_mem.data.config;
 	uint32_t r_s_c_cntrs;
@@ -387,16 +387,16 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, uint8_t rid)
 
 	r_s_c_cntrs = be32_to_cpu(hscfg->r_s_c_cntrs);
 
-	dev->r_s_c_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + r_s_c_cntrs;
+	dev->r_s_c_cntrs = dev->bars[MEM_TYPE_SRAM].host_v_addr + r_s_c_cntrs;
 
 	print_debug(" ----- Details from firmware  -------\n");
-	print_debug("SRAM H V ADDR: %p\n", dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr);
+	print_debug("SRAM H V ADDR: %p\n", dev->bars[MEM_TYPE_SRAM].host_v_addr);
 	print_debug("R S C CNTRS OFFSET: %x\n", r_s_c_cntrs);
 	print_debug("-----------------------------------\n");
 	print_debug("R S C Cntrs: %p\n", dev->r_s_c_cntrs);
 }
 
-void hs_init_rp_complete(fsl_crypto_dev_t *dev, uint8_t rid)
+void hs_init_rp_complete(struct c29x_dev *dev, uint8_t rid)
 {
 	struct ring_data *hsring = &dev->host_mem->hs_mem.data.ring;
 	uint32_t req_r;
@@ -409,8 +409,8 @@ void hs_init_rp_complete(fsl_crypto_dev_t *dev, uint8_t rid)
 	intr_ctrl_flag = be32_to_cpu(hsring->intr_ctrl_flag);
 
 	dev->ring_pairs[rid].shadow_counters = &(dev->r_s_c_cntrs[rid]);
-	dev->ring_pairs[rid].req_r =dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + req_r;
-	dev->ring_pairs[rid].intr_ctrl_flag = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr +
+	dev->ring_pairs[rid].req_r =dev->bars[MEM_TYPE_SRAM].host_v_addr + req_r;
+	dev->ring_pairs[rid].intr_ctrl_flag = dev->bars[MEM_TYPE_SRAM].host_v_addr +
 			intr_ctrl_flag;
 
 	print_debug("Ring id     : %d\n", rid);
@@ -419,7 +419,7 @@ void hs_init_rp_complete(fsl_crypto_dev_t *dev, uint8_t rid)
 	print_debug("Interrupt   : %p\n", dev->ring_pairs[rid].intr_ctrl_flag);
 }
 
-int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
+int32_t handshake(struct c29x_dev *dev, struct crypto_dev_config *config)
 {
 	uint8_t rid = 0;
 	uint32_t timecntr = 0;
@@ -483,10 +483,10 @@ error:
 }
 
 #ifdef CHECK_EP_BOOTUP
-static void check_ep_bootup(fsl_crypto_dev_t *dev)
+static void check_ep_bootup(struct c29x_dev *dev)
 {
-	unsigned char *ibaddr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr;
-	unsigned char *obaddr = dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr;
+	unsigned char *ibaddr = dev->bars[MEM_TYPE_SRAM].host_v_addr;
+	unsigned char *obaddr = dev->bars[MEM_TYPE_DRIVER].host_v_addr;
 
 	char stdstr[] = "SUCCESS";
 	char obstr[] = "0000000";
@@ -527,7 +527,7 @@ static void check_ep_bootup(fsl_crypto_dev_t *dev)
 }
 #endif
 
-static void setup_ep(fsl_crypto_dev_t *dev)
+static void setup_ep(struct c29x_dev *dev)
 {
 	/* Note: reserved bits are written with zeros as per reference manual
 	 *
@@ -539,7 +539,7 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	unsigned int val;
 
 	/* CCSR base address is obtained from BAR0 device register */
-	void *ccsr = dev->priv_dev->bars[MEM_TYPE_CONFIG].host_v_addr;
+	void *ccsr = dev->bars[MEM_TYPE_CONFIG].host_v_addr;
 
 	/* disable L2 SRAM ECC error
 	 * TODO: enable ECC by default for normal operation */
@@ -597,9 +597,9 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	val = ioread32be(ccsr + 0xc30); /* LAW_LAWAR1 */
 
 	print_debug("======= setup_ep =======\n");
-	print_debug("Ob mem dma_addr: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr));
-	print_debug("Ob mem dev_p_addr: %pa\n", &(dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr));
-	print_debug("Ob mem len: %pa\n", &dev->priv_dev->bars[MEM_TYPE_DRIVER].len);
+	print_debug("Ob mem dma_addr: %pa\n", &(dev->bars[MEM_TYPE_DRIVER].host_dma_addr));
+	print_debug("Ob mem dev_p_addr: %pa\n", &(dev->bars[MEM_TYPE_DRIVER].dev_p_addr));
+	print_debug("Ob mem len: %pa\n", &dev->bars[MEM_TYPE_DRIVER].len);
 	print_debug("BAR0 V Addr: %p\n", ccsr);
 
 	/* Dumping the registers set */
@@ -640,11 +640,11 @@ static void setup_ep(fsl_crypto_dev_t *dev)
 	print_debug("=======================\n");
 }
 
-static int32_t load_firmware(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
+static int32_t load_firmware(struct c29x_dev *dev, uint8_t *fw_file_path)
 {
 	uint8_t byte;
 	uint32_t i;
-	void *fw_addr = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr +
+	void *fw_addr = dev->bars[MEM_TYPE_SRAM].host_v_addr +
 				FIRMWARE_IMAGE_START_OFFSET;
 	loff_t pos = 0;
 	struct file *file = NULL;
@@ -678,16 +678,16 @@ static int32_t load_firmware(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 	return 0;
 }
 
-void init_ip_pool(fsl_crypto_dev_t *dev)
+void init_ip_pool(struct c29x_dev *dev)
 {
 	create_pool(&dev->host_ip_pool.buf_pool, dev->host_mem->ip_pool,
 			FIRMWARE_IP_BUFFER_POOL_SIZE);
 
 	dev->host_ip_pool.h_v_addr = dev->host_mem->ip_pool;
-	dev->host_ip_pool.h_dma_addr = dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr + dev->ob_mem.ip_pool;
+	dev->host_ip_pool.h_dma_addr = dev->bars[MEM_TYPE_DRIVER].host_dma_addr + dev->ob_mem.ip_pool;
 }
 
-int init_crypto_ctx_pool(fsl_crypto_dev_t *dev)
+int init_crypto_ctx_pool(struct c29x_dev *dev)
 {
 	int i, id;
 	ctx_pool_t *pool;
@@ -712,7 +712,7 @@ int init_crypto_ctx_pool(fsl_crypto_dev_t *dev)
 	return 0;
 }
 
-int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
+int32_t ring_enqueue(struct c29x_dev *c_dev, uint32_t jr_id,
 			    dev_dma_addr_t sec_desc)
 {
 	uint32_t wi = 0;
@@ -758,9 +758,9 @@ int32_t ring_enqueue(fsl_crypto_dev_t *c_dev, uint32_t jr_id,
 	return 0;
 }
 
-void stop_device(fsl_crypto_dev_t *dev)
+void stop_device(struct c29x_dev *dev)
 {
-	void *ccsr = dev->priv_dev->bars[MEM_TYPE_CONFIG].host_v_addr;
+	void *ccsr = dev->bars[MEM_TYPE_CONFIG].host_v_addr;
 	uint32_t cpu0_en;
 
 	/* Reset CPU core only if it is enabled. If the device is coming from
@@ -774,9 +774,9 @@ void stop_device(fsl_crypto_dev_t *dev)
 	}
 }
 
-void start_device(fsl_crypto_dev_t *dev)
+void start_device(struct c29x_dev *dev)
 {
-	void *ccsr = dev->priv_dev->bars[MEM_TYPE_CONFIG].host_v_addr;
+	void *ccsr = dev->bars[MEM_TYPE_CONFIG].host_v_addr;
 	uint32_t cpu0_en;
 
 	/* Enable CPU core and let it run the firmware: either release the
@@ -792,34 +792,24 @@ void start_device(fsl_crypto_dev_t *dev)
 	udelay(250);
 }
 
-fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
+int32_t fsl_crypto_layer_add_device(struct c29x_dev *c_dev,
 				  struct crypto_dev_config *config)
 {
-	fsl_crypto_dev_t *c_dev;
 	int err;
-
-	/* some fields are assumed to be null when they are first used */
-	c_dev = kzalloc(sizeof(fsl_crypto_dev_t), GFP_KERNEL);
-	if (!c_dev)
-		return NULL;
 
 	c_dev->ring_pairs = kzalloc(sizeof(fsl_h_rsrc_ring_pair_t) *
 				    config->num_of_rps, GFP_KERNEL);
 	if (!c_dev->ring_pairs)
 		goto rp_fail;
 
-	c_dev->priv_dev = fsl_pci_dev;
 	c_dev->config = config;
 	c_dev->num_of_rps = config->num_of_rps;
 
-	/* HACK */
-	fsl_pci_dev->crypto_dev = c_dev;
-
 	atomic_set(&(c_dev->crypto_dev_sess_cnt), 0);
 
-	c_dev->c_hs_mem = c_dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + HS_MEM_OFFSET;
+	c_dev->c_hs_mem = c_dev->bars[MEM_TYPE_SRAM].host_v_addr + HS_MEM_OFFSET;
 
-	print_debug("IB mem addr: %p\n", c_dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr);
+	print_debug("IB mem addr: %p\n", c_dev->bars[MEM_TYPE_SRAM].host_v_addr);
 	print_debug("Device hs mem addr: %p\n", c_dev->c_hs_mem);
 
 	err = alloc_ob_mem(c_dev, config);
@@ -875,20 +865,19 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 	printk(KERN_INFO "[FSL-CRYPTO-OFFLOAD-DRV] DevId:%d DEVICE IS UP\n",
 	       c_dev->config->dev_no);
 
-	return c_dev;
+	return 0;
 
 error:
 	kfree(c_dev->ctx_pool);
 ctx_pool_fail:
-	pci_free_consistent(c_dev->priv_dev->dev,
-			    c_dev->priv_dev->bars[MEM_TYPE_DRIVER].len,
-			    c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr,
-			    c_dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr);
+	pci_free_consistent(c_dev->dev,
+			    c_dev->bars[MEM_TYPE_DRIVER].len,
+			    c_dev->bars[MEM_TYPE_DRIVER].host_v_addr,
+			    c_dev->bars[MEM_TYPE_DRIVER].host_dma_addr);
 ob_mem_fail:
 	kfree(c_dev->ring_pairs);
 rp_fail:
-	kfree(c_dev);
-	return NULL;
+	return -ENODEV;
 }
 
 void clear_ring_lists(void)
@@ -906,7 +895,7 @@ void clear_ring_lists(void)
 	}
 }
 
-void cleanup_crypto_device(fsl_crypto_dev_t *dev)
+void cleanup_crypto_device(struct c29x_dev *dev)
 {
 	if (NULL == dev)
 		return;
@@ -922,23 +911,22 @@ void cleanup_crypto_device(fsl_crypto_dev_t *dev)
 	kfree(dev->ctx_pool);
 
 	/* Free the pci alloc consistent mem */
-	if (dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr) {
-		pci_free_consistent(dev->priv_dev->dev,
-				    dev->priv_dev->bars[MEM_TYPE_DRIVER].len,
-				    dev->priv_dev->bars[MEM_TYPE_DRIVER].host_v_addr,
-				    dev->priv_dev->bars[MEM_TYPE_DRIVER].host_dma_addr);
+	if (dev->bars[MEM_TYPE_DRIVER].host_v_addr) {
+		pci_free_consistent(dev->dev,
+				    dev->bars[MEM_TYPE_DRIVER].len,
+				    dev->bars[MEM_TYPE_DRIVER].host_v_addr,
+				    dev->bars[MEM_TYPE_DRIVER].host_dma_addr);
 	}
 
 	clear_ring_lists();
 	kfree(dev->ring_pairs);
-	kfree(dev);
 }
 
-void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
+void handle_response(struct c29x_dev *dev, uint64_t desc, int32_t res)
 {
 	void *h_desc;
 	crypto_op_ctx_t *ctx0 = NULL;
-	dev_p_addr_t offset = dev->priv_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
+	dev_p_addr_t offset = dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
 
 	h_desc = dev->host_ip_pool.h_v_addr + (desc - offset) -
 			dev->host_ip_pool.h_dma_addr;
@@ -954,7 +942,7 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 }
 
 /* FIXME: function argument dev is overwritten in the first loop */
-void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor)
+void process_response(struct c29x_dev *dev, fsl_h_rsrc_ring_pair_t *ring_cursor)
 {
 	uint32_t pollcount;
 	uint32_t jobs_added;
@@ -962,7 +950,7 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 	uint32_t ri;
 	uint64_t desc;
 	uint32_t res;
-	struct device *my_dev = &dev->priv_dev->dev->dev;
+	struct device *my_dev = &dev->dev->dev;
 
 	pollcount = 0;
 
@@ -1003,7 +991,7 @@ void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor
 	*(ring_cursor->intr_ctrl_flag) = 0;
 }
 
-int32_t process_rings(fsl_crypto_dev_t *dev,
+int32_t process_rings(struct c29x_dev *dev,
 			 struct list_head *ring_list_head)
 {
 	fsl_h_rsrc_ring_pair_t *ring_cursor = NULL;
@@ -1031,7 +1019,7 @@ int32_t process_rings(fsl_crypto_dev_t *dev,
 void response_ring_handler(struct work_struct *work)
 {
 	struct bh_handler *bh = container_of(work, struct bh_handler, work);
-	fsl_crypto_dev_t *c_dev;
+	struct c29x_dev *c_dev;
 
 	if (unlikely(NULL == bh)) {
 		print_error("No bottom half handler found for the work\n");

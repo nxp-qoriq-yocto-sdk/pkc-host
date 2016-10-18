@@ -38,8 +38,6 @@
 
 #include "types.h"
 
-typedef struct fsl_crypto_dev fsl_crypto_dev_t;
-
 typedef enum buffer_type {
 	BT_DESC,
 	BT_IP,
@@ -190,7 +188,7 @@ typedef struct crypto_mem_info {
 	void *src_buff;
 	buffer_info_t *buffers;
 	struct buffer_pool *buf_pool;
-	fsl_crypto_dev_t *dev;
+	struct c29x_dev *dev;
 	crypto_buffers_t c_buffers;
 } crypto_mem_info_t;
 

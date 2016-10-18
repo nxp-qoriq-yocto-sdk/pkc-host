@@ -263,7 +263,7 @@ static void rng_init_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 	rng_init_buffs->pers_str_buff.bt = BT_IP;
 }
 
-int rng_op(fsl_crypto_dev_t *c_dev, uint32_t sec_no, crypto_op_t op)
+int rng_op(struct c29x_dev *c_dev, uint32_t sec_no, crypto_op_t op)
 {
 	crypto_op_ctx_t *crypto_ctx = NULL;
 
@@ -420,7 +420,7 @@ out_nop:
 	return ret;
 }
 
-int32_t rng_instantiation(fsl_crypto_dev_t *c_dev)
+int32_t rng_instantiation(struct c29x_dev *c_dev)
 {
 	uint32_t no_of_secs;
 	uint32_t i;

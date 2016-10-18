@@ -120,25 +120,11 @@ typedef struct pci_intr_info {
 	struct list_head isr_ctx_head;
 } pci_intr_info_t;
 
-/*******************************************************************************
-Description :	Contains all the information of a PCI end point.
-Fields      :	dev_name: Name of the device
-		dev_node_path : Holds the path to the device node of this device
-		dev_no	: Number of this device. Increments in the order
-				of probe.
-		dev	: Actual PCI device pointer.
-		pci_id	: Device ID structure of the device.
-		bars	: Holds the information of the PCIe BARs.
-		intr_info: Holds the interrupt information
-		list	: To make multiple instances of this structure as
-				linked list.
-*******************************************************************************/
 struct c29x_dev {
 	uint32_t dev_no;
 
 	struct pci_dev *dev;
 	const struct pci_device_id *id;
-	fsl_crypto_dev_t *crypto_dev;
 
 	char dev_name[FSL_PCI_DEV_NAME_MAX_LEN];
 	char dev_node_path[FSL_PCI_DEV_NODE_STD_PATH_LEN +
@@ -151,11 +137,47 @@ struct c29x_dev {
 	void *sysfs_dir;
 
 	struct list_head list;
+
+	struct crypto_dev_config *config;
+	struct driver_ob_mem ob_mem;
+	uint32_t tot_req_mem_size;
+
+	/* Pointer to the memory on the host side, structures the plain bytes.
+	 * Represents the memory layout on the driver.
+	 * This points to the base of the outbound memory.
+	 */
+	struct host_mem_layout *host_mem;
+
+	/* Pointer to the device's handshake memory, this will be
+	 * pointing to the inbound memory.
+	 * This data structure helps in structured access of raw bytes
+	 * in the device memory during the handshake.
+	 */
+	struct dev_handshake_mem *c_hs_mem;
+
+	/* Pointer to the shadow ring counters memory */
+	struct ring_counters_mem *r_s_c_cntrs;
+
+	/* Structure defining the input pool */
+	struct pool_info host_ip_pool;
+
+	/* Ctx pool - Will be used during data path to allocate one
+	 * of the available static contexts */
+	ctx_pool_t *ctx_pool;
+
+	uint8_t num_of_rps;
+	fsl_h_rsrc_ring_pair_t *ring_pairs;
+
+	/* Holds the count of number of crypto dev sessions */
+	atomic_t crypto_dev_sess_cnt;
+
+	atomic_t app_req_cnt;
+	atomic_t app_resp_cnt;
 };
 
 struct bh_handler {
 	int core_no;
-	fsl_crypto_dev_t *c_dev;
+	struct c29x_dev *c_dev;
 	struct work_struct work;
 	struct list_head ring_list_head;
 };
@@ -176,7 +198,7 @@ struct alg_template {
 	uint32_t class2_alg_type;
 };
 
-fsl_crypto_dev_t *get_crypto_dev(uint32_t no);
+struct c29x_dev *get_crypto_dev(uint32_t no);
 extern struct crypto_dev_config *get_dev_config(struct c29x_dev *fsl_pci_dev);
 extern int32_t parse_config_file(int8_t *config_file);
 

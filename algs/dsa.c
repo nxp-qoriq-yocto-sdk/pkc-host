@@ -600,7 +600,7 @@ int dsa_op(struct pkc_request *req)
 {
 	int32_t ret = 0;
 	crypto_op_ctx_t *crypto_ctx = NULL;
-	fsl_crypto_dev_t *c_dev = NULL;
+	struct c29x_dev *c_dev = NULL;
 	dev_dma_addr_t sec_dma = 0;
 	uint32_t r_id = 0;
 	dsa_sign_buffers_t *dsa_sign_buffs = NULL;

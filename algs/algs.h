@@ -77,7 +77,7 @@ Fields      :   c_dev:	Crypto device instance to which this session belongs
 		r_id :	Id of the ring to which this session belongs
 *******************************************************************************/
 typedef struct crypto_dev_sess {
-	fsl_crypto_dev_t *c_dev;
+	struct c29x_dev *c_dev;
 	uint32_t r_id;
 } crypto_dev_sess_t;
 
@@ -86,7 +86,7 @@ typedef struct crypto_op_ctx {
 	crypto_mem_info_t crypto_mem;
 	crypto_op_t oprn;
 	dev_dma_addr_t desc;
-	fsl_crypto_dev_t *c_dev;
+	struct c29x_dev *c_dev;
 	union {
 		struct pkc_request *pkc;
 		struct rng_init_compl *rng_init;
