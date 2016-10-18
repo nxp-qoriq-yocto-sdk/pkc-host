@@ -98,7 +98,7 @@ no_mem:
 
 int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 {
-	struct pci_dev *dev = mem_info->dev->dev;
+	struct pci_dev *dev = mem_info->c_dev->dev;
 	buffer_info_t *buffers = mem_info->buffers;
 	buffer_type_t bt;
 	uint32_t i;
@@ -120,7 +120,7 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 {
 	uint32_t i;
 	buffer_info_t *buffers = mem_info->buffers;
-	struct c29x_dev *c_dev = mem_info->dev;
+	struct c29x_dev *c_dev = mem_info->c_dev;
 	struct pci_dev *dev = c_dev->dev;
 	struct pci_bar_info *bars = c_dev->bars;
 

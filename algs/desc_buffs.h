@@ -188,7 +188,7 @@ typedef struct crypto_mem_info {
 	void *src_buff;
 	buffer_info_t *buffers;
 	struct buffer_pool *buf_pool;
-	struct c29x_dev *dev;
+	struct c29x_dev *c_dev;
 	crypto_buffers_t c_buffers;
 } crypto_mem_info_t;
 

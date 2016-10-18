@@ -277,7 +277,7 @@ Fields      :	depth: Depth of the ring
 		pool		: Input buffer pool information
 *******************************************************************************/
 typedef struct fsl_h_rsrc_ring_pair {
-	struct c29x_dev *dev;
+	struct c29x_dev *c_dev;
 
 	struct list_head isr_ctx_list_node;
 	struct list_head bh_ctx_list_node;
@@ -338,19 +338,19 @@ typedef struct ctx_pool ctx_pool_t;
 int32_t ring_enqueue(struct c29x_dev *c_dev, uint32_t jr_id,
 			 dev_dma_addr_t sec_desc);
 
-int32_t fsl_crypto_layer_add_device(struct c29x_dev *dev,
+int32_t fsl_crypto_layer_add_device(struct c29x_dev *c_dev,
 		struct crypto_dev_config *config);
 
-void cleanup_crypto_device(struct c29x_dev *dev);
-int32_t handshake(struct c29x_dev *dev, struct crypto_dev_config *config);
-void rearrange_rings(struct c29x_dev *dev, struct crypto_dev_config *config);
-void distribute_rings(struct c29x_dev *dev, struct crypto_dev_config *config);
-void init_ip_pool(struct c29x_dev *dev);
-int init_crypto_ctx_pool(struct c29x_dev *dev);
-void init_handshake(struct c29x_dev *dev);
-void init_ring_pairs(struct c29x_dev *dev);
-void stop_device(struct c29x_dev *dev);
-void start_device(struct c29x_dev *dev);
+void cleanup_crypto_device(struct c29x_dev *c_dev);
+int32_t handshake(struct c29x_dev *c_dev, struct crypto_dev_config *config);
+void rearrange_rings(struct c29x_dev *c_dev, struct crypto_dev_config *config);
+void distribute_rings(struct c29x_dev *c_dev, struct crypto_dev_config *config);
+void init_ip_pool(struct c29x_dev *c_dev);
+int init_crypto_ctx_pool(struct c29x_dev *c_dev);
+void init_handshake(struct c29x_dev *c_dev);
+void init_ring_pairs(struct c29x_dev *c_dev);
+void stop_device(struct c29x_dev *c_dev);
+void start_device(struct c29x_dev *c_dev);
 void response_ring_handler(struct work_struct *work);
 
 extern int32_t rng_instantiation(struct c29x_dev *c_dev);

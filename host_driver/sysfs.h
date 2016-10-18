@@ -130,12 +130,12 @@ extern struct sysfs_dir *fsl_sysfs_entries;
 extern void set_device(char *, char *, int);
 extern void c2x0_test_func(char *fname, char *test_name, int len);
 
-void set_sysfs_value(struct c29x_dev *fsl_pci_dev, sys_files_id_t id,
+void set_sysfs_value(struct c29x_dev *c_dev, sys_files_id_t id,
 		     uint8_t *value, size_t len);
 
-int32_t init_sysfs(struct c29x_dev *fsl_pci_dev);
+int32_t init_sysfs(struct c29x_dev *c_dev);
 int32_t init_common_sysfs(void);
-void sysfs_cleanup(struct c29x_dev *fsl_pci_dev);
+void sysfs_cleanup(struct c29x_dev *c_dev);
 void clean_common_sysfs(void);
 
 

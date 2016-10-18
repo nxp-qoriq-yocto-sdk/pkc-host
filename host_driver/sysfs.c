@@ -202,46 +202,46 @@ int32_t init_common_sysfs(void)
     return 0;
 }
 
-int32_t init_sysfs(struct c29x_dev *fsl_pci_dev)
+int32_t init_sysfs(struct c29x_dev *c_dev)
 {
 	uint32_t i = 0;
 
-	fsl_pci_dev->sysfs.dev_dir =
-	    create_sysfs_dir(fsl_pci_dev->dev_name, fsl_sysfs_entries);
+	c_dev->sysfs.dev_dir =
+	    create_sysfs_dir(c_dev->dev_name, fsl_sysfs_entries);
 
-	if (unlikely(NULL == fsl_pci_dev->sysfs.dev_dir)) {
+	if (unlikely(NULL == c_dev->sysfs.dev_dir)) {
 		print_error("SysFS entry %s creation failed\n",
-			    fsl_pci_dev->dev_name);
+			    c_dev->dev_name);
 		/* Not treating this as FATAL error */
 		return -1;
 	}
 
 	/* Now create the PCI, CRYPTO subdirs
 	 * inside the main device directory */
-	fsl_pci_dev->sysfs.pci_sub_dir =
-	    create_sysfs_dir(dev_sysfs_sub_dirs[0], fsl_pci_dev->sysfs.dev_dir);
-	fsl_pci_dev->sysfs.stats_sub_dir =
-	    create_sysfs_dir(dev_sysfs_sub_dirs[1], fsl_pci_dev->sysfs.dev_dir);
-	fsl_pci_dev->sysfs.test_sub_dir =
-	    create_sysfs_dir(dev_sysfs_sub_dirs[2], fsl_pci_dev->sysfs.dev_dir);
+	c_dev->sysfs.pci_sub_dir =
+	    create_sysfs_dir(dev_sysfs_sub_dirs[0], c_dev->sysfs.dev_dir);
+	c_dev->sysfs.stats_sub_dir =
+	    create_sysfs_dir(dev_sysfs_sub_dirs[1], c_dev->sysfs.dev_dir);
+	c_dev->sysfs.test_sub_dir =
+	    create_sysfs_dir(dev_sysfs_sub_dirs[2], c_dev->sysfs.dev_dir);
 
-	if (unlikely((NULL == fsl_pci_dev->sysfs.pci_sub_dir)
-		     || (NULL == fsl_pci_dev->sysfs.stats_sub_dir)
-		     || (NULL == fsl_pci_dev->sysfs.test_sub_dir)
+	if (unlikely((NULL == c_dev->sysfs.pci_sub_dir)
+		     || (NULL == c_dev->sysfs.stats_sub_dir)
+		     || (NULL == c_dev->sysfs.test_sub_dir)
 	    )) {
 		print_error("SysFS entry %s creation failed\n",
-			    fsl_pci_dev->dev_name);
+			    c_dev->dev_name);
 		return -1;
 	}
 
 	/* PCI sysfs files */
 	for (i = 0; i < NUM_OF_PCI_SYSFS_FILES; i++) {
-		fsl_pci_dev->sysfs.pci_files[i].name = pci_sysfs_file_names[i];
-		fsl_pci_dev->sysfs.pci_files[i].file =
-		    create_sysfs_file(fsl_pci_dev->sysfs.pci_files[i].name,
-				      fsl_pci_dev->sysfs.pci_sub_dir,
+		c_dev->sysfs.pci_files[i].name = pci_sysfs_file_names[i];
+		c_dev->sysfs.pci_files[i].file =
+		    create_sysfs_file(c_dev->sysfs.pci_files[i].name,
+				      c_dev->sysfs.pci_sub_dir,
 				      pci_sysfs_file_str_flag[i]);
-		if (unlikely(NULL == fsl_pci_dev->sysfs.pci_files[i].file)) {
+		if (unlikely(NULL == c_dev->sysfs.pci_files[i].file)) {
 			print_error("Dev file creation failed\n");
 			return -1;
 		}
@@ -249,12 +249,12 @@ int32_t init_sysfs(struct c29x_dev *fsl_pci_dev)
 
 	/* STATS sysfs file */
 	for (i = 0; i < NUM_OF_STATS_SYSFS_FILES; i++) {
-		fsl_pci_dev->sysfs.stats_files[i].name =
+		c_dev->sysfs.stats_files[i].name =
 		    stat_sysfs_file_names[i];
-		fsl_pci_dev->sysfs.stats_files[i].file =
-		    create_sysfs_file(fsl_pci_dev->sysfs.stats_files[i].name,
-				      fsl_pci_dev->sysfs.stats_sub_dir, 0);
-		if (unlikely(NULL == fsl_pci_dev->sysfs.stats_files[i].file)) {
+		c_dev->sysfs.stats_files[i].file =
+		    create_sysfs_file(c_dev->sysfs.stats_files[i].name,
+				      c_dev->sysfs.stats_sub_dir, 0);
+		if (unlikely(NULL == c_dev->sysfs.stats_files[i].file)) {
 			print_error("Dev file creation failed\n");
 			return -1;
 		}
@@ -262,57 +262,57 @@ int32_t init_sysfs(struct c29x_dev *fsl_pci_dev)
 
 	/* Test sysfs file */
 	for (i = 0; i < NUM_OF_TEST_SYSFS_FILES; i++) {
-		fsl_pci_dev->sysfs.test_files[i].name =
+		c_dev->sysfs.test_files[i].name =
 		    test_sysfs_file_names[i];
-		fsl_pci_dev->sysfs.test_files[i].cb = c2x0_test_func;
-		fsl_pci_dev->sysfs.test_files[i].file =
-		    create_sysfs_file_cb(fsl_pci_dev->sysfs.test_files[i].name,
-					 fsl_pci_dev->sysfs.test_sub_dir,
+		c_dev->sysfs.test_files[i].cb = c2x0_test_func;
+		c_dev->sysfs.test_files[i].file =
+		    create_sysfs_file_cb(c_dev->sysfs.test_files[i].name,
+					 c_dev->sysfs.test_sub_dir,
 					 test_sysfs_file_str_flag[i],
-					 fsl_pci_dev->sysfs.test_files[i].cb);
+					 c_dev->sysfs.test_files[i].cb);
 	}
 	return 0;
 }
 
-void sysfs_cleanup(struct c29x_dev *fsl_pci_dev)
+void sysfs_cleanup(struct c29x_dev *c_dev)
 {
 	uint32_t i = 0;
 
 	for (i = 0; i < NUM_OF_PCI_SYSFS_FILES; i++) {
-		delete_sysfs_file(fsl_pci_dev->sysfs.pci_files[i].file,
-				  fsl_pci_dev->sysfs.pci_sub_dir);
+		delete_sysfs_file(c_dev->sysfs.pci_files[i].file,
+				  c_dev->sysfs.pci_sub_dir);
 	}
 	for (i = 0; i < NUM_OF_STATS_SYSFS_FILES; i++) {
-		delete_sysfs_file(fsl_pci_dev->sysfs.stats_files[i].file,
-				  fsl_pci_dev->sysfs.stats_sub_dir);
+		delete_sysfs_file(c_dev->sysfs.stats_files[i].file,
+				  c_dev->sysfs.stats_sub_dir);
 	}
 	for (i = 0; i < NUM_OF_TEST_SYSFS_FILES; i++) {
-		delete_sysfs_file(fsl_pci_dev->sysfs.test_files[i].file,
-				  fsl_pci_dev->sysfs.test_sub_dir);
+		delete_sysfs_file(c_dev->sysfs.test_files[i].file,
+				  c_dev->sysfs.test_sub_dir);
 	}
 
 	/* Delete the subdirs */
-	delete_sysfs_dir(fsl_pci_dev->sysfs.pci_sub_dir);
-	delete_sysfs_dir(fsl_pci_dev->sysfs.stats_sub_dir);
-	delete_sysfs_dir(fsl_pci_dev->sysfs.test_sub_dir);
+	delete_sysfs_dir(c_dev->sysfs.pci_sub_dir);
+	delete_sysfs_dir(c_dev->sysfs.stats_sub_dir);
+	delete_sysfs_dir(c_dev->sysfs.test_sub_dir);
 
 	/* Delete the driver sysfs file */
-	delete_sysfs_dir(fsl_pci_dev->sysfs.dev_dir);
+	delete_sysfs_dir(c_dev->sysfs.dev_dir);
 }
 
-struct k_sysfs_file *get_sys_file(struct c29x_dev *fsl_pci_dev, sys_files_id_t id)
+struct k_sysfs_file *get_sys_file(struct c29x_dev *c_dev, sys_files_id_t id)
 {
 	struct k_sysfs_file *file;
 
 	if (id > PCI_SYS_FILES_START && id < PCI_SYS_FILES_END) {
 		id -= PCI_SYS_FILES_START + 1;
-		file = fsl_pci_dev->sysfs.pci_files[id].file;
+		file = c_dev->sysfs.pci_files[id].file;
 	} else if (id > STATS_SYS_FILES_START && id < STATS_SYS_FILES_END) {
 		id -= STATS_SYS_FILES_START + 1;
-		file = fsl_pci_dev->sysfs.stats_files[id].file;
+		file = c_dev->sysfs.stats_files[id].file;
 	} else if (id > TEST_SYS_FILES_START && id < TEST_SYS_FILES_END) {
 		id -= TEST_SYS_FILES_START + 1;
-		file = fsl_pci_dev->sysfs.test_files[id].file;
+		file = c_dev->sysfs.test_files[id].file;
 	} else {
 		file = NULL; /* this should not be the case */
 	}
@@ -320,10 +320,10 @@ struct k_sysfs_file *get_sys_file(struct c29x_dev *fsl_pci_dev, sys_files_id_t i
 	return file;
 }
 
-void set_sysfs_value(struct c29x_dev *fsl_pci_dev, sys_files_id_t id,
+void set_sysfs_value(struct c29x_dev *c_dev, sys_files_id_t id,
 		     uint8_t *value, size_t len)
 {
-	struct k_sysfs_file *file = get_sys_file(fsl_pci_dev, id);
+	struct k_sysfs_file *file = get_sys_file(c_dev, id);
 
 	if (file->str_flag) {
 		memcpy(file->buf, value, len);

@@ -322,7 +322,7 @@ struct c29x_dev *get_crypto_dev(uint32_t no)
  *
  ******************************************************************************/
 
-struct crypto_dev_config *get_dev_config(struct c29x_dev *fsl_pci_dev)
+struct crypto_dev_config *get_dev_config(struct c29x_dev *c_dev)
 {
 	struct crypto_dev_config *config = NULL;
 
@@ -330,9 +330,9 @@ struct crypto_dev_config *get_dev_config(struct c29x_dev *fsl_pci_dev)
 	 */
 	list_for_each_entry(config, &crypto_dev_config_list, list) {
 		print_debug("Config Dev no:%d Arg Dev no: %d\n",
-			    config->dev_no, fsl_pci_dev->dev_no);
+			    config->dev_no, c_dev->dev_no);
 
-		if (config->dev_no == fsl_pci_dev->dev_no)
+		if (config->dev_no == c_dev->dev_no)
 			return config;
 
 	}
@@ -382,7 +382,7 @@ static irqreturn_t fsl_crypto_isr(int irq, void *data)
 			    rp->core_no);
 		print_debug("SHEDULING THE WORK ON CORE : %d\n", rp->core_no);
 		bh_worker = per_cpu_ptr(bh_workers, rp->core_no);
-		bh_worker->c_dev = isr_ctx->dev;
+		bh_worker->c_dev = isr_ctx->c_dev;
 
 		queue_work_on(rp->core_no, workq, &(bh_worker->work));
 	}
@@ -430,12 +430,12 @@ out_free:
 
 }
 
-int fsl_get_bar_map(struct c29x_dev *fsl_pci_dev)
+int fsl_get_bar_map(struct c29x_dev *c_dev)
 {
 	int i;
-	struct pci_dev *dev = fsl_pci_dev->dev;
-	struct pci_bar_info *bars = fsl_pci_dev->bars;
-	struct device *my_dev = &fsl_pci_dev->dev->dev;
+	struct pci_dev *dev = c_dev->dev;
+	struct pci_bar_info *bars = c_dev->bars;
+	struct device *my_dev = &c_dev->dev->dev;
 
 	/* Get the BAR resources and remap them into the driver memory */
 	for (i = 0; i < MEM_TYPE_DRIVER; i++) {
@@ -464,13 +464,13 @@ error:
 }
 
 /* Get the MSI address and MSI data from the configuration space */
-void get_msi_config_data(struct c29x_dev *fsl_pci_dev, isr_ctx_t *isr_context)
+void get_msi_config_data(struct c29x_dev *c_dev, isr_ctx_t *isr_context)
 {
-	pci_read_config_dword(fsl_pci_dev->dev, PCI_MSI_ADDR_LOW,
+	pci_read_config_dword(c_dev->dev, PCI_MSI_ADDR_LOW,
 			&(isr_context->msi_addr_low));
-	pci_read_config_dword(fsl_pci_dev->dev, PCI_MSI_ADDR_HIGH,
+	pci_read_config_dword(c_dev->dev, PCI_MSI_ADDR_HIGH,
 			&(isr_context->msi_addr_high));
-	pci_read_config_word(fsl_pci_dev->dev, PCI_MSI_ADDR_DATA,
+	pci_read_config_word(c_dev->dev, PCI_MSI_ADDR_DATA,
 			&(isr_context->msi_data));
 
 	print_debug("MSI addr low  [%0X]\n", isr_context->msi_addr_low);
@@ -478,12 +478,12 @@ void get_msi_config_data(struct c29x_dev *fsl_pci_dev, isr_ctx_t *isr_context)
 	print_debug("MSI data      [%0X]\n", isr_context->msi_data);
 }
 
-void fsl_release_irqs(struct c29x_dev *fsl_pci_dev)
+void fsl_release_irqs(struct c29x_dev *c_dev)
 {
 	isr_ctx_t *isr_context, *isr_n_context;
 
 	list_for_each_entry_safe(isr_context, isr_n_context,
-			&(fsl_pci_dev->intr_info.isr_ctx_head), list) {
+			&(c_dev->intr_info.isr_ctx_head), list) {
 		print_debug("Freeing Irq\n");
 		free_irq(isr_context->irq, isr_context);
 		list_del(&(isr_context->list));
@@ -492,35 +492,35 @@ void fsl_release_irqs(struct c29x_dev *fsl_pci_dev)
 	}
 }
 
-int get_irq_vectors(struct c29x_dev *fsl_pci_dev, uint8_t num_of_rings)
+int get_irq_vectors(struct c29x_dev *c_dev, uint8_t num_of_rings)
 {
 	int err;
 
-	err = pci_enable_msi(fsl_pci_dev->dev);
+	err = pci_enable_msi(c_dev->dev);
 	if (err != 0) {
-		dev_err(&fsl_pci_dev->dev->dev, "MSI enable failed !!\n");
+		dev_err(&c_dev->dev->dev, "MSI enable failed !!\n");
 		return err;
 	}
 
-	fsl_pci_dev->intr_info.intr_vectors_cnt = 1;
+	c_dev->intr_info.intr_vectors_cnt = 1;
 
 	return err;
 }
 
-int fsl_request_irqs(struct c29x_dev *fsl_pci_dev)
+int fsl_request_irqs(struct c29x_dev *c_dev)
 {
 	uint16_t i, num_of_vectors;
 	uint32_t irq;
 	isr_ctx_t *isr_ctx;
 	struct list_head *isr_ctx_head;
 	int err;
-	struct device *my_dev = &fsl_pci_dev->dev->dev;
+	struct device *my_dev = &c_dev->dev->dev;
 
-	isr_ctx_head = &(fsl_pci_dev->intr_info.isr_ctx_head);
+	isr_ctx_head = &(c_dev->intr_info.isr_ctx_head);
 	INIT_LIST_HEAD(isr_ctx_head);
 
 	/* this was set-up earlier by get_irq_vectors */
-	num_of_vectors = fsl_pci_dev->intr_info.intr_vectors_cnt;
+	num_of_vectors = c_dev->intr_info.intr_vectors_cnt;
 	for (i = 0; i < num_of_vectors; i++) {
 		isr_ctx = kzalloc(sizeof(*isr_ctx), GFP_KERNEL);
 		if (!isr_ctx) {
@@ -530,13 +530,13 @@ int fsl_request_irqs(struct c29x_dev *fsl_pci_dev)
 		}
 
 		INIT_LIST_HEAD(&(isr_ctx->ring_list_head));
-		isr_ctx->dev = fsl_pci_dev;
+		isr_ctx->c_dev = c_dev;
 
-		irq = fsl_pci_dev->dev->irq + i;
+		irq = c_dev->dev->irq + i;
 
 		/* Register the ISR with kernel for each vector */
 		err = request_irq(irq, (irq_handler_t) fsl_crypto_isr, 0,
-				fsl_pci_dev->dev_name, isr_ctx);
+				c_dev->dev_name, isr_ctx);
 		if (err) {
 			dev_err(my_dev, "Request IRQ failed for vector: %d\n", i);
 			kfree(isr_ctx);
@@ -544,7 +544,7 @@ int fsl_request_irqs(struct c29x_dev *fsl_pci_dev)
 		}
 		isr_ctx->irq = irq;
 
-		get_msi_config_data(fsl_pci_dev, isr_ctx);
+		get_msi_config_data(c_dev, isr_ctx);
 
 		/* Add this to the list of ISR contexts */
 		list_add(&(isr_ctx->list), isr_ctx_head);
@@ -552,7 +552,7 @@ int fsl_request_irqs(struct c29x_dev *fsl_pci_dev)
 	return 0;
 
 free_irqs:
-	fsl_release_irqs(fsl_pci_dev);
+	fsl_release_irqs(c_dev);
 	return err;
 }
 
@@ -886,41 +886,41 @@ out:
  * Description  : Does the PCI related cleanup of a device
  *
  ******************************************************************************/
-static void cleanup_pci_device(struct c29x_dev *dev)
+static void cleanup_pci_device(struct c29x_dev *c_dev)
 {
 	uint32_t i;
 
-	if (NULL == dev)
+	if (NULL == c_dev)
 		return;
 
-	sysfs_cleanup(dev);
+	sysfs_cleanup(c_dev);
 
 	/* Free the BAR related resources */
 	for (i = 0; i < MEM_TYPE_DRIVER; i++) {
-		if (NULL != dev->bars[i].host_v_addr) {
+		if (NULL != c_dev->bars[i].host_v_addr) {
 			print_debug("IOunmap\n");
 			/* io unmap */
-			iounmap(dev->bars[i].host_v_addr);
+			iounmap(c_dev->bars[i].host_v_addr);
 		}
 
-		if (0 != dev->bars[i].host_p_addr) {
+		if (0 != c_dev->bars[i].host_p_addr) {
 			print_debug("Releasing region\n");
 			/* Free the resource */
 			/* Free the mem region */
-			pci_release_region(dev->dev, i);
+			pci_release_region(c_dev->dev, i);
 		}
 	}
 
-	if (0 == dev->intr_info.intr_vectors_cnt) {
+	if (0 == c_dev->intr_info.intr_vectors_cnt) {
 		print_debug("Zero interrupt count");
 		goto disable_dev;
 	}
 
-	fsl_release_irqs(dev);
-	pci_disable_msi(dev->dev);
+	fsl_release_irqs(c_dev);
+	pci_disable_msi(c_dev->dev);
 
 disable_dev:
-	pci_disable_device(dev->dev);
+	pci_disable_device(c_dev->dev);
 }
 
 /*******************************************************************************
@@ -989,22 +989,22 @@ static void cleanup_config_list(void)
  ******************************************************************************/
 static void fsl_crypto_pci_remove(struct pci_dev *dev)
 {
-	struct c29x_dev *fsl_pci_dev = dev_get_drvdata(&(dev->dev));
+	struct c29x_dev *c_dev = dev_get_drvdata(&(dev->dev));
 
-	if (unlikely(NULL == fsl_pci_dev)) {
+	if (unlikely(NULL == c_dev)) {
 		dev_err(&dev->dev, "No such device\n");
 		return;
 	}
 
-	stop_device(fsl_pci_dev);
+	stop_device(c_dev);
 	/* To do crypto layer related cleanup corresponding to this device */
-	cleanup_crypto_device(fsl_pci_dev);
+	cleanup_crypto_device(c_dev);
 	/* Cleanup the PCI related resources */
-	cleanup_pci_device(fsl_pci_dev);
+	cleanup_pci_device(c_dev);
 	/* Delete the device from list */
-	list_del(&(fsl_pci_dev->list));
+	list_del(&(c_dev->list));
 
-	kfree(fsl_pci_dev);
+	kfree(c_dev);
 	dev_no--;
 }
 
@@ -1043,7 +1043,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	int local_cfg; /* clean-up is required on error path */
 	int8_t pci_info[60];
 	int8_t sys_pci_info[100];
-	struct c29x_dev *fsl_pci_dev = NULL;
+	struct c29x_dev *c_dev = NULL;
 	struct crypto_dev_config *config = NULL;
 
 	print_debug("========== PROBE FUNCTION ==========\n");
@@ -1055,22 +1055,22 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	}
 
 	/* Allocate memory for the new PCI device data structure */
-	fsl_pci_dev = kzalloc(sizeof(struct c29x_dev), GFP_KERNEL);
-	if (!fsl_pci_dev) {
+	c_dev = kzalloc(sizeof(struct c29x_dev), GFP_KERNEL);
+	if (!c_dev) {
 		print_error("Memory allocation failed\n");
 		return -ENOMEM;
 	}
 
 	/* Set this device instance as private data inside the pci dev struct */
-	dev_set_drvdata(&(dev->dev), fsl_pci_dev);
+	dev_set_drvdata(&(dev->dev), c_dev);
 
-	fsl_pci_dev->dev = dev;
-	fsl_pci_dev->id = id;
+	c_dev->dev = dev;
+	c_dev->id = id;
 
 	/* Starts from 1 */
-	fsl_pci_dev->dev_no = ++dev_no;
+	c_dev->dev_no = ++dev_no;
 
-	snprintf(fsl_pci_dev->dev_name, FSL_PCI_DEV_NAME_MAX_LEN, "%s%d",
+	snprintf(c_dev->dev_name, FSL_PCI_DEV_NAME_MAX_LEN, "%s%d",
 		 FSL_PCI_DEV_NAME, dev_no);
 
 	print_debug("Found C29x Device");
@@ -1103,7 +1103,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	/* Set bus master */
 	pci_set_master(dev);
 
-	err = fsl_get_bar_map(fsl_pci_dev);
+	err = fsl_get_bar_map(c_dev);
 	if (err)
 		goto clear_master;
 
@@ -1114,7 +1114,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	 * This number is the max limit. Number of iv's
 	 * to ask = number of application rings.*/
 
-	config = get_dev_config(fsl_pci_dev);
+	config = get_dev_config(c_dev);
 	if (config) {
 		local_cfg = 0;
 	} else {
@@ -1131,7 +1131,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 
 		list_add(&(config->list), &(crypto_dev_config_list));
 		print_debug("===== DEFAULT CONFIGURATION DETAILS ======\n");
-		config->dev_no = fsl_pci_dev->dev_no;
+		config->dev_no = c_dev->dev_no;
 		strcpy(config->fw_file_path, FIRMWARE_FILE_DEFAULT_PATH);
 		print_debug("Firmware Path : %s\n", config->fw_file_path);
 		create_default_config(config, 0, 1);
@@ -1139,22 +1139,22 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	/* round ring lengths to powers of two */
 	pow2_rp_len(config);
 
-	err = get_irq_vectors(fsl_pci_dev, config->num_of_rps);
+	err = get_irq_vectors(c_dev, config->num_of_rps);
 	if (err)
 		goto free_config;
 
-	err = fsl_request_irqs(fsl_pci_dev);
+	err = fsl_request_irqs(c_dev);
 	if (err)
 		goto disable_msi;
 
 	/* Now create all the SYSFS entries required for this device */
-	err = init_sysfs(fsl_pci_dev);
+	err = init_sysfs(c_dev);
 	if (err) {
 		print_error("Sysfs init failed !!\n");
 		goto free_req_irq;
 	}
 
-	err = fsl_crypto_layer_add_device(fsl_pci_dev, config);
+	err = fsl_crypto_layer_add_device(c_dev, config);
 	if (err != 0) {
 		dev_err(&dev->dev, "Adding device as crypto dev failed\n");
 		goto deinit_sysfs;
@@ -1163,11 +1163,11 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	/* Updating the information to sysfs entries */
 	print_debug("Updating sys info\n");
 	snprintf(pci_info, 60, "VendorId:%0x DeviceId:%0x BusNo:%0x\nCAP:PCIe\n",
-		 id->device, id->vendor, fsl_pci_dev->dev->bus->number);
+		 id->device, id->vendor, c_dev->dev->bus->number);
 	strcpy(sys_pci_info, pci_info);
 	strcat(sys_pci_info, "MSI CAP\n");
 
-	set_sysfs_value(fsl_pci_dev, PCI_INFO_SYS_FILE,
+	set_sysfs_value(c_dev, PCI_INFO_SYS_FILE,
 			(uint8_t *) sys_pci_info, strlen(sys_pci_info));
 
 	/* TODO: remove global variable that references the device. It assumes
@@ -1175,31 +1175,31 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	 * the tests but we may want to support more than a single board on the
 	 * same system and referencing only one driver through this variable
 	 * will not work for multiple boards */
-	g_fsl_pci_dev = fsl_pci_dev;
+	g_fsl_pci_dev = c_dev;
 
 	/* Add this node to the pci device's linked list */
-	list_add(&(fsl_pci_dev->list), &pci_dev_list);
+	list_add(&(c_dev->list), &pci_dev_list);
 
 	return 0;
 
 deinit_sysfs:
-	sysfs_cleanup(fsl_pci_dev);
+	sysfs_cleanup(c_dev);
 free_req_irq:
-	fsl_release_irqs(fsl_pci_dev);
+	fsl_release_irqs(c_dev);
 disable_msi:
-	pci_disable_msi(fsl_pci_dev->dev);
+	pci_disable_msi(c_dev->dev);
 free_config:
 	if (local_cfg) {
 		list_del(&(config->list));
 		kfree(config);
 	}
 free_bar_map:
-	fsl_free_bar_map(fsl_pci_dev->bars, MEM_TYPE_DRIVER);
+	fsl_free_bar_map(c_dev->bars, MEM_TYPE_DRIVER);
 clear_master:
 	pci_clear_master(dev);
 free_dev:
-	dev_err(&dev->dev, "Probe of device [%d] failed\n", fsl_pci_dev->dev_no);
-	kfree(fsl_pci_dev);
+	dev_err(&dev->dev, "Probe of device [%d] failed\n", c_dev->dev_no);
+	kfree(c_dev);
 	dev_no--; /* don't count this device as usable */
 
 	return err;

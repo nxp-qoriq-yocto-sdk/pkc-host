@@ -80,7 +80,7 @@ Fields      :	vector_no: vector number of the interrupt
 *******************************************************************************/
 typedef struct isr_ctx {
 	uint32_t irq;
-	struct c29x_dev *dev;
+	struct c29x_dev *c_dev;
 	/* List of Bhs for this ISR */
 /*	LIST_HEAD(isr_bh_list); */
 	uint32_t msi_addr_low;
@@ -199,7 +199,7 @@ struct alg_template {
 };
 
 struct c29x_dev *get_crypto_dev(uint32_t no);
-extern struct crypto_dev_config *get_dev_config(struct c29x_dev *fsl_pci_dev);
+extern struct crypto_dev_config *get_dev_config(struct c29x_dev *c_dev);
 extern int32_t parse_config_file(int8_t *config_file);
 
 #endif
