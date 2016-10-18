@@ -111,7 +111,6 @@ struct crypto_dev_config {
 #define FSL_CRYPTO_MAX_RING_PAIRS   6
 
 	struct ring_info {
-		uint32_t ring_id;
 		uint32_t depth;
 		uint32_t msi_addr_l;
 		uint32_t msi_addr_h;

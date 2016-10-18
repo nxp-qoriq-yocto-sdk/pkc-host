@@ -309,10 +309,10 @@ void send_hs_init_ring_pair(struct c29x_dev *c_dev, uint8_t rid)
 	uint32_t resp_r_offset;
 	struct ring_info *ring = &(c_dev->config->ring[rid]);
 
-	resp_r_offset = (void *)c_dev->ring_pairs[ring->ring_id].resp_r -
+	resp_r_offset = (void *)c_dev->ring_pairs[rid].resp_r -
 			(void *)c_dev->host_mem;
 
-	iowrite8(ring->ring_id, &c_dev->c_hs_mem->data.ring.rid);
+	iowrite8(rid, &c_dev->c_hs_mem->data.ring.rid);
 	iowrite16be(ring->msi_data, &c_dev->c_hs_mem->data.ring.msi_data);
 	iowrite32be(ring->depth, &c_dev->c_hs_mem->data.ring.depth);
 	iowrite32be(resp_r_offset, &c_dev->c_hs_mem->data.ring.resp_ring_offset);
@@ -320,7 +320,7 @@ void send_hs_init_ring_pair(struct c29x_dev *c_dev, uint8_t rid)
 	iowrite32be(ring->msi_addr_h, &c_dev->c_hs_mem->data.ring.msi_addr_h);
 
 	print_debug("HS_INIT_RING_PAIR Details\n");
-	print_debug("Rid: %d\n", ring->ring_id);
+	print_debug("Rid: %d\n", rid);
 	print_debug("Depth: %d\n", ring->depth);
 	print_debug("MSI Data: %x\n", ring->msi_data);
 	print_debug("MSI Addr L: %x\n", ring->msi_addr_l);

@@ -693,7 +693,6 @@ static void create_default_config(struct crypto_dev_config *config,
 	}
 	print_debug("Total no of Rings : %d\n", max_ring);
 	for (; from_ring < max_ring; ++from_ring) {
-		config->ring[from_ring].ring_id = from_ring;
 		config->ring[from_ring].depth = 1024;
 
 		print_debug("Ring [%d] default Depth : %d\n", from_ring,
@@ -759,7 +758,6 @@ int32_t process_label(int8_t *label, int8_t *value)
 		}
 		if (ring_count >= FSL_CRYPTO_MAX_RING_PAIRS)
 			return -1;
-		config->ring[ring_count].ring_id = ring_count;
 	} else if (!strcmp(label, "depth") && (ring_start == true)) {
 		config->ring[ring_count].depth = str_to_int(value);
 	} else if (!strcmp(label, "<end>")) {
