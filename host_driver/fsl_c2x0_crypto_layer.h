@@ -302,11 +302,6 @@ typedef struct fsl_h_rsrc_ring_pair {
 	uint32_t core_no;
 
 	spinlock_t ring_lock;
-
-	/* Will be used to notify the running contexts to block the ring -
-	 * used during reset operations */
-	atomic_t block;
-
 } fsl_h_rsrc_ring_pair_t;
 
 struct dev_pool_info {
