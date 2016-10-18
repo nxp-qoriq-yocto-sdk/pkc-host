@@ -84,38 +84,6 @@ typedef enum crypto_dev_mem_type {
 	MEM_TYPE_MAX
 } crypto_dev_mem_type_t;
 
-/*******************************************************************************
-Description :	Contains the configuration read from the file.
-Fields      :	dev_no    : Number of the device to which this config applies.
-		ring_id   : Identifies the ring Command/App
-		flags     : Useful only for App to identify its properties
-			0-4 : Priority level 32- priority levels
-			5-7 : SEC engine affinity
-			8   : Ordered/Un-ordered
-		list      : To maintain list of config structures per device
-*******************************************************************************/
-struct crypto_dev_config {
-	uint32_t dev_no;
-/*  int8_t      *name;  We may not need this field  */
-#define FIRMWARE_FILE_DEFAULT_PATH  "/etc/crypto/pkc-firmware.bin"
-#define FIRMWARE_FILE_PATH_LEN  100
-	uint8_t fw_file_path[FIRMWARE_FILE_PATH_LEN];
-
-	uint8_t *firmware;
-
-	uint8_t num_of_rps;
-
-/* Safe MAX number of ring pairs -
- * Only required for some static data structures. */
-#define FSL_CRYPTO_MAX_RING_PAIRS   6
-
-	struct ring_info {
-		uint32_t depth;
-	} ring[FSL_CRYPTO_MAX_RING_PAIRS];
-
-	struct list_head list;
-};
-
 
 struct host_handshake_mem {
 	uint8_t state;
@@ -251,13 +219,11 @@ typedef struct ctx_pool ctx_pool_t;
 int32_t ring_enqueue(struct c29x_dev *c_dev, uint32_t jr_id,
 			 dev_dma_addr_t sec_desc);
 
-int32_t fsl_crypto_layer_add_device(struct c29x_dev *c_dev,
-		struct crypto_dev_config *config);
-
+int32_t fsl_crypto_layer_add_device(struct c29x_dev *c_dev);
 void cleanup_crypto_device(struct c29x_dev *c_dev);
 int32_t handshake(struct c29x_dev *c_dev);
-void rearrange_rings(struct c29x_dev *c_dev, struct crypto_dev_config *config);
-void distribute_rings(struct c29x_dev *c_dev, struct crypto_dev_config *config);
+void rearrange_rings(struct c29x_dev *c_dev);
+void distribute_rings(struct c29x_dev *c_dev);
 void init_ip_pool(struct c29x_dev *c_dev);
 int init_crypto_ctx_pool(struct c29x_dev *c_dev);
 void init_handshake(struct c29x_dev *c_dev);

@@ -83,7 +83,7 @@ static uint32_t page_align(uint32_t addr)
 	return align(addr, PAGE_SIZE);
 }
 
-void distribute_rings(struct c29x_dev *c_dev, struct crypto_dev_config *config)
+void distribute_rings(struct c29x_dev *c_dev)
 {
 	fsl_h_rsrc_ring_pair_t *rp;
 	uint32_t core_no = 0;
@@ -95,13 +95,12 @@ void distribute_rings(struct c29x_dev *c_dev, struct crypto_dev_config *config)
 	isr_ctx_t *isr_ctx;
 
 	isr_ctx_head = &(c_dev->intr_info.isr_ctx_head);
-
 	isr_ctx = list_entry(isr_ctx_head->next, isr_ctx_t, list);
 
 	INIT_LIST_HEAD(&(isr_ctx->ring_list_head));
 
 	/* Affine the ring to CPU & ISR */
-	for (i = 0; i < config->num_of_rps; i++) {
+	for (i = 0; i < c_dev->config.num_of_rps; i++) {
 		while (!(wt_cpu_mask & (1 << core_no))) {
 			core_no = cpumask_next(core_no, cpu_online_mask) % nr_cpu_ids;
 		}
@@ -133,16 +132,6 @@ void distribute_rings(struct c29x_dev *c_dev, struct crypto_dev_config *config)
 	}
 }
 
-static uint32_t count_ring_slots(struct crypto_dev_config *config)
-{
-	uint32_t i, len = 0;
-
-	for (i = 0; i < config->num_of_rps; i++) {
-		len += config->ring[i].depth;
-	}
-	return len;
-}
-
 uint32_t ob_alloc(size_t size)
 {
 	static uint32_t addr;
@@ -154,12 +143,12 @@ uint32_t ob_alloc(size_t size)
 	return save_addr;
 }
 
-static uint32_t calc_ob_mem_len(struct c29x_dev *c_dev,
-				struct crypto_dev_config *config)
+static uint32_t calc_ob_mem_len(struct c29x_dev *c_dev)
 {
 	uint32_t total_ring_slots;
+	struct c29x_cfg *config = &(c_dev->config);
 
-	total_ring_slots = count_ring_slots(config);
+	total_ring_slots = config->num_of_rps * config->ring_depth;
 
 	c_dev->ob_mem.hs_mem = ob_alloc(sizeof(struct host_mem_layout));
 	c_dev->ob_mem.drv_resp_rings = ob_alloc(total_ring_slots *
@@ -180,13 +169,13 @@ static uint32_t calc_ob_mem_len(struct c29x_dev *c_dev,
  * Allocate outbound memory
  * dev->host_mem will contain the driver's memory map
  */
-int32_t alloc_ob_mem(struct c29x_dev *c_dev, struct crypto_dev_config *config)
+int32_t alloc_ob_mem(struct c29x_dev *c_dev)
 {
 	void *host_v_addr;
 	uint32_t ob_mem_len;
 
 	/* First get the total ob mem required */
-	ob_mem_len = calc_ob_mem_len(c_dev, config);
+	ob_mem_len = calc_ob_mem_len(c_dev);
 
 	print_debug("alloc_ob_mem entered...\n");
 	print_debug("Total ob mem returned: %d\n", ob_mem_len);
@@ -260,11 +249,11 @@ void init_ring_pairs(struct c29x_dev *c_dev)
 	/* all response ring entries start here. Each ring has rp->depth entries */
 	struct resp_ring_entry *resp_r = c_dev->host_mem->drv_resp_rings;
 
-	for (i = 0; i < c_dev->num_of_rps; i++) {
+	for (i = 0; i < c_dev->config.num_of_rps; i++) {
 		rp = &(c_dev->ring_pairs[i]);
 
 		rp->c_dev = c_dev;
-		rp->depth = c_dev->config->ring[i].depth;
+		rp->depth = c_dev->config.ring_depth;
 
 		rp->buf_pool = &c_dev->host_ip_pool;
 		rp->req_r = NULL;
@@ -289,11 +278,11 @@ void send_hs_init_config(struct c29x_dev *c_dev)
 {
 	struct c_config_data *config = &c_dev->c_hs_mem->data.config;
 
-	iowrite8(c_dev->num_of_rps, &config->num_of_rps);
+	iowrite8(c_dev->config.num_of_rps, &config->num_of_rps);
 	iowrite32be(c_dev->ob_mem.r_s_cntrs_mem, &config->r_s_cntrs);
 
 	print_debug("HS_INIT_CONFIG Details\n");
-	print_debug("Num of ring pairs: %d\n", c_dev->num_of_rps);
+	print_debug("Num of ring pairs: %d\n", c_dev->config.num_of_rps);
 	print_debug("R S counters  : %x\n", c_dev->ob_mem.r_s_cntrs_mem);
 	print_debug("Sending FW_INIT_CONFIG command at addr: %p\n",
 			&(c_dev->c_hs_mem->state));
@@ -438,7 +427,7 @@ int32_t handshake(struct c29x_dev *c_dev)
 		case FW_INIT_RING_PAIR_COMPLETE:
 			hs_init_rp_complete(c_dev, rid);
 			rid++;
-			if (rid < c_dev->num_of_rps) {
+			if (rid < c_dev->config.num_of_rps) {
 				send_hs_init_ring_pair(c_dev, rid);
 			} else {
 				send_hs_complete(c_dev);
@@ -637,12 +626,13 @@ static void setup_ep(struct c29x_dev *c_dev)
 	print_debug("=======================\n");
 }
 
-static int32_t load_firmware(struct c29x_dev *c_dev, uint8_t *fw_file_path)
+static int32_t load_firmware(struct c29x_dev *c_dev)
 {
 	uint8_t byte;
 	uint32_t i;
 	void *fw_addr = c_dev->bars[MEM_TYPE_SRAM].host_v_addr +
 				FIRMWARE_IMAGE_START_OFFSET;
+	uint8_t *fw_file_path = c_dev->config.firmware;
 	loff_t pos = 0;
 	struct file *file = NULL;
 	mm_segment_t old_fs;
@@ -790,18 +780,15 @@ void start_device(struct c29x_dev *c_dev)
 	udelay(250);
 }
 
-int32_t fsl_crypto_layer_add_device(struct c29x_dev *c_dev,
-				  struct crypto_dev_config *config)
+int32_t fsl_crypto_layer_add_device(struct c29x_dev *c_dev)
 {
 	int err;
+	struct c29x_cfg config = c_dev->config;
 
 	c_dev->ring_pairs = kzalloc(sizeof(fsl_h_rsrc_ring_pair_t) *
-				    config->num_of_rps, GFP_KERNEL);
+				config.num_of_rps, GFP_KERNEL);
 	if (!c_dev->ring_pairs)
 		goto rp_fail;
-
-	c_dev->config = config;
-	c_dev->num_of_rps = config->num_of_rps;
 
 	atomic_set(&(c_dev->crypto_dev_sess_cnt), 0);
 
@@ -810,7 +797,7 @@ int32_t fsl_crypto_layer_add_device(struct c29x_dev *c_dev,
 	print_debug("IB mem addr: %p\n", c_dev->bars[MEM_TYPE_SRAM].host_v_addr);
 	print_debug("Device hs mem addr: %p\n", c_dev->c_hs_mem);
 
-	err = alloc_ob_mem(c_dev, config);
+	err = alloc_ob_mem(c_dev);
 	if (err) {
 		print_error("Ob mem alloc failed....\n");
 		goto ob_mem_fail;
@@ -830,7 +817,7 @@ int32_t fsl_crypto_layer_add_device(struct c29x_dev *c_dev,
 
 	print_debug("Distribute ring...\n");
 	/* Distribute rings to cores and BHs */
-	distribute_rings(c_dev, config);
+	distribute_rings(c_dev);
 	print_debug("Distribute ring complete...\n");
 
 	stop_device(c_dev);
@@ -842,7 +829,7 @@ int32_t fsl_crypto_layer_add_device(struct c29x_dev *c_dev,
 	init_handshake(c_dev);
 	print_debug("Init Handshake complete...\n");
 
-	err = load_firmware(c_dev, config->fw_file_path);
+	err = load_firmware(c_dev);
 	if (err) {
 		print_error("Firmware download failed\n");
 		goto error;
@@ -861,7 +848,7 @@ int32_t fsl_crypto_layer_add_device(struct c29x_dev *c_dev,
 	}
 
 	printk(KERN_INFO "[FSL-CRYPTO-OFFLOAD-DRV] DevId:%d DEVICE IS UP\n",
-	       c_dev->config->dev_no);
+	       c_dev->dev_no);
 
 	return 0;
 
@@ -951,7 +938,7 @@ void process_response(struct c29x_dev *c_dev, fsl_h_rsrc_ring_pair_t *ring_curso
 
 		c_dev = ring_cursor->c_dev;
 		ri = ring_cursor->indexes->r_index;
-		print_debug("GOT INTERRUPT FROM DEV: %d\n", c_dev->config->dev_no);
+		print_debug("GOT INTERRUPT FROM DEV: %d\n", c_dev->dev_no);
 
 		while (resp_cnt) {
 			desc = be64_to_cpu(ring_cursor->resp_r[ri].sec_desc);
@@ -1016,7 +1003,7 @@ void response_ring_handler(struct work_struct *work)
 	}
 
 	c_dev = bh->c_dev;	/* get_crypto_dev(1); */
-	print_debug("GOT INTERRUPT FROM DEV : %d\n", c_dev->config->dev_no);
+	print_debug("GOT INTERRUPT FROM DEV : %d\n", c_dev->dev_no);
 	print_debug("Worker thread invoked on cpu [%d]\n", bh->core_no);
 	process_rings(c_dev, &(bh->ring_list_head));
 	return;

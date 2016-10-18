@@ -71,6 +71,13 @@ typedef enum pci_config_space_regs {
 	PCI_MSI_ADDR_DATA = 0X94
 } pci_config_space_regs_t;
 
+#define FSL_CRYPTO_MAX_RING_PAIRS   6
+struct c29x_cfg {
+	uint8_t *firmware;
+	uint8_t num_of_rps;
+	uint32_t ring_depth;
+};
+
 typedef struct isr_ctx {
 	uint32_t irq;
 	struct c29x_dev *c_dev;
@@ -114,13 +121,13 @@ struct c29x_dev {
 	struct host_mem_info drv_mem;
 
 	pci_intr_info_t intr_info;
+	struct c29x_cfg config;
 
 	dev_sysfs_entries_t sysfs;
 	void *sysfs_dir;
 
 	struct list_head list;
 
-	struct crypto_dev_config *config;
 	struct driver_ob_mem ob_mem;
 	uint32_t tot_req_mem_size;
 
@@ -147,7 +154,6 @@ struct c29x_dev {
 	 * of the available static contexts */
 	ctx_pool_t *ctx_pool;
 
-	uint8_t num_of_rps;
 	fsl_h_rsrc_ring_pair_t *ring_pairs;
 
 	/* Holds the count of number of crypto dev sessions */
@@ -181,7 +187,5 @@ struct alg_template {
 };
 
 struct c29x_dev *get_crypto_dev(uint32_t no);
-extern struct crypto_dev_config *get_dev_config(struct c29x_dev *c_dev);
-extern int32_t parse_config_file(int8_t *config_file);
 
 #endif

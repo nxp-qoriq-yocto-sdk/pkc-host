@@ -55,10 +55,16 @@ extern int dh_op(struct pkc_request *req);
 /*********************************************************
  *        GLOBAL VARIABLES                               *
  *********************************************************/
-static char *dev_config_file = "/etc/crypto/crypto.cfg";
 int napi_poll_count = -1;
 /*TODO: Make wt_cpu_mask a real CPU bitmask */
 int32_t wt_cpu_mask = -1;
+
+/* default configuration for all devices */
+struct c29x_cfg defcfg = {
+	.firmware ="/etc/crypto/pkc-firmware.bin",
+	.num_of_rps = 1,
+	.ring_depth = 1024,
+};
 
 /* FIXME: assigning dev_no to new devices in probe is broken. Since this
  * variable is used to match devices with their configuration, we can end up
@@ -67,11 +73,6 @@ int32_t wt_cpu_mask = -1;
  */
 static uint32_t dev_no;
 static struct workqueue_struct *workq;
-
-/* Module Load time parameter */
-/* This parameter specifies the file system path of the configuration file .*/
-module_param(dev_config_file, charp, S_IRUGO);
-MODULE_PARM_DESC(dev_config_file, "Configuration file for the device");
 
 module_param(napi_poll_count, int, S_IRUGO);
 MODULE_PARM_DESC(napi_poll_count, "Poll count for NAPI thread");
@@ -99,12 +100,6 @@ struct c29x_dev *g_fsl_pci_dev;
 
 /* Head of the PCI devices linked list */
 LIST_HEAD(pci_dev_list);
-
-/* Head of the list of configuration data structure instances */
-LIST_HEAD(crypto_dev_config_list);
-
-/* Head of the list of per core cpu data structures */
-LIST_HEAD(per_core_list_head);
 
 /* Head of all the sysfs entries */
 struct sysfs_dir *fsl_sysfs_entries;
@@ -165,18 +160,13 @@ int fill_crypto_dev_sess_ctx(struct crypto_dev_sess *ctx, uint32_t op_type)
 		return -1;
 	}
 
-	num_of_rps = ctx->c_dev->num_of_rps;
-	if (num_of_rps == 0) {
-		print_error("No application ring configured\n");
-		return -1;
-	}
-
+	num_of_rps = ctx->c_dev->config.num_of_rps;
 	/* Select the ring in which this job has to be posted. */
 	ctx->r_id = atomic_inc_return(&ctx->c_dev->crypto_dev_sess_cnt)
 			% num_of_rps;
 
 	print_debug("C dev num of rings [%d] r_id [%d]\n",
-		    ctx->c_dev->num_of_rps, ctx->r_id);
+		    ctx->c_dev->config.num_of_rps, ctx->r_id);
 
 	return 0;
 }
@@ -312,50 +302,6 @@ struct c29x_dev *get_crypto_dev(uint32_t no)
 }
 
 /*******************************************************************************
- * Function     : get_dev_config
- *
- * Arguments    : dev : PCI device instance
- *
- * Return Value : config - Config struct corresponding to the device
- *
- * Description  : Returns the configuration corresponding to the device
- *
- ******************************************************************************/
-
-struct crypto_dev_config *get_dev_config(struct c29x_dev *c_dev)
-{
-	struct crypto_dev_config *config = NULL;
-
-	/* Loop for each config to get to the correct config.
-	 */
-	list_for_each_entry(config, &crypto_dev_config_list, list) {
-		print_debug("Config Dev no:%d Arg Dev no: %d\n",
-			    config->dev_no, c_dev->dev_no);
-
-		if (config->dev_no == c_dev->dev_no)
-			return config;
-
-	}
-
-	return NULL;
-}
-
-#if 0
-static uint64_t readtb(void)
-{
-	uint32_t tbl = 0, tbh = 0;
-	uint64_t tb = 0;
-
-	asm volatile ("mfspr %0, 526" : "=r" (tbl));
-	asm volatile ("mfspr %0, 527" : "=r" (tbh));
-
-	tb = ((uint64_t) tbh << 32) | tbl;
-
-	return tb;
-}
-#endif
-
-/*******************************************************************************
  * Function     : fsl_crypto_isr
  *
  * Arguments    : irq : Vector number
@@ -489,7 +435,7 @@ void fsl_release_irqs(struct c29x_dev *c_dev)
 	}
 }
 
-int get_irq_vectors(struct c29x_dev *c_dev, uint8_t num_of_rings)
+int get_irq_vectors(struct c29x_dev *c_dev)
 {
 	int err;
 
@@ -582,296 +528,6 @@ int32_t create_c29x_workqueue(void)
 }
 
 /*******************************************************************************
- * Function     : str_to_int
- *
- * Arguments    : p - String
- *
- * Return Value : None
- *
- * Description  : Converts the string to an integer
- *
- ******************************************************************************/
-static uint32_t str_to_int(int8_t *p)
-{
-	int value = 0;
-
-	while (*p != '\0') {
-		value = (value * 10) + (*p - '0');
-		p++;
-	}
-	return value;
-}
-
-/*******************************************************************************
- * Function     : get_line
- *
- * Arguments    : file - Configuration file
- *				  pos  - Current read position inside the file
- *				  line - Output buffer to read the line
- *
- * Return Value : int32_t
- *
- * Description  : To get the line from the passed configuration file.
- *
- ******************************************************************************/
-static int32_t get_line(struct file *file, loff_t *pos, uint8_t *line,
-			int32_t line_size)
-{
-	char ch = 0;
-	uint8_t count = 0;
-
-	line[0] = '\0';
-	while (ch != '\n') {
-		if (vfs_read(file, &ch, 1, pos) <= 0) {
-			return -1;
-		}
-		if (ch != '\n') {
-			line[count++] = ch;
-			if (count == line_size)
-				return 0;
-		}
-	}
-
-	line[count] = '\0';
-	return 0;
-}
-
-/*******************************************************************************
- * Function     : get_label
- *
- * Arguments    : line - Line read from configuration file
- *
- * Return Value : int8_t*
- *
- * Description  : Parses the line to get label
- *
- ******************************************************************************/
-int8_t *get_label(int8_t *line)
-{
-	int8_t *p = line;
-
-	while (*line != '\n' && *line != '\0') {
-		if (*line == '<') {
-			return line;
-		} else if (*line == ':') {
-			*line = '\0';
-			return p;
-		} else {
-			line++;
-		}
-	}
-
-	while (*p == ' ')
-		p++;
-
-	return p;
-}
-
-/*******************************************************************************
- * Function     :	create_default_config
- *
- * Arguments    :	config - current device config structure
- *			from_ring - from which ring to take default values
- *			max_ring  - maximum number of rings to be created
- *
- * Return Value :	void
- *
- * Description  :	Creates the default device configuration
- *						default values
- *			DEPTH - 16	AFFINITY - 0
- *			PRIORITY - 1	ORDER - 0
- *
- ******************************************************************************/
-static void create_default_config(struct crypto_dev_config *config,
-				  uint8_t from_ring, uint8_t max_ring)
-{
-	if (max_ring > FSL_CRYPTO_MAX_RING_PAIRS) {
-		max_ring = FSL_CRYPTO_MAX_RING_PAIRS;
-	}
-	print_debug("Total no of Rings : %d\n", max_ring);
-	for (; from_ring < max_ring; ++from_ring) {
-		config->ring[from_ring].depth = 1024;
-
-		print_debug("Ring [%d] default Depth : %d\n", from_ring,
-			    config->ring[from_ring].depth);
-	}
-	config->num_of_rps = max_ring;
-}
-
-/*******************************************************************************
- * Function     : process_label
- *
- * Arguments    : label - Token to identify the value
- *		  value - Actual value
- *
- * Return Value : int32_t
- *
- * Description  : Understands and initialize the config data structure based on
- *		  the passed label and value
- *
- ******************************************************************************/
-uint32_t dev_count;
-int32_t process_label(int8_t *label, int8_t *value)
-{
-	int32_t conv_value = 0;
-	static struct crypto_dev_config *config;
-	static uint32_t rings_spec;
-	static uint8_t ring_count;
-	static uint32_t ring_start;
-	static uint32_t dev_start;
-
-	if (!strcmp(label, "<device>")) {
-		/* New device node - allocate memory for new config structure */
-		config = kzalloc(sizeof(struct crypto_dev_config), GFP_KERNEL);
-
-		if (unlikely(NULL == config)) {
-			print_error("Mem allocation failed\n");
-			return -1;
-		}
-
-		/* Add this to the existing list */
-		list_add(&(config->list), &(crypto_dev_config_list));
-		config->dev_no = ++dev_count;
-
-		dev_start = true;
-	} else if (!strcmp(label, "firmware")) {
-		strncpy(config->fw_file_path, value,
-				FIRMWARE_FILE_PATH_LEN - 1);
-		config->fw_file_path[FIRMWARE_FILE_PATH_LEN - 1] = '\0';
-	} else if (!strcmp(label, "rings")) {
-		conv_value = str_to_int(value);
-		if (FSL_CRYPTO_MAX_RING_PAIRS < conv_value || 0 > conv_value) {
-			conv_value = FSL_CRYPTO_MAX_RING_PAIRS;
-		}
-		config->num_of_rps = conv_value;
-		rings_spec = true;
-	} else if (!strcmp(label, "<ring>") && (dev_start == true)) {
-		/* New ring information is starting here */
-		ring_start = true;
-		if (false == rings_spec) {
-			/* Default values for all the rings */
-			create_default_config(config, 0, 1);
-			return 0;
-		}
-		if (ring_count >= FSL_CRYPTO_MAX_RING_PAIRS)
-			return -1;
-	} else if (!strcmp(label, "depth") && (ring_start == true)) {
-		config->ring[ring_count].depth = str_to_int(value);
-	} else if (!strcmp(label, "<end>")) {
-		if (ring_start == true) {
-			ring_start = false;
-			if (config->ring[ring_count].depth < 128) {
-				config->ring[ring_count].depth = 128;
-			}
-			ring_count++;
-		} else if (dev_start == true) {
-			/* FIX: IF GIVEN CONFIGURATION FAILS THEN MAKE DEFAULT
-			 * CONFIGURATION ENABLED */
-			if (config->num_of_rps < 1) {
-				create_default_config(config, 0, 1);
-			} else if (ring_count < config->num_of_rps) {
-				create_default_config(config, ring_count,
-						      config->num_of_rps);
-			} else if (ring_count > config->num_of_rps) {
-				return -1;
-			}
-			rings_spec = false;
-			dev_start = false;
-			ring_count = 0;
-			/*dev_count++; */
-		}
-	} else
-		return -1;
-
-	return 0;
-}
-
-/*******************************************************************************
- * Function     : parse_config_file
- *
- * Arguments    : config_file - Path of the configuration file
- *
- * Return Value : int32_t
- *
- * Description  : Parses the configuration file and reads the configuration
- *
- ******************************************************************************/
-int32_t parse_config_file(int8_t *config_file)
-{
-	int32_t ret = 0;
-	uint8_t line[100];	/* Local buffer to hold the strings in file */
-
-	int8_t *label = NULL;
-	int8_t *value = NULL;
-	struct file *file = NULL;
-	struct inode *inode = NULL;
-
-	loff_t pos = 0;
-
-	mm_segment_t old_fs;
-
-	old_fs = get_fs();
-
-	print_info("Using configuration file: %s\n", dev_config_file);
-
-	set_fs(KERNEL_DS);
-
-	file = filp_open(config_file, O_RDWR, 0);
-
-	if (IS_ERR(file)) {
-		print_error("No file at path [%s]\n", config_file);
-
-		set_fs(old_fs);
-		return -1;
-	}
-
-	inode = file->f_path.dentry->d_inode;
-
-	if (0 > i_size_read(inode->i_mapping->host)) {
-		print_error("ERROR:Empty file\n");
-		ret = -1;
-		goto out;
-	}
-
-	while (true) {
-		/* This could fail even on the EOF */
-		/*if(unlikely(get_line(file,&pos,line))) { */
-		if (unlikely(get_line(file, &pos, line, sizeof(line)))) {
-			print_debug("Error/End of file reached\n");
-			/* Need to know how to distinguish
-			 * between EOF and error */
-			goto out;
-		}
-
-		print_debug("Line read from file [%s]\n", line);
-
-		if (strlen(line)) {
-			label = get_label(line);
-
-			value = line + strlen(label) + 1;
-			print_debug("Label [%s], value : [%d]\n", label,
-				    str_to_int(value));
-
-			if (unlikely(process_label(label, value) == -1)) {
-				print_error("Processing label [%s] failed\n",
-					    label);
-				ret = -1;
-				goto out;
-			}
-		}
-	}
-
-out:
-	if (file) {
-		filp_close(file, 0);
-	}
-
-	set_fs(old_fs);
-
-	return ret;
-}
-
-/*******************************************************************************
  * Function     : cleanup_pci_device
  *
  * Arguments    : void
@@ -953,28 +609,6 @@ static void cleanup_percore_list(void)
 }
 
 /*******************************************************************************
- * Function     : cleanup_config_list
- *
- * Arguments    : void
- *
- * Return Value : None
- *
- * Description  : Destroys the configuration list
- *
- ******************************************************************************/
-static void cleanup_config_list(void)
-{
-	struct crypto_dev_config *config = NULL;
-	struct crypto_dev_config *next_config = NULL;
-
-	list_for_each_entry_safe(config, next_config, &crypto_dev_config_list,
-				 list) {
-		list_del(&(config->list));
-		kfree(config);
-	}
-}
-
-/*******************************************************************************
  * Function     : fsl_crypto_pci_remove
  *
  * Arguments    : dev : PCI device structure instance.
@@ -1003,23 +637,6 @@ static void fsl_crypto_pci_remove(struct pci_dev *dev)
 	dev_no--;
 }
 
-uint32_t round_to_power2(uint32_t n)
-{
-	uint32_t i = 1;
-	while (i < n)
-		i = i << 1;
-	return i;
-}
-
-static void pow2_rp_len(struct crypto_dev_config *config)
-{
-	uint32_t i;
-	/* Correct the ring depths to be power of 2 */
-	for (i = 0; i < config->num_of_rps; i++) {
-		config->ring[i].depth = round_to_power2(config->ring[i].depth);
-	}
-}
-
 /*******************************************************************************
  * Function     : fsl_crypto_pci_probe
  *
@@ -1035,11 +652,9 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 				    const struct pci_device_id *id)
 {
 	int32_t err = -ENODEV;
-	int local_cfg; /* clean-up is required on error path */
 	int8_t pci_info[60];
 	int8_t sys_pci_info[100];
 	struct c29x_dev *c_dev = NULL;
-	struct crypto_dev_config *config = NULL;
 
 	print_debug("========== PROBE FUNCTION ==========\n");
 
@@ -1055,6 +670,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		print_error("Memory allocation failed\n");
 		return -ENOMEM;
 	}
+	c_dev->config = defcfg;
 
 	/* Set this device instance as private data inside the pci dev struct */
 	dev_set_drvdata(&(dev->dev), c_dev);
@@ -1102,41 +718,9 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 	if (err)
 		goto clear_master;
 
-	/* Call to the following function gets the number of
-	 * application rings to be created for the device.
-	 * The actual number of ring pairs created can be different
-	 * and can only be known during the handshake.
-	 * This number is the max limit. Number of iv's
-	 * to ask = number of application rings.*/
-
-	config = get_dev_config(c_dev);
-	if (config) {
-		local_cfg = 0;
-	} else {
-		local_cfg = 1;
-		/* FIX: IF NO CONFIGURATION IS SPECIFIED THEN
-		 * TAKE THE DEFAULT CONFIGURATION */
-		print_debug("NO CONFIG FOUND, CREATING DEFAULT CONFIGURATION\n");
-		config = kzalloc(sizeof(struct crypto_dev_config), GFP_KERNEL);
-		if (!config) {
-			print_error("Mem allocation failed\n");
-			err = -ENODEV;
-			goto free_bar_map;
-		}
-
-		list_add(&(config->list), &(crypto_dev_config_list));
-		print_debug("===== DEFAULT CONFIGURATION DETAILS ======\n");
-		config->dev_no = c_dev->dev_no;
-		strcpy(config->fw_file_path, FIRMWARE_FILE_DEFAULT_PATH);
-		print_debug("Firmware Path : %s\n", config->fw_file_path);
-		create_default_config(config, 0, 1);
-	}
-	/* round ring lengths to powers of two */
-	pow2_rp_len(config);
-
-	err = get_irq_vectors(c_dev, config->num_of_rps);
+	err = get_irq_vectors(c_dev);
 	if (err)
-		goto free_config;
+		goto free_bar_map;
 
 	err = fsl_request_irqs(c_dev);
 	if (err)
@@ -1149,7 +733,7 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		goto free_req_irq;
 	}
 
-	err = fsl_crypto_layer_add_device(c_dev, config);
+	err = fsl_crypto_layer_add_device(c_dev);
 	if (err != 0) {
 		dev_err(&dev->dev, "Adding device as crypto dev failed\n");
 		goto deinit_sysfs;
@@ -1183,11 +767,6 @@ free_req_irq:
 	fsl_release_irqs(c_dev);
 disable_msi:
 	pci_disable_msi(c_dev->dev);
-free_config:
-	if (local_cfg) {
-		list_del(&(config->list));
-		kfree(config);
-	}
 free_bar_map:
 	fsl_free_bar_map(c_dev->bars, MEM_TYPE_MAX);
 clear_master:
@@ -1237,13 +816,6 @@ static int32_t __init fsl_crypto_drv_init(void)
 	} else {
 		print_info("NAPI poll count is specified, configured value: %d\n",
 				napi_poll_count);
-	}
-
-	/* Read the configuration file - Path will be passed as module param */
-	ret = parse_config_file(dev_config_file);
-	if (ret) {
-		print_error("Invalid path/configuration file\n");
-		return ret;
 	}
 
 	ret = init_common_sysfs();
@@ -1296,7 +868,6 @@ free_percore:
 free_sysfs:
 	clean_common_sysfs();
 free_config:
-	cleanup_config_list();
 
 	return ret;
 }
@@ -1321,9 +892,6 @@ static void __exit fsl_crypto_drv_exit(void)
 	pci_unregister_driver(&fsl_cypto_driver);
 
 	clean_common_sysfs();
-
-	/* Cleanup the configuration file linked list */
-	cleanup_config_list();
 
 	/* Cleanup the per core linked list */
 	cleanup_percore_list();
