@@ -297,12 +297,6 @@ typedef struct fsl_h_rsrc_ring_pair {
 	spinlock_t ring_lock;
 } fsl_h_rsrc_ring_pair_t;
 
-struct pool_info {
-	dma_addr_t h_dma_addr;
-	void *h_v_addr;
-	struct buffer_pool buf_pool;
-};
-
 /*******************************************************************************
 Description :	Contains the structured layout of the driver mem - outbound mem
 Fields      :	hs_mem	: Handshake memory - 64bytes

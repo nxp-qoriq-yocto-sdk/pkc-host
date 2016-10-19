@@ -46,6 +46,8 @@ typedef struct buffer_header {
 } bh;
 
 typedef struct buffer_pool {
+	dma_addr_t	h_dma_addr;
+	void		*h_v_addr;
 	uint32_t tot_free_mem;
 	bh *free_list;
 	void *buff;

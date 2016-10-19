@@ -159,7 +159,7 @@ struct c29x_dev {
 	struct ring_counters_mem *r_s_c_cntrs;
 
 	/* Structure defining the input pool */
-	struct pool_info host_ip_pool;
+	struct buffer_pool host_ip_pool;
 
 	/* Ctx pool - Will be used during data path to allocate one
 	 * of the available static contexts */

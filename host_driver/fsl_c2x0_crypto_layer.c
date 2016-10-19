@@ -269,7 +269,7 @@ void init_ring_pairs(struct c29x_dev *c_dev)
 		rp->c_dev = c_dev;
 		rp->depth = c_dev->config->ring[i].depth;
 
-		rp->buf_pool = &c_dev->host_ip_pool.buf_pool;
+		rp->buf_pool = &c_dev->host_ip_pool;
 		rp->req_r = NULL;
 		rp->resp_r = resp_r;
 		resp_r += rp->depth;
@@ -680,7 +680,7 @@ static int32_t load_firmware(struct c29x_dev *c_dev, uint8_t *fw_file_path)
 
 void init_ip_pool(struct c29x_dev *c_dev)
 {
-	create_pool(&c_dev->host_ip_pool.buf_pool, c_dev->host_mem->ip_pool,
+	create_pool(&c_dev->host_ip_pool, c_dev->host_mem->ip_pool,
 			BUFFER_MEM_SIZE);
 
 	c_dev->host_ip_pool.h_v_addr = c_dev->host_mem->ip_pool;
