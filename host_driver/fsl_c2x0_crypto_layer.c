@@ -46,6 +46,10 @@
 extern int32_t wt_cpu_mask;
 extern struct bh_handler __percpu *bh_workers;
 
+/* The size of the ip_pool was chosen 512K so it could fit in the device SRAM
+ * (which has less than 1M available) without changing the supporting code.
+ * Since the current implementation has all data in host RAM, this limitation
+ * may be lifted */
 #define FIRMWARE_IP_BUFFER_POOL_SIZE		(512*1024)
 
 /* Application ring properties bit masks and shift */
