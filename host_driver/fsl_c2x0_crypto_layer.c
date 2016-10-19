@@ -982,8 +982,8 @@ void handle_response(fsl_crypto_dev_t *dev, uint64_t desc, int32_t res)
 void process_response(fsl_crypto_dev_t *dev, fsl_h_rsrc_ring_pair_t *ring_cursor)
 {
 	uint32_t pollcount;
-	uint32_t jobs_added = 0;
-	uint32_t resp_cnt = 0;
+	uint32_t jobs_added;
+	uint32_t resp_cnt;
 	uint32_t ri;
 	uint64_t desc;
 	uint32_t res;
