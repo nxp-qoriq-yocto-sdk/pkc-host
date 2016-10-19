@@ -608,6 +608,7 @@ int dsa_op(struct pkc_request *req)
 	dsa_keygen_buffers_t *dsa_keygen_buffs = NULL;
 	bool ecdsa = false;
 	bool ecc_bin = false;
+	ctx_pool_t *ctx_pool;
 
 	if (NULL != req->base.tfm) {
 		struct crypto_dev_sess *c_sess;
@@ -630,7 +631,8 @@ int dsa_op(struct pkc_request *req)
         r_id = r_id % c_dev->config.num_of_rps;
 	}
 
-	crypto_ctx = get_crypto_ctx(c_dev->ctx_pool);
+	ctx_pool = &c_dev->ctx_pool[r_id];
+	crypto_ctx = get_crypto_ctx(ctx_pool);
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
 	if (unlikely(!crypto_ctx)) {
@@ -639,7 +641,7 @@ int dsa_op(struct pkc_request *req)
 	}
 
 	print_debug("Ring selected: %d\n", r_id);
-	crypto_ctx->ctx_pool = c_dev->ctx_pool;
+	crypto_ctx->ctx_pool = ctx_pool;
 	crypto_ctx->crypto_mem.c_dev = c_dev;
 	crypto_ctx->crypto_mem.buf_pool = c_dev->ring_pairs[r_id].buf_pool;
 	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.buf_pool);

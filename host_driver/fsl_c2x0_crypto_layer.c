@@ -679,15 +679,17 @@ int init_crypto_ctx_pool(struct c29x_dev *c_dev)
 {
 	int i, id;
 	ctx_pool_t *pool;
+	uint8_t nr_ctx_pools = c_dev->config.num_of_rps;
 
-	pool = kzalloc(sizeof(ctx_pool_t) * NR_CTX_POOLS, GFP_KERNEL);
-	if (!pool)
+	pool = kcalloc(nr_ctx_pools, sizeof(ctx_pool_t), GFP_KERNEL);
+	if (pool == NULL) {
 		return -ENOMEM;
+	}
 
 	/* save the address of the first context pool */
 	c_dev->ctx_pool = pool;
 
-	for (id = 0; id < NR_CTX_POOLS; id++) {
+	for (id = 0; id < nr_ctx_pools; id++) {
 		for (i = 0; i < NUM_OF_CTXS - 1; i++)
 			pool->mem[i].next = &(pool->mem[i + 1]);
 

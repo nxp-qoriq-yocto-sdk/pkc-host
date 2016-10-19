@@ -477,7 +477,6 @@ int rsa_op(struct pkc_request *req)
 	rsa_priv2_op_buffers_t *priv2_op_buffs = NULL;
 	rsa_priv3_op_buffers_t *priv3_op_buffs = NULL;
 	ctx_pool_t *ctx_pool;
-	uint32_t ctx_pool_id = 0;
 
 	if (NULL != req->base.tfm) {
 		struct crypto_dev_sess *c_sess;
@@ -499,8 +498,7 @@ int rsa_op(struct pkc_request *req)
 	r_id = sess_cnt % c_dev->config.num_of_rps;
 	}
 
-	ctx_pool_id = sess_cnt % NR_CTX_POOLS;
-	ctx_pool = &c_dev->ctx_pool[ctx_pool_id];
+	ctx_pool = &c_dev->ctx_pool[r_id];
 	crypto_ctx = get_crypto_ctx(ctx_pool);
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 

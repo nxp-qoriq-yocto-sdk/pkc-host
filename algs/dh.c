@@ -365,7 +365,6 @@ int dh_op(struct pkc_request *req)
 	bool ecdh = false;
 	bool ecc_bin = false;
 	ctx_pool_t *ctx_pool;
-	uint32_t ctx_pool_id;
 	uint32_t sess_cnt;
 
 	if (NULL != req->base.tfm) {
@@ -391,8 +390,7 @@ int dh_op(struct pkc_request *req)
 	sess_cnt = atomic_inc_return(&c_dev->crypto_dev_sess_cnt);
 	r_id = sess_cnt % c_dev->config.num_of_rps;
     }
-	ctx_pool_id = sess_cnt % NR_CTX_POOLS;
-	ctx_pool = &c_dev->ctx_pool[ctx_pool_id];
+	ctx_pool = &c_dev->ctx_pool[r_id];
 	crypto_ctx = get_crypto_ctx(ctx_pool);
 	print_debug("crypto_ctx addr: %p\n", crypto_ctx);
 
