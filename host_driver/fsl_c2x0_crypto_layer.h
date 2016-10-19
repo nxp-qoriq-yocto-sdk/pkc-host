@@ -151,7 +151,7 @@ struct host_handshake_mem {
 		struct config_data {
 			uint32_t r_s_c_cntrs;
 			uint32_t s_c_cntrs;
-			uint32_t ip_pool;
+			uint32_t padding;
 			uint32_t resp_intr_ctrl_flag;
 		} config;
 		struct ring_data {
@@ -304,11 +304,6 @@ typedef struct fsl_h_rsrc_ring_pair {
 	spinlock_t ring_lock;
 } fsl_h_rsrc_ring_pair_t;
 
-struct dev_pool_info {
-	dev_dma_addr_t d_p_addr;
-	void *h_v_addr;
-};
-
 struct pool_info {
 	dma_addr_t h_dma_addr;
 	void *h_v_addr;
@@ -390,7 +385,6 @@ typedef struct fsl_crypto_dev {
 
 	/* Structure defining the input pool */
 	struct pool_info host_ip_pool;
-	struct dev_pool_info dev_ip_pool;
 
 	/* Output pool - Currently used by command ring to avoid
 	 * dynamic mem allocations */
