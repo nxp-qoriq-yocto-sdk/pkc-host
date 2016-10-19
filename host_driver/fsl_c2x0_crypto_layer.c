@@ -46,7 +46,6 @@
 extern int32_t wt_cpu_mask;
 extern struct bh_handler __percpu *bh_workers;
 
-#define DEFAULT_HOST_OP_BUFFER_POOL_SIZE	(1*1024)
 #define FIRMWARE_IP_BUFFER_POOL_SIZE		(512*1024)
 
 /* Application ring properties bit masks and shift */
@@ -170,7 +169,6 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 					sizeof(struct ring_counters_mem));
 	dev->ob_mem.r_s_cntrs_mem = ob_alloc(config->num_of_rps *
 					sizeof(struct ring_counters_mem));
-	dev->ob_mem.op_pool = ob_alloc(DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
 	dev->ob_mem.ip_pool = ob_alloc(FIRMWARE_IP_BUFFER_POOL_SIZE);
 
 	/* Make the total mem requirement aligned to page size */
@@ -216,7 +214,6 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	dev->host_mem->idxs_mem = host_v_addr + dev->ob_mem.idxs_mem;
 	dev->host_mem->cntrs_mem = host_v_addr + dev->ob_mem.cntrs_mem;
 	dev->host_mem->r_s_cntrs_mem = host_v_addr + dev->ob_mem.r_s_cntrs_mem;
-	dev->host_mem->op_pool = host_v_addr + dev->ob_mem.op_pool;
 	dev->host_mem->ip_pool = host_v_addr + dev->ob_mem.ip_pool;
 
 	print_debug("====== OB MEM POINTERS =======\n");
@@ -226,7 +223,6 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	print_debug("Idxs mem	        : %p\n", dev->host_mem->idxs_mem);
 	print_debug("cntrs mem          : %p\n", dev->host_mem->cntrs_mem);
 	print_debug("S C R cntrs mem	: %p\n", dev->host_mem->r_s_cntrs_mem);
-	print_debug("OP pool		: %p\n", dev->host_mem->op_pool);
 	print_debug("IP pool		: %p\n", dev->host_mem->ip_pool);
 	print_debug("Total req mem size : %d\n", dev->tot_req_mem_size);
 
@@ -688,14 +684,6 @@ static int32_t load_firmware(fsl_crypto_dev_t *dev, uint8_t *fw_file_path)
 	return 0;
 }
 
-void init_op_pool(fsl_crypto_dev_t *dev)
-{
-	create_pool(&dev->op_pool.buf_pool, dev->host_mem->op_pool,
-			DEFAULT_HOST_OP_BUFFER_POOL_SIZE);
-
-	dev->op_pool.h_v_addr = dev->host_mem->op_pool;
-}
-
 void init_ip_pool(fsl_crypto_dev_t *dev)
 {
 	create_pool(&dev->host_ip_pool.buf_pool, dev->host_mem->ip_pool,
@@ -847,7 +835,6 @@ fsl_crypto_dev_t *fsl_crypto_layer_add_device(struct c29x_dev *fsl_pci_dev,
 	}
 
 	init_ip_pool(c_dev);
-	init_op_pool(c_dev);
 
 	err = init_crypto_ctx_pool(c_dev);
 	if (err) {

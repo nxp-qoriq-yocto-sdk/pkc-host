@@ -327,7 +327,6 @@ struct host_mem_layout {
 	struct ring_idxs_mem *idxs_mem;
 	struct ring_counters_mem *cntrs_mem;
 	struct ring_counters_mem *r_s_cntrs_mem;
-	void *op_pool;
 	void *ip_pool;
 
 };
@@ -338,7 +337,6 @@ struct driver_ob_mem {
 	uint32_t idxs_mem;
 	uint32_t cntrs_mem;
 	uint32_t r_s_cntrs_mem;
-	uint32_t op_pool;
 	uint32_t ip_pool;
 };
 
@@ -386,10 +384,6 @@ typedef struct fsl_crypto_dev {
 	/* Structure defining the input pool */
 	struct pool_info host_ip_pool;
 
-	/* Output pool - Currently used by command ring to avoid
-	 * dynamic mem allocations */
-	struct pool_info op_pool;
-
 	/* Ctx pool - Will be used during data path to allocate one
 	 * of the available static contexts */
 	ctx_pool_t *ctx_pool;
@@ -414,9 +408,7 @@ void cleanup_crypto_device(fsl_crypto_dev_t *dev);
 int32_t handshake(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
 void rearrange_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
 void distribute_rings(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
-int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config);
 void init_ip_pool(fsl_crypto_dev_t *dev);
-void init_op_pool(fsl_crypto_dev_t *dev);
 int init_crypto_ctx_pool(fsl_crypto_dev_t *dev);
 void init_handshake(fsl_crypto_dev_t *dev);
 void init_ring_pairs(fsl_crypto_dev_t *dev);
