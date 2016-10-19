@@ -66,10 +66,6 @@ int32_t wt_cpu_mask = -1;
  * removing and adding devices in arbitrary order (e.g using /sys/bus/pci)
  */
 static uint32_t dev_no;
-int32_t dma_channel_count = 1;
-int32_t dma_channel_cpu_mask[NR_CPUS];
-int32_t cpu_mask_count;
-
 static struct workqueue_struct *workq;
 
 /* Module Load time parameter */
@@ -82,12 +78,6 @@ MODULE_PARM_DESC(napi_poll_count, "Poll count for NAPI thread");
 
 module_param(wt_cpu_mask, int, S_IRUGO);
 MODULE_PARM_DESC(wt_cpu_mask, "CPU mask for napi worker threads");
-
-module_param(dma_channel_count, int, S_IRUGO);
-MODULE_PARM_DESC(dma_channel_count, "No of dma chnls to use");
-
-module_param_array(dma_channel_cpu_mask, int, &cpu_mask_count, 0000);
-MODULE_PARM_DESC(dma_channel_cpu_mask, "CPU mask for dma chnl alloc");
 
 static struct pci_device_id fsl_crypto_pci_dev_ids[] = {
 	{PCI_DEVICE(FSL_CRYPTO_PCI_VENDOR_ID, FSL_CRYPTO_C290_PCI_DEVICE_ID)},
