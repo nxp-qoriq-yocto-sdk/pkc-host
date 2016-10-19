@@ -50,7 +50,7 @@ extern struct bh_handler __percpu *bh_workers;
  * (which has less than 1M available) without changing the supporting code.
  * Since the current implementation has all data in host RAM, this limitation
  * may be lifted */
-#define FIRMWARE_IP_BUFFER_POOL_SIZE		(512*1024)
+#define BUFFER_MEM_SIZE		(512*1024)
 
 /* Application ring properties bit masks and shift */
 #define APP_RING_PROP_ORDER_MASK    0x01
@@ -171,7 +171,7 @@ static uint32_t calc_ob_mem_len(struct c29x_dev *c_dev,
 					sizeof(struct ring_counters_mem));
 	c_dev->ob_mem.r_s_cntrs_mem = ob_alloc(config->num_of_rps *
 					sizeof(struct ring_counters_mem));
-	c_dev->ob_mem.ip_pool = ob_alloc(FIRMWARE_IP_BUFFER_POOL_SIZE);
+	c_dev->ob_mem.ip_pool = ob_alloc(BUFFER_MEM_SIZE);
 
 	/* Make the total mem requirement aligned to page size */
 	return page_align(ob_alloc(0));
@@ -681,7 +681,7 @@ static int32_t load_firmware(struct c29x_dev *c_dev, uint8_t *fw_file_path)
 void init_ip_pool(struct c29x_dev *c_dev)
 {
 	create_pool(&c_dev->host_ip_pool.buf_pool, c_dev->host_mem->ip_pool,
-			FIRMWARE_IP_BUFFER_POOL_SIZE);
+			BUFFER_MEM_SIZE);
 
 	c_dev->host_ip_pool.h_v_addr = c_dev->host_mem->ip_pool;
 	c_dev->host_ip_pool.h_dma_addr = c_dev->bars[MEM_TYPE_DRIVER].host_dma_addr + c_dev->ob_mem.ip_pool;
