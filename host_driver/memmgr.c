@@ -59,33 +59,6 @@ static void link_after(bp *pool, bh *node, bh *after);
 	}
 
 /******************************************************************************
-Description :	Reset a deice's memory pool.   
-Fields      :   
-			id	:	Address of the device's memory pool.
-Returns		:	None.
-******************************************************************************/
-
-void reset_pool(struct buffer_pool *pool)
-{
-	bh *header = NULL;
-
-	spin_lock_bh(&pool->mem_lock);
-	/* Initialise the header */
-	header = (bh *) pool->buff;
-	header->len = pool->len - sizeof(bh);
-	header->prev_link = NULL;
-	header->next_link = NULL;
-	header->in_use = 0;
-
-	/* Link this header to the free list */
-	pool->free_list = header;
-	pool->tot_free_mem = pool->len - sizeof(bh);
-
-	spin_unlock_bh(&pool->mem_lock);
-
-}
-
-/******************************************************************************
 Description :	Creating the device memory pool.    
 Fields      :
 			buff	:	start adrress of device memory for the mempool.
@@ -292,48 +265,6 @@ unsigned long get_priv_data(void *buffer)
 
 	header = buffer - sizeof(bh);
 	return header->priv;
-}
-
-/******************************************************************************
-Description :	To get some extra information (flag) from a buffer's header.   
-Fields      :   
-			id		:	device mempool address.
-			buffer	:	The address of the buffer, whose flag we needed.
-Returns		:	The flag
-******************************************************************************/
-
-uint8_t get_flag(void *id, void *buffer)
-{
-	bh *header = NULL;
-	bp *pool = id;
-	uint8_t flag;
-
-	spin_lock_bh(&(pool->mem_lock));
-	header = (buffer - sizeof(bh));
-	flag = header->flag;
-	spin_unlock_bh(&(pool->mem_lock));
-
-	return flag;
-}
-
-/******************************************************************************
-Description :	To set some extra information (flag) on a buffer's header.   
-Fields      :   
-			id		:	device mempool address.
-			buffer	:	The address of the buffer, whose flag we need to set.
-			flag	:	The data that we need to set on the header flag field.
-Returns		:	None.
-******************************************************************************/
-
-void set_flag(void *id, void *buffer, uint8_t flag)
-{
-	bh *header = NULL;
-	bp *pool = id;
-
-	spin_lock_bh(&(pool->mem_lock));
-	header = (buffer - sizeof(bh));
-	header->flag = flag;
-	spin_unlock_bh(&(pool->mem_lock));
 }
 
 #if 0

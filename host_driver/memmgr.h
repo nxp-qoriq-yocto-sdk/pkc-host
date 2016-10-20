@@ -56,11 +56,8 @@ typedef struct buffer_pool {
 void create_pool(struct buffer_pool *, void *, uint32_t);
 void *alloc_buffer(struct buffer_pool *, uint32_t, uint8_t);
 void free_buffer(struct buffer_pool *, void *);
-void reset_pool(struct buffer_pool *);
 
 void store_priv_data(void *, unsigned long);
 unsigned long get_priv_data(void *);
-uint8_t get_flag(void *, void *);
-void set_flag(void *id, void *, uint8_t);
 
 #endif

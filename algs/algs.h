@@ -96,15 +96,6 @@ typedef struct crypto_op_ctx {
 	struct crypto_op_ctx *next;
 } crypto_op_ctx_t;
 
-/*******************************************************************************
-Description :   Defines the context for application request entry.
-		This will be use by firmware in response processing.
-Fields      :   r_offset:	Offset of the ring to which this req belongs.
-*******************************************************************************/
-typedef struct app_req_job_ctx {
-	dev_p_addr_t r_offset;
-} app_req_job_ctx_t;
-
 #define NUM_OF_CTXS     1024
 
 typedef struct ctx_pool {
