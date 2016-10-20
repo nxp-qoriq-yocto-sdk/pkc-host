@@ -114,7 +114,7 @@ void create_pool(struct buffer_pool *pool, void *buf, uint32_t len)
 	/* Truncate len to multiple of quant blocks */
 	len &= ~(MIN_QUANT_SIZE - 1);
 
-	/* Initialise the header */
+	/* Initialize the header */
 	header = (bh *) buf;
 	header->len = len - sizeof(bh);
 	header->prev_link = NULL;
