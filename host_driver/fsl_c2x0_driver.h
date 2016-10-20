@@ -152,7 +152,7 @@ struct c29x_dev {
 
 	/* Ctx pool - Will be used during data path to allocate one
 	 * of the available static contexts */
-	ctx_pool_t *ctx_pool;
+	struct ctx_pool *ctx_pool;
 
 	fsl_h_rsrc_ring_pair_t *ring_pairs;
 

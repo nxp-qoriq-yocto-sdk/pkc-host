@@ -678,10 +678,10 @@ void init_ip_pool(struct c29x_dev *c_dev)
 int init_crypto_ctx_pool(struct c29x_dev *c_dev)
 {
 	int i, id;
-	ctx_pool_t *pool;
+	struct ctx_pool *pool;
 	uint8_t nr_ctx_pools = c_dev->config.num_of_rps;
 
-	pool = kcalloc(nr_ctx_pools, sizeof(ctx_pool_t), GFP_KERNEL);
+	pool = kcalloc(nr_ctx_pools, sizeof(struct ctx_pool), GFP_KERNEL);
 	if (pool == NULL) {
 		return -ENOMEM;
 	}
@@ -903,13 +903,13 @@ void cleanup_crypto_device(struct c29x_dev *c_dev)
 void handle_response(struct c29x_dev *c_dev, uint64_t desc, int32_t res)
 {
 	void *h_desc;
-	crypto_op_ctx_t *ctx0 = NULL;
+	struct crypto_op_ctx *ctx0 = NULL;
 	dev_p_addr_t offset = c_dev->drv_mem.dev_p_addr;
 
 	h_desc = c_dev->host_ip_pool.h_v_addr + (desc - offset) -
 			c_dev->host_ip_pool.h_dma_addr;
 
-	ctx0 = (crypto_op_ctx_t *) get_priv_data(h_desc);
+	ctx0 = (struct crypto_op_ctx *) get_priv_data(h_desc);
 	if (ctx0) {
 		ctx0->op_done(ctx0, res);
 	} else {

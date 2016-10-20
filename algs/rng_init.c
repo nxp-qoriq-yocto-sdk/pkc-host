@@ -73,7 +73,7 @@ static int32_t self_test_chk_res(uint32_t *output)
 
 static void rng_init_done(void *ctx, uint32_t res)
 {
-	crypto_op_ctx_t *crypto_ctx = ctx;
+	struct crypto_op_ctx *crypto_ctx = ctx;
 
 	print_debug("[RNG INIT DONE ]\n");
 	crypto_ctx->req.rng_init->result = res;
@@ -265,7 +265,7 @@ static void rng_init_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 
 int rng_op(struct c29x_dev *c_dev, uint32_t sec_no, crypto_op_t op)
 {
-	crypto_op_ctx_t *crypto_ctx = NULL;
+	struct crypto_op_ctx *crypto_ctx = NULL;
 
 	dev_dma_addr_t sec_dma = 0;
 	uint32_t r_id;

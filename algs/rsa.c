@@ -47,7 +47,7 @@ rsa_op_cb rsa_completion_cb;
 
 static void rsa_op_done(void *ctx, uint32_t res)
 {
-	crypto_op_ctx_t *crypto_ctx = ctx;
+	struct crypto_op_ctx *crypto_ctx = ctx;
 
 	print_debug("[RSA OP DONE ]\n");
 
@@ -466,7 +466,7 @@ static void rsa_priv3_op_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 int rsa_op(struct pkc_request *req)
 {
 	int32_t ret = 0;
-	crypto_op_ctx_t *crypto_ctx = NULL;
+	struct crypto_op_ctx *crypto_ctx = NULL;
 	struct c29x_dev *c_dev = NULL;
 
 	dev_dma_addr_t sec_dma = 0;
@@ -476,7 +476,7 @@ int rsa_op(struct pkc_request *req)
 	rsa_priv1_op_buffers_t *priv1_op_buffs = NULL;
 	rsa_priv2_op_buffers_t *priv2_op_buffs = NULL;
 	rsa_priv3_op_buffers_t *priv3_op_buffs = NULL;
-	ctx_pool_t *ctx_pool;
+	struct ctx_pool *ctx_pool;
 
 	if (NULL != req->base.tfm) {
 		struct crypto_dev_sess *c_sess;

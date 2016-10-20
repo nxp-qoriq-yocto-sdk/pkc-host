@@ -209,8 +209,6 @@ struct driver_ob_mem {
 	uint32_t ip_pool;
 };
 
-typedef struct ctx_pool ctx_pool_t;
-
 int32_t ring_enqueue(struct c29x_dev *c_dev, uint32_t jr_id,
 			 dev_dma_addr_t sec_desc);
 

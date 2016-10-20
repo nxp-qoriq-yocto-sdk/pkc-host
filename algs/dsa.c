@@ -48,7 +48,7 @@ dsa_op_cb ecdsa_completion_cb;
 
 static void dsa_op_done(void *ctx, uint32_t res)
 {
-	crypto_op_ctx_t *crypto_ctx = ctx;
+	struct crypto_op_ctx *crypto_ctx = ctx;
 
 	print_debug("[DSA OP DONE ]\n");
 
@@ -59,7 +59,7 @@ static void dsa_op_done(void *ctx, uint32_t res)
 
 static void ecdsa_op_done(void *ctx, uint32_t res)
 {
-	crypto_op_ctx_t *crypto_ctx = ctx;
+	struct crypto_op_ctx *crypto_ctx = ctx;
 
 	print_debug("[ECDSA OP DONE ]\n");
 
@@ -599,7 +599,7 @@ static void dsa_keygen_init_crypto_mem(crypto_mem_info_t *crypto_mem,
 int dsa_op(struct pkc_request *req)
 {
 	int32_t ret = 0;
-	crypto_op_ctx_t *crypto_ctx = NULL;
+	struct crypto_op_ctx *crypto_ctx = NULL;
 	struct c29x_dev *c_dev = NULL;
 	dev_dma_addr_t sec_dma = 0;
 	uint32_t r_id = 0;
@@ -608,7 +608,7 @@ int dsa_op(struct pkc_request *req)
 	dsa_keygen_buffers_t *dsa_keygen_buffs = NULL;
 	bool ecdsa = false;
 	bool ecc_bin = false;
-	ctx_pool_t *ctx_pool;
+	struct ctx_pool *ctx_pool;
 
 	if (NULL != req->base.tfm) {
 		struct crypto_dev_sess *c_sess;

@@ -48,7 +48,7 @@ dh_op_cb ecdh_completion_cb;
 
 static void dh_op_done(void *ctx, uint32_t res)
 {
-	crypto_op_ctx_t *crypto_ctx = ctx;
+	struct crypto_op_ctx *crypto_ctx = ctx;
 
 	print_debug("[DH OP DONE ]\n");
 
@@ -59,7 +59,7 @@ static void dh_op_done(void *ctx, uint32_t res)
 
 static void ecdh_op_done(void *ctx, uint32_t res)
 {
-	crypto_op_ctx_t *crypto_ctx = ctx;
+	struct crypto_op_ctx *crypto_ctx = ctx;
 
 	print_debug("[ECDH OP DONE ]\n");
 
@@ -356,7 +356,7 @@ static void dh_keygen_init_crypto_mem(crypto_mem_info_t *crypto_mem, bool ecdh)
 int dh_op(struct pkc_request *req)
 {
 	int32_t ret = 0;
-	crypto_op_ctx_t *crypto_ctx = NULL;
+	struct crypto_op_ctx *crypto_ctx = NULL;
 	struct c29x_dev *c_dev = NULL;
 	dev_dma_addr_t sec_dma = 0;
 	uint32_t r_id = 0;
@@ -364,7 +364,7 @@ int dh_op(struct pkc_request *req)
 	dh_keygen_buffers_t *dh_keygen_buffs = NULL;
 	bool ecdh = false;
 	bool ecc_bin = false;
-	ctx_pool_t *ctx_pool;
+	struct ctx_pool *ctx_pool;
 	uint32_t sess_cnt;
 
 	if (NULL != req->base.tfm) {
