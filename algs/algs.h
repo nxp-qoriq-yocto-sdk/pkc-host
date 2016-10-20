@@ -82,7 +82,7 @@ struct crypto_dev_sess {
 };
 
 struct crypto_op_ctx {
-	void *ctx_pool; /* pointer to the enclosing pool */
+	struct ctx_pool *ctx_pool; /* pointer to the enclosing pool */
 	crypto_mem_info_t crypto_mem;
 	crypto_op_t oprn;
 	dev_dma_addr_t desc;
