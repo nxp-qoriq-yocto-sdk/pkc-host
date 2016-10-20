@@ -610,7 +610,7 @@ int dsa_op(struct pkc_request *req)
 	bool ecc_bin = false;
 
 	if (NULL != req->base.tfm) {
-		crypto_dev_sess_t *c_sess;
+		struct crypto_dev_sess *c_sess;
 		dsa_completion_cb = pkc_request_complete;
 		ecdsa_completion_cb = pkc_request_complete;
 		/* Get the session context from input request */

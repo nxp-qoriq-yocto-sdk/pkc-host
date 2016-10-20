@@ -480,11 +480,11 @@ int rsa_op(struct pkc_request *req)
 	uint32_t ctx_pool_id = 0;
 
 	if (NULL != req->base.tfm) {
-		crypto_dev_sess_t *c_sess;
+		struct crypto_dev_sess *c_sess;
 
 		rsa_completion_cb = pkc_request_complete;
 		/* Get the session context from input request */
-		c_sess = (crypto_dev_sess_t *) crypto_pkc_ctx(crypto_pkc_reqtfm(req));
+		c_sess = (struct crypto_dev_sess *) crypto_pkc_ctx(crypto_pkc_reqtfm(req));
 		c_dev = c_sess->c_dev;
 		r_id = c_sess->r_id;
 		sess_cnt = atomic_read(&c_dev->crypto_dev_sess_cnt);

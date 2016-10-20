@@ -76,10 +76,10 @@ Description :   Defines the crypto dev session context. This context is created
 Fields      :   c_dev:	Crypto device instance to which this session belongs
 		r_id :	Id of the ring to which this session belongs
 *******************************************************************************/
-typedef struct crypto_dev_sess {
+struct crypto_dev_sess {
 	struct c29x_dev *c_dev;
 	uint32_t r_id;
-} crypto_dev_sess_t;
+};
 
 typedef struct crypto_op_ctx {
 	void *ctx_pool; /* pointer to the enclosing pool */

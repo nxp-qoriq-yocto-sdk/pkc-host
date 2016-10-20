@@ -150,7 +150,7 @@ static struct alg_template driver_algs[] = {
 	 },
 };
 
-int fill_crypto_dev_sess_ctx(crypto_dev_sess_t *ctx, uint32_t op_type)
+int fill_crypto_dev_sess_ctx(struct crypto_dev_sess *ctx, uint32_t op_type)
 {
 	uint32_t num_of_rps = 0;
 
@@ -187,7 +187,7 @@ static int pkc_cra_init(struct crypto_tfm *tfm)
 	struct fsl_crypto_alg *fsl_alg =
 	    container_of(alg, struct fsl_crypto_alg, crypto_alg);
 
-	crypto_dev_sess_t *ctx = crypto_tfm_ctx(tfm);
+	struct crypto_dev_sess *ctx = crypto_tfm_ctx(tfm);
 	if (-1 == fill_crypto_dev_sess_ctx(ctx, fsl_alg->op_type))
 		return -1;
 
@@ -218,7 +218,7 @@ static struct fsl_crypto_alg *fsl_alg_alloc(struct alg_template *template)
 	alg->cra_priority = FSL_CRA_PRIORITY;
 	alg->cra_blocksize = template->blocksize;
 	alg->cra_alignmask = 0;
-	alg->cra_ctxsize = sizeof(crypto_dev_sess_t);
+	alg->cra_ctxsize = sizeof(struct crypto_dev_sess);
 	alg->cra_flags = CRYPTO_ALG_ASYNC | template->type;
 
 	switch (template->type) {

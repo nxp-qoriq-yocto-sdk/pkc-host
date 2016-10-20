@@ -369,7 +369,7 @@ int dh_op(struct pkc_request *req)
 	uint32_t sess_cnt;
 
 	if (NULL != req->base.tfm) {
-		crypto_dev_sess_t *c_sess;
+		struct crypto_dev_sess *c_sess;
 		dh_completion_cb = pkc_request_complete;
 		ecdh_completion_cb = pkc_request_complete;
 		/* Get the session context from input request */
