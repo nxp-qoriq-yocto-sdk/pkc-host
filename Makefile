@@ -52,10 +52,10 @@ $(DRIVER_KOBJ)-objs += test/test.o
 .PHONY: build clean
 
 build:
-	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
+	$(MAKE) -C $(KERNEL_DIR) M=$(CURDIR) modules
 
 modules_install:
-	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules_install
+	$(MAKE) -C $(KERNEL_DIR) M=$(CURDIR) modules_install
 
 clean:
-	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) clean
+	$(MAKE) -C $(KERNEL_DIR) M=$(CURDIR) clean
