@@ -143,59 +143,54 @@ uint32_t ob_alloc(size_t size)
 	return save_addr;
 }
 
-static uint32_t calc_ob_mem_len(struct c29x_dev *c_dev)
+void calc_ob_mem_len(struct c29x_dev *c_dev, struct driver_ob_mem *obm)
 {
 	uint32_t total_ring_slots;
 	struct c29x_cfg *config = &(c_dev->config);
 
 	total_ring_slots = config->num_of_rps * config->ring_depth;
 
-	c_dev->ob_mem.hs_mem = ob_alloc(sizeof(struct host_handshake_mem));
-	c_dev->ob_mem.drv_resp_rings = ob_alloc(total_ring_slots *
+	obm->hs_mem = ob_alloc(sizeof(struct host_handshake_mem));
+	obm->drv_resp_rings = ob_alloc(total_ring_slots *
 					sizeof(struct resp_ring_entry));
-	c_dev->ob_mem.idxs_mem = ob_alloc(config->num_of_rps *
+	obm->idxs_mem = ob_alloc(config->num_of_rps *
 					sizeof(struct ring_idxs_mem));
-	c_dev->ob_mem.cntrs_mem = ob_alloc(config->num_of_rps *
+	obm->cntrs_mem = ob_alloc(config->num_of_rps *
 					sizeof(struct ring_counters_mem));
-	c_dev->ob_mem.r_s_cntrs_mem = ob_alloc(config->num_of_rps *
+	obm->r_s_cntrs_mem = ob_alloc(config->num_of_rps *
 					sizeof(struct ring_counters_mem));
-	c_dev->ob_mem.ip_pool = ob_alloc(BUFFER_MEM_SIZE);
+	obm->ip_pool = ob_alloc(BUFFER_MEM_SIZE);
 
-	/* Make the total mem requirement aligned to page size */
-	return page_align(ob_alloc(0));
+	obm->len = page_align(ob_alloc(0));
 }
 
 int32_t alloc_ob_mem(struct c29x_dev *c_dev)
 {
 	void *host_v_addr;
-	uint32_t ob_mem_len;
+	struct driver_ob_mem obm;
 
-	/* First get the total ob mem required */
-	ob_mem_len = calc_ob_mem_len(c_dev);
+	calc_ob_mem_len(c_dev, &obm);
+	print_debug("Total ob mem returned: %d\n", obm.len);
 
-	print_debug("alloc_ob_mem entered...\n");
-	print_debug("Total ob mem returned: %d\n", ob_mem_len);
-
-	host_v_addr = dma_alloc_coherent(&(c_dev->dev->dev), ob_mem_len,
+	c_dev->drv_mem.len = obm.len;
+	host_v_addr = dma_alloc_coherent(&(c_dev->dev->dev), c_dev->drv_mem.len,
 					 &(c_dev->drv_mem.host_dma_addr),
 					 GFP_KERNEL);
 	if (!host_v_addr) {
 		print_error("Allocating ob mem failed...\n");
 		return -ENOMEM;
 	}
-
 	c_dev->drv_mem.host_v_addr = host_v_addr;
-	c_dev->drv_mem.len = ob_mem_len;
 
 	print_debug("OB Mem address	: %p\n", c_dev->drv_mem.host_v_addr);
 	print_debug("OB Mem dma address	: %pad\n", &(c_dev->drv_mem.host_dma_addr));
 
-	c_dev->hs_mem = host_v_addr + c_dev->ob_mem.hs_mem;
-	c_dev->drv_resp_rings = host_v_addr + c_dev->ob_mem.drv_resp_rings;
-	c_dev->idxs_mem = host_v_addr + c_dev->ob_mem.idxs_mem;
-	c_dev->cntrs_mem = host_v_addr + c_dev->ob_mem.cntrs_mem;
-	c_dev->r_s_cntrs_mem = host_v_addr + c_dev->ob_mem.r_s_cntrs_mem;
-	c_dev->ip_pool = host_v_addr + c_dev->ob_mem.ip_pool;
+	c_dev->hs_mem = host_v_addr + obm.hs_mem;
+	c_dev->drv_resp_rings = host_v_addr + obm.drv_resp_rings;
+	c_dev->idxs_mem = host_v_addr + obm.idxs_mem;
+	c_dev->cntrs_mem = host_v_addr + obm.cntrs_mem;
+	c_dev->r_s_cntrs_mem = host_v_addr + obm.r_s_cntrs_mem;
+	c_dev->ip_pool = host_v_addr + obm.ip_pool;
 
 	print_debug("====== OB MEM POINTERS =======\n");
 	print_debug("H HS Mem		: %p\n", c_dev->hs_mem);
@@ -271,11 +266,10 @@ void send_hs_init_config(struct c29x_dev *c_dev)
 	struct c_config_data *config = &c_dev->c_hs_mem->data.config;
 
 	iowrite8(c_dev->config.num_of_rps, &config->num_of_rps);
-	iowrite32be(c_dev->ob_mem.r_s_cntrs_mem, &config->r_s_cntrs);
+	iowrite32be((void*)c_dev->r_s_cntrs_mem - (void*)c_dev->hs_mem, &config->r_s_cntrs);
 
 	print_debug("HS_INIT_CONFIG Details\n");
 	print_debug("Num of ring pairs: %d\n", c_dev->config.num_of_rps);
-	print_debug("R S counters  : %x\n", c_dev->ob_mem.r_s_cntrs_mem);
 	print_debug("Sending FW_INIT_CONFIG command at addr: %p\n",
 			&(c_dev->c_hs_mem->state));
 	barrier();
@@ -664,7 +658,7 @@ void init_ip_pool(struct c29x_dev *c_dev)
 
 	c_dev->host_ip_pool.h_v_addr = c_dev->ip_pool;
 	c_dev->host_ip_pool.h_dma_addr = c_dev->drv_mem.host_dma_addr +
-					 c_dev->ob_mem.ip_pool;
+					 ((void*)c_dev->ip_pool - (void*)c_dev->hs_mem);
 }
 
 int init_crypto_ctx_pool(struct c29x_dev *c_dev)

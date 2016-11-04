@@ -186,6 +186,7 @@ struct driver_ob_mem {
 	uint32_t cntrs_mem;
 	uint32_t r_s_cntrs_mem;
 	uint32_t ip_pool;
+	uint32_t len;
 };
 
 int32_t ring_enqueue(struct c29x_dev *c_dev, uint32_t jr_id,

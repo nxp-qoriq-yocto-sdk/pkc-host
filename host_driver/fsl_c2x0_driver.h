@@ -127,8 +127,6 @@ struct c29x_dev {
 	void *sysfs_dir;
 
 	struct list_head list;
-
-	struct driver_ob_mem ob_mem;
 	uint32_t tot_req_mem_size;
 
 	struct resp_ring_entry *drv_resp_rings;
