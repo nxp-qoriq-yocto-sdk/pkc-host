@@ -150,7 +150,7 @@ static uint32_t calc_ob_mem_len(struct c29x_dev *c_dev)
 
 	total_ring_slots = config->num_of_rps * config->ring_depth;
 
-	c_dev->ob_mem.hs_mem = ob_alloc(sizeof(struct host_mem_layout));
+	c_dev->ob_mem.hs_mem = ob_alloc(sizeof(struct host_handshake_mem));
 	c_dev->ob_mem.drv_resp_rings = ob_alloc(total_ring_slots *
 					sizeof(struct resp_ring_entry));
 	c_dev->ob_mem.idxs_mem = ob_alloc(config->num_of_rps *
@@ -165,10 +165,6 @@ static uint32_t calc_ob_mem_len(struct c29x_dev *c_dev)
 	return page_align(ob_alloc(0));
 }
 
-/*
- * Allocate outbound memory
- * dev->host_mem will contain the driver's memory map
- */
 int32_t alloc_ob_mem(struct c29x_dev *c_dev)
 {
 	void *host_v_addr;
@@ -194,24 +190,20 @@ int32_t alloc_ob_mem(struct c29x_dev *c_dev)
 	print_debug("OB Mem address	: %p\n", c_dev->drv_mem.host_v_addr);
 	print_debug("OB Mem dma address	: %pad\n", &(c_dev->drv_mem.host_dma_addr));
 
-	/* The outbound pointers are locations where the device is supposed to
-	 * write to. We calculate the addresses with the correct offset and
-	 * then communicate them to the device in the handshake operation */
-	c_dev->host_mem = host_v_addr;
-	c_dev->host_mem->drv_resp_rings = host_v_addr + c_dev->ob_mem.drv_resp_rings;
-	c_dev->host_mem->idxs_mem = host_v_addr + c_dev->ob_mem.idxs_mem;
-	c_dev->host_mem->cntrs_mem = host_v_addr + c_dev->ob_mem.cntrs_mem;
-	c_dev->host_mem->r_s_cntrs_mem = host_v_addr + c_dev->ob_mem.r_s_cntrs_mem;
-	c_dev->host_mem->ip_pool = host_v_addr + c_dev->ob_mem.ip_pool;
+	c_dev->hs_mem = host_v_addr + c_dev->ob_mem.hs_mem;
+	c_dev->drv_resp_rings = host_v_addr + c_dev->ob_mem.drv_resp_rings;
+	c_dev->idxs_mem = host_v_addr + c_dev->ob_mem.idxs_mem;
+	c_dev->cntrs_mem = host_v_addr + c_dev->ob_mem.cntrs_mem;
+	c_dev->r_s_cntrs_mem = host_v_addr + c_dev->ob_mem.r_s_cntrs_mem;
+	c_dev->ip_pool = host_v_addr + c_dev->ob_mem.ip_pool;
 
 	print_debug("====== OB MEM POINTERS =======\n");
-	print_debug("Hmem		: %p\n", c_dev->host_mem);
-	print_debug("H HS Mem		: %p\n", &(c_dev->host_mem->hs_mem));
-	print_debug("Drv resp rings	: %p\n", c_dev->host_mem->drv_resp_rings);
-	print_debug("Idxs mem	        : %p\n", c_dev->host_mem->idxs_mem);
-	print_debug("cntrs mem          : %p\n", c_dev->host_mem->cntrs_mem);
-	print_debug("S C R cntrs mem	: %p\n", c_dev->host_mem->r_s_cntrs_mem);
-	print_debug("IP pool		: %p\n", c_dev->host_mem->ip_pool);
+	print_debug("H HS Mem		: %p\n", c_dev->hs_mem);
+	print_debug("Drv resp rings	: %p\n", c_dev->drv_resp_rings);
+	print_debug("Idxs mem	        : %p\n", c_dev->idxs_mem);
+	print_debug("cntrs mem          : %p\n", c_dev->cntrs_mem);
+	print_debug("S C R cntrs mem	: %p\n", c_dev->r_s_cntrs_mem);
+	print_debug("IP pool		: %p\n", c_dev->ip_pool);
 
 	return 0;
 }
@@ -227,7 +219,7 @@ void init_handshake(struct c29x_dev *c_dev)
 
 	/* Reset driver handshake state so it loops until signaled by the
 	 * device firmware */
-	c_dev->host_mem->hs_mem.state = DEFAULT;
+	c_dev->hs_mem->state = DEFAULT;
 
 	print_debug("C HS mem addr: %p\n", &(c_dev->c_hs_mem->h_ob_mem_l));
 	print_debug("Host ob mem addr	L: %0x	H: %0x\n", l_val, h_val);
@@ -247,7 +239,7 @@ void init_ring_pairs(struct c29x_dev *c_dev)
 	fsl_h_rsrc_ring_pair_t *rp;
 	uint32_t i;
 	/* all response ring entries start here. Each ring has rp->depth entries */
-	struct resp_ring_entry *resp_r = c_dev->host_mem->drv_resp_rings;
+	struct resp_ring_entry *resp_r = c_dev->drv_resp_rings;
 
 	for (i = 0; i < c_dev->config.num_of_rps; i++) {
 		rp = &(c_dev->ring_pairs[i]);
@@ -261,9 +253,9 @@ void init_ring_pairs(struct c29x_dev *c_dev)
 		resp_r += rp->depth;
 
 		rp->intr_ctrl_flag = NULL;
-		rp->indexes = &(c_dev->host_mem->idxs_mem[i]);
-		rp->counters = &(c_dev->host_mem->cntrs_mem[i]);
-		rp->r_s_cntrs = &(c_dev->host_mem->r_s_cntrs_mem[i]);
+		rp->indexes = &(c_dev->idxs_mem[i]);
+		rp->counters = &(c_dev->cntrs_mem[i]);
+		rp->r_s_cntrs = &(c_dev->r_s_cntrs_mem[i]);
 		rp->shadow_counters = NULL;
 
 		INIT_LIST_HEAD(&(rp->isr_ctx_list_node));
@@ -295,7 +287,7 @@ void send_hs_init_ring_pair(struct c29x_dev *c_dev, uint8_t rid)
 	uint32_t resp_r_offset;
 	fsl_h_rsrc_ring_pair_t *rp = &(c_dev->ring_pairs[rid]);
 
-	resp_r_offset = (void *)rp->resp_r - (void *)c_dev->host_mem;
+	resp_r_offset = (void *)rp->resp_r - (void *)c_dev->drv_mem.host_v_addr;
 
 	iowrite8(rid, &c_dev->c_hs_mem->data.ring.rid);
 	iowrite16be(rp->msi_data, &c_dev->c_hs_mem->data.ring.msi_data);
@@ -332,7 +324,7 @@ void send_hs_rng_done(struct c29x_dev *c_dev)
 
 void hs_firmware_up(struct c29x_dev *c_dev)
 {
-	struct fw_up_data *hsdev = &c_dev->host_mem->hs_mem.data.device;
+	struct fw_up_data *hsdev = &c_dev->hs_mem->data.device;
 	uint32_t p_ib_l;
 	uint32_t p_ib_h;
 	uint32_t p_ob_l;
@@ -340,7 +332,7 @@ void hs_firmware_up(struct c29x_dev *c_dev)
 
 	print_debug(" ----------- FIRMWARE_UP -----------\n");
 
-	c_dev->host_mem->hs_mem.state = DEFAULT;
+	c_dev->hs_mem->state = DEFAULT;
 
 	p_ib_l = be32_to_cpu(hsdev->p_ib_mem_base_l);
 	p_ib_h = be32_to_cpu(hsdev->p_ib_mem_base_h);
@@ -364,12 +356,12 @@ void hs_firmware_up(struct c29x_dev *c_dev)
 
 void hs_fw_init_complete(struct c29x_dev *c_dev, uint8_t rid)
 {
-	struct config_data *hscfg = &c_dev->host_mem->hs_mem.data.config;
+	struct config_data *hscfg = &c_dev->hs_mem->data.config;
 	uint32_t r_s_c_cntrs;
 
 	print_debug("--- FW_INIT_CONFIG_COMPLETE ---\n");
 
-	c_dev->host_mem->hs_mem.state = DEFAULT;
+	c_dev->hs_mem->state = DEFAULT;
 
 	r_s_c_cntrs = be32_to_cpu(hscfg->r_s_c_cntrs);
 
@@ -384,13 +376,13 @@ void hs_fw_init_complete(struct c29x_dev *c_dev, uint8_t rid)
 
 void hs_init_rp_complete(struct c29x_dev *c_dev, uint8_t rid)
 {
-	struct ring_data *hsring = &c_dev->host_mem->hs_mem.data.ring;
+	struct ring_data *hsring = &c_dev->hs_mem->data.ring;
 	uint32_t req_r;
 	uint32_t intr_ctrl_flag;
 
 	print_debug("---- FW_INIT_RING_PAIR_COMPLETE ----\n");
 
-	c_dev->host_mem->hs_mem.state = DEFAULT;
+	c_dev->hs_mem->state = DEFAULT;
 	req_r = be32_to_cpu(hsring->req_r);
 	intr_ctrl_flag = be32_to_cpu(hsring->intr_ctrl_flag);
 
@@ -411,7 +403,7 @@ int32_t handshake(struct c29x_dev *c_dev)
 	uint32_t timecntr = 0;
 
 	while (true) {
-		switch (c_dev->host_mem->hs_mem.state) {
+		switch (c_dev->hs_mem->state) {
 		case FIRMWARE_UP:
 			/* This is the first thing communicated by the firmware:
 			 * The device is UP and converted the MSI and OB_MEM
@@ -456,7 +448,7 @@ int32_t handshake(struct c29x_dev *c_dev)
 			break;
 
 		default:
-			print_error("Invalid state: %d\n", c_dev->host_mem->hs_mem.state);
+			print_error("Invalid state: %d\n", c_dev->hs_mem->state);
 			goto error;
 		}
 	}
@@ -667,10 +659,10 @@ static int32_t load_firmware(struct c29x_dev *c_dev)
 
 void init_ip_pool(struct c29x_dev *c_dev)
 {
-	create_pool(&c_dev->host_ip_pool, c_dev->host_mem->ip_pool,
+	create_pool(&c_dev->host_ip_pool, c_dev->ip_pool,
 			BUFFER_MEM_SIZE);
 
-	c_dev->host_ip_pool.h_v_addr = c_dev->host_mem->ip_pool;
+	c_dev->host_ip_pool.h_v_addr = c_dev->ip_pool;
 	c_dev->host_ip_pool.h_dma_addr = c_dev->drv_mem.host_dma_addr +
 					 c_dev->ob_mem.ip_pool;
 }

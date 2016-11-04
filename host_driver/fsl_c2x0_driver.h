@@ -131,18 +131,14 @@ struct c29x_dev {
 	struct driver_ob_mem ob_mem;
 	uint32_t tot_req_mem_size;
 
-	/* Pointer to the memory on the host side, structures the plain bytes.
-	 * Represents the memory layout on the driver.
-	 * This points to the base of the outbound memory.
-	 */
-	struct host_mem_layout *host_mem;
+	struct resp_ring_entry *drv_resp_rings;
+	struct ring_idxs_mem *idxs_mem;
+	struct ring_counters_mem *cntrs_mem;
+	struct ring_counters_mem *r_s_cntrs_mem;
+	void *ip_pool;
 
-	/* Pointer to the device's handshake memory, this will be
-	 * pointing to the inbound memory.
-	 * This data structure helps in structured access of raw bytes
-	 * in the device memory during the handshake.
-	 */
 	struct dev_handshake_mem *c_hs_mem;
+	struct host_handshake_mem *hs_mem;
 
 	/* Pointer to the shadow ring counters memory */
 	struct ring_counters_mem *r_s_c_cntrs;

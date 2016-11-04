@@ -179,27 +179,6 @@ typedef struct fsl_h_rsrc_ring_pair {
 	spinlock_t ring_lock;
 } fsl_h_rsrc_ring_pair_t;
 
-/*******************************************************************************
-Description :	Contains the structured layout of the driver mem - outbound mem
-Fields      :	hs_mem	: Handshake memory - 64bytes
-		request_rings_mem: Sequence of bytes for rings holding req ring
-				mem and input buffer pool. Exact binding is
-				updated in different data structure.
-		idxs	: Memory of the ring pair indexes
-		shadow_idxs: Memory of the shadow ring pair indexes
-		counters: Memory of the counters per ring
-		shadow_counters: Memory of the shadow counters per ring
-*******************************************************************************/
-struct host_mem_layout {
-	struct host_handshake_mem hs_mem;
-	struct resp_ring_entry *drv_resp_rings;
-	struct ring_idxs_mem *idxs_mem;
-	struct ring_counters_mem *cntrs_mem;
-	struct ring_counters_mem *r_s_cntrs_mem;
-	void *ip_pool;
-
-};
-
 struct driver_ob_mem {
 	uint32_t hs_mem;
 	uint32_t drv_resp_rings;

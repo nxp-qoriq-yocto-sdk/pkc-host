@@ -426,7 +426,7 @@ int32_t rng_instantiation(struct c29x_dev *c_dev)
 	uint32_t i;
 	int32_t err = -ENODEV;
 
-	no_of_secs = be32_to_cpu(c_dev->host_mem->hs_mem.data.device.no_secs);
+	no_of_secs = be32_to_cpu(c_dev->hs_mem->data.device.no_secs);
 
 	for (i = 1; i <= no_of_secs; i++) {
 		err = rng_op(c_dev, i, RNG_SELF_TEST);
