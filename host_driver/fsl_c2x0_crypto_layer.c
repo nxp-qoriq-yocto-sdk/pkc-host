@@ -184,29 +184,27 @@ static uint32_t calc_ob_mem_len(struct c29x_dev *c_dev,
 int32_t alloc_ob_mem(struct c29x_dev *c_dev, struct crypto_dev_config *config)
 {
 	void *host_v_addr;
-	struct pci_bar_info *mem;
 	uint32_t ob_mem_len;
 
 	/* First get the total ob mem required */
 	ob_mem_len = calc_ob_mem_len(c_dev, config);
-	mem = &(c_dev->bars[MEM_TYPE_DRIVER]);
 
 	print_debug("alloc_ob_mem entered...\n");
 	print_debug("Total ob mem returned: %d\n", ob_mem_len);
 
-	host_v_addr = dma_alloc_coherent(&c_dev->dev->dev, ob_mem_len,
-					&(mem->host_dma_addr), GFP_KERNEL);
+	host_v_addr = dma_alloc_coherent(&(c_dev->dev->dev), ob_mem_len,
+					 &(c_dev->drv_mem.host_dma_addr),
+					 GFP_KERNEL);
 	if (!host_v_addr) {
 		print_error("Allocating ob mem failed...\n");
 		return -ENOMEM;
 	}
 
-	mem->host_v_addr = host_v_addr;
-	mem->host_p_addr = (phys_addr_t)0xdeadbeefdeadbeef;
-	mem->len = ob_mem_len;
+	c_dev->drv_mem.host_v_addr = host_v_addr;
+	c_dev->drv_mem.len = ob_mem_len;
 
-	print_debug("OB Mem address	: %p\n", mem->host_v_addr);
-	print_debug("OB Mem dma address	: %pad\n", &(mem->host_dma_addr));
+	print_debug("OB Mem address	: %p\n", c_dev->drv_mem.host_v_addr);
+	print_debug("OB Mem dma address	: %pad\n", &(c_dev->drv_mem.host_dma_addr));
 
 	/* The outbound pointers are locations where the device is supposed to
 	 * write to. We calculate the addresses with the correct offset and
@@ -232,7 +230,7 @@ int32_t alloc_ob_mem(struct c29x_dev *c_dev, struct crypto_dev_config *config)
 
 void init_handshake(struct c29x_dev *c_dev)
 {
-	dma_addr_t ob_mem = c_dev->bars[MEM_TYPE_DRIVER].host_dma_addr;
+	dma_addr_t ob_mem = c_dev->drv_mem.host_dma_addr;
 
 	/* Write our address to the firmware -
 	 * It uses this to give it details when it is up */
@@ -365,8 +363,8 @@ void hs_firmware_up(struct c29x_dev *c_dev)
 	c_dev->bars[MEM_TYPE_SRAM].dev_p_addr = (dev_p_addr_t) p_ib_h << 32;
 	c_dev->bars[MEM_TYPE_SRAM].dev_p_addr |= p_ib_l;
 
-	c_dev->bars[MEM_TYPE_DRIVER].dev_p_addr = (dev_p_addr_t) p_ob_h << 32;
-	c_dev->bars[MEM_TYPE_DRIVER].dev_p_addr |= p_ob_l;
+	c_dev->drv_mem.dev_p_addr = (dev_p_addr_t) p_ob_h << 32;
+	c_dev->drv_mem.dev_p_addr |= p_ob_l;
 
 	print_debug("Device Shared Details\n");
 	print_debug("Ib mem PhyAddr L: %0x, H: %0x\n", p_ib_l, p_ib_h);
@@ -374,7 +372,7 @@ void hs_firmware_up(struct c29x_dev *c_dev)
 	print_debug("Formed dev ib mem phys address: %llx\n",
 			(uint64_t)c_dev->bars[MEM_TYPE_SRAM].dev_p_addr);
 	print_debug("Formed dev ob mem phys address: %llx\n",
-			(uint64_t)c_dev->bars[MEM_TYPE_DRIVER].dev_p_addr);
+			(uint64_t)c_dev->drv_mem.dev_p_addr);
 }
 
 void hs_fw_init_complete(struct c29x_dev *c_dev, uint8_t rid)
@@ -487,7 +485,7 @@ error:
 static void check_ep_bootup(struct c29x_dev *c_dev)
 {
 	unsigned char *ibaddr = c_dev->bars[MEM_TYPE_SRAM].host_v_addr;
-	unsigned char *obaddr = c_dev->bars[MEM_TYPE_DRIVER].host_v_addr;
+	unsigned char *obaddr = c_dev->drv_mem.host_v_addr;
 
 	char stdstr[] = "SUCCESS";
 	char obstr[] = "0000000";
@@ -598,9 +596,9 @@ static void setup_ep(struct c29x_dev *c_dev)
 	val = ioread32be(ccsr + 0xc30); /* LAW_LAWAR1 */
 
 	print_debug("======= setup_ep =======\n");
-	print_debug("Ob mem dma_addr: %pa\n", &(c_dev->bars[MEM_TYPE_DRIVER].host_dma_addr));
-	print_debug("Ob mem dev_p_addr: %pa\n", &(c_dev->bars[MEM_TYPE_DRIVER].dev_p_addr));
-	print_debug("Ob mem len: %pa\n", &c_dev->bars[MEM_TYPE_DRIVER].len);
+	print_debug("Ob mem dma_addr: %pa\n", &(c_dev->drv_mem.host_dma_addr));
+	print_debug("Ob mem dev_p_addr: %pa\n", &(c_dev->drv_mem.dev_p_addr));
+	print_debug("Ob mem len: %pa\n", &c_dev->drv_mem.len);
 	print_debug("BAR0 V Addr: %p\n", ccsr);
 
 	/* Dumping the registers set */
@@ -685,7 +683,8 @@ void init_ip_pool(struct c29x_dev *c_dev)
 			BUFFER_MEM_SIZE);
 
 	c_dev->host_ip_pool.h_v_addr = c_dev->host_mem->ip_pool;
-	c_dev->host_ip_pool.h_dma_addr = c_dev->bars[MEM_TYPE_DRIVER].host_dma_addr + c_dev->ob_mem.ip_pool;
+	c_dev->host_ip_pool.h_dma_addr = c_dev->drv_mem.host_dma_addr +
+					 c_dev->ob_mem.ip_pool;
 }
 
 int init_crypto_ctx_pool(struct c29x_dev *c_dev)
@@ -872,9 +871,9 @@ error:
 	kfree(c_dev->ctx_pool);
 ctx_pool_fail:
 	pci_free_consistent(c_dev->dev,
-			    c_dev->bars[MEM_TYPE_DRIVER].len,
-			    c_dev->bars[MEM_TYPE_DRIVER].host_v_addr,
-			    c_dev->bars[MEM_TYPE_DRIVER].host_dma_addr);
+			    c_dev->drv_mem.len,
+			    c_dev->drv_mem.host_v_addr,
+			    c_dev->drv_mem.host_dma_addr);
 ob_mem_fail:
 	kfree(c_dev->ring_pairs);
 rp_fail:
@@ -912,11 +911,11 @@ void cleanup_crypto_device(struct c29x_dev *c_dev)
 	kfree(c_dev->ctx_pool);
 
 	/* Free the pci alloc consistent mem */
-	if (c_dev->bars[MEM_TYPE_DRIVER].host_v_addr) {
+	if (c_dev->drv_mem.host_v_addr) {
 		pci_free_consistent(c_dev->dev,
-				    c_dev->bars[MEM_TYPE_DRIVER].len,
-				    c_dev->bars[MEM_TYPE_DRIVER].host_v_addr,
-				    c_dev->bars[MEM_TYPE_DRIVER].host_dma_addr);
+				    c_dev->drv_mem.len,
+				    c_dev->drv_mem.host_v_addr,
+				    c_dev->drv_mem.host_dma_addr);
 	}
 
 	clear_ring_lists();
@@ -927,7 +926,7 @@ void handle_response(struct c29x_dev *c_dev, uint64_t desc, int32_t res)
 {
 	void *h_desc;
 	crypto_op_ctx_t *ctx0 = NULL;
-	dev_p_addr_t offset = c_dev->bars[MEM_TYPE_DRIVER].dev_p_addr;
+	dev_p_addr_t offset = c_dev->drv_mem.dev_p_addr;
 
 	h_desc = c_dev->host_ip_pool.h_v_addr + (desc - offset) -
 			c_dev->host_ip_pool.h_dma_addr;

@@ -122,7 +122,6 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 	buffer_info_t *buffers = mem_info->buffers;
 	struct c29x_dev *c_dev = mem_info->c_dev;
 	struct pci_dev *dev = c_dev->dev;
-	struct pci_bar_info *bars = c_dev->bars;
 
 	/* TODO: allocate temporary buffers in device SRAM to completely avoid
 	 * PCIe traversal to host memory */
@@ -143,7 +142,7 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 			pr_err("wrong buffer type %d\n", buffers[i].bt);
 			break;
 		}
-		buffers[i].d_p_addr = bars[MEM_TYPE_DRIVER].dev_p_addr +
+		buffers[i].d_p_addr = c_dev->drv_mem.dev_p_addr +
 					buffers[i].h_dma_addr;
 	}
 }

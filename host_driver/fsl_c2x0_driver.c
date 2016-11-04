@@ -419,9 +419,6 @@ int request_and_map_pci_resource(struct pci_bar_info *bar)
 		goto out_free;
 	}
 
-	/* We will not be using DMA from RC or DMA from EP.
-	 * Hence this memory need not be mapped to DMA. */
-	bar->host_dma_addr = 0;
 	return 0;
 
 out_free:
@@ -438,7 +435,7 @@ int fsl_get_bar_map(struct c29x_dev *c_dev)
 	struct device *my_dev = &c_dev->dev->dev;
 
 	/* Get the BAR resources and remap them into the driver memory */
-	for (i = 0; i < MEM_TYPE_DRIVER; i++) {
+	for (i = 0; i < MEM_TYPE_MAX; i++) {
 		/* Read the hardware address and length*/
 		bars[i].len = pci_resource_len(dev, i);
 		bars[i].host_p_addr = pci_resource_start(dev, i);
@@ -894,7 +891,7 @@ static void cleanup_pci_device(struct c29x_dev *c_dev)
 	sysfs_cleanup(c_dev);
 
 	/* Free the BAR related resources */
-	for (i = 0; i < MEM_TYPE_DRIVER; i++) {
+	for (i = 0; i < MEM_TYPE_MAX; i++) {
 		if (NULL != c_dev->bars[i].host_v_addr) {
 			print_debug("IOunmap\n");
 			/* io unmap */
@@ -1192,7 +1189,7 @@ free_config:
 		kfree(config);
 	}
 free_bar_map:
-	fsl_free_bar_map(c_dev->bars, MEM_TYPE_DRIVER);
+	fsl_free_bar_map(c_dev->bars, MEM_TYPE_MAX);
 clear_master:
 	pci_clear_master(dev);
 free_dev:

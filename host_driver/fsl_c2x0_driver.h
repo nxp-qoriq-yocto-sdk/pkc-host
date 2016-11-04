@@ -91,23 +91,18 @@ typedef struct isr_ctx {
 	struct list_head ring_list_head;
 } isr_ctx_t;
 
-/*******************************************************************************
-Description :	Contains the PCI BAR information.
-Fields      :	host_p_addr	: Physical address of the BAR.
-		host_v_addr	: Kernel mapped virtual address.
-		host_dma_addr	: DMA mapped address
-		len		: Length of the BAR
-*******************************************************************************/
 struct pci_bar_info {
-	/* the address of the PCI resource mapped into the kernel space */
 	void *host_v_addr;
-	/* physical and dma address where the PCI resource is located */
-	phys_addr_t host_p_addr;
-	dma_addr_t host_dma_addr;
-	/* length in bytes of the PCI resource */
 	resource_size_t len;
-	/* address of the PCI resource as seen from the device point of view */
 	dev_p_addr_t dev_p_addr;
+	phys_addr_t host_p_addr;
+};
+
+struct host_mem_info {
+	void *host_v_addr;
+	resource_size_t len;
+	dev_p_addr_t dev_p_addr;
+	dma_addr_t host_dma_addr;
 };
 
 /*******************************************************************************
@@ -131,6 +126,8 @@ struct c29x_dev {
 			   FSL_PCI_DEV_NAME_MAX_LEN];
 
 	struct pci_bar_info bars[MEM_TYPE_MAX];
+	struct host_mem_info drv_mem;
+
 	pci_intr_info_t intr_info;
 
 	dev_sysfs_entries_t sysfs;

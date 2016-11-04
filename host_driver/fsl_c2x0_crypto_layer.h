@@ -81,7 +81,6 @@ typedef enum fw_handshake_commands {
 typedef enum crypto_dev_mem_type {
 	MEM_TYPE_CONFIG,
 	MEM_TYPE_SRAM,
-	MEM_TYPE_DRIVER,
 	MEM_TYPE_MAX
 } crypto_dev_mem_type_t;
 
