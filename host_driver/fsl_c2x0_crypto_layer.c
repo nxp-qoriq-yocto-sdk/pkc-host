@@ -157,8 +157,6 @@ static uint32_t calc_ob_mem_len(fsl_crypto_dev_t *dev,
 	uint32_t total_ring_slots;
 
 	total_ring_slots = count_ring_slots(config);
-	dev->tot_req_mem_size = total_ring_slots *
-					sizeof(struct req_ring_entry);
 
 	dev->ob_mem.hs_mem = ob_alloc(sizeof(struct host_mem_layout));
 	dev->ob_mem.drv_resp_rings = ob_alloc(total_ring_slots *
@@ -224,7 +222,6 @@ int32_t alloc_ob_mem(fsl_crypto_dev_t *dev, struct crypto_dev_config *config)
 	print_debug("cntrs mem          : %p\n", dev->host_mem->cntrs_mem);
 	print_debug("S C R cntrs mem	: %p\n", dev->host_mem->r_s_cntrs_mem);
 	print_debug("IP pool		: %p\n", dev->host_mem->ip_pool);
-	print_debug("Total req mem size : %d\n", dev->tot_req_mem_size);
 
 	return 0;
 }
@@ -292,12 +289,10 @@ void send_hs_init_config(fsl_crypto_dev_t *dev)
 	struct c_config_data *config = &dev->c_hs_mem->data.config;
 
 	iowrite8(dev->num_of_rps, &config->num_of_rps);
-	iowrite32be(dev->tot_req_mem_size, &config->req_mem_size);
 	iowrite32be(dev->ob_mem.r_s_cntrs_mem, &config->r_s_cntrs);
 
 	print_debug("HS_INIT_CONFIG Details\n");
 	print_debug("Num of ring pairs: %d\n", dev->num_of_rps);
-	print_debug("Req mem size  : %d\n", dev->tot_req_mem_size);
 	print_debug("R S counters  : %x\n", dev->ob_mem.r_s_cntrs_mem);
 	print_debug("Sending FW_INIT_CONFIG command at addr: %p\n",
 			&(dev->c_hs_mem->state));

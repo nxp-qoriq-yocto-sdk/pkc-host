@@ -178,7 +178,7 @@ struct dev_handshake_mem {
 		 * Addresses are dma addresses on host for data located in OB mem */
 		struct c_config_data {
 			uint8_t num_of_rps;  /* total number of rings, in and out */
-			uint32_t req_mem_size;  /* memory required for requests by all rings */
+			uint32_t padding;
 			uint32_t r_s_cntrs;/* dma address for other shadow counters */
 		} config;
 		struct c_ring_data {
@@ -360,7 +360,6 @@ typedef struct fsl_crypto_dev {
 
 	struct crypto_dev_config *config;
 	struct driver_ob_mem ob_mem;
-	uint32_t tot_req_mem_size;
 
 	/* Pointer to the memory on the host side, structures the plain bytes.
 	 * Represents the memory layout on the driver.
