@@ -138,8 +138,6 @@ struct host_handshake_mem {
 	uint8_t state;
 	uint8_t result;
 
-	uint32_t dev_avail_mem;
-
 	union resp_data {
 		struct fw_up_data {
 			uint32_t p_ib_mem_base_l;
@@ -150,9 +148,6 @@ struct host_handshake_mem {
 		} device;
 		struct config_data {
 			uint32_t r_s_c_cntrs;
-			uint32_t padding2;
-			uint32_t padding;
-			uint32_t resp_intr_ctrl_flag;
 		} config;
 		struct ring_data {
 			uint32_t req_r;
@@ -171,14 +166,12 @@ struct dev_handshake_mem {
 
 	uint8_t state;
 	uint8_t data_len;
-	uint8_t pad;
 
 	union cmd_data {
 		/* these are communicated by the host to the device.
 		 * Addresses are dma addresses on host for data located in OB mem */
 		struct c_config_data {
 			uint8_t num_of_rps;  /* total number of rings, in and out */
-			uint32_t padding;
 			uint32_t r_s_cntrs;/* dma address for other shadow counters */
 		} config;
 		struct c_ring_data {
