@@ -381,25 +381,20 @@ void hs_fw_init_complete(fsl_crypto_dev_t *dev, uint8_t rid)
 {
 	struct config_data *hscfg = &dev->host_mem->hs_mem.data.config;
 	uint32_t r_s_c_cntrs;
-	uint32_t s_c_cntrs;
 
 	print_debug("--- FW_INIT_CONFIG_COMPLETE ---\n");
 
 	dev->host_mem->hs_mem.state = DEFAULT;
 
 	r_s_c_cntrs = be32_to_cpu(hscfg->r_s_c_cntrs);
-	s_c_cntrs = be32_to_cpu(hscfg->s_c_cntrs);
 
 	dev->r_s_c_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + r_s_c_cntrs;
-	dev->s_c_cntrs = dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr + s_c_cntrs;
 
 	print_debug(" ----- Details from firmware  -------\n");
 	print_debug("SRAM H V ADDR: %p\n", dev->priv_dev->bars[MEM_TYPE_SRAM].host_v_addr);
 	print_debug("R S C CNTRS OFFSET: %x\n", r_s_c_cntrs);
-	print_debug("S C CNTRS OFFSET: %x\n", s_c_cntrs);
 	print_debug("-----------------------------------\n");
 	print_debug("R S C Cntrs: %p\n", dev->r_s_c_cntrs);
-	print_debug("S C Cntrs: %p\n", dev->s_c_cntrs);
 }
 
 void hs_init_rp_complete(fsl_crypto_dev_t *dev, uint8_t rid)
