@@ -102,16 +102,7 @@ void create_pool(struct buffer_pool *pool, void *buf, uint32_t len)
 	print_debug("Creating pool done\n");
 }
 
-/******************************************************************************
-Description :	Allocates the memory from mempool.   
-Fields      :	
-			id	:	device mempool address.
-			len	:	size(bytes) of memory needed.
-			flag:	unused
-Return		:	None.
-******************************************************************************/
-
-void *alloc_buffer(struct buffer_pool *pool, uint32_t len, uint8_t flag)
+void *alloc_buffer(struct buffer_pool *buf_pool, uint32_t len, uint8_t flag)
 {
 	bh *f_node;
 	bh *a_node;
@@ -119,28 +110,28 @@ void *alloc_buffer(struct buffer_pool *pool, uint32_t len, uint8_t flag)
 
 	print_debug("Allocating buffer\n");
 
-	spin_lock_bh(&(pool->mem_lock));
+	spin_lock_bh(&(buf_pool->mem_lock));
 
-	f_node = pool->free_list;
+	f_node = buf_pool->free_list;
 	if (!f_node) {
 		print_debug("No free buffers to allocate ...  Avail mem: %d\n",
-			    pool->tot_free_mem);
+			    buf_pool->tot_free_mem);
 		goto error;
 	}
 
 	/* If the requested length does not fit to overall available free mem */
-	if (len > pool->tot_free_mem) {
+	if (len > buf_pool->tot_free_mem) {
 		print_info("Not enough space...  asked: %d Left: %d\n", len,
-			    pool->tot_free_mem);
+			    buf_pool->tot_free_mem);
 		goto error;
 	}
 
 	/*f_node  = best_fit(pool, len); */
-	f_node = first_fit(pool, len);
+	f_node = first_fit(buf_pool, len);
 
 	if (!f_node) {
 		print_error("No free node has mem...  asked: %d tot mem avail: %d\n",
-		     len, pool->tot_free_mem);
+		     len, buf_pool->tot_free_mem);
 		goto error;
 	}
 
@@ -155,9 +146,9 @@ void *alloc_buffer(struct buffer_pool *pool, uint32_t len, uint8_t flag)
 		     len, f_node->len);
 
 		a_node = f_node;
-		free_link(pool, f_node);
+		free_link(buf_pool, f_node);
 
-		pool->tot_free_mem -= f_node->len;
+		buf_pool->tot_free_mem -= f_node->len;
 	} else {
 		print_debug("f_node is bigger than asked... Asked: %d, f node len: %d\n",
 		     len, f_node->len);
@@ -177,32 +168,24 @@ void *alloc_buffer(struct buffer_pool *pool, uint32_t len, uint8_t flag)
 		if (f_node->next_link) {
 			f_node->next_link->prev_link = new_node;
 		}
-		if (pool->free_list == f_node) {
-			pool->free_list = new_node;
+		if (buf_pool->free_list == f_node) {
+			buf_pool->free_list = new_node;
 		}
 
 		f_node->next_link = f_node->prev_link = NULL;
 		f_node->in_use = 1;
 
-		pool->tot_free_mem -= (len + sizeof(bh));
+		buf_pool->tot_free_mem -= (len + sizeof(bh));
 	}
 	a_node->flag = flag;
-	spin_unlock_bh(&(pool->mem_lock));
+	spin_unlock_bh(&(buf_pool->mem_lock));
 	print_debug("Buffer allocation done!!!\n");
 	return (uint8_t *) a_node + sizeof(bh);
 
 error:
-	spin_unlock_bh(&(pool->mem_lock));
+	spin_unlock_bh(&(buf_pool->mem_lock));
 	return NULL;
 }
-
-/******************************************************************************
-Description	:	Free the memory to mempool. 
-Fields      :   
-			id		:	device mempool address.
-			buffer	:	Address of the buffer to be freed.
-Returns		:	None.
-******************************************************************************/
 
 void free_buffer(struct buffer_pool *pool, void *buffer)
 {

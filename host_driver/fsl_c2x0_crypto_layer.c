@@ -242,7 +242,7 @@ void init_ring_pairs(struct c29x_dev *c_dev)
 		rp->c_dev = c_dev;
 		rp->depth = c_dev->config.ring_depth;
 
-		rp->buf_pool = &c_dev->host_ip_pool;
+		rp->buf_pool = &c_dev->buf_pool;
 		rp->req_r = NULL;
 		rp->resp_r = resp_r;
 		resp_r += rp->depth;
@@ -653,10 +653,10 @@ static int32_t load_firmware(struct c29x_dev *c_dev)
 
 void init_ip_pool(struct c29x_dev *c_dev, uint32_t offset)
 {
-	c_dev->host_ip_pool.h_v_addr = c_dev->drv_mem.host_v_addr + offset;
-	c_dev->host_ip_pool.h_dma_addr = c_dev->drv_mem.host_dma_addr + offset;
+	c_dev->buf_pool.h_v_addr = c_dev->drv_mem.host_v_addr + offset;
+	c_dev->buf_pool.h_dma_addr = c_dev->drv_mem.host_dma_addr + offset;
 
-	create_pool(&c_dev->host_ip_pool, c_dev->host_ip_pool.h_v_addr, BUFFER_MEM_SIZE);
+	create_pool(&c_dev->buf_pool, c_dev->buf_pool.h_v_addr, BUFFER_MEM_SIZE);
 }
 
 int init_crypto_ctx_pool(struct c29x_dev *c_dev)
@@ -888,8 +888,8 @@ void handle_response(struct c29x_dev *c_dev, uint64_t desc, int32_t res)
 	struct crypto_op_ctx *ctx0 = NULL;
 	dev_p_addr_t offset = c_dev->drv_mem.dev_p_addr;
 
-	h_desc = c_dev->host_ip_pool.h_v_addr + (desc - offset) -
-			c_dev->host_ip_pool.h_dma_addr;
+	h_desc = c_dev->buf_pool.h_v_addr + (desc - offset) -
+			c_dev->buf_pool.h_dma_addr;
 
 	ctx0 = (struct crypto_op_ctx *) get_priv_data(h_desc);
 	if (ctx0) {
