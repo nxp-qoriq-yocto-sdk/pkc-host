@@ -141,7 +141,7 @@ struct c29x_dev {
 	struct ring_counters_mem *r_s_c_cntrs;
 
 	/* Structure defining the input pool */
-	struct buffer_pool buf_pool;
+	struct buffer_pool buf_pool[FSL_CRYPTO_MAX_RING_PAIRS];
 
 	/* Ctx pool - Will be used during data path to allocate one
 	 * of the available static contexts */

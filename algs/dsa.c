@@ -643,7 +643,7 @@ int dsa_op(struct pkc_request *req)
 	print_debug("Ring selected: %d\n", r_id);
 	crypto_ctx->ctx_pool = ctx_pool;
 	crypto_ctx->crypto_mem.c_dev = c_dev;
-	crypto_ctx->crypto_mem.buf_pool = &(c_dev->buf_pool);
+	crypto_ctx->crypto_mem.buf_pool = &(c_dev->buf_pool[0]);
 	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.buf_pool);
 
 	if ((ECDSA_KEYGEN == req->type) ||

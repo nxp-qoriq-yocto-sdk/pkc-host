@@ -159,7 +159,7 @@ void calc_ob_mem_len(struct c29x_dev *c_dev, struct driver_ob_mem *obm)
 					sizeof(struct ring_counters_mem));
 	obm->r_s_cntrs_mem = ob_alloc(config->num_of_rps *
 					sizeof(struct ring_counters_mem));
-	obm->ip_pool = ob_alloc(BUFFER_MEM_SIZE);
+	obm->ip_pool = ob_alloc(config->num_of_rps * BUFFER_MEM_SIZE);
 
 	obm->len = page_align(ob_alloc(0));
 }
@@ -652,10 +652,19 @@ static int32_t load_firmware(struct c29x_dev *c_dev)
 
 void init_ip_pool(struct c29x_dev *c_dev, uint32_t offset)
 {
-	c_dev->buf_pool.h_v_addr = c_dev->drv_mem.host_v_addr + offset;
-	c_dev->buf_pool.h_dma_addr = c_dev->drv_mem.host_dma_addr + offset;
+	uint8_t i;
 
-	create_pool(&c_dev->buf_pool, c_dev->buf_pool.h_v_addr, BUFFER_MEM_SIZE);
+	for(i = 0; i < c_dev->config.num_of_rps; i++) {
+		c_dev->buf_pool[i].h_v_addr = c_dev->drv_mem.host_v_addr +
+				offset;
+		c_dev->buf_pool[i].h_dma_addr = c_dev->drv_mem.host_dma_addr +
+				offset;
+
+		create_pool(&c_dev->buf_pool[i], c_dev->buf_pool[i].h_v_addr,
+				BUFFER_MEM_SIZE);
+
+		offset += BUFFER_MEM_SIZE;
+	}
 }
 
 int init_crypto_ctx_pool(struct c29x_dev *c_dev)
@@ -887,8 +896,8 @@ void handle_response(struct c29x_dev *c_dev, uint64_t desc, int32_t res)
 	struct crypto_op_ctx *ctx0 = NULL;
 	dev_p_addr_t offset = c_dev->drv_mem.dev_p_addr;
 
-	h_desc = c_dev->buf_pool.h_v_addr + (desc - offset) -
-			c_dev->buf_pool.h_dma_addr;
+	h_desc = c_dev->buf_pool[0].h_v_addr + (desc - offset) -
+			c_dev->buf_pool[0].h_dma_addr;
 
 	ctx0 = (struct crypto_op_ctx *) get_priv_data(h_desc);
 	if (ctx0) {

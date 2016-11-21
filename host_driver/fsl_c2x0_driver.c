@@ -671,6 +671,9 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		return -ENOMEM;
 	}
 	c_dev->config = defcfg;
+	if (c_dev->config.num_of_rps > FSL_CRYPTO_MAX_RING_PAIRS) {
+		c_dev->config.num_of_rps = FSL_CRYPTO_MAX_RING_PAIRS;
+	}
 
 	/* Set this device instance as private data inside the pci dev struct */
 	dev_set_drvdata(&(dev->dev), c_dev);
