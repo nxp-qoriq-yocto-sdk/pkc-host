@@ -197,7 +197,7 @@ void cleanup_crypto_device(struct c29x_dev *c_dev);
 int32_t handshake(struct c29x_dev *c_dev);
 void rearrange_rings(struct c29x_dev *c_dev);
 void distribute_rings(struct c29x_dev *c_dev);
-void init_ip_pool(struct c29x_dev *c_dev);
+void init_ip_pool(struct c29x_dev *c_dev, uint32_t offset);
 int init_crypto_ctx_pool(struct c29x_dev *c_dev);
 void init_handshake(struct c29x_dev *c_dev);
 void init_ring_pairs(struct c29x_dev *c_dev);

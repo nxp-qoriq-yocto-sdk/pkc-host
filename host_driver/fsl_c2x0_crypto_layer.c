@@ -190,7 +190,8 @@ int32_t alloc_ob_mem(struct c29x_dev *c_dev)
 	c_dev->idxs_mem = host_v_addr + obm.idxs_mem;
 	c_dev->cntrs_mem = host_v_addr + obm.cntrs_mem;
 	c_dev->r_s_cntrs_mem = host_v_addr + obm.r_s_cntrs_mem;
-	c_dev->ip_pool = host_v_addr + obm.ip_pool;
+
+	init_ip_pool(c_dev, obm.ip_pool);
 
 	print_debug("====== OB MEM POINTERS =======\n");
 	print_debug("H HS Mem		: %p\n", c_dev->hs_mem);
@@ -198,7 +199,6 @@ int32_t alloc_ob_mem(struct c29x_dev *c_dev)
 	print_debug("Idxs mem	        : %p\n", c_dev->idxs_mem);
 	print_debug("cntrs mem          : %p\n", c_dev->cntrs_mem);
 	print_debug("S C R cntrs mem	: %p\n", c_dev->r_s_cntrs_mem);
-	print_debug("IP pool		: %p\n", c_dev->ip_pool);
 
 	return 0;
 }
@@ -651,14 +651,12 @@ static int32_t load_firmware(struct c29x_dev *c_dev)
 	return 0;
 }
 
-void init_ip_pool(struct c29x_dev *c_dev)
+void init_ip_pool(struct c29x_dev *c_dev, uint32_t offset)
 {
-	create_pool(&c_dev->host_ip_pool, c_dev->ip_pool,
-			BUFFER_MEM_SIZE);
+	c_dev->host_ip_pool.h_v_addr = c_dev->drv_mem.host_v_addr + offset;
+	c_dev->host_ip_pool.h_dma_addr = c_dev->drv_mem.host_dma_addr + offset;
 
-	c_dev->host_ip_pool.h_v_addr = c_dev->ip_pool;
-	c_dev->host_ip_pool.h_dma_addr = c_dev->drv_mem.host_dma_addr +
-					 ((void*)c_dev->ip_pool - (void*)c_dev->hs_mem);
+	create_pool(&c_dev->host_ip_pool, c_dev->host_ip_pool.h_v_addr, BUFFER_MEM_SIZE);
 }
 
 int init_crypto_ctx_pool(struct c29x_dev *c_dev)
@@ -790,8 +788,6 @@ int32_t fsl_crypto_layer_add_device(struct c29x_dev *c_dev)
 		print_error("Ob mem alloc failed....\n");
 		goto ob_mem_fail;
 	}
-
-	init_ip_pool(c_dev);
 
 	err = init_crypto_ctx_pool(c_dev);
 	if (err) {

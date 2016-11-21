@@ -133,7 +133,6 @@ struct c29x_dev {
 	struct ring_idxs_mem *idxs_mem;
 	struct ring_counters_mem *cntrs_mem;
 	struct ring_counters_mem *r_s_cntrs_mem;
-	void *ip_pool;
 
 	struct dev_handshake_mem *c_hs_mem;
 	struct host_handshake_mem *hs_mem;
