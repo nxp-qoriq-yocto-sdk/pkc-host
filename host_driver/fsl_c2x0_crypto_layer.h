@@ -162,7 +162,6 @@ typedef struct fsl_h_rsrc_ring_pair {
 	struct list_head bh_ctx_list_node;
 
 	uint32_t *intr_ctrl_flag;
-	struct buffer_pool *buf_pool;
 	struct req_ring_entry *req_r;
 	struct resp_ring_entry *resp_r;
 	struct ring_idxs_mem *indexes;

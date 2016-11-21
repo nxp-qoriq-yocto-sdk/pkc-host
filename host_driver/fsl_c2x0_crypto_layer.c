@@ -242,7 +242,6 @@ void init_ring_pairs(struct c29x_dev *c_dev)
 		rp->c_dev = c_dev;
 		rp->depth = c_dev->config.ring_depth;
 
-		rp->buf_pool = &c_dev->buf_pool;
 		rp->req_r = NULL;
 		rp->resp_r = resp_r;
 		resp_r += rp->depth;
