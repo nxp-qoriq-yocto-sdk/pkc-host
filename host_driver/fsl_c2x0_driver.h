@@ -98,7 +98,7 @@ struct pci_bar_info {
 struct host_mem_info {
 	void *host_v_addr;
 	resource_size_t len;
-	dev_p_addr_t dev_p_addr;
+	dev_p_addr_t dev_pci_base;
 	dma_addr_t host_dma_addr;
 };
 

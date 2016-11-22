@@ -320,8 +320,8 @@ void hs_firmware_up(struct c29x_dev *c_dev)
 	struct fw_up_data *hsdev = &c_dev->hs_mem->data.device;
 	uint32_t p_ib_l;
 	uint32_t p_ib_h;
-	uint32_t p_ob_l;
-	uint32_t p_ob_h;
+	uint32_t p_pci_l;
+	uint32_t p_pci_h;
 
 	print_debug(" ----------- FIRMWARE_UP -----------\n");
 
@@ -329,22 +329,22 @@ void hs_firmware_up(struct c29x_dev *c_dev)
 
 	p_ib_l = be32_to_cpu(hsdev->p_ib_mem_base_l);
 	p_ib_h = be32_to_cpu(hsdev->p_ib_mem_base_h);
-	p_ob_l = be32_to_cpu(hsdev->p_ob_mem_base_l);
-	p_ob_h = be32_to_cpu(hsdev->p_ob_mem_base_h);
+	p_pci_l = be32_to_cpu(hsdev->p_pci_mem_l);
+	p_pci_h = be32_to_cpu(hsdev->p_pci_mem_h);
 
 	c_dev->bars[MEM_TYPE_SRAM].dev_p_addr = (dev_p_addr_t) p_ib_h << 32;
 	c_dev->bars[MEM_TYPE_SRAM].dev_p_addr |= p_ib_l;
 
-	c_dev->drv_mem.dev_p_addr = (dev_p_addr_t) p_ob_h << 32;
-	c_dev->drv_mem.dev_p_addr |= p_ob_l;
+	c_dev->drv_mem.dev_pci_base = (dev_p_addr_t) p_pci_h << 32;
+	c_dev->drv_mem.dev_pci_base |= p_pci_l;
 
 	print_debug("Device Shared Details\n");
 	print_debug("Ib mem PhyAddr L: %0x, H: %0x\n", p_ib_l, p_ib_h);
-	print_debug("Ob mem PhyAddr L: %0x, H: %0x\n", p_ob_l, p_ob_h);
+	print_debug("PCI mem PhyAddr L: %0x, H: %0x\n", p_pci_l, p_pci_h);
 	print_debug("Formed dev ib mem phys address: %llx\n",
 			(uint64_t)c_dev->bars[MEM_TYPE_SRAM].dev_p_addr);
-	print_debug("Formed dev ob mem phys address: %llx\n",
-			(uint64_t)c_dev->drv_mem.dev_p_addr);
+	print_debug("Formed dev pci mem phys address: %llx\n",
+			(uint64_t)c_dev->drv_mem.dev_pci_base);
 }
 
 void hs_fw_init_complete(struct c29x_dev *c_dev, uint8_t rid)
@@ -569,7 +569,7 @@ static void setup_ep(struct c29x_dev *c_dev)
 
 	print_debug("======= setup_ep =======\n");
 	print_debug("Ob mem dma_addr: %pa\n", &(c_dev->drv_mem.host_dma_addr));
-	print_debug("Ob mem dev_p_addr: %pa\n", &(c_dev->drv_mem.dev_p_addr));
+	print_debug("Ob mem dev_pci_base: %pa\n", &(c_dev->drv_mem.dev_pci_base));
 	print_debug("Ob mem len: %pa\n", &c_dev->drv_mem.len);
 	print_debug("BAR0 V Addr: %p\n", ccsr);
 
@@ -894,7 +894,7 @@ void handle_response(struct c29x_dev *c_dev, uint64_t desc, int32_t res)
 {
 	void *h_desc;
 	struct crypto_op_ctx *ctx0 = NULL;
-	dev_p_addr_t offset = c_dev->drv_mem.dev_p_addr;
+	dev_p_addr_t offset = c_dev->drv_mem.dev_pci_base;
 
 	h_desc = c_dev->buf_pool[0].h_v_addr + (desc - offset) -
 			c_dev->buf_pool[0].h_dma_addr;

@@ -88,8 +88,8 @@ struct host_handshake_mem {
 		struct fw_up_data {
 			uint32_t p_ib_mem_base_l;
 			uint32_t p_ib_mem_base_h;
-			uint32_t p_ob_mem_base_l;
-			uint32_t p_ob_mem_base_h;
+			uint32_t p_pci_mem_l;
+			uint32_t p_pci_mem_h;
 			uint32_t no_secs;
 		} device;
 		struct config_data {

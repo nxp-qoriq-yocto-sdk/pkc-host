@@ -142,7 +142,7 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 			pr_err("wrong buffer type %d\n", buffers[i].bt);
 			break;
 		}
-		buffers[i].d_p_addr = c_dev->drv_mem.dev_p_addr +
+		buffers[i].d_p_addr = c_dev->drv_mem.dev_pci_base +
 					buffers[i].h_dma_addr;
 	}
 }
