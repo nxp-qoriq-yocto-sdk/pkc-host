@@ -123,14 +123,14 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 	struct c29x_dev *c_dev = mem_info->c_dev;
 	struct pci_dev *dev = c_dev->dev;
 
-	/* TODO: allocate temporary buffers in device SRAM to completely avoid
-	 * PCIe traversal to host memory */
+	/* TODO: allocate both descriptors and temporary buffers in device SRAM
+	 *      to completely avoid PCIe traversal to back to host memory */
 	for (i = 0; i < mem_info->count; i++) {
 		switch (buffers[i].bt) {
 		case BT_DESC:
 		case BT_TMP:
-			buffers[i].h_dma_addr = c_dev->buf_pool[0].h_dma_addr +
-				(buffers[i].h_v_addr - c_dev->buf_pool[0].h_v_addr);
+			buffers[i].h_dma_addr = (dma_addr_t)(buffers[i].h_v_addr -
+						c_dev->drv_mem.h_dma_offset);
 			break;
 		case BT_IP:
 		case BT_OP:

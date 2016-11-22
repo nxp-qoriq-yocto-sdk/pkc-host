@@ -181,6 +181,8 @@ int32_t alloc_ob_mem(struct c29x_dev *c_dev)
 		return -ENOMEM;
 	}
 	c_dev->drv_mem.host_v_addr = host_v_addr;
+	c_dev->drv_mem.h_dma_offset = c_dev->drv_mem.host_v_addr -
+			(void*)c_dev->drv_mem.host_dma_addr;
 
 	print_debug("OB Mem address	: %p\n", c_dev->drv_mem.host_v_addr);
 	print_debug("OB Mem dma address	: %pad\n", &(c_dev->drv_mem.host_dma_addr));
@@ -337,6 +339,9 @@ void hs_firmware_up(struct c29x_dev *c_dev)
 
 	c_dev->drv_mem.dev_pci_base = (dev_p_addr_t) p_pci_h << 32;
 	c_dev->drv_mem.dev_pci_base |= p_pci_l;
+
+	c_dev->drv_mem.d2h_offset = c_dev->drv_mem.h_dma_offset -
+			c_dev->drv_mem.dev_pci_base;
 
 	print_debug("Device Shared Details\n");
 	print_debug("Ib mem PhyAddr L: %0x, H: %0x\n", p_ib_l, p_ib_h);
@@ -893,12 +898,17 @@ void cleanup_crypto_device(struct c29x_dev *c_dev)
 void handle_response(struct c29x_dev *c_dev, uint64_t desc, int32_t res)
 {
 	void *h_desc;
-	struct crypto_op_ctx *ctx0 = NULL;
-	dev_p_addr_t offset = c_dev->drv_mem.dev_pci_base;
+	struct crypto_op_ctx *ctx0;
 
-	h_desc = c_dev->buf_pool[0].h_v_addr + (desc - offset) -
-			c_dev->buf_pool[0].h_dma_addr;
+	/* convert descriptor address from device space to host space to
+	 * recover its associated context. We practically do the operations
+	 * from host_to_dev in reverse:
+	 * 	h_dma_addr = desc - c_dev->drv_mem.dev_pci_base;
+	 * 	offset = h_dma_addr - c_dev->buf_pool[0].h_dma_addr;
+	 * 	h_desc = c_dev->buf_pool[0].h_v_addr + offset;
+	 */
 
+	h_desc = (void*)(desc + c_dev->drv_mem.d2h_offset);
 	ctx0 = (struct crypto_op_ctx *) get_priv_data(h_desc);
 	if (ctx0) {
 		ctx0->op_done(ctx0, res);
