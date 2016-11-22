@@ -77,7 +77,7 @@ typedef enum fw_handshake_commands {
 	FW_RNG_DONE
 } fw_handshake_commands_t;
 
-/* Different types of memory between driver and ep */
+/* Different types of memory on the device */
 typedef enum crypto_dev_mem_type {
 	MEM_TYPE_CONFIG,
 	MEM_TYPE_SRAM,
@@ -119,19 +119,7 @@ struct crypto_dev_config {
 	struct list_head list;
 };
 
-#define JR_SIZE_SHIFT   0
-#define JR_SIZE_MASK    0x0000ffff
-#define JR_NO_SHIFT     16
-#define JR_NO_MASK      0x00ff0000
-#define SEC_NO_SHIFT    24
-#define SEC_NO_MASK     0xff000000
 
-/*** HANDSHAKE RELATED DATA STRUCTURES ***/
-
-/***********************************************************************
-Description : Defines the handshake memory on the host
-Fields      :
-***********************************************************************/
 struct host_handshake_mem {
 	uint8_t state;
 	uint8_t result;
@@ -154,10 +142,6 @@ struct host_handshake_mem {
 	} data;
 };
 
-/*******************************************************************************
-Description : Defines the handshake memory on the device
-Fields      :
-*******************************************************************************/
 struct dev_handshake_mem {
 	uint32_t h_ob_mem_l;
 	uint32_t h_ob_mem_h;
@@ -166,11 +150,9 @@ struct dev_handshake_mem {
 	uint8_t data_len;
 
 	union cmd_data {
-		/* these are communicated by the host to the device.
-		 * Addresses are dma addresses on host for data located in OB mem */
 		struct c_config_data {
-			uint8_t num_of_rps;  /* total number of rings, in and out */
-			uint32_t r_s_cntrs;/* dma address for other shadow counters */
+			uint8_t num_of_rps;
+			uint32_t r_s_cntrs;
 		} config;
 		struct c_ring_data {
 			uint8_t rid;
@@ -183,61 +165,14 @@ struct dev_handshake_mem {
 	} data;
 };
 
-/*******************************************************************************
-Description :	Defines the input buffer pool
-Fields      :	pool		: Pool pointer returned by the pool manager
-		drv_pool_addr	: Address in ib mem for driver's internal use
-		dev_pool_base	: Holds the address of pool inside the device,
-					will be required inside the SEC desc
-*******************************************************************************/
-typedef struct fsl_h_rsrc_pool {
-	void *pool;
-
-	void *drv_pool_addr;
-	uint32_t dev_pool_base;
-	uint32_t len;
-} fsl_h_rsrc_pool_t;
-
-/*******************************************************************************
-Description :	Defines the ring indexes
-Fields      :	w_index		: Request ring write index
-		r_index		: Response ring read index
-*******************************************************************************/
 struct ring_idxs_mem {
 	uint32_t w_index;
 	uint32_t r_index;
 };
 
-/*******************************************************************************
-Description :	Contains the counters per job ring. There will two copies one
-		for local usage and one shadowed for firmware
-Fields      :	Local memory
-		jobs_added	: Count of number of req jobs added
-		jobs_processed	: Count of number of resp jobs processed
-
-		Shadow copy memory
-		jobs_added	: Count of number of resp jobs added by fw
-		jobs_processed	: Count of number of req jobs processed by fw
-*******************************************************************************/
 struct ring_counters_mem {
 	uint32_t jobs_added;
 	uint32_t jobs_processed;
-};
-
-/*******************************************************************************
-Description :	Contains the total counters. There will two copies one
-		for local usage and one shadowed for firmware
-Fields      :	Local memory
-		tot_jobs_added	: Total count of req jobs added by driver
-		tot_jobs_processed: Total count of resp jobs processed
-
-		Shadow copy memory
-		tot_jobs_added	: Total count of resp jobs added by fw
-		tot_jobs_processed: Total count of req jobs processed by fw
-*******************************************************************************/
-struct counters_mem {
-	uint32_t tot_jobs_added;
-	uint32_t tot_jobs_processed;
 };
 
 /**** RING PAIR RELATED DATA STRUCTURES ****/
@@ -260,20 +195,6 @@ struct resp_ring_entry {
 	volatile uint32_t result;
 } __packed;
 
-/*******************************************************************************
-Description :	Contains the information about each ring pair
-Fields      :	depth: Depth of the ring
-		props: Valid only for application ring as :
-			4bits : Priority level
-			3bits :	Affinity level
-			1bit  : Ordered/Un-ordered
-		intr_ctrl_flag	: Address of intr ctrl flag on device. This will
-				be used in data processing to enable/disable
-				interrupt per ring.
-		req_ring_addr	: Address of the request ring in ib window
-		resp_ring_addr	: Response ring address in ob window
-		pool		: Input buffer pool information
-*******************************************************************************/
 typedef struct fsl_h_rsrc_ring_pair {
 	struct c29x_dev *c_dev;
 

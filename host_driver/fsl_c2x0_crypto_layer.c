@@ -899,18 +899,9 @@ void cleanup_crypto_device(struct c29x_dev *c_dev)
 {
 	if (NULL == c_dev)
 		return;
-#if 0
-	int i = 0;
-	for (i = 0; i < dev->num_of_rps; i++) {
-		/* Delete all the links */
-		list_del(&(dev->ring_pairs[i].isr_ctx_list_node));
-		list_del(&(dev->ring_pairs[i].bh_ctx_list_node));
-	}
-#endif
 
 	kfree(c_dev->ctx_pool);
 
-	/* Free the pci alloc consistent mem */
 	if (c_dev->drv_mem.host_v_addr) {
 		pci_free_consistent(c_dev->dev,
 				    c_dev->drv_mem.len,

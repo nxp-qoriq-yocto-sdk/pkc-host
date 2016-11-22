@@ -71,21 +71,11 @@ typedef enum pci_config_space_regs {
 	PCI_MSI_ADDR_DATA = 0X94
 } pci_config_space_regs_t;
 
-/*******************************************************************************
-Description :	Holds the context pointer for interrupts
-Fields      :	vector_no: vector number of the interrupt
-		dev: Back reference to the device
-		isr_bh_list: Head of the list of bh handlers for this interrupt
-		list: Required to make the list of this structures.
-*******************************************************************************/
 typedef struct isr_ctx {
 	uint32_t irq;
 	struct c29x_dev *c_dev;
-	/* List of Bhs for this ISR */
-/*	LIST_HEAD(isr_bh_list); */
 	uint32_t msi_addr_low;
 	uint32_t msi_addr_high;
-	/* Only 16bit MSI data */
 	uint16_t msi_data;
 	struct list_head list;
 	struct list_head ring_list_head;
@@ -105,11 +95,6 @@ struct host_mem_info {
 	dma_addr_t host_dma_addr;
 };
 
-/*******************************************************************************
-Description:	Contains the interrupts information of the device
-Fields	   :	intr_vectors_cnt: Number of intr vectors alloc for this device
-		isr_ctx_list_head: Head of the linked list of isr contexts
-*******************************************************************************/
 typedef struct pci_intr_info {
 	u16 intr_vectors_cnt;
 	struct list_head isr_ctx_head;
