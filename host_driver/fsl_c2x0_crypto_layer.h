@@ -184,7 +184,7 @@ struct driver_ob_mem {
 	uint32_t idxs_mem;
 	uint32_t cntrs_mem;
 	uint32_t r_s_cntrs_mem;
-	uint32_t ip_pool;
+	uint32_t buf_pool;
 	uint32_t len;
 };
 

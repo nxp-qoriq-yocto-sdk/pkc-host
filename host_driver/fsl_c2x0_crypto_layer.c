@@ -159,7 +159,7 @@ void calc_ob_mem_len(struct c29x_dev *c_dev, struct driver_ob_mem *obm)
 					sizeof(struct ring_counters_mem));
 	obm->r_s_cntrs_mem = ob_alloc(config->num_of_rps *
 					sizeof(struct ring_counters_mem));
-	obm->ip_pool = ob_alloc(config->num_of_rps * BUFFER_MEM_SIZE);
+	obm->buf_pool = ob_alloc(config->num_of_rps * BUFFER_MEM_SIZE);
 
 	obm->len = page_align(ob_alloc(0));
 }
@@ -183,6 +183,7 @@ int32_t alloc_ob_mem(struct c29x_dev *c_dev)
 	c_dev->drv_mem.host_v_addr = host_v_addr;
 	c_dev->drv_mem.h_dma_offset = c_dev->drv_mem.host_v_addr -
 			(void*)c_dev->drv_mem.host_dma_addr;
+	c_dev->drv_mem.buf_pool_offset = obm.buf_pool;
 
 	print_debug("OB Mem address	: %p\n", c_dev->drv_mem.host_v_addr);
 	print_debug("OB Mem dma address	: %pad\n", &(c_dev->drv_mem.host_dma_addr));
@@ -193,7 +194,7 @@ int32_t alloc_ob_mem(struct c29x_dev *c_dev)
 	c_dev->cntrs_mem = host_v_addr + obm.cntrs_mem;
 	c_dev->r_s_cntrs_mem = host_v_addr + obm.r_s_cntrs_mem;
 
-	init_ip_pool(c_dev, obm.ip_pool);
+	init_ip_pool(c_dev, obm.buf_pool);
 
 	print_debug("====== OB MEM POINTERS =======\n");
 	print_debug("H HS Mem		: %p\n", c_dev->hs_mem);

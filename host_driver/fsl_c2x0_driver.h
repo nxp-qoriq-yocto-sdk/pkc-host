@@ -104,6 +104,7 @@ struct host_mem_info {
 	/* offsets used to convert descriptor addresses from device to host */
 	int64_t d2h_offset;
 	ptrdiff_t h_dma_offset;
+	ptrdiff_t buf_pool_offset;
 };
 
 typedef struct pci_intr_info {
