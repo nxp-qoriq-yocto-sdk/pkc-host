@@ -72,7 +72,7 @@ static void ecdsa_op_done(void *ctx, uint32_t res)
 static void dsa_sign_init_len(struct dsa_sign_req_s *req,
 			      crypto_mem_info_t *mem_info, bool ecdsa)
 {
-	dsa_sign_buffers_t *mem = &(mem_info->c_buffers.dsa_sign);
+	dsa_sign_buffers_t *mem = &(mem_info->buffers.dsa_sign);
 
 	/* the assumption for DSA signing is that
 	 * r_buff.len == c_buff.len == d_buff.len
@@ -98,7 +98,7 @@ static void dsa_sign_init_len(struct dsa_sign_req_s *req,
 static void dsa_verify_init_len(struct dsa_verify_req_s *req,
 				crypto_mem_info_t *mem_info, bool ecdsa)
 {
-	dsa_verify_buffers_t *mem = &(mem_info->c_buffers.dsa_verify);
+	dsa_verify_buffers_t *mem = &(mem_info->buffers.dsa_verify);
 
 	mem->q_buff.len = req->q_len;
 	mem->r_buff.len = req->r_len;
@@ -121,7 +121,7 @@ static void dsa_verify_init_len(struct dsa_verify_req_s *req,
 static void dsa_keygen_init_len(struct dsa_keygen_req_s *req,
 				crypto_mem_info_t *mem_info, bool ecdsa)
 {
-	dsa_keygen_buffers_t *mem = &(mem_info->c_buffers.dsa_keygen);
+	dsa_keygen_buffers_t *mem = &(mem_info->buffers.dsa_keygen);
 
 	mem->q_buff.len = req->q_len;
 	mem->r_buff.len = req->r_len;
@@ -141,11 +141,10 @@ static void dsa_keygen_init_len(struct dsa_keygen_req_s *req,
 static int dsa_sign_cp_req(struct dsa_sign_req_s *req,
 			   crypto_mem_info_t *mem_info, bool ecdsa)
 {
-	dsa_sign_buffers_t *mem = &(mem_info->c_buffers.dsa_sign);
+	dsa_sign_buffers_t *mem = &(mem_info->buffers.dsa_sign);
 	dsa_sign_init_len(req, mem_info, ecdsa);
 
 	print_debug("Calling alloc_crypto_mem\n");
-	mem_info->buffers = (buffer_info_t *) mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
@@ -170,11 +169,10 @@ static int dsa_sign_cp_req(struct dsa_sign_req_s *req,
 static int dsa_verify_cp_req(struct dsa_verify_req_s *req,
 			     crypto_mem_info_t *mem_info, bool ecdsa)
 {
-	dsa_verify_buffers_t *mem = &(mem_info->c_buffers.dsa_verify);
+	dsa_verify_buffers_t *mem = &(mem_info->buffers.dsa_verify);
 	dsa_verify_init_len(req, mem_info, ecdsa);
 
 	print_debug("Calling alloc_crypto_mem\n");
-	mem_info->buffers = (buffer_info_t *) mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
@@ -198,11 +196,10 @@ static int dsa_verify_cp_req(struct dsa_verify_req_s *req,
 static int dsa_keygen_cp_req(struct dsa_keygen_req_s *req,
 			     crypto_mem_info_t *mem_info, bool ecdsa)
 {
-	dsa_keygen_buffers_t *mem = &(mem_info->c_buffers.dsa_keygen);
+	dsa_keygen_buffers_t *mem = &(mem_info->buffers.dsa_keygen);
 
 	dsa_keygen_init_len(req, mem_info, ecdsa);
 	print_debug("Calling alloc_crypto_mem\n");
-	mem_info->buffers = (buffer_info_t *) mem;
 	if (-ENOMEM == alloc_crypto_mem(mem_info))
 		return -ENOMEM;
 
@@ -227,7 +224,7 @@ static void constr_dsa_sign_desc(crypto_mem_info_t *mem_info)
 	uint32_t desc_size = sizeof(struct dsa_sign_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 12;
 
-	dsa_sign_buffers_t *mem = &(mem_info->c_buffers.dsa_sign);
+	dsa_sign_buffers_t *mem = &(mem_info->buffers.dsa_sign);
 	struct dsa_sign_desc_s *dsa_sign_desc =
 	    (struct dsa_sign_desc_s *)mem->desc_buff.h_v_addr;
 
@@ -283,9 +280,8 @@ static void constr_dsa_verify_desc(crypto_mem_info_t *mem_info)
 	uint32_t desc_size = sizeof(struct dsa_verify_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 1;
 
-	dsa_verify_buffers_t *mem = &(mem_info->c_buffers.dsa_verify);
-	struct dsa_verify_desc_s *dsa_verify_desc =
-	    (struct dsa_verify_desc_s *)mem->desc_buff.h_v_addr;
+	dsa_verify_buffers_t *mem = &(mem_info->buffers.dsa_verify);
+	struct dsa_verify_desc_s *dsa_verify_desc = mem->desc_buff.h_v_addr;
 
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&dsa_verify_desc->desc_hdr,
@@ -327,9 +323,8 @@ static void constr_dsa_keygen_desc(crypto_mem_info_t *mem_info)
 	uint32_t desc_size = sizeof(struct dsa_keygen_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 1;
 
-	dsa_keygen_buffers_t *mem = &(mem_info->c_buffers.dsa_keygen);
-	struct dsa_keygen_desc_s *dsa_keygen_desc =
-	    (struct dsa_keygen_desc_s *)mem->desc_buff.h_v_addr;
+	dsa_keygen_buffers_t *mem = &(mem_info->buffers.dsa_keygen);
+	struct dsa_keygen_desc_s *dsa_keygen_desc = mem->desc_buff.h_v_addr;
 
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&dsa_keygen_desc->desc_hdr,
@@ -365,9 +360,8 @@ static void constr_ecdsa_sign_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	uint32_t desc_size = sizeof(struct ecdsa_sign_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 12;
 
-	dsa_sign_buffers_t *mem = (dsa_sign_buffers_t *) (mem_info->buffers);
-	struct ecdsa_sign_desc_s *ecdsa_sign_desc =
-	    (struct ecdsa_sign_desc_s *)mem->desc_buff.h_v_addr;
+	dsa_sign_buffers_t *mem = &(mem_info->buffers.dsa_sign);
+	struct ecdsa_sign_desc_s *ecdsa_sign_desc = mem->desc_buff.h_v_addr;
 
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&ecdsa_sign_desc->desc_hdr,
@@ -432,9 +426,8 @@ static void constr_ecdsa_verify_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	uint32_t desc_size = sizeof(struct ecdsa_verify_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 1;
 
-	dsa_verify_buffers_t *mem = (dsa_verify_buffers_t *) (mem_info->buffers);
-	struct ecdsa_verify_desc_s *ecdsa_verify_desc =
-		(struct ecdsa_verify_desc_s *)mem->desc_buff.h_v_addr;
+	dsa_verify_buffers_t *mem = &(mem_info->buffers.dsa_verify);
+	struct ecdsa_verify_desc_s *ecdsa_verify_desc = mem->desc_buff.h_v_addr;
 
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&ecdsa_verify_desc->desc_hdr,
@@ -486,9 +479,8 @@ static void constr_ecdsa_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 {
 	uint32_t desc_size = sizeof(struct ecdsa_keygen_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 1;
-	dsa_keygen_buffers_t *mem = (dsa_keygen_buffers_t *) (mem_info->buffers);
-	struct ecdsa_keygen_desc_s *ecdsa_keygen_desc =
-	    (struct ecdsa_keygen_desc_s *)mem->desc_buff.h_v_addr;
+	dsa_keygen_buffers_t *mem = &(mem_info->buffers.dsa_keygen);
+	struct ecdsa_keygen_desc_s *ecdsa_keygen_desc = mem->desc_buff.h_v_addr;
 
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&ecdsa_keygen_desc->desc_hdr,
@@ -537,7 +529,7 @@ static void dsa_sign_init_crypto_mem(crypto_mem_info_t *crypto_mem, bool ecdsa)
 		crypto_mem->count -= 1;
 	}
 
-	dsa_sign_buffs = &(crypto_mem->c_buffers.dsa_sign);
+	dsa_sign_buffs = &(crypto_mem->buffers.dsa_sign);
 	memset(dsa_sign_buffs, 0, sizeof(dsa_sign_buffers_t));
 
 	dsa_sign_buffs->q_buff.bt = BT_IP;
@@ -561,7 +553,7 @@ static void dsa_verify_init_crypto_mem(crypto_mem_info_t *crypto_mem,
 		crypto_mem->count -= 1;
 	}
 
-	dsa_verify_buffs = &(crypto_mem->c_buffers.dsa_verify);
+	dsa_verify_buffs = &(crypto_mem->buffers.dsa_verify);
 	memset(dsa_verify_buffs, 0, sizeof(dsa_verify_buffers_t));
 
 	dsa_verify_buffs->q_buff.bt = BT_IP;
@@ -585,7 +577,7 @@ static void dsa_keygen_init_crypto_mem(crypto_mem_info_t *crypto_mem,
 		crypto_mem->count -= 1;
 	}
 
-	dsa_keygen_buffs = &(crypto_mem->c_buffers.dsa_keygen);
+	dsa_keygen_buffs = &(crypto_mem->buffers.dsa_keygen);
 	memset(dsa_keygen_buffs, 0, sizeof(dsa_keygen_buffers_t));
 
 	dsa_keygen_buffs->q_buff.bt = BT_IP;
@@ -673,7 +665,7 @@ int dsa_op(struct pkc_request *req)
 			constr_dsa_keygen_desc(&crypto_ctx->crypto_mem);
 		}
 		print_debug("Desc constr complete...\n");
-		dsa_keygen_buffs =  &(crypto_ctx->crypto_mem.c_buffers.dsa_keygen);
+		dsa_keygen_buffs =  &(crypto_ctx->crypto_mem.buffers.dsa_keygen);
 		sec_dma = dsa_keygen_buffs->desc_buff.d_p_addr;
 
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr:%p Crypto ctx: %p\n",
@@ -700,7 +692,7 @@ int dsa_op(struct pkc_request *req)
 			constr_dsa_sign_desc(&crypto_ctx->crypto_mem);
 		}
 		print_debug("Desc constr complete...\n");
-		dsa_sign_buffs = &(crypto_ctx->crypto_mem.c_buffers.dsa_sign);
+		dsa_sign_buffs = &(crypto_ctx->crypto_mem.buffers.dsa_sign);
 
 		sec_dma = dsa_sign_buffs->desc_buff.d_p_addr;
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p	Crypto ctx: %p\n",
@@ -727,7 +719,7 @@ int dsa_op(struct pkc_request *req)
 			constr_dsa_verify_desc(&crypto_ctx->crypto_mem);
 		}
 		print_debug("Desc constr complete...\n");
-		dsa_verify_buffs = &(crypto_ctx->crypto_mem.c_buffers.dsa_verify);
+		dsa_verify_buffs = &(crypto_ctx->crypto_mem.buffers.dsa_verify);
 		sec_dma = dsa_verify_buffs->desc_buff.d_p_addr;
 
 		print_debug("[Enq] Desc addr: %llx Hbuffer addr: %p Crypto ctx :%p\n",

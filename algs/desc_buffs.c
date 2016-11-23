@@ -42,7 +42,7 @@
 static void distribute_buffers(crypto_mem_info_t *mem_info, uint8_t *mem)
 {
 	uint32_t i;
-	buffer_info_t *buffers = mem_info->buffers;
+	buffer_info_t *buffers = (buffer_info_t *)&(mem_info->buffers);
 
 	for (i = 0; i < mem_info->count; i++) {
 		switch (buffers[i].bt) {
@@ -66,7 +66,7 @@ int32_t alloc_crypto_mem(crypto_mem_info_t *mem_info)
 	uint32_t tot_mem = 0;
 	uint32_t aligned_len;
 	uint8_t *mem;
-	buffer_info_t *buffers = mem_info->buffers;
+	buffer_info_t *buffers = (buffer_info_t *)&(mem_info->buffers);
 
 	/* The structure will have all the memory requirements */
 	for (i = 0; i < mem_info->count; i++) {
@@ -99,7 +99,7 @@ no_mem:
 int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 {
 	struct pci_dev *dev = mem_info->c_dev->dev;
-	buffer_info_t *buffers = mem_info->buffers;
+	buffer_info_t *buffers = (buffer_info_t *)&(mem_info->buffers);
 	buffer_type_t bt;
 	uint32_t i;
 	for (i = 1; i < mem_info->count; i++) {
@@ -119,7 +119,7 @@ int32_t dealloc_crypto_mem(crypto_mem_info_t *mem_info)
 void host_to_dev(crypto_mem_info_t *mem_info)
 {
 	uint32_t i;
-	buffer_info_t *buffers = mem_info->buffers;
+	buffer_info_t *buffers = (buffer_info_t *)&(mem_info->buffers);
 	struct c29x_dev *c_dev = mem_info->c_dev;
 	struct pci_dev *dev = c_dev->dev;
 
@@ -129,8 +129,8 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 		switch (buffers[i].bt) {
 		case BT_DESC:
 		case BT_TMP:
-			buffers[i].h_dma_addr = (dma_addr_t)(buffers[i].h_v_addr -
-						c_dev->drv_mem.h_dma_offset);
+			buffers[i].h_dma_addr = (dma_addr_t)
+				(buffers[i].h_v_addr - c_dev->drv_mem.h_dma_offset);
 			break;
 		case BT_IP:
 		case BT_OP:

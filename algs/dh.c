@@ -72,7 +72,7 @@ static void ecdh_op_done(void *ctx, uint32_t res)
 static void dh_key_init_len(struct dh_key_req_s *req,
 			    crypto_mem_info_t *mem_info, bool ecdh)
 {
-	dh_key_buffers_t *mem = (dh_key_buffers_t *) (mem_info->buffers);
+	dh_key_buffers_t *mem = &(mem_info->buffers.dh_key);
 
 	mem->q_buff.len = req->q_len;
 	mem->w_buff.len = req->pub_key_len;
@@ -89,7 +89,7 @@ static void dh_key_init_len(struct dh_key_req_s *req,
 
 static void dh_keygen_init_len(struct dh_keygen_req_s *req, crypto_mem_info_t *mem_info, bool ecdh)
 {
-    dh_keygen_buffers_t    *mem    =   (dh_keygen_buffers_t *)(mem_info->buffers);
+    dh_keygen_buffers_t *mem = &(mem_info->buffers.dh_keygen);
 
     mem->q_buff.len         =   req->q_len;
     mem->r_buff.len         =   req->r_len;
@@ -109,7 +109,7 @@ static void dh_keygen_init_len(struct dh_keygen_req_s *req, crypto_mem_info_t *m
 static int dh_key_cp_req(struct dh_key_req_s *req, crypto_mem_info_t *mem_info,
 			 bool ecdh)
 {
-	dh_key_buffers_t *mem = (dh_key_buffers_t *) (mem_info->buffers);
+	dh_key_buffers_t *mem = &(mem_info->buffers.dh_key);
 	dh_key_init_len(req, mem_info, ecdh);
 
 	/* Alloc mem requrd for crypto operation */
@@ -132,7 +132,7 @@ static int dh_key_cp_req(struct dh_key_req_s *req, crypto_mem_info_t *mem_info,
 
 static int dh_keygen_cp_req(struct dh_keygen_req_s *req, crypto_mem_info_t *mem_info, bool ecdh)
 {
-    dh_keygen_buffers_t *mem    =   (dh_keygen_buffers_t *)(mem_info->buffers);
+    dh_keygen_buffers_t *mem = &(mem_info->buffers.dh_keygen);
     dh_keygen_init_len(req, mem_info, ecdh);
 
     /* Alloc mem requrd for crypto operation */
@@ -161,9 +161,8 @@ static void constr_dh_key_desc(crypto_mem_info_t *mem_info)
 	uint32_t desc_size = sizeof(struct dh_key_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 1;
 
-	dh_key_buffers_t *mem = (dh_key_buffers_t *) (mem_info->buffers);
-	struct dh_key_desc_s *dh_key_desc =
-	    (struct dh_key_desc_s *)mem->desc_buff.h_v_addr;
+	dh_key_buffers_t *mem = &(mem_info->buffers.dh_key);
+	struct dh_key_desc_s *dh_key_desc = mem->desc_buff.h_v_addr;
 
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&dh_key_desc->desc_hdr,
@@ -195,9 +194,8 @@ static void constr_ecdh_key_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	uint32_t desc_size = sizeof(struct ecdh_key_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 1;
 
-	dh_key_buffers_t *mem = (dh_key_buffers_t *) (mem_info->buffers);
-	struct ecdh_key_desc_s *ecdh_key_desc =
-	    (struct ecdh_key_desc_s *)mem->desc_buff.h_v_addr;
+	dh_key_buffers_t *mem = &(mem_info->buffers.dh_key);
+	struct ecdh_key_desc_s *ecdh_key_desc = mem->desc_buff.h_v_addr;
 
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&ecdh_key_desc->desc_hdr,
@@ -239,8 +237,8 @@ static void constr_ecdh_keygen_desc(crypto_mem_info_t *mem_info, bool ecc_bin)
 	uint32_t desc_size = sizeof(struct ecdh_keygen_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 1;
 
-	dh_keygen_buffers_t *mem = (dh_keygen_buffers_t *)(mem_info->buffers);
-	struct ecdh_keygen_desc_s *ecdh_keygen_desc = (struct ecdh_keygen_desc_s *)mem->desc_buff.h_v_addr;
+	dh_keygen_buffers_t *mem = &(mem_info->buffers.dh_keygen);
+	struct ecdh_keygen_desc_s *ecdh_keygen_desc = mem->desc_buff.h_v_addr;
 
 	start_idx   &=  HDR_START_IDX_MASK;
 	init_job_desc(&ecdh_keygen_desc->desc_hdr,
@@ -284,8 +282,8 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
 	uint32_t desc_size = sizeof(struct dh_keygen_desc_s) / sizeof(uint32_t);
 	uint32_t start_idx = desc_size - 1;
 
-	dh_keygen_buffers_t *mem = (dh_keygen_buffers_t *)(mem_info->buffers);
-	struct dh_keygen_desc_s *dh_keygen_desc = (struct dh_keygen_desc_s *)mem->desc_buff.h_v_addr;
+	dh_keygen_buffers_t *mem = &(mem_info->buffers.dh_keygen);
+	struct dh_keygen_desc_s *dh_keygen_desc = mem->desc_buff.h_v_addr;
 
 	start_idx &= HDR_START_IDX_MASK;
 	init_job_desc(&dh_keygen_desc->desc_hdr,
@@ -316,41 +314,41 @@ static void constr_dh_keygen_desc(crypto_mem_info_t *mem_info)
 
 static void dh_key_init_crypto_mem(crypto_mem_info_t *crypto_mem, bool ecdh)
 {
-	dh_key_buffers_t *dh_key_buffs = NULL;
+	dh_key_buffers_t *dh_key_buffs;
 
 	crypto_mem->count = sizeof(dh_key_buffers_t) / sizeof(buffer_info_t);
 	if (!ecdh) {
 		crypto_mem->count -= 1;
 	}
 
-	crypto_mem->buffers =
-	    (buffer_info_t *) (&(crypto_mem->c_buffers.dh_key));
-	memset(crypto_mem->buffers, 0, sizeof(dh_key_buffers_t));
+	dh_key_buffs = &(crypto_mem->buffers.dh_key);
+	memset(dh_key_buffs, 0, sizeof(dh_key_buffers_t));
 
-	/* Mark the op buffer */
-	dh_key_buffs = (dh_key_buffers_t *) crypto_mem->buffers;
-	dh_key_buffs->q_buff.bt = dh_key_buffs->w_buff.bt =
-	    dh_key_buffs->s_buff.bt = dh_key_buffs->ab_buff.bt = BT_IP;
+	dh_key_buffs->q_buff.bt = BT_IP;
+	dh_key_buffs->w_buff.bt = BT_IP;
+	dh_key_buffs->s_buff.bt = BT_IP;
+	dh_key_buffs->ab_buff.bt = BT_IP;
 	dh_key_buffs->z_buff.bt = BT_OP;
 }
 
 static void dh_keygen_init_crypto_mem(crypto_mem_info_t *crypto_mem, bool ecdh)
 {
-    dh_keygen_buffers_t    *dh_key_buffs   =   NULL;
+	dh_keygen_buffers_t *dh_key_buffs;
 
-    crypto_mem->count       =   sizeof(dh_keygen_buffers_t)/sizeof(buffer_info_t);
-    if(!ecdh) {
-	    crypto_mem->count -= 1;
-    }
+	crypto_mem->count = sizeof(dh_keygen_buffers_t)/sizeof(buffer_info_t);
+	if(!ecdh) {
+		crypto_mem->count -= 1;
+	}
 
-    crypto_mem->buffers     =   (buffer_info_t *)(&(crypto_mem->c_buffers.dh_keygen));
-    memset(crypto_mem->buffers, 0, sizeof(dh_keygen_buffers_t));
-    /*crypto_ctx->crypto_mem.buffers        =   kzalloc(sizeof(rsa_pub_op_buffers_t), GFP_KERNEL);*/
+	dh_key_buffs = &(crypto_mem->buffers.dh_keygen);
+	memset(dh_key_buffs, 0, sizeof(dh_keygen_buffers_t));
 
-    /* Mark the op buffer */
-    dh_key_buffs    =   (dh_keygen_buffers_t *)crypto_mem->buffers;
-    dh_key_buffs->q_buff.bt =   dh_key_buffs->r_buff.bt = dh_key_buffs->g_buff.bt = dh_key_buffs->ab_buff.bt = BT_IP;
-    dh_key_buffs->prvkey_buff.bt    =   dh_key_buffs->pubkey_buff.bt    =   BT_OP;
+	dh_key_buffs->q_buff.bt = BT_IP;
+	dh_key_buffs->r_buff.bt = BT_IP;
+	dh_key_buffs->g_buff.bt = BT_IP;
+	dh_key_buffs->ab_buff.bt = BT_IP;
+	dh_key_buffs->prvkey_buff.bt = BT_OP;
+	dh_key_buffs->pubkey_buff.bt = BT_OP;
 }
 
 int dh_op(struct pkc_request *req)
@@ -419,7 +417,7 @@ int dh_op(struct pkc_request *req)
 	case DH_KEYGEN:
 	case ECDH_KEYGEN:
 		dh_keygen_init_crypto_mem(&crypto_ctx->crypto_mem, ecdh);
-		dh_keygen_buffs = (dh_keygen_buffers_t *)crypto_ctx->crypto_mem.buffers;
+		dh_keygen_buffs = &(crypto_ctx->crypto_mem.buffers.dh_keygen);
 
 		ret = dh_keygen_cp_req(&req->req_u.dh_keygenreq, &crypto_ctx->crypto_mem, ecdh);
 		if (ret != 0) {
@@ -451,8 +449,7 @@ int dh_op(struct pkc_request *req)
 	case DH_COMPUTE_KEY:
 	case ECDH_COMPUTE_KEY:
 		dh_key_init_crypto_mem(&crypto_ctx->crypto_mem, ecdh);
-		dh_key_buffs =
-		    (dh_key_buffers_t *) crypto_ctx->crypto_mem.buffers;
+		dh_key_buffs = &(crypto_ctx->crypto_mem.buffers.dh_key);
 
 		ret = dh_key_cp_req(&req->req_u.dh_req, &crypto_ctx->crypto_mem, ecdh);
 		if (ret != 0) {

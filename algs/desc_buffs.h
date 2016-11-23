@@ -186,10 +186,9 @@ typedef union crypto_buffers {
 typedef struct crypto_mem_info {
 	uint32_t count;
 	void *src_buff;
-	buffer_info_t *buffers;
 	struct buffer_pool *buf_pool;
 	struct c29x_dev *c_dev;
-	crypto_buffers_t c_buffers;
+	crypto_buffers_t buffers;
 } crypto_mem_info_t;
 
 void host_to_dev(crypto_mem_info_t *mem_info);

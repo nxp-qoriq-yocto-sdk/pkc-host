@@ -84,7 +84,7 @@ static void rng_init_done(void *ctx, uint32_t res)
 static int rng_self_test_cp_output(uint32_t *output, uint32_t length,
 				   crypto_mem_info_t *mem_info)
 {
-	rng_self_test_buffers_t *mem = &mem_info->c_buffers.rng_self_test;
+	rng_self_test_buffers_t *mem = &(mem_info->buffers.rng_self_test);
 
 	mem->desc_buff.len = 55 * sizeof(uint32_t);
 	mem->output_buff.len = length;
@@ -100,7 +100,7 @@ static int rng_self_test_cp_output(uint32_t *output, uint32_t length,
 static int rng_init_cp_pers_str(uint32_t *pers_str, uint32_t length,
 				crypto_mem_info_t *mem_info)
 {
-	rng_init_buffers_t *mem = &mem_info->c_buffers.rng_init;
+	rng_init_buffers_t *mem = &(mem_info->buffers.rng_init);
 
 	mem->desc_buff.len = 11 * sizeof(uint32_t);
 	mem->pers_str_buff.len = length;
@@ -116,9 +116,8 @@ static void constr_rng_self_test_desc(crypto_mem_info_t *mem_info)
 {
 	uint32_t desc_size = 0;
 
-	rng_self_test_buffers_t *mem =
-	    (rng_self_test_buffers_t *) (mem_info->buffers);
-	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.h_v_addr;
+	rng_self_test_buffers_t *mem = &(mem_info->buffers.rng_self_test);
+	uint32_t *desc_buff = mem->desc_buff.h_v_addr;
 
 	uint32_t l_desc[55] = {
 		0xB0800037,
@@ -199,8 +198,8 @@ static void constr_rng_init_desc(crypto_mem_info_t *mem_info)
 {
 	uint32_t desc_size = 0;
 
-	rng_init_buffers_t *mem = (rng_init_buffers_t *) (mem_info->buffers);
-	uint32_t *desc_buff = (uint32_t *) mem->desc_buff.h_v_addr;
+	rng_init_buffers_t *mem = &(mem_info->buffers.rng_init);
+	uint32_t *desc_buff = mem->desc_buff.h_v_addr;
 
 	uint32_t desc[11] = {
 		0xB080000B,
@@ -236,30 +235,26 @@ static void constr_rng_init_desc(crypto_mem_info_t *mem_info)
 
 static void rng_self_test_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 {
-	rng_self_test_buffers_t *rng_self_test_buffs = NULL;
+	rng_self_test_buffers_t *rng_self_test_buffs;
 
 	crypto_mem->count =
 	    sizeof(rng_self_test_buffers_t) / sizeof(buffer_info_t);
 
-	crypto_mem->buffers =
-	    (buffer_info_t *) (&(crypto_mem->c_buffers.rng_self_test));
-	memset(crypto_mem->buffers, 0, sizeof(rng_self_test_buffers_t));
+	rng_self_test_buffs = &(crypto_mem->buffers.rng_self_test);
+	memset(rng_self_test_buffs, 0, sizeof(rng_self_test_buffers_t));
 
-	rng_self_test_buffs = (rng_self_test_buffers_t *) crypto_mem->buffers;
 	rng_self_test_buffs->output_buff.bt = BT_OP;
 }
 
 static void rng_init_init_crypto_mem(crypto_mem_info_t *crypto_mem)
 {
-	rng_init_buffers_t *rng_init_buffs = NULL;
+	rng_init_buffers_t *rng_init_buffs;
 
 	crypto_mem->count = sizeof(rng_init_buffers_t) / sizeof(buffer_info_t);
 
-	crypto_mem->buffers =
-	    (buffer_info_t *) (&(crypto_mem->c_buffers.rng_init));
-	memset(crypto_mem->buffers, 0, sizeof(rng_init_buffers_t));
+	rng_init_buffs = &(crypto_mem->buffers.rng_init);
+	memset(rng_init_buffs, 0, sizeof(rng_init_buffers_t));
 
-	rng_init_buffs = (rng_init_buffers_t *) crypto_mem->buffers;
 	rng_init_buffs->pers_str_buff.bt = BT_IP;
 }
 
@@ -300,8 +295,7 @@ int rng_op(struct c29x_dev *c_dev, uint32_t sec_no, crypto_op_t op)
 	switch (op) {
 	case RNG_INIT:
 		rng_init_init_crypto_mem(&crypto_ctx->crypto_mem);
-		rng_init_buffs =
-		    (rng_init_buffers_t *) crypto_ctx->crypto_mem.buffers;
+		rng_init_buffs = &(crypto_ctx->crypto_mem.buffers.rng_init);
 		pers_len = 8 * sizeof(uint32_t);
 		pers_str = kzalloc(pers_len, GFP_KERNEL | GFP_DMA);
 		if (pers_str == NULL) {
@@ -338,8 +332,7 @@ int rng_op(struct c29x_dev *c_dev, uint32_t sec_no, crypto_op_t op)
 		break;
 	case RNG_SELF_TEST:
 		rng_self_test_init_crypto_mem(&crypto_ctx->crypto_mem);
-		rng_self_test_buffs =
-		    (rng_self_test_buffers_t *) crypto_ctx->crypto_mem.buffers;
+		rng_self_test_buffs = &(crypto_ctx->crypto_mem.buffers.rng_self_test);
 
 		output_len = 16 * sizeof(uint32_t);
 		output = kzalloc(output_len, GFP_KERNEL | GFP_DMA);
