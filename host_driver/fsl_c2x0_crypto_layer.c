@@ -194,8 +194,6 @@ int32_t alloc_ob_mem(struct c29x_dev *c_dev)
 	c_dev->cntrs_mem = host_v_addr + obm.cntrs_mem;
 	c_dev->r_s_cntrs_mem = host_v_addr + obm.r_s_cntrs_mem;
 
-	init_ip_pool(c_dev, obm.buf_pool);
-
 	print_debug("====== OB MEM POINTERS =======\n");
 	print_debug("H HS Mem		: %p\n", c_dev->hs_mem);
 	print_debug("Drv resp rings	: %p\n", c_dev->drv_resp_rings);
@@ -656,20 +654,13 @@ static int32_t load_firmware(struct c29x_dev *c_dev)
 	return 0;
 }
 
-void init_ip_pool(struct c29x_dev *c_dev, uint32_t offset)
+void init_buf_pool(struct buffer_pool *buf_pool, struct host_mem_info *drv_mem,
+		uint32_t offset)
 {
-	uint8_t i;
+	buf_pool->h_v_addr = drv_mem->host_v_addr + offset;
+	buf_pool->h_dma_addr = drv_mem->host_dma_addr + offset;
 
-	for(i = 0; i < c_dev->config.num_of_rps; i++) {
-		c_dev->buf_pool[i].h_v_addr = c_dev->drv_mem.host_v_addr +
-				offset;
-		c_dev->buf_pool[i].h_dma_addr = c_dev->drv_mem.host_dma_addr +
-				offset;
-
-		create_pool(&c_dev->buf_pool[i], BUFFER_MEM_SIZE);
-
-		offset += BUFFER_MEM_SIZE;
-	}
+	create_pool(buf_pool, BUFFER_MEM_SIZE);
 }
 
 int init_crypto_ctx_pool(struct c29x_dev *c_dev)
@@ -677,6 +668,7 @@ int init_crypto_ctx_pool(struct c29x_dev *c_dev)
 	int i, id;
 	struct ctx_pool *pool;
 	uint8_t nr_ctx_pools = c_dev->config.num_of_rps;
+	ptrdiff_t offset = c_dev->drv_mem.buf_pool_offset;
 
 	pool = kcalloc(nr_ctx_pools, sizeof(struct ctx_pool), GFP_KERNEL);
 	if (pool == NULL) {
@@ -687,8 +679,12 @@ int init_crypto_ctx_pool(struct c29x_dev *c_dev)
 	c_dev->ctx_pool = pool;
 
 	for (id = 0; id < nr_ctx_pools; id++) {
-		for (i = 0; i < NUM_OF_CTXS - 1; i++)
+		for (i = 0; i < NUM_OF_CTXS - 1; i++) {
 			pool->mem[i].next = &(pool->mem[i + 1]);
+		}
+
+		init_buf_pool(&(pool->buf_pool), &(c_dev->drv_mem), offset);
+		offset += BUFFER_MEM_SIZE;
 
 		pool->mem[i].next = NULL;
 		pool->head = &pool->mem[0];

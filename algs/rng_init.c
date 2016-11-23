@@ -289,7 +289,7 @@ int rng_op(struct c29x_dev *c_dev, uint32_t sec_no, crypto_op_t op)
 	print_debug("Ring selected: %d\n", r_id);
 	crypto_ctx->ctx_pool = c_dev->ctx_pool;
 	crypto_ctx->crypto_mem.c_dev = c_dev;
-	crypto_ctx->crypto_mem.buf_pool = &(c_dev->buf_pool[0]);
+	crypto_ctx->crypto_mem.buf_pool = &(c_dev->ctx_pool->buf_pool);
 	print_debug("IP Buffer pool address: %p\n", crypto_ctx->crypto_mem.buf_pool);
 
 	switch (op) {

@@ -40,6 +40,7 @@
 #include <crypto/algapi.h>
 
 #include "desc_buffs.h"
+#include "memmgr.h"
 
 /* Enum identifying the type of operation :- Symmetric/Asymmetric */
 typedef enum crypto_op_type {
@@ -101,6 +102,7 @@ struct crypto_op_ctx {
 struct ctx_pool {
 	struct crypto_op_ctx mem[NUM_OF_CTXS];
 	struct crypto_op_ctx *head;
+	struct buffer_pool buf_pool;
 	spinlock_t ctx_lock;
 };
 
