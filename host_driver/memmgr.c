@@ -65,9 +65,10 @@ Fields      :
 			len		:	total length of the device memory for the mempool.
 Returns		:	None.
 ******************************************************************************/
-void create_pool(struct buffer_pool *pool, void *buf, uint32_t len)
+void create_pool(struct buffer_pool *pool, uint32_t len)
 {
 	bh *header;
+	void *buf = pool->h_v_addr;
 
 	print_debug("Creating Pool\n");
 	print_debug("Buffer: %p\n", buf);

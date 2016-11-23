@@ -665,8 +665,7 @@ void init_ip_pool(struct c29x_dev *c_dev, uint32_t offset)
 		c_dev->buf_pool[i].h_dma_addr = c_dev->drv_mem.host_dma_addr +
 				offset;
 
-		create_pool(&c_dev->buf_pool[i], c_dev->buf_pool[i].h_v_addr,
-				BUFFER_MEM_SIZE);
+		create_pool(&c_dev->buf_pool[i], BUFFER_MEM_SIZE);
 
 		offset += BUFFER_MEM_SIZE;
 	}

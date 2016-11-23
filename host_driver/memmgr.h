@@ -55,7 +55,7 @@ typedef struct buffer_pool {
 	spinlock_t mem_lock;
 } bp;
 
-void create_pool(struct buffer_pool *, void *, uint32_t);
+void create_pool(struct buffer_pool *, uint32_t);
 void *alloc_buffer(struct buffer_pool *, uint32_t, uint8_t);
 void free_buffer(struct buffer_pool *, void *);
 
