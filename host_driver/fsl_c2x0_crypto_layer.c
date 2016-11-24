@@ -925,7 +925,8 @@ void process_response(struct c29x_dev *c_dev, fsl_h_rsrc_ring_pair_t *ring_curso
 
 	pollcount = 0;
 
-	while (pollcount++ < napi_poll_count) {
+	while (pollcount < napi_poll_count) {
+		pollcount++;
 		jobs_added = be32_to_cpu(ring_cursor->r_s_cntrs->jobs_added);
 		resp_cnt = jobs_added - ring_cursor->counters->jobs_processed;
 		if (!resp_cnt)
