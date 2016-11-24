@@ -197,7 +197,7 @@ void init_handshake(struct c29x_dev *c_dev);
 void init_ring_pairs(struct c29x_dev *c_dev);
 void stop_device(struct c29x_dev *c_dev);
 void start_device(struct c29x_dev *c_dev);
-void response_ring_handler(struct work_struct *work);
+void process_work(struct work_struct *work);
 
 extern int32_t rng_instantiation(struct c29x_dev *c_dev);
 

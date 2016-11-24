@@ -479,7 +479,7 @@ int32_t create_c29x_workqueue(void)
 	workq = create_workqueue("pkc_wq");
 	for_each_online_cpu(i) {
 		bh_worker = per_cpu_ptr(bh_workers, i);
-		INIT_WORK(&(bh_worker->work), response_ring_handler);
+		INIT_WORK(&(bh_worker->work), process_work);
 	}
 	return 0;
 }

@@ -862,7 +862,7 @@ void handle_response(struct c29x_dev *c_dev, uint64_t desc, int32_t res)
 	return;
 }
 
-void process_ring(struct fsl_h_rsrc_ring_pair *rp)
+void process_work(struct work_struct *work)
 {
 	uint32_t pollcount;
 	uint32_t jobs_added;
@@ -870,8 +870,13 @@ void process_ring(struct fsl_h_rsrc_ring_pair *rp)
 	uint32_t ri;
 	uint64_t desc;
 	uint32_t res;
-	struct device *dev = &(rp->c_dev->dev->dev);
+	struct device *dev;
+	struct fsl_h_rsrc_ring_pair *rp;
+	struct bh_handler *bh;
 
+	bh = container_of(work, struct bh_handler, work);
+	rp = bh->rp;
+	dev = &(rp->c_dev->dev->dev);
 	pollcount = 0;
 
 	while (pollcount < napi_poll_count) {
@@ -908,26 +913,4 @@ void process_ring(struct fsl_h_rsrc_ring_pair *rp)
 	}
 	/* Enable the intrs for this ring */
 	*(rp->intr_ctrl_flag) = 0;
-}
-
-/*******************************************************************************
- * Function     : response_ring_handler
- *
- * Arguments    : work - Kernel work posted to this handler
- *
- * Return Value : none
- *
- * Description  : Bottom half implementation to handle the responses.
- *
- ******************************************************************************/
-void response_ring_handler(struct work_struct *work)
-{
-	struct bh_handler *bh;
-
-	bh = container_of(work, struct bh_handler, work);
-	if (bh != NULL) {
-		process_ring(bh->rp);
-	} else {
-		print_error("No bottom half handler found for the work\n");
-	}
 }
