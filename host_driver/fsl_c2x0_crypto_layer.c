@@ -374,24 +374,21 @@ void hs_fw_init_complete(struct c29x_dev *c_dev, uint8_t rid)
 void hs_init_rp_complete(struct c29x_dev *c_dev, uint8_t rid)
 {
 	struct ring_data *hsring = &c_dev->hs_mem->data.ring;
-	uint32_t req_r;
-	uint32_t intr_ctrl_flag;
+	void *sram = c_dev->bars[MEM_TYPE_SRAM].host_v_addr;
+	fsl_h_rsrc_ring_pair_t *rp = &(c_dev->ring_pairs[rid]);
 
 	print_debug("---- FW_INIT_RING_PAIR_COMPLETE ----\n");
 
 	c_dev->hs_mem->state = DEFAULT;
-	req_r = be32_to_cpu(hsring->req_r);
-	intr_ctrl_flag = be32_to_cpu(hsring->intr_ctrl_flag);
 
-	c_dev->ring_pairs[rid].r_s_c_cntrs = &(c_dev->r_s_c_cntrs[rid]);
-	c_dev->ring_pairs[rid].req_r =c_dev->bars[MEM_TYPE_SRAM].host_v_addr + req_r;
-	c_dev->ring_pairs[rid].intr_ctrl_flag = c_dev->bars[MEM_TYPE_SRAM].host_v_addr +
-			intr_ctrl_flag;
+	rp->r_s_c_cntrs    = &(c_dev->r_s_c_cntrs[rid]);
+	rp->req_r          = sram + be32_to_cpu(hsring->req_r);
+	rp->intr_ctrl_flag = sram + be32_to_cpu(hsring->intr_ctrl_flag);
 
 	print_debug("Ring id     : %d\n", rid);
-	print_debug("Shadow cntrs: %p\n", c_dev->ring_pairs[rid].r_s_c_cntrs);
-	print_debug("Req r       : %p\n", c_dev->ring_pairs[rid].req_r);
-	print_debug("Interrupt   : %p\n", c_dev->ring_pairs[rid].intr_ctrl_flag);
+	print_debug("Shadow cntrs: %p\n", rp->r_s_c_cntrs);
+	print_debug("Req r       : %p\n", rp->req_r);
+	print_debug("Interrupt   : %p\n", rp->intr_ctrl_flag);
 }
 
 int32_t handshake(struct c29x_dev *c_dev)
