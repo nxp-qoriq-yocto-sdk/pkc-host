@@ -251,7 +251,7 @@ void init_ring_pairs(struct c29x_dev *c_dev)
 		rp->indexes = &(c_dev->idxs_mem[i]);
 		rp->counters = &(c_dev->cntrs_mem[i]);
 		rp->r_s_cntrs = &(c_dev->r_s_cntrs_mem[i]);
-		rp->shadow_counters = NULL;
+		rp->r_s_c_cntrs = NULL;
 
 		INIT_LIST_HEAD(&(rp->isr_ctx_list_node));
 		INIT_LIST_HEAD(&(rp->bh_ctx_list_node));
@@ -383,13 +383,13 @@ void hs_init_rp_complete(struct c29x_dev *c_dev, uint8_t rid)
 	req_r = be32_to_cpu(hsring->req_r);
 	intr_ctrl_flag = be32_to_cpu(hsring->intr_ctrl_flag);
 
-	c_dev->ring_pairs[rid].shadow_counters = &(c_dev->r_s_c_cntrs[rid]);
+	c_dev->ring_pairs[rid].r_s_c_cntrs = &(c_dev->r_s_c_cntrs[rid]);
 	c_dev->ring_pairs[rid].req_r =c_dev->bars[MEM_TYPE_SRAM].host_v_addr + req_r;
 	c_dev->ring_pairs[rid].intr_ctrl_flag = c_dev->bars[MEM_TYPE_SRAM].host_v_addr +
 			intr_ctrl_flag;
 
 	print_debug("Ring id     : %d\n", rid);
-	print_debug("Shadow cntrs: %p\n", c_dev->ring_pairs[rid].shadow_counters);
+	print_debug("Shadow cntrs: %p\n", c_dev->ring_pairs[rid].r_s_c_cntrs);
 	print_debug("Req r       : %p\n", c_dev->ring_pairs[rid].req_r);
 	print_debug("Interrupt   : %p\n", c_dev->ring_pairs[rid].intr_ctrl_flag);
 }
@@ -734,8 +734,8 @@ int32_t ring_enqueue(struct c29x_dev *c_dev, uint32_t jr_id,
 	rp->counters->jobs_added += 1;
 	print_debug("Updated jobs added: %d\n", rp->counters->jobs_added);
 	print_debug("Ring: %d	Shadow counter address	%p\n", jr_id,
-		    &(rp->shadow_counters->jobs_added));
-	rp->shadow_counters->jobs_added = be32_to_cpu(rp->counters->jobs_added);
+		    &(rp->r_s_c_cntrs->jobs_added));
+	rp->r_s_c_cntrs->jobs_added = be32_to_cpu(rp->counters->jobs_added);
 
 	spin_unlock_bh(&(rp->ring_lock));
 	return 0;
@@ -954,7 +954,7 @@ void process_response(struct c29x_dev *c_dev, fsl_h_rsrc_ring_pair_t *ring_curso
 			}
 			ring_cursor->counters->jobs_processed += 1;
 			iowrite32be(ring_cursor->counters->jobs_processed,
-				&ring_cursor->shadow_counters->jobs_processed);
+				&ring_cursor->r_s_c_cntrs->jobs_processed);
 
 			ri = (ri + 1) % (ring_cursor->depth);
 			ring_cursor->indexes->r_index = ri;

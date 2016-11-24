@@ -167,7 +167,7 @@ typedef struct fsl_h_rsrc_ring_pair {
 	struct ring_idxs_mem *indexes;
 	struct ring_counters_mem *counters;
 	struct ring_counters_mem *r_s_cntrs;
-	struct ring_counters_mem *shadow_counters;
+	struct ring_counters_mem *r_s_c_cntrs;
 
 	uint32_t depth;
 	uint32_t core_no;
