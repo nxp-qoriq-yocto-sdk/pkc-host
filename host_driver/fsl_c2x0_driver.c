@@ -37,6 +37,7 @@
 #include <linux/pci.h>
 #include <linux/interrupt.h>
 #include <linux/fs.h>
+#include <linux/cpumask.h>
 
 #include "debug_print.h"
 #include "fsl_c2x0_driver.h"
@@ -60,7 +61,7 @@ int napi_poll_count = -1;
 /* default configuration for all devices */
 struct c29x_cfg defcfg = {
 	.firmware ="/etc/crypto/pkc-firmware.bin",
-	.num_of_rps = 1,
+	.num_of_rps = FSL_CRYPTO_MAX_RING_PAIRS,
 	.ring_depth = 1024,
 };
 
@@ -625,8 +626,12 @@ static int32_t fsl_crypto_pci_probe(struct pci_dev *dev,
 		return -ENOMEM;
 	}
 	c_dev->config = defcfg;
+	/* sanity checks to avoid arrays overflow */
 	if (c_dev->config.num_of_rps > FSL_CRYPTO_MAX_RING_PAIRS) {
 		c_dev->config.num_of_rps = FSL_CRYPTO_MAX_RING_PAIRS;
+	}
+	if (c_dev->config.num_of_rps > num_online_cpus()) {
+		c_dev->config.num_of_rps = num_online_cpus();
 	}
 
 	/* Set this device instance as private data inside the pci dev struct */
