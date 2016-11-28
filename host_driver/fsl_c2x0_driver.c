@@ -422,6 +422,17 @@ int32_t get_irq_vectors(struct c29x_dev *c_dev)
 	c_dev->intr_vectors_cnt = nvec;
 	print_debug("MSI enabled vectors  : %d\n", nvec);
 
+	/* We assume one ring - one interrupt - one core.
+	 * If we don't have enough interrupts for our rings, then we can't know
+	 * which ring has jobs returned from SEC: we can only do a linear
+	 * scan of the rings to see which one should be enqueued to bottom half
+	 *
+	 * This might not be as bad as it sounds for the IRS code but is not
+	 * exactly the intended use-case either.
+	 */
+	if (nvec < c_dev->config.num_of_rps) {
+		c_dev->config.num_of_rps = nvec;
+	}
 	return 0;
 }
 
