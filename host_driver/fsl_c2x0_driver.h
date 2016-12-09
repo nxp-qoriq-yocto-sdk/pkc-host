@@ -86,6 +86,7 @@ typedef struct isr_ctx {
 	uint32_t msi_addr_high;
 	uint16_t msi_data;
 	uint32_t core_no;
+	cpumask_t affinity_mask;
 } isr_ctx_t;
 
 struct pci_bar_info {

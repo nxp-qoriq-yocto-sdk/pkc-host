@@ -401,6 +401,7 @@ void fsl_release_irqs(struct c29x_dev *c_dev, uint32_t maxvec)
 
 	for (i = 0; i < maxvec; i++) {
 		isr_ctx = &(c_dev->isr_ctx[i]);
+		irq_set_affinity_hint(isr_ctx->irq, NULL);
 		free_irq(isr_ctx->irq, isr_ctx);
 	}
 }
@@ -449,9 +450,14 @@ int fsl_request_irqs(struct c29x_dev *c_dev)
 		isr_ctx = &(c_dev->isr_ctx[i]);
 		isr_ctx->core_no = i;
 		isr_ctx->irq = c_dev->dev->irq + i;
+		cpumask_set_cpu(i, &isr_ctx->affinity_mask);
 
 		err = request_irq(isr_ctx->irq, fsl_crypto_isr, 0,
 				c_dev->dev_name, isr_ctx);
+		/* IRQ affinity setting should work with kernels after
+		 * v3.19-rc5-1-ge2e64a9 */
+		irq_set_affinity_hint(isr_ctx->irq, &isr_ctx->affinity_mask);
+
 		if (err) {
 			dev_err(my_dev, "Request IRQ failed for vector: %d\n", i);
 			goto free_irqs;
