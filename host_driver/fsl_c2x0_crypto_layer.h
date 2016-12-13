@@ -106,6 +106,12 @@ struct dev_handshake_mem {
 	uint32_t h_ob_mem_l;
 	uint32_t h_ob_mem_h;
 
+	/* address and size of buffer pools in device address space. These are
+	 * used to identify descriptor ring to maintain affinity */
+	uint32_t bp_base_l;
+	uint32_t bp_base_h;
+	uint32_t bp_size;
+
 	uint8_t state;
 	uint8_t data_len;
 

@@ -177,6 +177,7 @@ int32_t alloc_ob_mem(struct c29x_dev *c_dev)
 void init_handshake(struct c29x_dev *c_dev)
 {
 	dma_addr_t ob_mem = c_dev->drv_mem.host_dma_addr;
+	dev_dma_addr_t bp_base;
 
 	/* Write our address to the firmware -
 	 * It uses this to give it details when it is up */
@@ -198,6 +199,20 @@ void init_handshake(struct c29x_dev *c_dev)
 	 */
 	iowrite32be(l_val, (void *) &c_dev->c_hs_mem->h_ob_mem_l);
 	iowrite32be(h_val, (void *) &c_dev->c_hs_mem->h_ob_mem_h);
+
+	/* calculate base address of buffer pools in device address space
+	 * we need to add c_dev->drv_mem.dev_pci_base to complete the address
+	 * but we don't know it yet */
+	bp_base = (dev_dma_addr_t)((c_dev->drv_mem.host_v_addr +
+				    c_dev->drv_mem.buf_pool_offset) -
+				   c_dev->drv_mem.h_dma_offset);
+
+	l_val = (uint32_t) (bp_base & PHYS_ADDR_L_32_BIT_MASK);
+	h_val = (bp_base & PHYS_ADDR_H_32_BIT_MASK) >> 32;
+
+	iowrite32be(l_val, (void *)&c_dev->c_hs_mem->bp_base_l);
+	iowrite32be(h_val, (void *)&c_dev->c_hs_mem->bp_base_h);
+	iowrite32be(BUFFER_MEM_SIZE, &c_dev->c_hs_mem->bp_size);
 }
 
 void init_ring_pairs(struct c29x_dev *c_dev)
