@@ -415,13 +415,10 @@ out_nop:
 
 int32_t rng_instantiation(struct c29x_dev *c_dev)
 {
-	uint32_t no_of_secs;
 	uint32_t i;
 	int32_t err = -ENODEV;
 
-	no_of_secs = be32_to_cpu(c_dev->hs_mem->data.device.no_secs);
-
-	for (i = 1; i <= no_of_secs; i++) {
+	for (i = 1; i <= c_dev->no_secs; i++) {
 		err = rng_op(c_dev, i, RNG_SELF_TEST);
 		if (err) {
 			break;

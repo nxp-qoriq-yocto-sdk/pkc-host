@@ -121,6 +121,7 @@ struct c29x_dev {
 	struct pci_bar_info bars[MEM_TYPE_MAX];
 	struct host_mem_info drv_mem;
 	uint32_t intr_vectors_cnt;
+	uint32_t no_secs;
 
 	struct c29x_cfg config;
 	struct isr_ctx isr_ctx[MAX_MSI_IRQ];

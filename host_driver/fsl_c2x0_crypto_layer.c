@@ -294,6 +294,8 @@ void hs_firmware_up(struct c29x_dev *c_dev)
 
 	c_dev->hs_mem->state = DEFAULT;
 
+	c_dev->no_secs = be32_to_cpu(hsdev->no_secs);
+
 	p_ib_l = be32_to_cpu(hsdev->p_ib_mem_base_l);
 	p_ib_h = be32_to_cpu(hsdev->p_ib_mem_base_h);
 	p_pci_l = be32_to_cpu(hsdev->p_pci_mem_l);
