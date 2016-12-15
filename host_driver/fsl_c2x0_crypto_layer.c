@@ -48,7 +48,9 @@ extern struct bh_handler __percpu *bh_workers;
 /* The size of the ip_pool was chosen 512K so it could fit in the device SRAM
  * (which has less than 1M available) without changing the supporting code.
  * Since the current implementation has all data in host RAM, this limitation
- * may be lifted */
+ * may be lifted
+ * Device firmware uses this value as a mask to work out descriptor-ring
+ * affinity. It must be a power of two or things will break */
 #define BUFFER_MEM_SIZE		(512*1024)
 
 /* Application ring properties bit masks and shift */
