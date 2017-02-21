@@ -103,8 +103,6 @@ struct host_mem_info {
 	dma_addr_t host_dma_addr;
 
 	/* offsets used to convert descriptor addresses from device to host */
-	int64_t d2h_offset;
-	ptrdiff_t h_dma_offset;
 	ptrdiff_t buf_pool_offset;
 };
 

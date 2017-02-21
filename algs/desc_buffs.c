@@ -129,8 +129,8 @@ void host_to_dev(crypto_mem_info_t *mem_info)
 		switch (buffers[i].bt) {
 		case BT_DESC:
 		case BT_TMP:
-			buffers[i].h_dma_addr = (dma_addr_t)
-				(buffers[i].h_v_addr - c_dev->drv_mem.h_dma_offset);
+			buffers[i].h_dma_addr = c_dev->drv_mem.host_dma_addr +
+				(buffers[i].h_v_addr - c_dev->drv_mem.host_v_addr);
 			break;
 		case BT_IP:
 		case BT_OP:
